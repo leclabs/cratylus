@@ -1,0 +1,23 @@
+{
+  "id": "01M4MG51RSCFNBME5RM80SN7PK",
+  "at": "2026-10-11T03:29:53.945Z",
+  "kind": "submit",
+  "transition": "submit:reconstitution:01M4MG51RRNDZX0AK7S9Z594BA",
+  "cut": "reconstitution",
+  "workPackage": "overview",
+  "outputs": [
+    "packages/runtime/src/capabilities/concepts/",
+    "packages/runtime/test/concepts.test.ts",
+    "packages/runtime/test/overview/",
+    ".changeset/reconstitution-overview.md",
+    "packages/runtime/test/explanation.test.ts"
+  ],
+  "concepts": [
+    "context overview",
+    "concept journal"
+  ],
+  "dependsOn": [
+    "ledger"
+  ],
+  "needs": []
+}

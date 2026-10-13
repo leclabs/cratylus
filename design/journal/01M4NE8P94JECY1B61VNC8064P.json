@@ -1,0 +1,14 @@
+{
+  "id": "01M4NE8P94JECY1B61VNC8064P",
+  "at": "2026-10-11T12:16:10.532Z",
+  "kind": "decide",
+  "decisionId": "0100",
+  "context": "agents",
+  "title": "Bottom-line-up-front: what a topic is and what support carries",
+  "situation": "The bottom-line guard now holds two readings of 0078's ordering value that constrain every architect reply, and an assayer asked that they be recorded or rejected.",
+  "decision": "Both are the meaning of 0078. A topic is a matter the operator asked about, or an outcome that calls for someone's action. Support states facts and reasons, never instructions: a topic's one action is its only instruction.",
+  "consequences": "The guard and the rubrics hold these readings as recorded meaning; the ordering value's explanation states them.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

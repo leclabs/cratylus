@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAAR54KND3Y68KDQE5W2T",
+  "at": "2026-10-10T12:06:32.453Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "authority",
+  "wording": "what an agent may decide: for each class of decision, whether it decides, recommends, agrees or performs, how far it acts before asking, and what it escalates to whom; it escalates only a fork that is irreversible, about value, or beyond its competence.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Discovery 2026-10-10: decision rights (RAPID) and mission command are the industry's vocabulary for this, and the canon's autonomy values already used them.",
+  "supersedes": []
+}

@@ -64,7 +64,7 @@ describe('a reader that closes the pipe after the first line ends the command qu
       () => ['project', '--verbose', '--out', scratch],
     ],
     ['--help', () => ['--help']],
-    ['plan --help', () => ['plan', '--help']],
+    ['concepts --help', () => ['concepts', '--help']],
   ] as const)(
     '%s',
     async (_name, words) => {

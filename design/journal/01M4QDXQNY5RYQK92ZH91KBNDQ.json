@@ -1,0 +1,14 @@
+{
+  "id": "01M4QDXQNY5RYQK92ZH91KBNDQ",
+  "at": "2026-10-12T06:48:40.382Z",
+  "kind": "decide",
+  "decisionId": "0136",
+  "context": "workflow",
+  "title": "Cut 7 fourth judgment: the assayers' disagreement settled by the freeze's scope",
+  "situation": "At the fourth judgment one assayer accepts and the other rejects on five routes: pointing the cut's branch at a side reference, then committing; a journal entry written by hand outside the journal's commands; widening a package's outputs onto a helper a frozen check imports from outside its folder (open 0135); planting a file the frozen check loads in place of its support file; deleting and recreating the cut's branch. Four judgments have each found new routes of this kind; the honest agent's routes pass in every one.",
+  "decision": "Settling the disagreement as a meaning question. (1) Writing references or journal entries by hand, outside the journal's commands and ordinary commits, is rewriting the record by hand, which the freeze states it does not hold against (0130, 0131, 0133): the side reference, the hand-written entry, deleting and recreating the branch, and planting a file to shadow a frozen one are outside it and are hardening notes for the ipseic round, not findings against the work. (2) 0135 is accepted: the work a check judges is named as package outputs before that check is frozen, and widening outputs onto a file a frozen check uses is refused wherever the file lies. Its realization, with the rebinding of the frozen checks that slice work after freezing, is the first item of a freeze-hardening cut with the ipseic round's identity; until then the freeze delivered by this cut holds against widening onto files inside a frozen check's folder, which is recorded as its known limit. (3) The rejecting assayer confirms whether any finding remains within the freeze's scope under this ruling; if none does, the cut is accepted.",
+  "consequences": "The freeze concept is not superseded: it already states its scope. The open 0135 is settled here.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

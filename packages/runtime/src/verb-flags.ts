@@ -5,10 +5,14 @@
 // arguments against that declaration, and the one refusal of a flag the verb
 // does not take or a word beyond the positional it declares.
 //
-// A capability declares, for each of its verbs, a one-line summary, its
-// positional, and the flags it takes (named without their leading `--`), each
-// with whether it takes a value and a one-line description. A flag cannot be
-// taken without being described: the declaration does not compile otherwise.
+// A capability declares, for each of its verbs, its purpose in a line, its
+// positional (optional where the verb also acts without it), and the flags it
+// takes (named without their leading `--`), each with whether it takes a value
+// and a one-line description. A flag cannot be taken without being described:
+// the declaration does not compile otherwise.
+// A flag also says whether its verb refuses a call without it, whether it
+// takes one of a few values, and whether it is given once per value; the
+// verb's help and its explanation both read this one declaration.
 // A flag that takes a value is given as `--flag value` or `--flag=value`; it
 // takes the next token unless that token begins with `--`, so `-` and `-5` are
 // values, and given bare it holds `''`. A flag that takes no value (a switch)
@@ -41,15 +45,30 @@
 import { CLI_BIN } from './bin-name.js';
 
 /** One flag a verb takes: whether it `takes` a value or is a `switch`, taking
- *  none, and the line its help prints for it. */
+ *  none, and the line its help prints for it; whether the verb refuses a call
+ *  without it, the `values` it takes one of, and whether it `repeats`, given
+ *  once per value. */
 export interface Flag {
   readonly takes: 'value' | 'switch';
   readonly description: string;
+  readonly required?: boolean;
+  readonly values?: readonly string[];
+  readonly repeats?: boolean;
 }
 
-/** A flag that takes a value, with the line its help prints for it. */
-export const valueFlag = (description: string) =>
-  ({ takes: 'value', description }) as const;
+/** How a flag that takes a value is given beyond its description. */
+export interface ValueShape {
+  readonly required?: boolean;
+  readonly values?: readonly string[];
+  readonly repeats?: boolean;
+}
+
+/** A flag that takes a value, with the line its help prints for it and how it
+ *  is given. */
+export const valueFlag = <const S extends ValueShape = Record<never, never>>(
+  description: string,
+  shape: S = {} as S,
+) => ({ takes: 'value', description, ...shape }) as const;
 
 /** A flag that takes no value, with the line its help prints for it. */
 export const switchFlag = (description: string) =>
@@ -59,20 +78,35 @@ export const switchFlag = (description: string) =>
  *  the line its help prints for it: a flag cannot be taken undescribed. */
 export type Flags = { readonly [flag: string]: Flag };
 
-/** One verb, declared once: what it does in a line, the positional it acts on
- *  (`<unit>` where it must be given, `[plan]` where it may be, `null` for
- *  none), and the flags it takes. Its help is printed from this, and its
- *  arguments are read against it. */
+/** The one word a verb acts on, given where it must be: its name, which its
+ *  help prints as `<name>`, or as `[name]` when it is `optional` (the verb
+ *  also acts without it), and the line its help prints for it. */
+export interface Positional {
+  readonly name: string;
+  readonly description: string;
+  readonly optional?: true;
+}
+
+/** One verb, declared once: its purpose in a line, the positional it acts on
+ *  (`null` for none), and the flags it takes. Its help is printed from this,
+ *  and its arguments are read against it. */
 export interface Verb {
-  readonly summary: string;
-  readonly positional: string | null;
+  readonly purpose: string;
+  readonly positional: Positional | null;
   readonly flags: Flags;
 }
 
 /** The verbs of a capability, by verb. */
-export type VerbFlags<V extends string = string> = {
-  readonly [verb in V]: Verb;
+export type VerbFlags<V extends string = string, T extends Verb = Verb> = {
+  readonly [verb in V]: T;
 };
+
+/** How a verb's positional is spelled in its help and its refusals: `<name>`,
+ *  or `[name]` when optional. */
+export const spelled = (positional: Positional): string =>
+  positional.optional === true
+    ? `[${positional.name}]`
+    : `<${positional.name}>`;
 
 /** An argv tail: its positionals, and each flag's values in the order given;
  *  a switch holds `''` each time it is given. */
@@ -161,7 +195,9 @@ export function refused(
     `${capability} ${verb}: it does not take ${listed(not, 'or')}.`,
     ` It takes ${listed(
       [
-        declared.positional ?? 'no positional',
+        declared.positional === null
+          ? 'no positional'
+          : spelled(declared.positional),
         ...(every.length === 0 ? ['no flags'] : every),
       ],
       'and',

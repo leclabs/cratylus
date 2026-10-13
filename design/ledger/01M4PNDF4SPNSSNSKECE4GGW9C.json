@@ -1,0 +1,10 @@
+{
+  "id": "01M4PNDF4SPNSSNSKECE4GGW9C",
+  "at": "2026-10-11T23:40:21.529Z",
+  "kind": "dispatched",
+  "transition": "toolu_01Em89FPDNGWZUX13bKyr7Kq/ArchitectTextR3/dispatched",
+  "cut": "meaning-roles",
+  "role": "builder",
+  "run": "toolu_01Em89FPDNGWZUX13bKyr7Kq/ArchitectTextR3",
+  "workPackage": "architect-text"
+}

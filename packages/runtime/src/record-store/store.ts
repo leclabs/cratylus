@@ -19,9 +19,9 @@
 // records of the checkout the store was built from and of every worktree holding a
 // `plan/*` branch, which is sound because records are immutable files named by
 // ULID — a record in two checkouts is one record, and a union never conflicts. The
-// store only provides the line: which writes belong on it is the reading's
-// (`capabilities/plan/reading.ts`). A write lands where `persist` is told, by
-// default in the checkout the store was built from. The store commits nothing.
+// store only provides the line; which writes belong on it is its caller's. A write
+// lands where `persist` is told, by default in the checkout the store was built
+// from. The store commits nothing.
 //
 // Records are machine-written bytes: `RECORDS_ROOT` is in biome's `files.ignore`, so
 // no formatter ever owns them.

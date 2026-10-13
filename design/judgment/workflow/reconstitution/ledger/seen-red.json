@@ -1,0 +1,25 @@
+{
+  "cut": "reconstitution",
+  "command": "pnpm --filter cratylus exec vitest run --config ../../design/judgment/workflow/reconstitution/ledger/vitest.config.ts",
+  "result": "4 tests executed, 4 failed; no import or fixture errors",
+  "checks": [
+    {
+      "example": "held-out workflow/1",
+      "check": "structural.test.ts: held-out workflow/1 — concurrent transitions each append one exclusive immutable entry",
+      "seenRed": true,
+      "reason": "Missing contract operation workPackage open: unknown verb 'open'. Concurrent append assertions are not yet reached."
+    },
+    {
+      "example": "held-out workflow/2",
+      "check": "structural.test.ts: held-out workflow/2 — completion warning reads only the named cut",
+      "seenRed": true,
+      "reason": "Missing contract operation workPackage open: unknown verb 'open'. Real post-commit assertions are not yet reached."
+    },
+    {
+      "example": "held-out workflow/5",
+      "check": "structural.test.ts: held-out workflow/5 — assayer disagreement stays disputed in arrival order %s then %s (both orders)",
+      "seenRed": true,
+      "reason": "Missing contract operation workPackage open: unknown verb 'open'. Both arrival-order variants fail there."
+    }
+  ]
+}

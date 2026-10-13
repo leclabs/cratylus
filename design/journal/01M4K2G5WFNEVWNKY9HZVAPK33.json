@@ -1,0 +1,11 @@
+{
+  "id": "01M4K2G5WFNEVWNKY9HZVAPK33",
+  "at": "2026-10-10T14:12:04.111Z",
+  "kind": "retire",
+  "context": "corpus",
+  "name": "stance guard",
+  "reason": "0050: a guard is built only for a firm value that neither permission nor a capability can hold, once observed to drift; the agents model's enforcement level covers the concept.",
+  "supersedes": [
+    "01M4JDR48E5K50K4Z9B7VWF5YC"
+  ]
+}

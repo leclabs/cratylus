@@ -2,7 +2,7 @@
 
 ## The First Principle:
 
-[`Cratylism`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts)
+[`Cratylism`](./packages/canon/src/genus/prime-principle.ts)
 
 Its scope is the corpus's core agent dimension names and values: the cold-decode oracle decides signs only
 for them, the terminology it was built to discover. Every other term is the industry's own, used as the
@@ -12,7 +12,7 @@ industry understands it, and nothing cratylus ships holds a consumer's own surfa
 
 The apex triad that must stay mutually consistent:
 
-- [`CRATYLISM`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
+- [`CRATYLISM`](./packages/canon/src/genus/prime-principle.ts) — The First Principle (**LOCKED**)
 - [`VISION`](./VISION.md) — **why** the canon exists
 - [`MODEL`](./MODEL.md) — **what** a canonical primitive is
 

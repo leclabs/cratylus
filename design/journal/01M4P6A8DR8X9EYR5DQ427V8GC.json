@@ -1,0 +1,15 @@
+{
+  "id": "01M4P6A8DR8X9EYR5DQ427V8GC",
+  "at": "2026-10-11T19:16:27.704Z",
+  "kind": "decide",
+  "decisionId": "0116",
+  "context": "workflow",
+  "title": "Cut 7: meaning roles, on feature/meaning-roles",
+  "situation": "0028 listed the meaning roles for realization; since then the catalog re-cut and the reconstitution cut realized the architect and illustrator as agents, decision rights and the operator in their profiles, illustration in practice, and 0086 retired the separate meaning-holder. Two things remain: the architect's replies, whose values 0106 moved here because no guard can hold a reply shown as it is written, and the freeze of concepts, which the design states and no tooling enforces.",
+  "decision": "One cut on feature branch feature/meaning-roles, across workflow and agents, both held by the architect. (1) The architect's own text holds what its replies must: bottom-line-up-front ordering (0078, 0100, 0117), no menu in place of a recommendation, no hand-back of a decision it owns, and an owned decision recorded before it is reported; held by text and checked by the examples moved here, never by a guard that judges replies (0106); the parked reply guards are not brought back. (2) Freeze of concepts: while a cut is built, the journal refuses a supersession or retirement of a concept that cut realizes from anyone but the architect, checked before the entry is appended. The context map's contracts become a cut of their own after this one (0118).",
+  "consequences": "The examples in the cut-7 files carry over; the illustrator revises them for 0117 and writes the freeze examples cold. Held-out agents 4 was burned and is visible; a cold held-out share is written for this cut.",
+  "status": "accepted",
+  "supersedes": "0028",
+  "supersedesEntry": "01M4J70D6X78SY4MEND0G349RT",
+  "decisionKind": "realization"
+}

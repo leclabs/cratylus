@@ -1,0 +1,6 @@
+---
+'@cratylus/runtime': minor
+'cratylus': minor
+---
+
+The concept journal explains itself (decision 0037): `cratylus concepts --explain` prints, as one JSON object, its name (`concept journal`), its purpose, when to reach for it and its verbs in order, and `cratylus concepts <verb> --explain` prints one verb: the concept of cratylus's own design it acts on, its purpose, when to reach for it, whether it `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on. The explanation, `--help` and the reading of a call share one declaration per verb, so `cratylus concepts --help` and `cratylus concepts <verb> --help` now also say when to reach for the capability and each verb, the concept a verb acts on and its effect, and describe its positional. The verbs' purposes and parameter descriptions are reworded in the journal's own terms; `concepts context` names its positional `<context>` and `concepts accept` `<id>`. What each verb appends, prints and refuses is unchanged. In `@cratylus/runtime`, a verb declares its `purpose` (was `summary`) and a positional `{ name, description }` (was a `<name>` string), a flag may declare `required`, `values` and `repeats`, and `VerbFlags` takes the verb type it holds.

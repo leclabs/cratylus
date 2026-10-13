@@ -1,0 +1,13 @@
+{
+  "id": "01M4JDR43B82JMX1R72GFV30D9",
+  "at": "2026-10-10T08:09:24.331Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "agent launch",
+  "wording": "a session can be started as any agent the corpus delivers, with the identity it has when dispatched, while its reach is granted by whoever starts it: the operator for a main session, the dispatcher within the ceiling its definition declares for a subagent; it is reached through the harness's own way of starting a session, or cratylus's extension to it, so one definition serves both and nothing outside the harness wraps it.",
+  "builtFrom": [
+    "capability fidelity"
+  ],
+  "reason": "The operator starts sessions as agents such as the architect, mav or kino; a launcher outside the harness is a second definition that drifts, and an agent's text must read the same however it was started.",
+  "supersedes": []
+}

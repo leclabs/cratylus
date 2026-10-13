@@ -1,13 +1,24 @@
 // Shared deploy-test scaffolding: build a render tree in a temp dir.
 
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Practice } from '@cratylus/schema';
+import { type Practice, kebabToCamel } from '@cratylus/schema';
+import { afterAll } from 'vitest';
 import type { InstallPrompts } from '../../src/cli/commands/install-prompts.js';
+import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+
+// Evaluated per test file (isolate on): the hook lands on each importing file's
+// root suite and removes every dir that file's `tmp` calls made.
+const scratch: string[] = [];
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
 
 export function tmp(prefix: string): string {
-  return mkdtempSync(join(tmpdir(), prefix));
+  const d = mkdtempSync(join(tmpdir(), prefix));
+  scratch.push(d);
+  return d;
 }
 
 /** The one practice a fixture corpus declares: every agent it has, preselected. A
@@ -24,14 +35,39 @@ export function fixturePractices(agents: readonly string[]): Practice[] {
   ];
 }
 
+/** The source of a fixture agent module `<name>.ts` over {@link FIXTURE_MANIFEST}:
+ *  no mark, an empty key, every dimension explicitly empty but the required
+ *  guardrails, and the identity facts `extra` names (`routing`, `dispatches`, …). */
+export function fixtureAgentSource(
+  name: string,
+  extra: Record<string, unknown> = {},
+): string {
+  const agent = {
+    name,
+    description: `fixture agent ${name}`,
+    mark: null,
+    key: null,
+    ...Object.fromEntries(
+      Object.keys(FIXTURE_MANIFEST).map((k) => [
+        kebabToCamel(k),
+        k === 'guardrails'
+          ? [{ value: 'fixture-guardrail', level: 'fixed' }]
+          : [],
+      ]),
+    ),
+    ...extra,
+  };
+  return `export const ${kebabToCamel(name)} = ${JSON.stringify(agent, null, 2)};\n`;
+}
+
 /** The prompts of a guided install, answering as an operator who accepts every
  *  default; `over` replaces the answers a case is about. */
 export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
   return {
     harness: async (found) => found[0],
     practices: async (_offered, initial) => [...initial],
-    linkCommands: async () => false,
     routes: async () => ({}),
+    agentStatus: async () => true,
     confirm: async () => true,
     ...over,
   };
@@ -63,33 +99,4 @@ export function buildRenderTree(root: string): {
   mkdirSync(memory, { recursive: true });
   writeFileSync(join(memory, 'SKILL.md'), '# memory\n', 'utf-8');
   return { agentsDir, skillsDir };
-}
-
-/** A hooks render tree: `<root>/settings.json` (a `{hooks}` fragment with a
- *  Stop + SubagentStop command) + `<root>/hooks/stance-guardrail/<assets>`. */
-export function buildHooksTree(root: string): { hooksDir: string } {
-  const cmd = 'sh "$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh"';
-  const settings = {
-    hooks: {
-      Stop: [{ hooks: [{ type: 'command', command: cmd, timeout: 60 }] }],
-      SubagentStop: [
-        { hooks: [{ type: 'command', command: cmd, timeout: 60 }] },
-      ],
-    },
-  };
-  writeFileSync(
-    join(root, 'settings.json'),
-    `${JSON.stringify(settings, null, 2)}\n`,
-    'utf-8',
-  );
-  const hookDir = join(root, 'hooks', 'stance-guardrail');
-  mkdirSync(hookDir, { recursive: true });
-  for (const f of [
-    'stance-guardrail.sh',
-    'stance-judge.sh',
-    'stance-judge-prompt.md',
-  ]) {
-    writeFileSync(join(hookDir, f), `# ${f}\n`, 'utf-8');
-  }
-  return { hooksDir: root };
 }

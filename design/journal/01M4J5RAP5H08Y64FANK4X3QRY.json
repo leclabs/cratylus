@@ -1,0 +1,14 @@
+{
+  "id": "01M4J5RAP5H08Y64FANK4X3QRY",
+  "at": "2026-10-10T05:49:42.469Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "contract",
+  "wording": "examples a consuming context writes of what it needs from a context it depends on, run in both, so one context's change cannot silently break another's meaning.",
+  "builtFrom": [
+    "example",
+    "bounded context"
+  ],
+  "reason": "decided in 0003: Bounded contexts",
+  "supersedes": []
+}

@@ -1,0 +1,17 @@
+{
+  "id": "01M4KDQ3EQXE3H43FMZWZB8A4R",
+  "at": "2026-10-10T17:28:05.335Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "profile",
+  "wording": "an agent's complete set of values, one for every factor, independent of any harness; a role states a default profile, a persona's profile is its role's with its residue applied, and a harness receives the profile through its binding as a declaration.",
+  "builtFrom": [
+    "agent",
+    "factor",
+    "role",
+    "persona",
+    "binding"
+  ],
+  "reason": "The complete value set had no name; the canon called it a vector, which cold-decodes as an embedding (1.64 of 4). Six candidates tied within noise (spec, profile, configuration, manifest, specification, definition); profile is kept because the others name a document or a harness's settings, which in this design are the declaration a binding produces.",
+  "supersedes": []
+}

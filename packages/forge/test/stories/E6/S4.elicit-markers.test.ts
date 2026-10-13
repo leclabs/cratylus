@@ -46,12 +46,11 @@ const inheritAll = (): Record<FixtureDimension, DimensionPlan> =>
   ) as Record<FixtureDimension, DimensionPlan>;
 
 /** The stated dimensions, evidence-quoted; the silent three as elicitations.
- *  `archetype` is a plain identity field now, not an `Dimension` fragment —
- *  the frame would refuse it as an unknown dimension key — so the raw NL
- *  (replacement no-loss, REC ≽) is instead carried verbatim on `objective`
+ *  The raw NL (replacement no-loss, REC ≽) is carried verbatim on `objective`
  *  (an `open` scalar dimension). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
+  description: 'Reviews code and reports findings.',
   dimensions: {
     ...inheritAll(),
     objective: {
@@ -162,6 +161,7 @@ story(
     // unfounded quote is an invented value) and leaves the source intact.
     const invented: ElevationSpec = {
       name: 'reviewer',
+      description: 'Reviews code and reports findings.',
       dimensions: {
         ...SPEC.dimensions,
         autonomy: {
@@ -185,8 +185,8 @@ story(
       }),
     ).toThrow(ExemplifyRefusal);
     expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
-    // The accepted vector holds NO concrete enum value at any silent dimension:
-    // the only admissible forms are null-with-marker or the sidecar list.
+    // The accepted vector holds NO concrete value at any silent dimension: the
+    // only admissible forms are the empty list with its marker, or the sidecar list.
     elevateAgent({
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
@@ -197,8 +197,11 @@ story(
     expect(existsSync(vectorFile)).toBe(true);
     const src = readFileSync(vectorFile, 'utf8');
     for (const dimension of SILENT_DIMENSIONS) {
-      expect(src).not.toMatch(
-        new RegExp(`dimension:\\s*'${dimension}'[\\s\\S]{0,80}slug:`),
+      // The three silent dimensions are single words, so each is its own field.
+      expect(src).toMatch(
+        new RegExp(
+          `\\n  ${dimension}: \\[\\], // ELICIT: reviewer\\.elicit\\.json#${dimension}\\n`,
+        ),
       );
     }
   },

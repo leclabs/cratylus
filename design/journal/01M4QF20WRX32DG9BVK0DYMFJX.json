@@ -1,0 +1,14 @@
+{
+  "id": "01M4QF20WRX32DG9BVK0DYMFJX",
+  "at": "2026-10-12T07:08:29.464Z",
+  "kind": "decide",
+  "decisionId": "0138",
+  "context": "workflow",
+  "title": "Cut: contracts, on feature/contracts",
+  "situation": "The context map is stated only as each context's free-text relation, and no contract exists anywhere but in prose (delivery's relation names one): which context depends on which is not recorded, no consuming context has written what it needs, and the whole check cannot run what does not exist. 0118 orders this cut after cut 7; cut 7 is blocked on other-family model quota, and this cut's design does not depend on it.",
+  "decision": "One cut on feature branch feature/contracts, in the workflow context. (1) The context map is recorded, not described: each dependency between two contexts is an entry of its own, naming the consuming and the providing context and what is consumed, kept and superseded like a concept, and the map, which depends on which and the contracts between them, is computed and read back with the overview. (2) A contract is a set of examples the consuming context writes about what it needs from the providing one, held with the consumer's examples and run in both contexts' whole checks, so a change in the provider that breaks a consumer fails the provider's own check. (3) A dependency with no contract is reported, never silently allowed. (4) cratylus's own map is recorded: workflow, delivery, agents and corpus as their relations now state, with the workflow-to-delivery contract written as examples.",
+  "consequences": "Illustrated and built once the other-family models have quota again; the architect holds workflow, which this cut changes, and approves its examples.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

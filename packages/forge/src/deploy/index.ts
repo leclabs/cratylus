@@ -61,24 +61,32 @@ export {
   placeHooksLocal,
 } from './hooks.js';
 
-// The host runtime config — the only deploy target that lands OUTSIDE the harness
-// home, because the runtime is harness-independent. ARCHITECTURE property 4's
-// producer: everything corpus-specific reaches the runtime as configuration the
-// projection emitted.
+// The capability configuration install writes into the owned root, and the earlier
+// layout's host config beside the harness home, which an upgrade or uninstall takes
+// back while it is what was written.
 export {
-  type EmitRuntimeConfigOpts,
-  type EmitRuntimeConfigResult,
-  type EmittedEvents,
-  type EmittedHarness,
-  type EmittedRuntimeConfig,
-  emitRuntimeConfig,
-  RUNTIME_CONFIG_ENV,
-  RUNTIME_CONFIG_NAME,
-  runtimeConfigDocument,
+  capabilityConfiguration,
   runtimeConfigTarget,
   serializeRuntimeConfig,
   withoutRuntimeParts,
 } from './runtime-config.js';
+
+// The owned root: everything install places for a user on a harness, and the
+// references the harness's own surfaces hold into it.
+export {
+  INSTALLATION_RECORD,
+  type InstallationRecord,
+  type OwnedReference,
+  type PlaceRootResult,
+  type RenderedFile,
+  linkOwnedRoot,
+  ownedRootIn,
+  placeOwnedRoot,
+  readInstallationRecord,
+  readRenderTree,
+  rootFiles,
+  unlinkOwnedRoot,
+} from './owned-root.js';
 
 export {
   applyPrune,
@@ -94,16 +102,13 @@ export {
   type KindRecord,
   type LineHunk,
   lineHunks,
-  markMigratedConfig,
   MANIFEST_REL,
   MANIFEST_VERSION,
   nextDigests,
   nextKindRecord,
-  noteHostEdit,
-  noteHostRoutes,
+  mergeHostEdit,
   readManifest,
   recordedLines,
-  retargetHostEdit,
   type RuntimeConfigRecord,
   staleFiles,
   unattributable,
@@ -141,7 +146,7 @@ export {
   scaffoldProject,
 } from './init.js';
 
-// The host's `modelRoles` mapping: entries a held role needs, added by text
+// The host's `modelRoles` mapping: the entries agents' model roles need, added by text
 // insertion so every other byte of the host-owned config survives.
 export {
   type AddModelRolesOpts,
@@ -151,47 +156,25 @@ export {
   modelRoleLine,
 } from './model-roles.js';
 
-// Scalar settings the host must hold, set where they are nested in its YAML config.
+// The persona commands earlier installs linked into the user's bin dir, removed as
+// recorded: install links none any more, and takes away what an earlier one placed.
 export {
-  type EnsureHostSettingsResult,
-  type HostSettingChange,
-  type HostSettings,
-  ensureHostSettings,
-} from './host-settings.js';
-
-// The persona commands: a command named after each installed persona, linked into the
-// user's bin dir to the harness's launcher — never over anything this install did not
-// place, and removed only as recorded.
-export {
-  describePersonaCommands,
-  describePersonaRemoval,
-  PERSONA_BIN_REL,
-  type PersonaCommandsOpts,
-  type PersonaCommandsReport,
-  type PersonaLauncher,
-  type PersonaLink,
-  type PersonaLinkState,
   type PersonaRemoval,
+  type PersonaRemovalOpts,
   type PersonaRemovalReport,
   type PersonaRemovalState,
-  personaLauncherOf,
-  placePersonaCommands,
-  planPersonaCommands,
   removePersonaCommands,
 } from './persona-commands.js';
 
-// The host's status line, where the persona badge becomes visible: Claude Code's one
-// `settings.statusLine` command (set where the host has none; where it has one, install
-// wraps that command so the badge prints before its output; never replaced) and omp's
-// `statusLine` layout (the `status` segment listed, under the `custom` preset that
+// The host's status line, where an agent's name and mark become visible: Claude Code's
+// one `settings.statusLine` command (set where the host has none; where it has one,
+// install wraps that command so the badge prints before its output; never replaced) and
+// omp's `statusLine` layout (the `status` segment listed, under the `custom` preset that
 // reads a list at all).
 export {
-  type BadgeStatusLineResult,
-  type BadgeStatusLineState,
-  type EnsureBadgeStatusLineOpts,
   type EnsureStatusSegmentOpts,
-  ensureBadgeStatusLine,
   ensureStatusSegment,
+  hidesExtensionStatus,
   restoreHostStatusLine,
   type StatusLineRestore,
   type StatusSegmentResult,

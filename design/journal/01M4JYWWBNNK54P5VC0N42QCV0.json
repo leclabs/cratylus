@@ -1,0 +1,13 @@
+{
+  "id": "01M4JYWWBNNK54P5VC0N42QCV0",
+  "at": "2026-10-10T13:09:06.037Z",
+  "kind": "decide",
+  "decisionId": "0049",
+  "context": "agents",
+  "title": "One-round swarm for the re-cut",
+  "situation": "The re-cut (0044) touches every factor, value, role and persona: wide, but each piece independent once the catalog is fixed. The risk is over-engineering, especially re-deciding names per piece and looping on them. Signs follow the signify principle: the best-fit signifier is the concept's address in a model's semantic space, the one that carries the most load and invokes the intended prior most efficiently.",
+  "decision": "One master design, then one optimistic round. (1) The architect writes one master design: every factor, its values, each value's meaning, and each role's and persona's vector. (2) Every signifier is chosen once, centrally, in one parallel batch: candidates per concept, cold-decoded once each, the best kept; no worker chooses a name. (3) A lead fans the cells out level by level: the catalog shape first, then every factor's cells in parallel, then roles and personas in parallel, then projection; each worker transcribes the master design, it does not design. (4) Checks are structural and cheap (every value has a cell, every role a full vector, projection renders, signs match the master). (5) One judgment, at most one fix round; anything else returns to the architect as a meaning question.",
+  "consequences": "Speed comes from deciding once and fanning out wide; accuracy from the master design and the one central signifier batch. No iterative naming loops, no per-cell oracle runs.",
+  "status": "open",
+  "supersedes": null
+}

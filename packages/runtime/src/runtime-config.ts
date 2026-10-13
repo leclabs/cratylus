@@ -1,141 +1,121 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The HOST RUNTIME CONFIG — what the projection told this host about the corpus.
+// The INSTALLATION and its RUNTIME CONFIG — what the projection told this host.
 //
-// It carries the corpus's parts the capabilities act on — the lifecycle-event
-// vocabulary and each capability's configuration — and each harness's stanza of
-// native event names. Which capabilities exist is not among them: the four ship
-// inside the runtime and are known when it is built.
+// Everything cratylus places for a user on a harness lives under one root it owns,
+// `~/.cratylus/<harness>/` (the owned root): the corpus's agents and skills, the
+// harness's adapters, the version of cratylus that projected them (`package.json`'s
+// `version`) and, where the corpus declares any, each capability's configuration
+// (`runtime.json`). The runtime reads both from there.
+//
+// WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
+// call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
+// reads the installation that harness runs. Called by the operator with none named,
+// it is the one installation under the home, when there is exactly one.
 //
 // WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
-// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd (a
-// deployed skill shim under the harness config home), so there is no project to
-// resolve from. The declaration still lives in config-is-code at the consumer's
-// site; DEPLOY realizes it into a host config, and the runtime reads that. Same
-// direction of authority as every other artifact here: declare → project → consume.
+// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd, so
+// there is no project to resolve from. The declaration still lives in
+// config-is-code at the consumer's site; INSTALL realizes it into the owned root,
+// and the runtime reads that. Same direction of authority as every other artifact
+// here: declare → project → consume.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
 
-/** Where the host config lives, unless `$AGENT_RUNTIME_CONFIG` overrides it. */
+/** The variable a harness's adapter names its installation's root in. Derived from
+ *  the bin, never a second literal. */
+export const INSTALLATION_ENV = `${CLI_BIN.toUpperCase()}_INSTALLATION`;
+
+/** The directory under the home that holds every installation, one per harness:
+ *  `.<bin>`, derived from the bin. */
+export const INSTALLATIONS_DIR = `.${CLI_BIN}`;
+
+/** The runtime config's file in an installation's root. */
+export const RUNTIME_CONFIG_FILE = 'runtime.json';
+
+/** Where the config is read from instead, when set. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
-// Derived, never a second literal. The host config dotfile is named AFTER the bin,
-// so an independent copy is a rename waiting to orphan every host's existing file —
-// the config would move while the file on disk did not. One home, in `bin-name.ts`.
+
+// Derived, never a second literal. The EARLIER layout's host config, at the home
+// itself, named after the bin: nothing reads it now, and an upgrade removes it.
 export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 
-/**
- * The corpus's lifecycle-event vocabulary, as this host received it.
- *
- * WHY IT IS HERE AND NOT IN `events.ts`. `events.ts` used to carry 28 literals —
- * canon's vocabulary, hand-copied into the package ARCHITECTURE says "knows no
- * harness and no corpus", agreeing with schema's generated copy by coincidence.
- * Property 4 names the only channel a corpus fact may travel by: "everything
- * corpus-specific reaches it as configuration the projection emitted". This is that
- * configuration, and forge's `deploy/runtime-config.ts` is its producer.
- *
- * It carries only what is the CORPUS's: `vocabulary`, every name the corpus
- * signifies. Validation runs against it, so a real-but-unmapped event is refused as
- * UNREALIZABLE ON THIS HARNESS rather than as an unknown word — the difference
- * between a shortfall and a typo. Which of those names a harness can fire, and under
- * what native name, is that harness's alone: see {@link RuntimeHarness}.
- */
-export interface RuntimeEvents {
-  /** Every event name the corpus declares, in its canonical order. */
-  readonly vocabulary: readonly string[];
-}
-
-/**
- * One harness's stanza — `harnesses.<harness>` in the host config.
- *
- * ONE PER HARNESS, because one host runs several harnesses off the same runtime and
- * each names the corpus's events its own way. A single flat map let the last deploy
- * overwrite the first harness's names with the second's; a stanza per harness lets a
- * deploy write its own and leave every other one as it found it.
- */
-export interface RuntimeHarness {
-  /** Canonical name → this harness's native name, for the events it can fire. */
-  readonly native: Readonly<Record<string, string>>;
-  /**
-   * Canonical act → the native ⟨event, matcher⟩ it realizes as. An act is a native
-   * event narrowed to the tool that performs it, so it has no row in `native` (which
-   * reverses, and several acts share one native event). Absent on a stanza an
-   * earlier deploy wrote, which holds names only. Read through {@link nativeActsOf}.
-   */
-  readonly acts?: Readonly<Record<string, RuntimeActBinding>>;
-}
-
-/** The native event an act realizes as and the selector that narrows it to the act. */
-export interface RuntimeActBinding {
-  readonly event: string;
-  readonly matcher?: string;
-}
-
-/** The host's config: the corpus's parts and each harness's native names. */
+/** The host's config: the corpus's capability configuration. */
 export interface RuntimeConfig {
   /**
-   * The corpus's lifecycle vocabulary. Absent on a config written before deploy
-   * emitted one; a capability that needs it must then REFUSE and say so, never fall
-   * back to a set of its own — a bundled fallback is how the second copy got there
-   * in the first place.
-   */
-  readonly events?: RuntimeEvents;
-  /**
-   * Each harness's native event names, keyed by harness name. Read through
-   * {@link nativeEventsOf}, which refuses for a harness whose stanza holds no names.
-   */
-  readonly harnesses?: Readonly<Record<string, RuntimeHarness>>;
-  /**
    * Each capability's configuration, keyed by capability, as the corpus's skills
-   * declared it and deploy emitted it. Corpus meaning a capability acts on (states,
+   * declared it and install emitted it. Corpus meaning a capability acts on (states,
    * roles, names) arrives here and is spelled nowhere in this package. Opaque to
-   * this reader: the capability that consumes its entry validates it. The same rule
-   * as `events` holds — a capability whose entry is absent must REFUSE and say so,
-   * never fall back to a set of its own.
+   * this reader: the capability that consumes its entry validates it. A capability
+   * whose entry is absent must REFUSE and say so, never fall back to a set of its
+   * own — a bundled fallback is how a second copy of corpus meaning gets in.
    */
   readonly configuration?: Readonly<Record<string, unknown>>;
 }
 
-/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus.json`. */
-export function runtimeConfigPath(): string {
+/** Why no installation could be read: none is named and the home holds none, or
+ *  holds several. */
+export class NoInstallationError extends Error {}
+
+/**
+ * The installation's root: the one `$CRATYLUS_INSTALLATION` names, else the one
+ * installation under the home. Refused, naming what to do, where the home holds none
+ * or several and none is named.
+ */
+export function installationRoot(): string {
+  const named = process.env[INSTALLATION_ENV];
+  if (named !== undefined && named !== '') return named;
+  const parent = join(homedir(), INSTALLATIONS_DIR);
+  const found = existsSync(parent)
+    ? readdirSync(parent, { withFileTypes: true })
+        .filter(
+          (e) =>
+            e.isDirectory() && existsSync(join(parent, e.name, 'package.json')),
+        )
+        .map((e) => join(parent, e.name))
+        .sort()
+    : [];
+  if (found.length === 1) return found[0] as string;
+  throw new NoInstallationError(
+    found.length === 0
+      ? `no installation under ${parent}; run ${CLI_BIN} install`
+      : `${found.length} installations under ${parent} (${found.join(', ')}); name one in $${INSTALLATION_ENV}`,
+  );
+}
+
+/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ the installation's `runtime.json`, or
+ *  `null` where there is no installation to read it from. */
+export function runtimeConfigPath(): string | null {
   const override = process.env[RUNTIME_CONFIG_ENV];
-  return override && override !== ''
-    ? override
-    : join(homedir(), RUNTIME_CONFIG_NAME);
+  if (override !== undefined && override !== '') return override;
+  try {
+    return join(installationRoot(), RUNTIME_CONFIG_FILE);
+  } catch (e) {
+    if (e instanceof NoInstallationError) return null;
+    throw e;
+  }
 }
 
 /**
- * Read the host config, or `null` when absent/unreadable. Absence is NOT an error
+ * Read the config, or `null` when absent/unreadable. Absence is NOT an error
  * here: a capability that needs a part of the config refuses on its own terms,
  * naming the command that writes it.
  *
- * A config carrying ONLY a vocabulary, ONLY harness stanzas, or ONLY capability
- * configuration, is a real config; one carrying none of the three says nothing.
+ * A config carrying no capability configuration says nothing.
  */
 export function loadRuntimeConfig(
   path = runtimeConfigPath(),
 ): RuntimeConfig | null {
-  if (!existsSync(path)) return null;
+  if (path === null || !existsSync(path)) return null;
   try {
     const raw = JSON.parse(
       readFileSync(path, 'utf-8'),
     ) as Partial<RuntimeConfig>;
-    const events = parseEvents(raw.events);
-    const harnesses = parseHarnesses(raw.harnesses);
     const configuration = parseConfiguration(raw.configuration);
-    if (
-      events === undefined &&
-      harnesses === undefined &&
-      configuration === undefined
-    )
-      return null;
-    return {
-      ...(events !== undefined ? { events } : {}),
-      ...(harnesses !== undefined ? { harnesses } : {}),
-      ...(configuration !== undefined ? { configuration } : {}),
-    };
+    return configuration === undefined ? null : { configuration };
   } catch {
     // A malformed config must not wedge the runtime; it reads as none.
     return null;
@@ -143,129 +123,10 @@ export function loadRuntimeConfig(
 }
 
 /**
- * One harness's native event names, or a LOUD refusal naming the command that
- * writes them.
- *
- * The only way a capability reads native names, and it asks for ONE harness by
- * name: the names are that harness's alone, so there is no answer to "the native
- * names" without saying whose. A harness with no stanza, or a stanza holding no
- * names, HAS NONE and is refused rather than handed an empty map — a map with
- * nothing in it attaches nothing while reporting success. `install` is named first
- * because it works on a bare host with no project; `deploy` is the same write from
- * inside one.
- */
-export function nativeEventsOf(
-  config: RuntimeConfig | null,
-  harness: string,
-): Readonly<Record<string, string>> {
-  const native = config?.harnesses?.[harness]?.native;
-  if (native === undefined || Object.keys(native).length === 0) {
-    throw new Error(
-      `this host has no native event names for harness '${harness}' — the host ` +
-        `runtime config ($${RUNTIME_CONFIG_ENV}, else ~/${RUNTIME_CONFIG_NAME}) holds none ` +
-        `under \`harnesses.${harness}.native\`. Run \`${CLI_BIN} install --harness ${harness}\` ` +
-        `(zero-config, works on a bare host) or, from a project, \`${CLI_BIN} deploy ` +
-        `--harness ${harness}\`; either writes the ${harness} stanza and leaves every other harness's as it found it.`,
-    );
-  }
-  return native;
-}
-
-/**
- * One harness's ACT bindings — the native ⟨event, matcher⟩ each act the harness can
- * narrow realizes as — or an empty map when its stanza holds none.
- *
- * Empty is an answer here, not a refusal, and that is the difference from
- * {@link nativeEventsOf}: a stanza an earlier deploy wrote holds names only, and the
- * act events it cannot bind are then skipped as ever. A capability that is asked to
- * attach to such an act reports it unbound; it does not fail the names it does hold.
- */
-export function nativeActsOf(
-  config: RuntimeConfig | null,
-  harness: string,
-): Readonly<Record<string, RuntimeActBinding>> {
-  return config?.harnesses?.[harness]?.acts ?? {};
-}
-
-/**
- * Lift the `events` block, or `undefined` when it is absent or says nothing.
- *
- * An EMPTY vocabulary reads as absent on purpose. A present-but-empty block would
- * otherwise validate every event name to `false` while looking configured — the
- * difference between "this host was never told" and "this host was told nothing",
- * which are the same fact and must produce the same refusal.
- */
-function parseEvents(raw: unknown): RuntimeEvents | undefined {
-  if (raw === null || typeof raw !== 'object') return undefined;
-  const { vocabulary } = raw as { vocabulary?: unknown };
-  const words = Array.isArray(vocabulary)
-    ? vocabulary.filter((s): s is string => typeof s === 'string')
-    : [];
-  return words.length === 0 ? undefined : { vocabulary: words };
-}
-
-/**
- * Lift the `harnesses` block, or `undefined` when it holds no stanza.
- *
- * A stanza is `{ native: { <event>: <native name> }, acts?: { <event>: { event,
- * matcher? } } }`; an entry without a `native` object is no stanza at all. Non-string
- * names are dropped, as `events` drops non-string words, so a stanza may lift with an
- * empty map — the reader refuses that harness exactly as it does one never deployed.
- * `acts` is read the same way: an entry that is not a binding is dropped, and a
- * stanza without the block (an earlier deploy wrote names only) lifts with none.
- */
-function parseHarnesses(
-  raw: unknown,
-): Readonly<Record<string, RuntimeHarness>> | undefined {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
-    return undefined;
-  const harnesses: Record<string, RuntimeHarness> = {};
-  for (const [harness, stanza] of Object.entries(raw)) {
-    const { native, acts } = (stanza ?? {}) as {
-      native?: unknown;
-      acts?: unknown;
-    };
-    if (native === null || typeof native !== 'object' || Array.isArray(native))
-      continue;
-    const map: Record<string, string> = {};
-    for (const [event, nativeName] of Object.entries(native)) {
-      if (typeof nativeName === 'string') map[event] = nativeName;
-    }
-    const bindings = parseActs(acts);
-    harnesses[harness] = {
-      native: map,
-      ...(bindings === undefined ? {} : { acts: bindings }),
-    };
-  }
-  return Object.keys(harnesses).length === 0 ? undefined : harnesses;
-}
-
-/** Lift a stanza's `acts`, or `undefined` when it holds no binding. */
-function parseActs(
-  raw: unknown,
-): Readonly<Record<string, RuntimeActBinding>> | undefined {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
-    return undefined;
-  const acts: Record<string, RuntimeActBinding> = {};
-  for (const [act, binding] of Object.entries(raw)) {
-    const { event, matcher } = (binding ?? {}) as {
-      event?: unknown;
-      matcher?: unknown;
-    };
-    if (typeof event !== 'string') continue;
-    acts[act] = {
-      event,
-      ...(typeof matcher === 'string' ? { matcher } : {}),
-    };
-  }
-  return Object.keys(acts).length === 0 ? undefined : acts;
-}
-
-/**
  * Lift the `configuration` block, or `undefined` when it is absent, malformed or
- * empty — the same reading `events` gets, for the same reason: a block that is not
- * a capability-keyed object says nothing, and "never told" and "told nothing"
- * must produce the same refusal in the capability that needed it.
+ * empty: a block that is not a capability-keyed object says nothing, and "never
+ * told" and "told nothing" must produce the same refusal in the capability that
+ * needed it.
  */
 function parseConfiguration(
   raw: unknown,

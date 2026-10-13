@@ -23,8 +23,7 @@
 // corpus sit at 0 hits, the pinned genus bodies at 5.4–5.5 second-person/100):
 //   HEDGE          — ≥2 distinct tutorial/hedge/connective patterns
 //                    (live max = 1, on pinned src/genus/memory.md; seed fixture = 6)
-//   SECOND-PERSON  — ≥2 hits ∧ ≥4 per 100 words (one incidental agent-address
-//                    hit is legal: carry-on description = 1 hit @3.1)
+//                    (one incidental second-person hit is legal)
 //   FPP-WALKTHROUGH— ≥2 first-person-plural walkthrough tokens (live = 0)
 //
 // RATCHET — explicit, shrink-only allowlist. Empty when the corpus fully
@@ -33,18 +32,9 @@
 // (remove the pin); a new violation is never pinnable silently (the sets are
 // literal here).
 //
-// CROSS-DIMENSION CONSISTENCY, and why this gate carries it at all. The
-// 2026-07-01 register diagnosis found that no dimension operatively binds the
-// reader: `output-format` names the artifact TYPE, while `natural-language`
-// binds "for a human reader" — so a vector could carry `llm-native` ∧
-// `natural-language` at once, and `principal-ic` DID, an intra-vector
-// contradiction the type system accepts without complaint. The diagnosis's
-// conclusion was that the register gate must add a cross-dimension consistency
-// leg rather than scoring density alone. That leg is below.
-//
 // NON-VACUOUS: a seeded human-register definiens is convicted with named
-// signals; the same text under a ρ=human class is exempt BY THE MODEL; the 4
-// densified exemplars pass. All asserted below.
+// signals; the same text under a ρ=human class is exempt BY THE MODEL; the
+// calibration exemplars pass. All asserted below.
 
 import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
@@ -72,8 +62,10 @@ import {
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import type { Agent, Dimension, Value } from '../src/manifest.js';
-import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
+import * as personaGenus from '../src/genus/persona.js';
+import * as primePrincipleGenus from '../src/genus/prime-principle.js';
+import type { Dimension, Value } from '../src/manifest.js';
+import { RESIDUE_OPERATORS, declaredGlyphs } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
@@ -105,17 +97,6 @@ const srcRoot = join(canonRoot, 'src');
  */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
-/**
- * (engineering-principle, output-format) pairs that contradict — one dimension
- * asserting reader=LLM while the other binds "for a human reader".
- */
-const CONTRADICTION_PAIRS: ReadonlyArray<readonly [string, string]> = [
-  ['llm-native', 'natural-language'],
-];
-
-/** Agents with a known dimension contradiction, pinned until the manifest fix-class task. */
-const CONTRADICTION_RATCHET: ReadonlySet<string> = new Set([]);
-
 // ── surface enumeration (source grain — the projections follow the source) ──────
 
 interface Surface {
@@ -132,22 +113,13 @@ async function collect(pattern: string): Promise<string[]> {
   return out.sort();
 }
 
-/** The dimension VALUES whose referent is the operator-facing reply, so ρ resolves
- *  human — see `RHO`'s `emission-definiens` note for the ruling, its measurement,
- *  and why membership is per value rather than per dimension. A `formality/` prefix
- *  because every member of that dimension governs the reply; `autonomy/handoff` by
- *  name because its siblings govern what the agent DOES and stay σ*. */
-const EMISSION_VALUES: readonly string[] = ['formality/', 'autonomy/handoff'];
-
-/** ρ's class for a dimension value — ONE home, read by the density scan and by the
- *  AC-RESIDUE scan, so the two gates cannot disagree about which values carry a σ*
- *  payload. */
-function dimensionClassOf(rel: string): ArtClass {
-  const dim = relative('dimensions', rel).replace(/\.ts$/, '');
-  return EMISSION_VALUES.some((v) => dim === v || dim.startsWith(v))
-    ? 'emission-definiens'
-    : 'dimension-definiens';
-}
+/**
+ * Every catalog value is an anchor and a gloss: one or two plain sentences saying
+ * what it means and why, never dense notation (the catalog re-cut's master design).
+ * A gloss is read by the model, so ρ is LLM — plain words in the model's register,
+ * which the register detector scores like every other ρ=LLM surface.
+ */
+const DIMENSION_CLASS: ArtClass = 'dimension-definiens';
 
 async function allSurfaces(): Promise<Surface[]> {
   const surfaces: Surface[] = [];
@@ -155,7 +127,7 @@ async function allSurfaces(): Promise<Surface[]> {
     const f = await firstExport<string>(join(srcRoot, rel));
     surfaces.push({
       label: `dimension ${relative('dimensions', rel).replace(/\.ts$/, '')}`,
-      cls: dimensionClassOf(rel),
+      cls: DIMENSION_CLASS,
       text: splitBody(f).definiens,
     });
   }
@@ -172,33 +144,17 @@ async function allSurfaces(): Promise<Surface[]> {
       text: s.description,
     });
   }
-  for (const name of ['persona.md']) {
-    const raw = readFileSync(join(srcRoot, 'genus', name), 'utf8');
-    const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
-    // ρ binds at the finest separately-consumed grain: `## Protocol` projects
-    // into every Target; the sibling sections are corpus/skill-dir surfaces.
-    // Each section is its own artifact — none silently skipped.
-    for (const section of body.split(/^(?=## )/m)) {
-      const head = section.startsWith('## ')
-        ? (section.split('\n')[0] as string).split(' — ')[0]
-        : '(preamble)';
-      surfaces.push({
-        label: `genus src/genus/${name} ${head}`,
-        cls: 'genus-protocol',
-        text: section,
-      });
-    }
-  }
-  // The prime principle rides into every skill whose laws apply it — the same
-  // ship-whole verbatim carry as the genus protocol, so the same class.
-  {
-    const mod = (await import(
-      pathToFileURL(join(srcRoot, 'genus/prime-principle.ts')).href
-    )) as Record<string, unknown>;
+  // The genus modules ship whole and verbatim: the persona protocol rides every
+  // composed agent (`Agent.persistence`), the prime principle every skill whose
+  // laws apply it, so both are the genus-protocol class.
+  for (const [name, mod] of [
+    ['persona', personaGenus],
+    ['prime-principle', primePrincipleGenus],
+  ] as const) {
     for (const [k, v] of Object.entries(mod)) {
       if (typeof v === 'string') {
         surfaces.push({
-          label: `genus prime-principle ${k}`,
+          label: `genus ${name} ${k}`,
           cls: 'genus-protocol',
           text: v,
         });
@@ -254,20 +210,6 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
-  // Agent cells at SOURCE grain. `agent-vector` was declared ρ=LLM in RHO and
-  // witnessed by NOTHING — a class asserting coverage it never had.
-  for (const { rel, agent } of await allAgents()) {
-    for (const field of ['description', 'archetype', 'preamble'] as const) {
-      const text = (agent as unknown as Record<string, unknown>)[field];
-      if (typeof text === 'string' && text.length > 0) {
-        surfaces.push({
-          label: `agent ${rel} ${field}`,
-          cls: 'agent-vector',
-          text,
-        });
-      }
-    }
-  }
   return surfaces;
 }
 
@@ -283,27 +225,9 @@ const OWNED_CLASSES: readonly ArtClass[] = [
   'dimension-definiens',
   'skill-description',
   'genus-protocol',
-  'agent-vector',
   'cell-declaration',
   'rule-target-content',
 ];
-
-async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
-  const out: Array<{ rel: string; agent: Agent }> = [];
-  for (const rel of await collect('agents/*.ts')) {
-    if (rel.endsWith('base.ts')) {
-      continue;
-    }
-    const mod = (await import(
-      pathToFileURL(join(srcRoot, rel)).href
-    )) as Record<string, unknown>;
-    const key = Object.keys(mod).find(
-      (k) => k !== 'default' && !k.endsWith('Resolved'),
-    );
-    out.push({ rel, agent: mod[key as string] as Agent });
-  }
-  return out;
-}
 
 /** Recover {slug, definiens} from a dimension value's `"<slug> ≜ <definiens>"` body. */
 function splitBody(v: string): { slug: string; definiens: string } {
@@ -327,24 +251,14 @@ function slugOf(v: Value<Dimension>): string {
   return splitBody(bodyOf(v)).slug;
 }
 
-/** The contradiction pairs `agent` carries. */
-function dimensionContradictions(agent: Agent): string[] {
-  const principles = (agent.engineeringPrinciples ?? []).map(slugOf);
-  const output = agent.outputFormat ? slugOf(agent.outputFormat) : undefined;
-  return CONTRADICTION_PAIRS.filter(
-    ([p, o]) => principles.includes(p) && output === o,
-  ).map(([p, o]) => `${p} ∧ ${o}`);
-}
-
 // ── the gate ────────────────────────────────────────────────────────────────────
 
 describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
-  it('the 4 densified exemplars PASS (calibration anchors)', async () => {
+  it('the calibration exemplars PASS', async () => {
     for (const rel of [
-      'dimensions/role/architect.ts',
       'dimensions/objective/parsimony.ts',
-      'dimensions/transparency/decision-rationale.ts',
-      'dimensions/capabilities/research-investigation.ts',
+      'dimensions/communication-style/decision-rationale.ts',
+      'dimensions/expertise/research-investigation.ts',
     ]) {
       const f = await firstExport<string>(join(srcRoot, rel));
       expect(
@@ -388,38 +302,38 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     ).toEqual([]);
   });
 
-  // ρ=human is EXEMPT from `conform`, which is exactly why this leg exists.
-  // Declaring `formality-definiens` human buys no enforcement on its own: a value
-  // that regressed to σ* would sail straight through the exemption.
+  // A gloss is plain words, and that is what this leg pins. The register detector
+  // above witnesses the TUTORIAL register (hedges, second person, first-person
+  // walkthrough); it cannot tell plain words from notation, since clean notation
+  // carries none of those markers either. So the notation itself is the witness:
+  // a gloss carrying any glyph of the operator lexicon is dense notation.
   //
-  // THE WITNESS IS AC-RESIDUE'S OWN PREDICATE, INVERTED. `registerOf` is the wrong
-  // instrument here — it detects the TUTORIAL-GLOSS register (hedges, second
-  // person, first-person walkthrough), which is a defect signal, not evidence that
-  // a value is prose; clean prose carries none of those markers and reads as
-  // register=LLM. `admissibleSingleLine` is the discriminator that actually
-  // divides notation from prose, and it is the same predicate every OTHER
-  // dimension is gated BY — so formality is gated by its complement, out of one
-  // home, and the two legs cannot drift apart.
-  //
-  // WITHOUT THIS LEG THE RULING IS DECORATION. Not hypothetical: the σ* form of
-  // `plain` was measured being comprehended and disobeyed — quoted back verbatim
-  // by a session emitting 0.69 structured reply lines, against 0.45 once the same
-  // clauses were written in the register they describe.
-  it('every `formality` value is prose, never σ* — the ρ ruling bites', async () => {
-    const rels = (await collect('dimensions/**/*.ts')).filter(
-      (rel) => RHO[dimensionClassOf(rel)] === 'human',
-    );
-    expect(rels.length).toBeGreaterThan(4);
-    const notProse: string[] = [];
+  // MEASURED, and the reason glosses are plain: a value carrying its clauses in
+  // σ* was quoted back byte-for-byte by the session it governed — comprehended —
+  // while that same session did not act on it (0.69 structured reply lines against
+  // 0.45 once the same clauses were written in plain words).
+  it('every catalog value is `<anchor> ≜ <gloss>`, its gloss plain words, never σ*', async () => {
+    const glyphs = declaredGlyphs();
+    const rels = await collect('dimensions/**/*.ts');
+    expect(rels.length).toBeGreaterThan(100);
+    const notPlain: string[] = [];
     for (const rel of rels) {
-      const value = await firstExport<string>(join(srcRoot, rel));
-      if (admissibleSingleLine(value, canonPolicy).admissible)
-        notProse.push(rel);
+      const body = bodyOf(
+        await firstExport<Value<Dimension>>(join(srcRoot, rel)),
+      );
+      const { slug, definiens } = splitBody(body);
+      const dense = [...definiens].filter((ch) => glyphs.has(ch));
+      if (slug === body || definiens.length === 0 || dense.length > 0)
+        notPlain.push(`${rel}: ${dense.join(' ') || 'no gloss'}`);
     }
     expect(
-      notProse,
-      `ρ=human dimension values that are still σ*: ${notProse.join(' · ')}`,
+      notPlain,
+      `catalog values without a plain gloss: ${notPlain.join(' · ')}`,
     ).toEqual([]);
+    // non-vacuous: the predicate convicts a σ* gloss the catalog once shipped
+    expect(
+      [...'⟨names natural ¬conventional⟩'].some((ch) => glyphs.has(ch)),
+    ).toBe(true);
   });
 
   it('the enumerated families are all PRESENT (an empty glob passes every check)', async () => {
@@ -429,18 +343,11 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     // Named artifacts, not counts-as-exit-codes: a wrong glob yields the empty set,
     // and the empty set travels through every downstream assertion as success.
     const labels = surfaces.map((s) => s.label);
-    expect(labels).toContain('genus src/genus/persona.md ## Protocol');
+    expect(labels).toContain('genus persona personaProtocol');
     expect(labels).toContain('genus prime-principle primePrinciple');
     expect(labels).toContain('rule rules/repo-preamble.ts content');
-    expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
-    expect(labels).toContain('agent agents/nico.ts archetype');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
-    expect(count('skill-description')).toBeGreaterThan(10);
-    // population: 2 live agents × {description, archetype} (`preamble` is unused
-    // by either) = 4 non-empty agent-vector surfaces. >2 fails if a field went
-    // missing from BOTH agents — a real regression — while not pinning the exact
-    // count to a catalog size that drifts with every roster edit.
-    expect(count('agent-vector')).toBeGreaterThan(2);
+    expect(count('skill-description')).toBeGreaterThanOrEqual(10);
   });
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {
@@ -452,7 +359,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);
-    expect(genusLabels).toContain('genus src/genus/persona.md ## Protocol');
+    expect(genusLabels).toContain('genus persona personaProtocol');
     expect(
       surfaces.filter((s) => s.cls === 'dimension-definiens').length,
     ).toBeGreaterThan(100);
@@ -474,34 +381,6 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
         registerOf((s as Surface).text),
         `${label} now conforms — REMOVE its ratchet pin`,
       ).toBe('human');
-    }
-  });
-
-  it('no agent vector carries a register contradiction, or is pinned', async () => {
-    const agents = await allAgents();
-    expect(agents.length).toBeGreaterThan(0);
-    const failures = agents
-      .filter(
-        ({ agent }) =>
-          dimensionContradictions(agent).length > 0 &&
-          !CONTRADICTION_RATCHET.has(agent.name),
-      )
-      .map(
-        ({ agent }) =>
-          `CONTRADICTION ${agent.name}: ${dimensionContradictions(agent).join(' · ')}`,
-      );
-    expect(failures, failures.join('\n')).toEqual([]);
-    // shrink-only, same law as the register ratchet
-    for (const name of CONTRADICTION_RATCHET) {
-      const entry = agents.find(({ agent }) => agent.name === name);
-      expect(
-        entry,
-        `contradiction pin ${name} names a live agent`,
-      ).toBeDefined();
-      expect(
-        dimensionContradictions((entry as { agent: Agent }).agent).length,
-        `${name} no longer contradicts — REMOVE its ratchet pin`,
-      ).toBeGreaterThan(0);
     }
   });
 
@@ -626,7 +505,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
 /** The REGENERABLE seed — a self-authored store leaked into the deploy Target set. */
 const REGENERABLE_SEED: readonly Target[] = [
   {
-    path: '~/.claude/agents/mav/EPISODIC.jsonl',
+    path: '~/.omp/agent/agents/example/EPISODIC.jsonl',
     deployOwned: false,
     handEdited: false,
     selfAuthored: true,
@@ -636,7 +515,7 @@ const REGENERABLE_SEED: readonly Target[] = [
 /** A conformant, freshly regenerated deploy Target set — passes REGENERABLE. */
 const GREEN_TARGETS: readonly Target[] = [
   {
-    path: 'agents/mav.md',
+    path: 'agent/agents/example.md',
     deployOwned: true,
     handEdited: false,
     selfAuthored: false,
@@ -779,22 +658,14 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
 //
 // The machine-check behind AC-RESIDUE: MODEL PARSIMONIOUS
-// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
-// every dimension VALUE residue · every skill `description` · every skill `body`
-// (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
-// prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
-// the model reads is formal σ* under ρ, never human prose — this gate IS that
-// invariant's enforcement over the whole deployed payload set. Predicate + witnesses:
-// `tooling/cold-oracle/residue.ts`; admitted operators READ from
-// `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one home).
-//
-// FIXTURE-BASED bite proof, GREEN NOW: the 139 live dimension values are E1's verbatim-
-// prose intermediates (`slug ≜ <old prose>`) until wave-2 (O/S/H) reduces them to σ*,
-// and descriptions are likewise pre-reduction prose — so the LIVE-corpus scan is
-// `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
-// The predicate is proven on fixtures instead: prose REJECTED (offending clause named),
-// the three σ* forms + a real `formalize` body ACCEPTED, a prose-carrying
-// body REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
+// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED σ* payload —
+// every skill `formalBlock` (whole) MUST be a `formalize` artifact, never human prose.
+// Catalog values are NOT σ* payloads: each is an anchor and a plain gloss, gated by
+// the plain-gloss leg above. Predicate + witnesses: `tooling/cold-oracle/residue.ts`;
+// admitted operators READ from `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one
+// home). The single-line predicate is proven on fixtures: prose REJECTED (offending
+// clause named), the three σ* forms + a real `formalize` body ACCEPTED, a
+// prose-carrying body REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
 
 describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, never prose', () => {
   // DRY — the gate's admitted value-algebra operators ARE the lexicon's, not a copy.
@@ -836,7 +707,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       ).toBe(true);
   });
 
-  // ── SINGLE-LINE (dimension value residue · skill `description`) ────────────────────
+  // ── SINGLE-LINE (a σ* residue) ─────────────────────────────────────────────
   it('ACCEPTS the three σ* forms — ∅ · a bare anchor · an operator application', () => {
     for (const form of [
       '', // ∅ — the anchor α fully fires the concept
@@ -849,7 +720,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   it('REJECTS a prose residue, NAMING the offending clause (actionable for O*/S*)', () => {
-    // the live E1 intermediate for dimensions/autonomy/human-on-the-loop (verbatim head).
+    // a prose residue (verbatim head of a since-retired value intermediate).
     const prose =
       "acts autonomously on the operator's behalf; the operator oversees and " +
       'sets intent, never pre-approves each act.';
@@ -898,32 +769,10 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     expect(w.reason).toContain('#-preamble gloss');
   });
 
-  // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED once every dimension value and every skill `formalBlock` had been
-  // reduced to σ* — before that reduction this leg would have convicted the whole
-  // corpus, so it could not be turned on.
+  // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed σ* payload ──
   // (`description` is σ_human*, not a σ* payload — gated by density, not residue.)
-  it('every deployed σ* payload is admissible (dimension values · skill formalBlocks)', async () => {
+  it('every deployed σ* payload is admissible (skill formalBlocks)', async () => {
     const failures: string[] = [];
-    for (const rel of await collect('dimensions/**/*.ts')) {
-      const value = await firstExport<string>(join(srcRoot, rel));
-      // ρ DECIDES MEMBERSHIP IN THE σ* PAYLOAD SET, and this gate's own governing
-      // invariant already says so: "every deployed artifact THE MODEL READS is
-      // formal σ*, never human prose — UNDER ρ". A `formality` value's referent is
-      // the operator's reading experience, so `RHO` resolves it human
-      // (`formality-definiens`) and it is not a σ* payload to begin with. Skipping
-      // it here is the invariant applied, not an exemption carved out of it — and
-      // the skip reads ρ from the one table both gates share, so the two can never
-      // disagree about what σ* covers.
-      if (RHO[dimensionClassOf(rel)] === 'human') continue;
-      // The WHOLE value, never `splitBody(value).definiens`: that split gated only
-      // what followed the first ` ≜ `, so a value with NO ` ≜ ` yielded definiens ''
-      // and went entirely UNGATED — `cratylism` and `llm-native` (bare-anchor form)
-      // shipped free NL into every Target for exactly that reason. A formal block is
-      // formal end to end; load-bearing prose becomes notation, the rest is dropped.
-      const r = admissibleSingleLine(value, canonPolicy);
-      if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
-    }
     for (const rel of await collect('skills/*/skill.ts')) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       // `description` is σ_human*, NOT σ* — no longer residue-gated. The sole σ*

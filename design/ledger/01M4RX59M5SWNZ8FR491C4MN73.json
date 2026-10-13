@@ -1,0 +1,9 @@
+{
+  "id": "01M4RX59M5SWNZ8FR491C4MN73",
+  "at": "2026-10-12T20:34:11.205Z",
+  "kind": "returned",
+  "transition": "toolu_01F5NNavHZyiJiXsuxR6Htii/SimplificationChecks2/returned",
+  "cut": "simplification",
+  "role": "check-writer",
+  "run": "toolu_01F5NNavHZyiJiXsuxR6Htii/SimplificationChecks2"
+}

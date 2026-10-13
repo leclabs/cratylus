@@ -1,6 +1,6 @@
 // `enumerateCatalog` — the fragment discovery library. Proves, over the FIXTURE
 // corpus: (1) it enumerates exactly the GIVEN catalog's dimensions, in that
-// catalog's order, with the correct axis/repertoire/arity; (2) the contract shape per
+// catalog's order, with the correct group/repertoire/arity; (2) the contract shape per
 // dimension; (3) values sort shortlex; (4) a body arrives verbatim — residue
 // intact, and an enforcing value by its declaration face; (5) the DRIFT-PROOF
 // property — a value module dropped under a dimension dir appears in the output
@@ -21,7 +21,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   type CatalogEntry,
   enumerateCatalog,
@@ -57,7 +57,7 @@ function shapeViolations(entries: readonly CatalogEntry[]): string[] {
 }
 
 /** Descriptor drift: a dimension the catalog names that the catalog does not describe
- *  the same way (axis/repertoire/arity), or a dimension list that is not the manifest's. */
+ *  the same way (group/repertoire/arity), or a dimension list that is not the manifest's. */
 function metaDrift(entries: readonly CatalogEntry[]): string[] {
   return entries
     .filter((e) => {
@@ -65,12 +65,12 @@ function metaDrift(entries: readonly CatalogEntry[]): string[] {
         FIXTURE_MANIFEST[e.dimension as keyof typeof FIXTURE_MANIFEST];
       return (
         meta === undefined ||
-        meta.axis !== e.axis ||
+        meta.group !== e.group ||
         meta.repertoire !== e.repertoire ||
         meta.arity !== e.arity
       );
     })
-    .map((e) => `${e.dimension}: ${e.axis}/${e.repertoire}/${e.arity}`);
+    .map((e) => `${e.dimension}: ${e.group}/${e.repertoire}/${e.arity}`);
 }
 
 describe('enumerateCatalog over the fixture corpus', () => {
@@ -86,7 +86,7 @@ describe('enumerateCatalog over the fixture corpus', () => {
     expect(entries).toHaveLength(22);
   });
 
-  it("each dimension's axis/repertoire/arity matches the catalog", () => {
+  it("each dimension's group/repertoire/arity matches the catalog", () => {
     expect(metaDrift(entries)).toEqual([]);
     expect(entries.length).toBeGreaterThan(0); // never a vacuous loop
   });
@@ -210,6 +210,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
   beforeAll(() => {
     dir = mkdtempSync(join(tmpdir(), 'forge-catalog-'));
   });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
 
   it('a value module dropped under a dimension dir appears, no other change', async () => {
     const addressDir = join(dir, 'autonomy');
@@ -220,7 +221,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     const before = entries.find((e) => e.dimension === 'autonomy');
     expect(before).toMatchObject({
       dimension: 'autonomy',
-      axis: 'Persona',
+      group: 'Persona',
       repertoire: 'latent',
       arity: 'set',
     });
@@ -243,9 +244,5 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     expect(after?.values).toEqual([
       'fixture-mode ≜ a discovered-only fixture value',
     ]);
-  });
-
-  it('cleanup', () => {
-    rmSync(dir, { recursive: true, force: true });
   });
 });

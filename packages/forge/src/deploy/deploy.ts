@@ -152,7 +152,7 @@ export function resolveNames(
 export function keepsHostModel(
   harnessHome: string | null | undefined,
 ): boolean {
-  return (harnessHome ?? '.claude') === '.claude';
+  return (harnessHome ?? '.omp') === '.claude';
 }
 
 function placeOpts(opts: DeployOpts): PlaceOpts {

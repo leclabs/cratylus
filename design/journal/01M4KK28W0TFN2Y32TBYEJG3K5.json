@@ -1,0 +1,14 @@
+{
+  "id": "01M4KK28W0TFN2Y32TBYEJG3K5",
+  "at": "2026-10-10T19:01:34.208Z",
+  "kind": "decide",
+  "decisionId": "0054",
+  "context": "workflow",
+  "title": "Cut 2 folded into the execution cut",
+  "situation": "Cut 2's remaining round (0015, 0024) was planned on the canon role system the catalog re-cut retired: role text reduced to concepts is done by the re-cut; the example inventory and the builder-aware commit guard are the work package capability's; its branch, feature/workflow-execution, builds on retired pieces and the replaced design files.",
+  "decision": "Cut 2 does not resume as a cut of its own. Its structural examples join the execution cut (0055); its behavioral examples (5, 8, 10, 11, 12) become evaluations of the composed roles' behavior in that cut. feature/workflow-execution is not merged; its work package code is adopted only if an assay finds it realizes the concepts (0013), otherwise rebuilt.",
+  "consequences": "0024 is superseded; the branch is kept until the execution cut decides adoption, then deleted.",
+  "status": "accepted",
+  "supersedes": "0024",
+  "supersedesEntry": "01M4J70D1JYJ7QXNCS1F8J9D6C"
+}

@@ -38,12 +38,12 @@
 // problem and why the two were derived separately.
 //
 // FLIPPING THIS ONE SYMBOL IS STILL THE WHOLE RENAME — that is what this module
-// bought, and the migration proved it: `RUNTIME_CONFIG_NAME` and `TAP_ID` are
-// template-derived from this value and moved without being touched.
+// bought, and the migration proved it: `RUNTIME_CONFIG_NAME` is template-derived
+// from this value and moved without being touched.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** THE command's name on PATH — there is exactly one now. Every other site — the
- *  program's branding, error prefixes, the projected thin shim, the event-tap hook id —
+ *  program's branding, error prefixes, the projected thin shim, the host config name —
  *  interpolates this rather than repeating the literal.
  *
  *  IT LIVES HERE because the runtime is the contract leaf: it depends on nothing, so

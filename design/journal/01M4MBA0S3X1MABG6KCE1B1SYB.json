@@ -1,0 +1,17 @@
+{
+  "id": "01M4MBA0S3X1MABG6KCE1B1SYB",
+  "at": "2026-10-11T02:05:13.891Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "a session, new or compacted, recovers the conceptual design, its decisions, what is open and what is in flight by querying the concept journal and the ledger rather than remembering: it reads the context overview of each context the work touches first, then whatever detail the work needs, and, before acting, reads back to the operator the current design of those contexts, their open decisions and the cuts in flight; it reads the branch it is on, so it sees that branch's state, and continuity never depends on a conversation.",
+  "builtFrom": [
+    "concept journal",
+    "context overview",
+    "ledger"
+  ],
+  "reason": "0079: no worktree; a session reads the branch it is on. The operator, 2026-10-10: a cut needs a feature branch of its own and nothing more; worktrees are not the normal development workflow and add complexity and hygiene overhead, and agents already know how to branch.",
+  "supersedes": [
+    "01M4MB332QVJGBGKB7Z93CD83R"
+  ]
+}

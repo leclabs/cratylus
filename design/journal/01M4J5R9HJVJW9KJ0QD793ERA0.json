@@ -1,0 +1,16 @@
+{
+  "id": "01M4J5R9HJVJW9KJ0QD793ERA0",
+  "at": "2026-10-10T05:49:41.298Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "architect",
+  "wording": "the agent that turns the operator's intent into concepts, sorted by context, using known patterns and conventions; holds the conceptual design and every context it covers without merging their models; confirms examples with each meaning-holder and answers meaning questions; never sees the work.",
+  "builtFrom": [
+    "conceptual design",
+    "illustration",
+    "meaning-holder",
+    "decision rights"
+  ],
+  "reason": "decided in 0002: Decision rights",
+  "supersedes": []
+}

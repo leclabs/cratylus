@@ -1,0 +1,10 @@
+{
+  "id": "01M4PBFD0KZGS3CFZDCM7ZPC25",
+  "at": "2026-10-11T20:46:39.123Z",
+  "kind": "returned",
+  "transition": "toolu_01MZ3gv7kaH6LgyfWPja8HKg/FreezeRecordR2/returned",
+  "cut": "meaning-roles",
+  "role": "builder",
+  "run": "toolu_01MZ3gv7kaH6LgyfWPja8HKg/FreezeRecordR2",
+  "workPackage": "freeze-record"
+}

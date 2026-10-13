@@ -1,0 +1,17 @@
+{
+  "id": "01M4P74JWJM0AA45WJB812GWAM",
+  "at": "2026-10-11T19:30:50.386Z",
+  "kind": "update",
+  "transition": "update:meaning-roles:01M4P74JVW02NMYSTQ3EHHATWP",
+  "cut": "meaning-roles",
+  "workPackage": "architect-text",
+  "changes": {
+    "concepts": [
+      "architect",
+      "drift",
+      "profile",
+      "enforcement-level",
+      "ordering: bottom-line-up-front"
+    ]
+  }
+}

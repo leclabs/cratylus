@@ -2,86 +2,47 @@
 // whose persona is a NATIVE artifact of the harness rather than a
 // launch-time argument.
 //
-// THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers USER-level
-// task agents from `~/.omp/agent/agents/*.md` (`omp://task-agent-discovery.md`):
-// YAML front-matter carrying a required `name` and `description`, and a BODY
-// that IS the system prompt. That one file is this adapter's whole projection of
-// an agent, and BOTH of omp's readers read it — dispatched as a subagent, omp
-// parses it itself; launched as a MAIN session, the generic launcher below
-// parses the same bytes and hands the body to `--append-system-prompt`. One
-// definition, two readers, nothing to drift.
-//
-// WHY A MAIN SESSION NEEDS A LAUNCHER AT ALL. omp has no `--agent <name>` flag
-// for a main session: a definition is reachable natively only by DISPATCH, and
-// the one channel into a main session's prompt is `--append-system-prompt`. The
-// launcher is the bridge between those two facts, and it is exactly that — a
-// READER of the definition, never a second copy of it.
-//
-// ONE LAUNCHER, NOT ONE PER AGENT. The agent's name is resolved at RUN time and
-// never baked in at projection: from `$1`, or — when the script is reached
-// through a symlink named after the agent — from `$0` itself, busybox-style. The
-// per-agent scripts this replaces were N byte-identical copies of one file
-// differing only in where they happened to sit, so N−1 of them were duplication
-// that every deploy had to keep converging.
+// THE AGENT DEFINITION IS THE SINGLE SOURCE OF TRUTH. omp discovers task agents from
+// the `agents/` directory of every extension package it loads
+// (`omp://task-agent-discovery.md`): YAML front-matter carrying a required `name` and
+// `description`, and a BODY that IS the system prompt. That one file is this adapter's
+// whole projection of an agent, and BOTH ways of reaching it read it through omp's own
+// discovery — dispatched as a subagent, omp runs it itself; started as a MAIN session
+// by `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
+// resolves the same declaration and carries it into the session (decision 0047).
+// One declaration, nothing outside the harness wrapping it, nothing to drift.
 //
 // IDENTITY IS NOT THE PROFILE. omp's own `--profile <name>` silos AUTH, MCP,
 // MODELS, SESSIONS and `agent.db` — an ENVIRONMENT, and a property of the HOST
-// an operator is running on, not of the agent this module composes. An earlier
-// design conflated the two: it projected each persona INTO a profile
-// (`profiles/<name>/agent/APPEND_SYSTEM.md`), so composing a persona silently
-// forked the operator's whole session state along with it. A profile and a
-// persona are ORTHOGONAL facts about one launch; an operator who wants both
-// still can (`--profile work` on the launcher's own command line), and forge
-// asserts neither for them.
+// an operator is running on, not of the agent this module composes. A profile
+// and an agent are ORTHOGONAL facts about one session; an operator who wants both
+// passes both flags, and forge asserts neither for them.
 //
-// omp's native surfaces, read off `@oh-my-pi/pi-coding-agent`'s own source and,
-// where noted, re-measured against an installed `omp` binary:
+// THE LAYOUT IS AN OMP EXTENSION PACKAGE, the owned root install places
+// (`~/.cratylus/omp`), and every path below is relative to that root:
 //
-//   - an AGENT is `agent/agents/<name>.md` under `~/.omp` — the USER-level
-//     task-agent root, merged first-wins by exact name with a project
-//     `.omp/agents` (which wins) and the bundled defs (which lose).
-//   - a SKILL is `skills/<name>/SKILL.md` under `~/.agents` (the AgentSkills
-//     spec, shared with claude) — omp's vendor-neutral `.agent[s]`
-//     provider reads that root NATIVELY, at priority 70, no flag and no
-//     profile (confirmed in the installed package's resource loader:
-//     `join(getHomeDir(), ".agents", "skills")` is scanned unconditionally,
-//     the same call for every launch).
-//   - ENFORCEMENT is a TypeScript module omp's extension loader binds either by
-//     SCANNING a directory (`discoverExtensionPaths`, a native config root) or
-//     by an explicit `--config … extensions:` entry naming a file OR a
-//     directory (`collectFilesFromPaths`/`collectAutoExtensionEntries` in the
-//     installed package sweep a directory entry exactly like a native root's
-//     auto-discovery — verified empirically: a directory named in `extensions:`
-//     loaded every loose `.ts` file inside it). No hook CONFIG exists at all:
-//     the directory, or the overlay entry naming it, IS the declaration.
+//   - an AGENT is `agents/<name>.md`, discovered by omp from the package's
+//     `agents/` for every project, first-wins by exact name after a project's
+//     `.omp/agents` and the user's own `~/.omp/agent/agents`.
+//   - a SKILL is `skills/<name>/SKILL.md`, the AgentSkills shape, discovered from
+//     the package's `skills/`.
+//   - ENFORCEMENT and the capability tools are TypeScript modules under
+//     `extensions/`, which the package's `package.json` names (`omp.extensions`).
+//     No hook CONFIG exists at all: the package names its modules.
 //
-// THE SCOPE IS STILL A DIRECTORY — `agent/personas/<name>/extensions/` under
-// `~/.omp` — and that is still the whole reason this adapter exists. Claude
-// attaches a hook inside a subagent's own front-matter, so attachment is the
-// scope. omp needs no selector: a module sitting where only the
-// composing persona's OWN `--config` overlay names it loads under that persona
-// and no other.
+// At project scope the same layout lands under the project's `.omp/`, which omp reads
+// natively as `agents/`, `skills/` and `extensions/`.
 //
-// WHY THAT DIRECTORY MOVED IN WITH THE HARNESS. It was `~/.agents/<name>/`,
-// beside the persona file that used to live there. The persona is now omp's own
-// `agent/agents/<name>.md`, so all that remained in the neutral root was an
-// `omp.yml` and a TypeScript module omp alone loads — harness-specific bytes in
-// a harness-NEUTRAL root, and a directory the ONE launcher could only reach by
-// hard-coding the harness home's own depth (`$dir/../../.agents/<name>`) into a
-// shell script, duplicating a fact `scopedRel` already owns. Under
-// `agent/personas/<name>/` the launcher hops DOWNWARD from its own resolved
-// directory, which is true under any `--home`, and the neutral root goes back to
-// holding only what every harness reads.
+// NOTHING IS SCOPED PER AGENT. omp loads extension modules for every session, and
+// nothing in an agent declaration names a module of its own. So every module this
+// adapter emits is SESSION-WIDE. A worker hook composed into named agents is
+// therefore one omp cannot scope (`scopes` is false), and projection reports it as
+// such rather than widen it to every session.
 //
-// COMPOSITION STAYS STRUCTURAL. `MODEL.md`'s `ENFORCED` clause ("¬ ambient :
-// COMPOSITION is the scope, ¬ a runtime self-filter") held under the profile
-// carrier because a module in `profiles/mav/agent/extensions/` loaded only
-// under `--profile mav`; it holds here for the identical reason, one step
-// removed — the overlay names EXACTLY the extensions that persona's launch
-// loads, so nothing in the module itself asks who is running. Emitting one
-// global module that branched on an env var would still have been the ambient
-// form this clause forbids; naming a scope's own directory in that scope's own
-// overlay is composition by placement, same as it always was.
+// WHAT AN AGENT'S DELIVERABLE AND MODEL BECOME are omp's own declaration settings:
+// the deliverable as `output`, and the model as the model role named for the agent,
+// falling back to the tier and effort it holds (decision 0111). Every agent keeps
+// omp's default tools and may dispatch any agent (decision 0142).
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -92,22 +53,22 @@
 // rather than the literal. `forge → runtime` is a permitted edge (ARCHITECTURE's
 // north star); spelling the name here instead would be a second home for it, which
 // `bin-name-single-home` catches and rightly refused.
+import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import type { Agent, Binding } from '@cratylus/schema';
-import type { HarnessMechanism, Hook } from '@cratylus/schema/hook';
+import type { Capability } from '@cratylus/runtime/capability';
+import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
+import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
   type AgentDefContext,
   type DispatchIsolation,
   type HarnessAdapter,
   type HarnessProjection,
-  NEUTRAL_AGENT_ROOT,
   type RoleRouting,
-  SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
   type StatusSegmentHost,
 } from '../../core/harness-adapter.js';
-import { SHIM_SIGNATURE } from '../../project/runtime-shim.js';
 import {
   OMP_ENVELOPE_KIND,
   OMP_REFUSAL_SHAPE,
@@ -119,186 +80,135 @@ import {
 
 export type { ResolvedSkill };
 
-/**
- * The SESSION root — omp's native USER config dir, relative to the harness
- * home, and the root EVERY artifact this adapter deploys is carried from.
- *
- * omp's native user config is `~/.omp/agent` (`getAgentDir()`,
- * `discovery/builtin.ts`) when no `--profile` names another. Three things hang
- * off it: the task-agent definitions omp discovers ({@link OMP_AGENT_DEF_DIR}),
- * the SESSION-scoped mechanism module — the copy every launch, personaed or
- * bare, reads automatically because it sits on omp's own scan path — and the
- * per-persona scopes ({@link OMP_PERSONA_DIR}) omp scans for nothing and only a
- * launch spec reaches.
- */
-export const OMP_SESSION_DIR = 'agent';
-
-/**
- * omp's USER-level task-agent discovery dir, relative to {@link
- * OMP_SESSION_DIR} — `~/.omp/agent/agents/`.
- *
- * Its own constant because the LAUNCHER has to hop into it from its own
- * resolved directory at RUN time. A launcher naming a directory this module
- * spelled differently is a persona unlaunchable by its own name, and the shell
- * would report that as a missing file rather than as a disagreement.
- */
+/** The task-agent discovery dir of an omp extension package (and of a project's
+ *  `.omp/`): `agents/`. */
 export const OMP_AGENT_DEF_DIR = 'agents';
 
-/** Where agent `<name>`'s definition lands, relative to the harness home
- *  (`.omp`) — omp's OWN user-level task-agent root, read NATIVELY on every
- *  discovery pass.
- *
- *  `<name>.md` and not `<name>/APPEND_SYSTEM.md`, which is where this used to
- *  land. That filename was omp's vocabulary for what `--append-system-prompt`
- *  reads, and it made the persona a LAUNCH ARGUMENT — invisible to omp's own
- *  agent discovery, so a composed agent could be started as a session and could
- *  not be DISPATCHED as a subagent by the same name. One artifact answers both
- *  now, and the launcher reads it rather than owning a second copy. */
+/** Where agent `<name>`'s definition lands, relative to the root it is placed in:
+ *  the owned root's `agents/`, which omp discovers as an extension package's, or a
+ *  project's `.omp/agents/`. One artifact serves dispatch and `omp --agent <name>`. */
 export function ompAgentRel(name: string): string {
-  return `${OMP_SESSION_DIR}/${OMP_AGENT_DEF_DIR}/${name}.md`;
+  return `${OMP_AGENT_DEF_DIR}/${name}.md`;
 }
 
-/**
- * Where skill `<name>` lands, relative to the harness home — ONE path, at the
- * harness-neutral root omp reads NATIVELY on every launch.
- *
- * `agents` goes UNUSED: the fan-out this signature still carries
- * existed here only because a persona WAS a profile, and a profile's
- * native config root is isolated from every other — so a skill reachable from
- * every persona needed N+1 copies. It no longer is: omp reads `~/.agents/skills`
- * NATIVELY, at provider priority 70, for every launch — personaed, bare, or
- * profiled — so one copy now serves every reader and the fan-out bought
- * nothing once the persona stopped being a profile.
- */
+/** Where skill `<name>` lands, relative to the root it is placed in: ONE path,
+ *  `skills/<name>`, which omp discovers in an extension package and in a project's
+ *  `.omp/`. `agents` goes unused: omp scopes no skill reader per agent. */
 export function ompSkillRel(
   name: string,
   _agents: readonly string[],
 ): readonly string[] {
-  return [`../${NEUTRAL_AGENT_ROOT}/skills/${name}`];
+  return [`skills/${name}`];
 }
 
-/** The emitted enforcement module's filename — derived, never spelled. */
-export const OMP_GUARDRAIL_MODULE = `${CLI_BIN}-guardrails.ts`;
+/** The directory every extension module lands in, relative to the root it is placed
+ *  in, and the one the owned root's `package.json` names its modules from. */
+export const OMP_EXTENSIONS_DIR = 'extensions';
 
-/** The emitted SCOPE-ACTIVATED module's filename. A second file rather than more
- *  registrations in the first, because the two halves retire independently: the
- *  guardrails follow the agents that compose them, these follow the cells. */
+/** Where omp loads an extension package for every project of a user, relative to its
+ *  home (`.omp`): its own plugin directory, where `omp plugin link` puts a package by
+ *  name. */
+export const OMP_PACKAGE_DIR = 'plugins';
+
+/** The emitted SCOPE-ACTIVATED module's filename: the session-wide hooks of the cells
+ *  no agent composes. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
-/** The persona badge's status key — the slot `ctx.ui.setStatus` fills, derived
- *  from the bin so a rename carries it. The module is named after the same slot. */
-const OMP_PERSONA_BADGE_KEY = `${CLI_BIN}-persona-badge`;
-
-/** The emitted PERSONA BADGE module's filename. A third file rather than one
- *  more registration in either sibling, because it retires with neither: the
- *  guardrails follow composed constraints, the session module follows the cells,
- *  and the badge follows the persona alone. */
-export const OMP_PERSONA_BADGE_MODULE = `${OMP_PERSONA_BADGE_KEY}.ts`;
-
-/** The emitted DISPATCH ISOLATION module's filename. A fourth file, since it retires
+/** The emitted DISPATCH ISOLATION module's filename. A second file, since it retires
  *  with the agents that declare a worktree of their own and with nothing else. */
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
-/** The `--config` overlay filename — the launcher's one argument for reaching a
- *  persona's own extensions. */
-export const OMP_OVERLAY_FILE = 'omp.yml';
+/** The capabilities omp is offered as tools: those that explain themselves
+ *  (`<bin> <capability> --explain`), the concept journal and the work package
+ *  capability. */
+export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
+  'concepts',
+  'workPackage',
+  'versionSkew',
+];
 
-/** The generic launcher's filename — no extension, because it is invoked
- *  directly (`omp-agent mav`), never sourced or required.
- *
- *  It is also the DISPATCH SENTINEL: the script compares `basename $0` against
- *  this exact name to decide whether the agent arrives as `$1` or as argv[0]
- *  itself, so a rename carries INTO the script instead of silently disabling
- *  the symlink form. */
-export const OMP_LAUNCHER_FILE = 'omp-agent';
+/** The capabilities omp offers whole, as a tool of every turn, rather than mounted
+ *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
+ *  `when` and no verb, so the work package capability's line ended before where
+ *  the cut stands, and an agent asked where its cut stands never met the verb that
+ *  works it out from the ledger. Offered whole, its own explanation, each verb's
+ *  purpose and `when` included, reaches every turn. The concept journal stays a
+ *  device: its line leads with reading the design, and the agents that recover it
+ *  first are sent to it by their session-start note. */
+export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = [
+  'workPackage',
+];
 
-/** Where one persona's SCOPED artifacts land, relative to {@link
- *  OMP_SESSION_DIR} — `~/.omp/agent/personas/<name>/`.
- *
- *  A directory omp scans for NOTHING, which is the entire point: what lands
- *  here (`omp.yml`, and the mechanism modules it names) must be reachable only
- *  from that persona's own launch and never from a bare `omp`. It sits UNDER
- *  the session root rather than beside it so the launcher — which resolves its
- *  own directory and knows nothing else — reaches it by hopping down, with no
- *  knowledge of where the harness home is or how deep.
- *
- *  RELOCATING THIS BREAKS EVERY LIVE SESSION, and the failure is delayed. A
- *  running session holds its `--config <persona>/omp.yml` in a launch spec it
- *  re-resolves on EVERY subagent spawn, so a deploy that moves the scope out
- *  from under it leaves the parent apparently healthy and every spawn dying on
- *  `Config overlay not found`. That is the silent removal of delegation from an
- *  agent whose whole design delegates. Measured twice: once for `kino` on
- *  2026-09-22 against a path the deploy had never written, and again the next
- *  day for `mav` when this constant moved the scope here from `.agents/<name>/`.
- *  So a future move of this constant is a BREAKING change for sessions already
- *  running, and it wants the old path left resolvable until they drain — the
- *  deploy cannot know they exist. */
-export const OMP_PERSONA_DIR = 'personas';
+/** The emitted CRATYLUS module's filename: the one omp extension that is
+ *  cratylus's own, named for the bin, which offers every capability that explains
+ *  itself as a tool and launches a session as an agent declaration. */
+export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
 
-// The filenames that must resolve inside a scope's `extensions/` subdirectory
-// rather than at the scope's own top level — the overlay and the launcher are
-// the operator's entry points and are never themselves scanned as extensions,
-// so they stay one level up from what they name.
-const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
-  [OMP_GUARDRAIL_MODULE]: true,
-  [OMP_SESSION_MODULE]: true,
-  [OMP_PERSONA_BADGE_MODULE]: true,
-  [OMP_ISOLATION_MODULE]: true,
-};
+/** The omp flag the CRATYLUS module registers: `omp --agent <name>` starts the
+ *  main session as the agent declaration omp discovers by that name (decision
+ *  0047). */
+const OMP_AGENT_FLAG = 'agent';
 
-// ── Role routing: the roles omp routes a model by ────────────────────────────
+/** What an agent dispatching a delegate from `eval` code is warned: no `task` call
+ *  carries that dispatch, so its assignment is neither shown nor checked, and its
+ *  lifecycle is not captured in the ledger. */
+const EVAL_DISPATCH_WARNING =
+  'dispatch from eval code: its assignment is not shown or checked and the ledger does not capture it; dispatch with the task tool to have both.';
 
-/** omp's own default model role — the fallback every definition's `model` ends in. */
-const OMP_DEFAULT_ROLE = 'default';
+/** `eval` code that dispatches a delegate: the eval prelude's `agent(…)` or `workpool(…)`,
+ *  or the task tool called as `tool.task` or `tool["task"]`. */
+const EVAL_DISPATCH =
+  /(?<![\w.$])(?:agent|workpool)\s*\(|(?<![\w.$])tool\s*(?:\??\.\s*task\b|\[\s*["'`]task["'`]\s*\])/;
 
-/** The built-in omp role nearest to each role an agent may hold. A held role with
- *  no entry is nearest the default role. The integrator's work is spec-bounded like
- *  the implementer's (it joins what implementers built), so it routes to `task`. */
-const OMP_NEAREST_ROLE: Readonly<Record<string, string>> = {
-  implementer: 'task',
-  integrator: 'task',
-  planner: 'plan',
-};
+/** The status-line slot the CRATYLUS module shows a launched agent's mark and
+ *  name in, named from the bin so a rename carries it. */
+const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
+
+// ── Model roles: the role each agent's `model` names ─────────────────────────
 
 /** The host config files omp reads its settings from — the ONE spelling, shared by
  *  every fact the host keeps there. `agent/config.yml`, or `agent/config.yaml` when
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
-/** omp's role → model routing: the table {@link HarnessAdapter.roleRouting} exposes.
- *  The host keeps the mapping in its config file under its `modelRoles` key. */
+/** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
+ *  declaration's `model` names the role named for its agent first, which the host may
+ *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
+ *  binds no such role: the role named for the tier, at that effort. Install binds a
+ *  role only as the operator answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
-  defaultRole: OMP_DEFAULT_ROLE,
-  nearest: (heldRole) => OMP_NEAREST_ROLE[heldRole] ?? OMP_DEFAULT_ROLE,
-  offered: ['default', 'smol', 'slow', 'plan', 'task'],
   configRels: OMP_CONFIG_RELS,
+  tierRole: (tier) => tier,
+  agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
 };
 
 // ── Dispatch isolation: the copy an isolated task runs in ────────────────────
 
 /** omp's task isolation, as {@link HarnessAdapter.dispatchIsolation} exposes it.
- *  Measured on omp 18.4.9. A task tool call takes `isolated` only while the host
- *  setting `task.isolation.enabled` is true, and runs that task in a copy of the
- *  checkout it was dispatched from. What the copy built is applied back into the
- *  dispatcher's checkout unless `task.isolation.apply` is false, and kept as a branch
+ *  A task tool call takes `isolated` only while the setting
+ *  `task.isolation.enabled` is true, and runs that task in a copy of the checkout it
+ *  was dispatched from. What the copy built is applied back into the dispatcher's
+ *  checkout unless `task.isolation.apply` is false, and kept as a branch
  *  `omp/task/<id>` in the dispatcher's repository, the agent's own commits, when
  *  `task.isolation.merge` is `branch` — `patch` keeps only a diff. The copy is cut
  *  from the dispatcher's checkout as it stands (its HEAD, its uncommitted work): the
- *  task tool takes no ref to cut it from. */
+ *  task tool takes no ref to cut it from. The isolation module holds these as
+ *  session-scoped runtime overrides, so no host setting is written. */
 export const ompDispatchIsolation: DispatchIsolation = {
-  configRels: OMP_CONFIG_RELS,
   settings: {
-    parent: ['task', 'isolation'],
-    entries: { enabled: 'true', apply: 'false', merge: 'branch' },
+    'task.isolation.enabled': true,
+    'task.isolation.apply': false,
+    'task.isolation.merge': 'branch',
   },
   lacks:
-    "cut from the dispatcher's HEAD and not from the plan's line, so the land gate refuses the work until it is moved onto the line",
+    "cut from the dispatcher's HEAD and not from the plan's line, so the work it builds must be moved onto the line before it is integrated",
 };
 
-// ── Status line: where the persona badge renders ─────────────────────────────
+// ── Status line: where a session's agent renders ─────────────────────────────
 
 /** omp's status line, as {@link HarnessAdapter.statusSegment} exposes it. An extension's
- *  status (`ctx.ui.setStatus`, which is how the persona badge speaks) renders inside
+ *  status (`ctx.ui.setStatus`, which is how the cratylus extension shows the agent a
+ *  session was started as) renders inside
  *  the line only where the layout lists `status`; omp's own layouts never do. The
  *  layout is read from `statusLine.leftSegments` only under `statusLine.preset:
  *  custom`, so a host that never chose a preset is on `default` — whose layout is what
@@ -341,40 +251,54 @@ export const ompStatusSegment: StatusSegmentHost = {
   customLeft: ['vim', 'model', 'mode', 'path', 'git', 'pr'],
 };
 
+// ── Typed handoffs: where an agent's assignment schema is carried ─────────────
+
+/** The front-matter key an agent's assignment schema is carried under, where the
+ *  cratylus extension reads it (omp passes unknown keys through untouched). */
+export const OMP_ASSIGNMENT_KEY = 'assignment';
+
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
 
 /**
  * The omp agent definition: the front-matter omp reads, then the composed Target
  * body, which IS the system prompt.
  *
- * **FRONT-MATTER: the two fields omp REQUIRES, plus the ones the CELL declares.**
+ * **FRONT-MATTER, in this order:** `name`, `description`, `mark` (only with one),
+ * `key: null`, `model`, `spawns: "*"`, `output` and `assignment` (only with a typed
+ * handoff), `autoloadSkills` (only with skills). No `tools`: every agent keeps omp's
+ * default tools (decision 0081), and `spawns` says outright that it may dispatch
+ * any agent (decision 0142), whatever omp would infer from its tools.
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
- * and SKIPS the file — a persona that silently does not exist. The rest of what
- * omp accepts here (`tools`, `spawns`, `thinking-level`, …) is a property of a
- * HOST's dispatch policy rather than of the composed agent, so forge asserts none
- * of it: an operator who adds one is editing their own dispatch policy.
+ * and SKIPS the file — a persona that silently does not exist.
  *
- * **`model` NAMES THE ROLE, NEVER A MODEL.** An agent that holds a role
- * ({@link Agent.holds}) emits `model: ["@<role>", "@default"]`: omp's own
- * model-role alias for the held role, then the harness's default role as the
- * fallback, so a host that never configured the role runs the agent on the
- * default role (`modelRoles.default`). Which model fills a role is the host's
- * `modelRoles` entry — the definition carries no model id. Both aliases are
- * quoted, because a YAML value
- * starting with `@` is a scanner error unquoted. An agent holding no role emits
- * no `model` key.
+ * **`key` IS RESERVED.** It is the slot of an ipseic agent's key (decision 0048), and
+ * every agent this corpus composes holds it empty.
  *
- * **`autoloadSkills` IS THE EXCEPTION, because it is not routing.** Which skills
+ * **`model` NAMES THE AGENT'S OWN ROLE, THEN ITS TIER AND EFFORT, NEVER A MODEL**
+ * (decisions 0111, 0112). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order
+ * by omp: the role named for the agent, which the host may bind in its own
+ * `modelRoles`, and where it binds none, the tier and effort the agent holds. Which
+ * model a role or tier runs on is the host's own setting, never this declaration's.
+ * Each entry is quoted, because a YAML value starting with `@` is a scanner error
+ * unquoted.
+ *
+ * **THE TYPED HANDOFF** ({@link Agent.contract}): the deliverable schema is omp's
+ * own `output`, which task dispatch uses as the child's structured-output schema
+ * (omp's own task dispatch checks a return against it), and the assignment
+ * schema is {@link OMP_ASSIGNMENT_KEY}, which the extension shows with each
+ * dispatch and launch of the agent, warning when the assignment given is incomplete.
+ *
+ * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
  * declares together with every skill they compose, the closure projection
  * computes and hands this adapter as `Agent.skills`, rendered here in the order
  * it arrives. Emitted only when that list is non-empty, so an agent given none
  * carries no such key. omp honours the field for a
  * DISPATCHED subagent — the skills are injected before the child's first
- * prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the same key back OUT of this
- * file for a MAIN session, which has no native path for it, and inlines each
- * skill's body the same way. One list, both ways of reaching the agent, nothing
- * listed twice.
+ * prompt. A MAIN session started by `omp --agent` has no native path for it, so
+ * the cratylus extension inlines them: every turn's system prompt carries the full
+ * instructions of each named skill in omp's own autoload form
+ * ({@link ompCapabilityExtensions}).
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -387,20 +311,25 @@ export const ompStatusSegment: StatusSegmentHost = {
  * rule, which makes the emitted flow sequence identical in shape to the one omp's
  * own agent-definition template writes.
  *
- * **NO IDENTITY LINE.** The persona body used to open with "You are `<name>`…",
- * because this file WAS the appended prompt and omp's base prompt asserts its
- * own identity underneath it. It is not that file any more: for a DISPATCHED
- * subagent the body is the entire system prompt and the sentence is redundant,
- * and for a MAIN session the launcher prepends it — see {@link
- * OMP_LAUNCHER_SCRIPT}, which carries the measurement that earned it.
+ * **THE BODY IS forge's `agentBody`**, harness-neutral: the mark, name and
+ * description as its heading, then the agent's text values by group. Reach and model
+ * are never text: reach is omp's default tools, and the model the setting above.
  */
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
-  if (a.holds !== undefined) {
-    fm.push(
-      `model: [${[`@${a.holds}`, `@${OMP_DEFAULT_ROLE}`].map(yamlString).join(', ')}]`,
-    );
-  }
+  if (a.mark !== null) fm.push(`mark: ${yamlString(a.mark.emoji)}`);
+  const fallback =
+    a.routing === undefined ? undefined : ompRoleRouting.agentRole(a.routing);
+  const model = [`@${a.name}`, ...(fallback === undefined ? [] : [fallback])];
+  fm.push('key: null', `model: [${model.map(yamlString).join(', ')}]`);
+  fm.push('spawns: "*"');
+  // The typed handoff: the deliverable as omp's own output schema, the assignment
+  // where the cratylus extension reads it to show and check each dispatch and
+  // launch. Each is one line of JSON, which YAML reads as the same object.
+  if (a.contract?.deliverable !== undefined)
+    fm.push(`output: ${JSON.stringify(a.contract.deliverable)}`);
+  if (a.contract?.assignment !== undefined)
+    fm.push(`${OMP_ASSIGNMENT_KEY}: ${JSON.stringify(a.contract.assignment)}`);
   // omp's own preload field. claude has one too (`skills`); a harness without one
   // gets the list as a required-reading declaration instead.
   if (a.skills?.length) {
@@ -429,7 +358,7 @@ export function skillToOmpMd(s: ResolvedSkill): string {
   return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
 }
 
-// ── Enforcement → <scope>/extensions/<bin>-guardrails.ts ─────────────────────
+// ── Session hooks → extensions/<bin>-session.ts ──────────────────────────────
 
 /** One `pi.on(...)` registration, already narrowed to its act where it has one. */
 interface OmpRegistration {
@@ -445,95 +374,24 @@ interface OmpRegistration {
 }
 
 /**
- * Realize the canon's per-agent constraints as one TypeScript extension module PER
- * AGENT, written where only that agent's own scope directory can load it.
- *
- * Returns one projection per composing agent — plural, unlike its siblings, because
- * omp's scope is a directory and a directory is per-agent by construction. A single
- * global module would have had to filter itself at runtime, which `MODEL.md`
- * forbids.
- *
- * The emitted module shells out to the same worker bytes every other harness
- * invokes (`hookCommand`), so the canon's behaviour has one home and this adapter
- * carries only the wiring.
- */
-export function ompGuardrailExtensions(
-  bindings: readonly Binding[],
-  mechanisms: ReadonlyMap<string, HarnessMechanism> = new Map(),
-): HarnessProjection[] {
-  // agent → the registrations that agent composes.
-  const byAgent = new Map<string, OmpRegistration[]>();
-  for (const b of bindings) {
-    const f = b.fragment as { substrate?: string; events?: readonly string[] };
-    if (f.substrate !== 'harness') continue;
-    const anchor =
-      (b.fragment as { realizedBy?: string }).realizedBy ?? b.anchor;
-    const m = mechanisms.get(anchor);
-    if (!m) continue;
-    for (const event of f.events ?? []) {
-      const binding = ompBindingOf(event);
-      // An unrealizable event never reaches here: the seam decided mode first and
-      // withholds a degraded binding. This is an EMISSION guard, not a second
-      // decision site — skipping is the only safe default, because emitting an
-      // unmapped event would register a handler omp never fires.
-      if (!binding) continue;
-      for (const agent of b.agents) {
-        const list = byAgent.get(agent) ?? [];
-        list.push({
-          anchor: b.anchor,
-          native: binding.event,
-          tool: binding.matcher,
-          workerTool: OMP_WORKER_TOOL[event],
-          command: m.command,
-        });
-        byAgent.set(agent, list);
-      }
-    }
-  }
-
-  const out: HarnessProjection[] = [];
-  for (const [agent, regs] of [...byAgent].sort()) {
-    // Deduped, and one judgment per act, in `renderRegistrations`: two acts can land
-    // on one native event (`operator.consult.pre` and `subagent.dispatch.pre` are both
-    // `tool_call`), and registering the same command twice would run the worker twice
-    // per call.
-    const lines = renderRegistrations(regs);
-    if (lines.length === 0) continue;
-    out.push({
-      filename: OMP_GUARDRAIL_MODULE,
-      scope: agent,
-      content: ompExtensionModule(`the agent \`${agent}\``, agent, lines),
-    });
-  }
-  return out;
-}
-
-/**
  * Realize the SCOPE-ACTIVATED cells — the ones no agent composes — as one module
- * per scope that must carry them.
+ * at the SESSION scope.
  *
  * WHY THIS OP EXISTS AT ALL. `project` asked only for `hooks()`, a settings
  * fragment, and omp keeps no hook config: its loader scans each native config
  * root's `extensions/` dir, so the artifact is a module and the directory is the
- * registration. With nothing to answer, all five of canon's session-scoped cells
- * were warned about and dropped, and this harness deployed no mechanism at all —
- * no stance gate, no drift notice, no memory nudge, no resume notice.
+ * registration. With nothing to answer, every one of canon's session-scoped cells
+ * was warned about and dropped, and this harness deployed none of them.
  *
- * ONE MODULE PER SCOPE, and the scopes are the projected agents' own `.agents/
- * <name>/` dirs plus the SESSION root, because a scope's module loads only where
- * that scope's own launch reaches it: the session root is what a bare `omp`
- * scans natively, and an agent's own copy is what that agent's launch spec
- * names in its overlay. Claude registers these once in a user-level
- * `settings.json` that every session reads; the same reach on this harness is
- * N+1 placements.
+ * ONE MODULE, in the session root every `omp` session scans natively — the same
+ * reach claude's user-level `settings.json` gives these cells.
  *
  * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
  * constraint filtering itself at runtime; these cells compose no agent — they bind
- * the session — and nothing emitted here asks who is running.
+ * the session — and nothing emitted for them asks who is running.
  */
 export function ompScopeActivatedExtensions(
   hooks: readonly Hook[],
-  agentNames: readonly string[],
 ): HarnessProjection[] {
   const regs: OmpRegistration[] = [];
   for (const hook of hooks) {
@@ -554,26 +412,18 @@ export function ompScopeActivatedExtensions(
   }
   const lines = renderRegistrations(regs);
   if (lines.length === 0) return [];
-  const scopes = [SESSION_SCOPE, ...[...agentNames].sort()];
-  // Enrollment is not emitted here: the persona's manifest is the projector's, one
-  // builder for every harness (`core/enrollment.ts`).
-  return scopes.map((scope) => ({
-    filename: OMP_SESSION_MODULE,
-    scope,
-    content: ompExtensionModule(
-      scope === SESSION_SCOPE
-        ? 'the SESSION — a launch that named no persona'
-        : `every session of the persona \`${scope}\``,
-      scope === SESSION_SCOPE ? undefined : scope,
-      lines,
-    ),
-  }));
+  return [
+    {
+      filename: OMP_SESSION_MODULE,
+      scope: SESSION_SCOPE,
+      content: ompExtensionModule('every session', lines),
+    },
+  ];
 }
 
 /**
  * The DISPATCH ISOLATION module: the `tool_call` handler that makes a dispatch of an
- * agent declaring a worktree of its own an isolated task, one per scope that
- * dispatches.
+ * agent declaring a worktree of its own an isolated task, at the SESSION scope.
  *
  * omp has no agent-definition field that isolates an agent (`startsInWorktree` is
  * false); isolation is a flag of the `task` call. A handler may revise the input a
@@ -582,10 +432,12 @@ export function ompScopeActivatedExtensions(
  * touches no other spawn and no other tool. The agents are named in the module at
  * projection, from the corpus's declarations; nothing here asks who is running.
  *
- * The flag makes sense only over the host settings install records
- * ({@link ompDispatchIsolation}): with `task.isolation.enabled` off, omp refuses an
- * isolated task — a loud failure, where the alternative is the agent building in the
- * checkout that dispatched it.
+ * The flag makes sense only where `task.isolation.enabled` holds
+ * ({@link ompDispatchIsolation}), which this module holds at session start as a
+ * session-scoped runtime override, with the rest of the isolation's settings, so no
+ * host setting is written. With it off, omp refuses an isolated task — a loud
+ * failure, where the alternative is the agent building in the checkout that
+ * dispatched it.
  */
 export function ompIsolationExtensions(
   agents: readonly Agent[],
@@ -596,27 +448,34 @@ export function ompIsolationExtensions(
     .sort();
   if (isolated.length === 0) return [];
   const named = Object.fromEntries(isolated.map((n) => [n, true]));
-  const scopes = [SESSION_SCOPE, ...agents.map((a) => a.name).sort()];
-  return scopes.map((scope) => {
-    const agent = scope === SESSION_SCOPE ? undefined : scope;
-    return {
+  return [
+    {
       filename: OMP_ISOLATION_MODULE,
-      scope,
+      scope: SESSION_SCOPE,
       content: [
         `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
         `// Runs a dispatch of ${isolated.map((n) => `\`${n}\``).join(', ')} as an isolated task.`,
         '//',
-        ...scopePlacement(agent),
+        ...SESSION_PLACEMENT,
         '',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+        'import { lookup } from "@oh-my-pi/pi-coding-agent/config/registry";',
+        'import { findScopedSettings, type Settings, settings } from "@oh-my-pi/pi-coding-agent/config/settings";',
         '',
         '// The agents that declare a worktree of their own, by the name a dispatch gives them.',
         `const ISOLATED: Readonly<Record<string, true>> = ${JSON.stringify(named)};`,
+        "// The settings an isolated task needs, held as the session's runtime overrides.",
+        `const SETTINGS: Readonly<Record<string, unknown>> = ${JSON.stringify(ompDispatchIsolation.settings)};`,
         '',
         'export default function (pi: ExtensionAPI) {',
+        '  pi.on("session_start", () => {',
+        '    const scope: Settings = findScopedSettings() ?? settings;',
+        '    for (const [key, value] of Object.entries(SETTINGS))',
+        '      (lookup(key) as { override(scope: Settings, value: unknown): void }).override(scope, value);',
+        '  });',
+        '  // A dispatch, known by the agent its items name, whatever the tool carrying it is called.',
         '  pi.on("tool_call", async (event) => {',
-        '    if (event.toolName !== "task") return undefined;',
-        '    const input = event.input as Record<string, unknown>;',
+        '    const input = (event.input ?? {}) as Record<string, unknown>;',
         '    const batch = Array.isArray(input.tasks);',
         '    const spawns: unknown[] = batch ? (input.tasks as unknown[]) : [input];',
         '    let revised = false;',
@@ -636,8 +495,8 @@ export function ompIsolationExtensions(
         '}',
         '',
       ].join('\n'),
-    };
-  });
+    },
+  ];
 }
 
 /**
@@ -711,16 +570,16 @@ function renderRegistration(
   const cmd = JSON.stringify(r.command);
   const call =
     kind === 'turn'
-      ? `judged(${cmd}, ctx, { stop_hook_active: event.stop_hook_active === true }, event.messages ?? [])`
+      ? `hooked(${cmd}, { stop_hook_active: event.stop_hook_active === true }, event.messages ?? [])`
       : kind === 'dispatch'
-        ? `judged(${cmd}, ctx, {}, dispatchTurn(event))`
+        ? `hooked(${cmd}, {}, dispatchTurn(event))`
         : kind === 'tool'
           ? (() => {
               const named = r.workerTool ?? r.tool;
               if (named === undefined)
-                return `judged(${cmd}, ctx, toolEnvelope(event))`;
+                return `hooked(${cmd}, toolEnvelope(event))`;
               const wt = JSON.stringify(named);
-              return `judged(${cmd}, ctx, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
+              return `hooked(${cmd}, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
             })()
           : `exec(${cmd})`;
   // A BLOCKING EVENT REFUSES, IN THE SHAPE ITS OWN CALLER READS. `tool_call` is
@@ -757,18 +616,12 @@ function renderRegistration(
     }`
           : `
     await ${call};`;
-  // The handler takes `ctx` only where it judges: that is where the model and the
-  // registry come from, and an unused parameter in a generated file reads as a
-  // leftover rather than a contract.
-  const args = kind ? '(event, ctx: JudgeContext)' : '(event)';
-  // Only the main session is judged. The return comes BEFORE the worker is run, so
-  // no judge is asked. A subagent says nothing; a context with no `agent` cannot
-  // say which session it is, so the call goes unjudged AND the notice is relayed.
-  // See "A GUARD BINDS A PERSONA’S MAIN SESSION ONLY" in the bridge for the signal.
-  const unjudged = `${r.anchor} guard — could not tell which session is running, so this call was NOT judged.`;
-  const session = kind
-    ? `\n    if (ctx.agent?.kind !== "main") {\n      if (ctx.agent === undefined) relay(${JSON.stringify(unjudged)});\n      return;\n    }`
-    : '';
+  // The handler takes `ctx` only where it hands a worker an envelope: only the main
+  // session runs such a worker. omp hands a subagent its parent's extensions, so
+  // this module loads there too; `ctx.agent.kind` says which session is running
+  // (`main` or `sub`), and a context with none is no main session.
+  const args = kind ? '(event, ctx: HookContext)' : '(event)';
+  const session = kind ? '\n    if (ctx.agent?.kind !== "main") return;' : '';
   return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${session}${act}
   });
   // ${r.anchor}`;
@@ -788,74 +641,9 @@ function renderRegistration(
  * rather than re-deriving them here in a second language.
  */
 const TURN_BRIDGE: readonly string[] = [
-  '// THE IDENTITY IS READ FROM PLACEMENT, never asked at runtime: this module sits',
-  '// at `<scope>/extensions/`, so its grandparent directory names the scope. A',
-  '// persona copy reports that persona; the session root reports its own dir name,',
-  '// which is no persona and matches no allowlist — the bare-launch case falls out',
-  '// of the placement instead of out of a branch.',
-  '//',
-  '// The DIRECTORY is what a worker needs, not the name. Enrollment is the',
-  "// presence of that scope's own stance manifest, so this bridge hands over",
-  '// WHERE to look and learns nothing about what is found: which cells gate this',
-  '// persona, at which moments, against which contract are all answered inside',
-  '// the scope, by the projection that wrote it. The session root has a module',
-  '// and no manifest, so a bare launch resolves to silence by placement.',
-  'const scopeDir = dirname(dirname(new URL(import.meta.url).pathname));',
-  'const scopeName = basename(scopeDir);',
-  '',
   '// The reason last delivered, so an unchanging one is not re-delivered — see the',
   '// `agent_end` registration for why delivery is bounded.',
   'let lastVerdict = "";',
-  '',
-  '// The notice last relayed, so an unchanging one is delivered ONCE per session rather',
-  '// than at every turn end (a latched-away judge would repeat one line forever). An',
-  "// absent verdict is not a clean one, and the worker's own notice is what says so.",
-  'let lastNotice = "";',
-  '',
-  "// The judge's own deadline, set well inside omp's 30 s extension-handler kill",
-  '// so an unreachable endpoint fails OPEN — loudly, via `dark` — instead of costing every',
-  '// turn the full budget and then surfacing as `Extension error: handler timed',
-  '// out`.',
-  '//',
-  '// IT WAS 12 s, ON A PREMISE THAT EXPIRED. That number came from "a healthy local',
-  '// judge answers this rubric in about two seconds" — measured when the advisor role',
-  '// pointed at a box on the LAN and the rubric was smaller. Re-measured against the',
-  '// cloud model the role names today: 9.3 s for a 9 KB payload against a 29 KB',
-  '// rubric, which is 77% of the old budget for a turn shorter than a working one.',
-  '// A deadline a healthy judge routinely brushes is a deadline that reports outages',
-  '// that did not happen, and it reported one on this very session.',
-  '//',
-  '// THE DEADLINE STAYS AND THE JUDGE IS SENT LESS. The 9.3 s above, and 17-19 s through',
-  '// `omp -p` on haiku, were measured under a rubric that had grown to 29 KB and a',
-  '// payload with no bound. The rubric has been cut since: stance-judge-prompt.md is',
-  '// 2037 bytes and purview-judge-prompt.md 1908, and every worker caps what it sends at',
-  '// 12 KB (12000 bytes), so a judgement fits the time the harness allows. Measured on the',
-  '// advisor role (anthropic/claude-haiku-4-5, cold prompt cache, quiet provider): 21',
-  '// calls over the six calibration turns and a 200000-byte turn after the cap took',
-  '// 1.7-3.2 s, where the old rubric took 2.4-3.4 s on the same quiet provider. Time',
-  '// follows the length of the verdict (100-220 output tokens) far more than the input,',
-  '// so the cut buys margin for a provider under load rather than a quiet one, and no',
-  '// deadline is raised to make a judgement fit.',
-  'const JUDGE_TIMEOUT_MS = 22_000;',
-  '',
-  '// CONSECUTIVE misses, not the first one. This was a boolean latched by a single',
-  '// timeout, on the reasoning that an endpoint which was away stays away — true of',
-  '// the dead LAN box it was written for, false of a healthy provider having one slow',
-  '// call. There, one transient blacked out the guard for the REST OF THE SESSION, and',
-  '// every later turn went unjudged for a reason that had already passed. The latch is',
-  '// still worth having: a genuinely dead endpoint must stop costing a full budget per',
-  '// turn. It just has to be earned more than once. Reset by any answer.',
-  'const JUDGE_MISS_LIMIT = 3;',
-  'let judgeMisses = 0;',
-  '',
-  '// HOW LONG A RUN OF MISSES KEEPS THE JUDGE UNASKED, in wall time. A latch that only',
-  '// an answer can clear is a latch that never opens, because a judge that is never',
-  '// asked never answers — one burst of slow calls blacked out every guard for the rest',
-  '// of a session. Two minutes: long enough that a dead endpoint costs one 22 s',
-  '// deadline per two minutes instead of one per turn, short enough that a provider',
-  '// whose burst has passed is asked again within a working turn or two.',
-  'const JUDGE_COOLDOWN_MS = 120_000;',
-  'let judgeRetryAt = 0;',
   '',
   '// One value per module LOAD, and a module is loaded once per session — which is',
   "// exactly the lifetime the workers' per-session state files want.",
@@ -864,37 +652,8 @@ const TURN_BRIDGE: readonly string[] = [
   'type TurnBlock = { type?: string; text?: string; name?: string };',
   'type TurnMessage = { role?: string; content?: string | TurnBlock[] };',
   '',
-  '// WHAT THE JUDGE NEEDS OFF THE HANDLER CONTEXT, declared rather than imported.',
-  '// `model` and `modelRegistry` are non-enumerable getters on the context omp',
-  '// hands every handler — present on every event, invisible to `Object.keys`, and',
-  '// not surfaced on the exported `ExtensionContext` type. Naming the two members',
-  '// this module actually reads keeps the dependency honest and narrow.',
-  'type JudgeContext = {',
-  '  agent?: { kind?: string };',
-  '  model?: Model<Api>;',
-  '  modelRegistry?: {',
-  '    find(provider: string, modelId: string): Model<Api> | undefined;',
-  '    getApiKeyAndHeaders(',
-  '      model: Model<Api>,',
-  '    ): Promise<{ ok: boolean; apiKey?: string }>;',
-  '  };',
-  '};',
-  '',
-  '// A GUARD BINDS A PERSONA’S MAIN SESSION ONLY. omp hands a spawned subagent its',
-  "// parent's extensions (`preloadedExtensionPaths: l ? [] : n.extensionPaths` beside",
-  '// `parentAgentId` in the subagent session options), so this module also loads in',
-  "// every subagent the persona dispatches — and would judge that subagent's calls",
-  "// against the persona's contract. The one signal that says which session is",
-  '// running is `ctx.agent.kind`, on the context omp hands every handler: the main',
-  '// session carries `{ kind: "main", depth: 0 }` (TOP_LEVEL_AGENT), a subagent',
-  '// carries `{ kind: "sub", parentId, depth }`. ESTABLISHED against the omp 18.4.4',
-  '// binary (`~/.local/bin/omp`: the extension runner is built with',
-  '// `kind: un ? "sub" : "main"`, and `createContext()` returns `agent: this.agent`).',
-  '// Only `main` is judged; a subagent is judged by nothing and says nothing. A',
-  '// context carrying no `agent` is judged by nothing either, but that one is',
-  '// SAID: which session is running cannot be told, so the guard is not in force',
-  '// for the call and each registration relays that through the same path as any',
-  '// let-through notice.',
+  "// What a worker's registration reads off the handler context: which session is running.",
+  'type HookContext = { agent?: { kind?: string } };',
   '',
   '/** omp messages as the JSONL transcript lines the workers parse. */',
   'function transcriptOf(messages: readonly TurnMessage[]): string {',
@@ -996,7 +755,7 @@ const TURN_BRIDGE: readonly string[] = [
   '// event carries no message list — which was read as "not a turn" and left the',
   '// worker firing on empty stdin. It is a turn: the prompt that launched the',
   "// delegate is the instruction, and the text it returned is the delegate's last",
-  '// assistant turn, which is exactly the pair the rubric judges.',
+  '// assistant turn, the pair the worker reads.',
   'function dispatchTurn(event: {',
   '  input?: Record<string, unknown>;',
   '  content?: readonly { type?: string; text?: string }[];',
@@ -1067,173 +826,13 @@ const TURN_BRIDGE: readonly string[] = [
  * The envelope goes to a FILE and arrives by redirect because `ExecOptions` has
  * no stdin slot (signal · timeout · cwd) and the workers read stdin. A temp dir
  * per fire, removed in `finally`, keeps a turn's transcript off any shared path.
- *
- * THE JUDGE RUNS IN THIS PROCESS, and that is the point of `judged()`. The
- * workers' default judge backend spawns `claude -p`: a cross-harness dependency
- * on a foreign vendor's CLI, separately installed and separately authenticated,
- * which on this host had a lapsed OAuth session and therefore failed every
- * verdict open, in silence, on every harness at once. omp holds a model already.
- *
- * So the worker is run TWICE around a model call this module makes itself: once
- * with `STANCE_EMIT_PAYLOAD` to collect the gated, layer-1-annotated payload and
- * the rubric that scores it, then again with `STANCE_VERDICT_FILE` naming the
- * answer. The PROCEDURE — opt-in, agent scope, extraction, the deterministic
- * pre-filter, evidence verification, the block counters — stays in its one home
- * inside the worker, and everything either pass touches before the judge seam is
- * read-only, so the counters see exactly one pass.
+ * The worker is fired once and its stdout read as its verdict (`verdictOf`); no
+ * model is asked anything here.
  */
 const TURN_EXEC: readonly string[] = [
-  '  /** Fire the worker once, with `extra` merged into the envelope on stdin. */',
-  '  const fire = async (',
+  '  /** Fire the worker once, with `extra` merged into the envelope on stdin; its verdict. `undefined` ⇒ none. */',
+  '  const hooked = async (',
   '    cmd: string,',
-  '    dir: string,',
-  '    extra: Record<string, unknown>,',
-  '    env: Record<string, string> = {},',
-  '  ) => {',
-  '    const envelope = join(dir, "envelope.json");',
-  '    writeFileSync(',
-  '      envelope,',
-  '      JSON.stringify({',
-  '        session_id: sessionId,',
-  '        cwd: pi.cwd,',
-  '        agent_type: scopeName,',
-  '        stance_scope: scopeDir,',
-  '        ...extra,',
-  '      }),',
-  '    );',
-  '    // `ExecOptions` carries no env slot either, so it is spelled into the',
-  "    // command. Every value here is one of this module's own literals or a temp",
-  '    // path it just made — never model output — so the quoting is total.',
-  '    const prefix = Object.entries(env)',
-  "      .map(([k, v]) => `${k}='${v}' `)",
-  '      .join("");',
-  '    return await pi.exec("sh", ["-c", `${prefix}${cmd} < ${envelope}`]);',
-  '  };',
-  '',
-  "  /** One judgment, on this session's own provider. `undefined` ⇒ no verdict. */",
-  '  const askJudge = async (',
-  '    ctx: JudgeContext,',
-  '    rubric: string,',
-  '    payload: string,',
-  '  ): Promise<string | undefined> => {',
-  '    // A CONSECUTIVE run of misses, not the first one. A judge that repeatedly',
-  '    // misses its deadline is away, and paying the full deadline again on every',
-  '    // turn end buys nothing. But ONE slow answer from a healthy provider is not',
-  '    // an outage, and treating it as one blacked out a whole session here. And a',
-  '    // judge never asked can never answer, so the latch EXPIRES: inside the',
-  '    // cooldown the judge is skipped; the first ask after it is the probe, and an',
-  '    // answer clears the run while a miss on it starts a new cooldown.',
-  '    if (judgeMisses >= JUDGE_MISS_LIMIT && Date.now() < judgeRetryAt) {',
-  '      return undefined;',
-  '    }',
-  '    let stopDeadline = (): void => {};',
-  '    try {',
-  '      // The `advisor` role first: judging on the primary model is an expensive',
-  '      // way to ask a small classification question, and omp already has a role',
-  '      // whose entire purpose is reviewing this session.',
-  '      const roles =',
-  '        (pi.pi?.Settings?.instance?.get?.("modelRoles") as',
-  '          | Record<string, string>',
-  '          | undefined) ?? {};',
-  '      const spec = roles.advisor ?? roles.smol ?? roles.tiny ?? "";',
-  '      const bare = spec.replace(/:[a-z]+$/, "");',
-  '      const cut = bare.indexOf("/");',
-  '      const model =',
-  '        (cut > 0',
-  '          ? ctx.modelRegistry?.find(bare.slice(0, cut), bare.slice(cut + 1))',
-  '          : undefined) ?? ctx.model;',
-  '      if (!model) return undefined;',
-  '      const auth = await ctx.modelRegistry?.getApiKeyAndHeaders(model);',
-  "      // BOUNDED BY ITS OWN DEADLINE, well inside the host's. omp kills an",
-  '      // extension handler at 30 s, and an unreachable judge does not fail — it',
-  '      // HANGS. Without this race a dead endpoint costs every turn the full 30 s',
-  '      // and then surfaces as `Extension error: handler timed out`, which reads',
-  '      // as the guard being broken rather than the judge being away. Measured on',
-  '      // an operator host whose configured `advisor` role pointed at a local',
-  '      // server that had stopped answering: a one-word prompt did not return in',
-  '      // 20 s, and every turn end paid 30 s.',
-  '      //',
-  '      // A JUDGE THAT DID NOT ANSWER IN TIME HAS REFUSED NOTHING, so the timeout',
-  '      // lands on the same fail-open path as every other error here.',
-  '      const answer = await Promise.race([',
-  '        completeSimple(',
-  '          model,',
-  '          {',
-  '            systemPrompt: [rubric],',
-  '            messages: [',
-  '              {',
-  '                role: "user",',
-  '                content: payload,',
-  '                timestamp: Date.now(),',
-  '              },',
-  '            ],',
-  '          },',
-  '          {',
-  '            maxTokens: 4096,',
-  '            temperature: 0,',
-  '            disableReasoning: true,',
-  '            sessionId,',
-  '            ...(auth?.ok ? { apiKey: auth.apiKey } : {}),',
-  '          },',
-  '        ),',
-  '        new Promise<never>((_, reject) => {',
-  '          const timer = setTimeout(() => {',
-  '            judgeMisses += 1;',
-  '            // The run is at its limit: stop asking until the cooldown has passed.',
-  '            if (judgeMisses >= JUDGE_MISS_LIMIT) {',
-  '              judgeRetryAt = Date.now() + JUDGE_COOLDOWN_MS;',
-  '            }',
-  '            reject(new Error("stance judge timed out"));',
-  '          }, JUDGE_TIMEOUT_MS);',
-  '          timer.unref?.();',
-  '          stopDeadline = () => clearTimeout(timer);',
-  '        }),',
-  '      ]);',
-  '      const text = (answer.content ?? [])',
-  '        .filter((c) => c.type === "text" && typeof c.text === "string")',
-  '        .map((c) => c.text as string)',
-  '        .join("")',
-  '        .trim();',
-  '      // An answer clears the run and the cooldown: the latch measures a STANDING',
-  '      // outage, never a tally of every slow call a long session accumulates.',
-  '      if (text) {',
-  '        judgeMisses = 0;',
-  '        judgeRetryAt = 0;',
-  '      }',
-  '      return text || undefined;',
-  '    } catch {',
-  '      // A judge that could not run has refused nothing.',
-  '      return undefined;',
-  '    } finally {',
-  '      // An answer that won the race must not leave its deadline armed: a stale',
-  '      // timer would count a miss for a call that was answered.',
-  '      stopDeadline();',
-  '    }',
-  '  };',
-  '',
-  '  /**',
-  "   * A worker's let-through notice, to the operator and the agent both: it lands",
-  '   * as a user-attributed prompt so the AGENT reads it in context and the',
-  '   * OPERATOR reads it on screen, both parties to a guard needing to know it was',
-  '   * not in force. Once per distinct line, and never a reason for the turn to',
-  '   * fail: the guard let it through, so the notice cannot be what stops it.',
-  '   */',
-  '  const relay = (notice: string): void => {',
-  '    if (notice === lastNotice) return;',
-  '    lastNotice = notice;',
-  '    try {',
-  '      void Promise.resolve(',
-  '        pi.sendUserMessage(notice, { deliverAs: "nextTurn", attribution: "agent" }),',
-  '      ).catch(() => {});',
-  '    } catch {',
-  '      // Undelivered is not blocked.',
-  '    }',
-  '  };',
-  '',
-  '  /** Worker → in-process judge → worker. `undefined` ⇒ no refusal. */',
-  '  const judged = async (',
-  '    cmd: string,',
-  '    ctx: JudgeContext,',
   '    extra: Record<string, unknown>,',
   '    messages?: readonly TurnMessage[],',
   '  ): Promise<string | undefined> => {',
@@ -1245,60 +844,9 @@ const TURN_EXEC: readonly string[] = [
   '        writeFileSync(transcript, `${transcriptOf(messages)}\\n`);',
   '        full = { transcript_path: transcript, ...extra };',
   '      }',
-  '      const asked = await fire(cmd, dir, full, { STANCE_EMIT_PAYLOAD: "1" });',
-  '      if (asked.code !== 0) return undefined;',
-  '      const head = asked.stdout.trim();',
-  '      // THE ONLY THING THIS PASS ASKS FOR IS THE PAYLOAD ENVELOPE, so any other',
-  '      // line is the worker saying it let this fire through with no verdict (no',
-  '      // `jq`, no input, a scope it could not read) before the judge was ever',
-  '      // reached. Dropping it here made every such path',
-  '      // silent on omp, whatever the worker printed. Relay it, and judge nothing.',
-  '      if (head !== "" && !head.startsWith("{")) {',
-  '        relay(head);',
-  '        return undefined;',
-  '      }',
-  '      if (!head.startsWith("{")) return undefined;',
-  '      let ask: { rubric?: string; payload?: string };',
-  '      try {',
-  '        ask = JSON.parse(head);',
-  '      } catch {',
-  '        return undefined;',
-  '      }',
-  '      // Nothing emitted ⇒ the worker gated this fire out (not enrolled, nothing',
-  '      // judgeable in it). Nothing to judge and nothing to report.',
-  '      if (!ask.rubric || !ask.payload) return undefined;',
-  '      let rubric: string;',
-  '      try {',
-  '        rubric = readFileSync(ask.rubric, "utf8");',
-  '      } catch {',
-  '        return undefined;',
-  '      }',
-  '      const verdict = await askJudge(ctx, rubric, ask.payload);',
-  '      const file = join(dir, "verdict.txt");',
-  '      // AN ABSENT VERDICT IS NOT A CLEAN ONE. Returning early on a judge that',
-  '      // did not answer is what made a dead endpoint read as approval, turn after',
-  "      // turn, in silence — the exact bypass-by-omission the worker's own `dark`",
-  '      // exists to refuse. Writing the empty file and firing anyway REACHES that',
-  "      // announcement, so the harness inherits the canon's answer rather than",
-  '      // re-deciding it here: refuse nothing, and SAY SO.',
-  '      writeFileSync(file, verdict ?? "");',
-  '      const answered = await fire(cmd, dir, full, { STANCE_VERDICT_FILE: file });',
-  '      const out = answered.stdout.trim();',
-  '      // A line that is not a verdict is the worker saying this fire went through',
-  '      // WITHOUT one: the judge did not answer, the verdict did not parse, a block',
-  '      // was discarded. Every guard notice is relayed, whatever words it opens',
-  '      // with, so the operator reads that the guard was not in force.',
-  '      // A verdict is JSON and travels through `verdictOf`.',
-  '      if (answered.code === 0 && out !== "" && !out.startsWith("{")) {',
-  '        relay(out);',
-  '        return undefined;',
-  '      }',
-  '      // THIS FIRE WAS JUDGED — a verdict or a clean pass — so whatever notice was',
-  '      // last relayed is history. Forgetting it is what lets the NEXT outage be said',
-  '      // again even when its text is identical: kept, the dedupe would swallow the',
-  '      // second outage whole and the guard would go dark in silence.',
-  '      if (answered.code === 0) lastNotice = "";',
-  '      return verdictOf(answered);',
+  '      const envelope = join(dir, "envelope.json");',
+  '      writeFileSync(envelope, JSON.stringify({ session_id: sessionId, cwd: pi.cwd, ...full }));',
+  '      return verdictOf(await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]));',
   '    } finally {',
   '      rmSync(dir, { recursive: true, force: true });',
   '    }',
@@ -1306,54 +854,30 @@ const TURN_EXEC: readonly string[] = [
 ];
 
 /**
- * The extension module's text.
- *
- * It names what it governs in a comment and nowhere in its LOGIC, because the
- * logic needs no such name: the file's own location is what limits it. If this
- * module ever grows a check against an env var naming the running persona, that
- * is the tell that the placement was lost and the ambient form crept back.
- *
- * `agent` is the persona whose scope this copy lands in, or `undefined` for the
- * session root — it decides only what the placement note can truthfully say.
+ * The extension module's text. Its hooks bind every session, and nothing in them
+ * asks which agent is running.
  */
-function ompExtensionModule(
-  governs: string,
-  agent: string | undefined,
-  registrations: string[],
-): string {
-  const placement = scopePlacement(agent);
+function ompExtensionModule(governs: string, registrations: string[]): string {
   // The payload bridge is emitted only where a registration reads one, so a module
-  // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
-  // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever
-  // calls the latter still needs every line of the bridge.
-  const needsTurn = registrations.some((r) => r.includes('judged('));
+  // of pure fire-and-forget hooks stays as small as it was.
+  const needsTurn = registrations.some((r) => r.includes('hooked('));
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no
     // longer exists is worse than no banner, and only derivation survives a rename.
     `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-    `// The constraints in force for ${governs}.`,
+    `// The hooks in force for ${governs}.`,
     '//',
-    ...placement,
-    '// There is no PERSONA identity check below and there must not be one: composition',
-    '// is realized by WHERE this file is, not by what it asks at runtime. The one',
-    '// runtime question is which session is running, and only the main one is judged.',
+    ...SESSION_PLACEMENT,
+    '// The hooks below carry no AGENT identity check and must not: they bind the',
+    '// session. The one runtime question they ask is which session is running, and',
+    '// only the main one hands a worker an envelope.',
     '',
     ...(needsTurn
       ? [
-          "import { readFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
+          "import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
           "import { tmpdir } from 'node:os';",
-          "import { basename, dirname, join } from 'node:path';",
-          // STATIC, and it resolves: omp's extension loader aliases
-          // `@oh-my-pi/pi-ai` to its own bundled build, so this is the harness
-          // handing the module its own model client rather than a dependency the
-          // host has to install. `completeSimple` is the whole of what the judge
-          // needs; the richer `judgment` module (`TextJudge`, `chatTextBackend`)
-          // exists in omp's source but is NOT in the bundled compat entrypoint the
-          // shipped binary carries — importing it silently kills the module load,
-          // measured against v18.1.19.
-          "import { completeSimple } from '@oh-my-pi/pi-ai';",
-          "import type { Api, Model } from '@oh-my-pi/pi-ai';",
+          "import { join } from 'node:path';",
         ]
       : []),
     // `ExtensionAPI`, NOT `HookAPI`. omp's own `docs/hooks.md` closes with the
@@ -1383,549 +907,1304 @@ function ompExtensionModule(
   ].join('\n');
 }
 
-/** The placement note of a module in the session scope (`agent` undefined) or in
- *  persona `agent`'s own scope: what is true of where the file sits, said once. */
-function scopePlacement(agent: string | undefined): string[] {
-  return agent === undefined
-    ? [
-        '// SCOPED BY LOCATION. This module sits in the SESSION config root',
-        `// (\`${OMP_SESSION_DIR}/extensions/\`), which a bare \`omp\` — one launched`,
-        "// with no persona's launch spec — scans NATIVELY, with no `--config` entry",
-        '// required. A persona launch reads its own copy instead and never this one.',
-      ]
-    : personaPlacement(agent);
-}
+/** The placement note of a module in the session scope: what is true of where the
+ *  file sits, said once. */
+const SESSION_PLACEMENT: readonly string[] = [
+  `// This module sits in \`${OMP_EXTENSIONS_DIR}/\` of the ${CLI_BIN} extension package,`,
+  '// whose `package.json` names it, so omp loads it in every session.',
+];
 
-/** The placement note of a module in persona `agent`'s own scope — shared by
- *  every per-persona module, because the placement is one fact about them all. */
-function personaPlacement(agent: string): string[] {
+// ── Capability interface and agent launch → extensions/<bin>.ts ──────────────
+
+/**
+ * The CRATYLUS module: ONE omp extension, at the SESSION scope, which omp loads in
+ * any plain session, offering every capability that explains itself as one tool,
+ * and starting the main session as any agent declaration omp discovers.
+ *
+ * A PORT, NEVER A COPY. At session load the module runs the installed
+ * `<bin> <capability> --explain` for each such capability (the command on PATH,
+ * never a path into a source workspace), and when the session starts it registers
+ * one tool per capability,
+ * composed from that answer alone: the name snake-cased from the explained name,
+ * the label that name, the description the capability's purpose and when and each
+ * verb's concept, purpose, when, effect and parameters; the parameters a required
+ * `verb` of the explained verbs and every explained parameter with its
+ * descriptions and its schema (the distinct schemas as `anyOf` where verbs declare
+ * one name differently, so none is dropped); approval `read` for a verb that reads
+ * and `write` for one that appends. A call runs `<bin> <capability> <verb>
+ * [positional] [--flag=value…]` in the session's directory and returns its output;
+ * a refusal is a tool error carrying the command's own message. Every value is
+ * one `--flag=value` token, so a value led by `-` reaches the command literally.
+ * The module names the command and the capabilities and nothing of what a
+ * capability says, so a newer installed package changes the tools in the next
+ * session, these bytes unchanged.
+ *
+ * OPEN REACH (decision 0081). Every agent, main or dispatched, is offered every verb
+ * of every capability: no verb is withheld and no declaration narrows the tools.
+ *
+ * TYPED HANDOFFS, SHOWN AND NEVER REFUSED (decision 0142(3)). Every turn of every
+ * session carries the assignment form of each agent that declares an assignment
+ * schema ({@link OMP_ASSIGNMENT_KEY}). On every `task` call, in any session, each
+ * such item is checked with the same `checkAssignment` the schema package exports
+ * (its source carried here verbatim) against the one fenced `assignment` block of
+ * the item's text or of the batch's shared context; a misfit is warned of, naming
+ * the agent and each missing or ill-typed field with the agent's form, and the call
+ * goes ahead. A dispatch whose assignment briefs a cut (`cut`, `concepts`,
+ * `examples`, `decisions`: a lead) is warned when the cut has no record or its
+ * branch is not checked out; one that names a `workPackage` (a builder) is warned
+ * when that package is not ready, a concept of the cut is unserved, a visible
+ * example unowned (ruling 0083) or one it owns unchecked by a frozen check — each
+ * read by `<bin> workPackage state|inventory|frozen`. A main session launched as an
+ * agent with an assignment schema checks its first prompt the same way, whether given
+ * on the command line, typed, or by any other route, warns of a misfit, and starts.
+ *
+ * DISPATCH FROM `eval`. A dispatch from `eval` code (the prelude's `agent(…)` or
+ * `workpool(…)`, or the task tool called as `tool.task` or `tool["task"]`) reaches
+ * no `task` call, so its assignment is not checked and the ledger does not capture
+ * it. A session launched as an agent, and a delegate whose declaration carries a
+ * typed assignment, is warned so ({@link EVAL_DISPATCH_WARNING}); the call goes ahead.
+ *
+ * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
+ * and lifecycle capture alike, names the agent making it in `CRATYLUS_AGENT`: the
+ * declaration a main session was launched as, the agent a dispatched session runs
+ * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
+ * runs with that agent named the same way: its command is led by a line exporting
+ * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a journal append made from
+ * the architect's session records the architect and a lead's the lead (a commit
+ * records the git user, as git does);
+ * in a session that is no agent the line unsets it, and an ambient value is dropped
+ * at load, so such a session names no one.
+ *
+ * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). The freeze is a rule held
+ * by review and by the record, which names the agent each call names.
+ *
+ * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
+ * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
+ * task call id, the item, the kind), so one event delivered twice is refused:
+ * `dispatched` for each item whose assignment names a cut, `returned` when it
+ * returns (with its tokens when reported), `verdict` from an assayer's returned
+ * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`).
+ *
+ * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
+ * When a main session starts (or the operator switches to a new one) with it, the
+ * name resolves through omp's OWN agent discovery — `discoverAgents` from omp's
+ * task subsystem, the declarations task dispatch runs: the nearest project
+ * `.omp/agents/`, then the user's `<agentDir>/agents/`, then extension packages,
+ * plugins and bundled agents, first name wins — read afresh for that session, never
+ * copied or cached. The mark is the declaration's `mark` front-matter key, read with
+ * omp's own front-matter parser from the declaration's file; a bundled declaration
+ * has none (its path is `embedded:<name>.md`), so it shows its name alone.
+ *
+ * MODEL AND EFFORT AS DISPATCH RESOLVES THEM. The session runs on what omp's task
+ * dispatch would run the declaration on, through omp's own resolver
+ * (`resolveAgentModelSelection`, then `resolveModelOverrideWithAuthFallback`): its
+ * `task.agentModelOverrides` entry, else its `model` selectors with role aliases
+ * expanded, else the session's own model; and the effort a selector carries
+ * (`provider/model:high`, directly or in the configured value of a role alias)
+ * wins over the declaration's `thinking-level`, which wins over the level the
+ * resolved selector implies. `ctx.models.resolve` is not used: it drops the level.
+ * The operator's explicit `--model` and `--thinking`, read with omp's own
+ * `parseArgs`, win over the declaration's — each for its own dimension — and the
+ * declaration's body is carried either way.
+ *
+ * THE DECLARATION IS THE ONLY SOURCE OF IDENTITY, STANCE AND PROCEDURE. omp's own
+ * system prompt opens a launched session's turn, and parts of it prescribe a coding
+ * assistant's identity and workflow. So, for a main session launched as a
+ * declaration (never a plain one), each turn keeps omp's sections that describe the
+ * harness and every section it does not know, and drops, by heading, those that
+ * prescribe: Role, Engineering, Workflow, Delivery, Critical, the project context's
+ * `<critical>` blocks, and the tool policy's line against settling for plausibility.
+ * The titles removed are notified once per launch.
+ *
+ * THE SESSION START. The first turn of a launch whose declared procedure holds
+ * `reconstitution` carries a session-start note rendered from that value: read back
+ * the design, open decisions and cuts in flight before any act. It holds only where
+ * the launch starts a session with no conversation since its last compaction, and
+ * again after the session is compacted; a resumed session continuing a
+ * conversation reconstitutes nothing.
+ * Every turn of a launch whose declared decision rights hold meaning (D) carries a
+ * note rendered from that right: the meaning of the contexts it holds is its own,
+ * the approval of their examples included, approved as they stand when they express
+ * their meaning, and a decision whose grounds it holds is taken in the turn it holds
+ * them (0086, 0090). Every turn of a launch whose memory keeps the records as its
+ * source of truth under the honesty guardrail carries a note rendered from those
+ * values: where things stand is what the records show, and what they do not record
+ * is unknown. These hold what the agent's replies say by its own text, not by a
+ * check on the reply (0106).
+ *
+ * Every turn's system prompt carries the declaration as prose — its name and
+ * description in a sentence, then its body, never the raw front matter — then the
+ * full instructions of each skill its `autoload-skills` names, found among the
+ * skills omp discovered for the session (an unknown name skipped, as dispatch skips
+ * it) and rendered by omp's own `buildSkillPromptMessage` in the autoload form a
+ * dispatched child receives; all appended in `before_agent_start`, so a rebuilt
+ * base prompt never drops them. The status line reads `<mark> <name>`, or `<name>`
+ * without a mark (where the host hid extension status, install lists omp's `status`
+ * segment so it renders).
+ *
+ * THE REST OF THE DECLARATION. Once per launch, held as
+ * session-scoped runtime overrides on the session's own settings (never persisted)
+ * and put back as they were when the launch ends (a switch to a session the name
+ * no longer resolves for): personality `none`, as every dispatched child runs;
+ * `read-summarize` true or false as declared, else the session's own setting; the
+ * advisor through `resolveAgentAdvisorSelection` (`task.agentAdvisor` first, then
+ * front matter; none without either, as for a child), a pattern landing on
+ * `modelRoles.advisor` through `resolveAgentAdvisorRolePattern`, so the live session
+ * starts or stops its advisor as `advisor.enabled` moves; pre-planning through
+ * `resolveAgentPrewalkPattern` and `resolveAgentPrewalkDefault` (`task.agentPrewalk`
+ * first), held on `prewalk.enabled`, which a live main session follows by
+ * disarming or arming omp's default target `@smol`: it is turned off first, so a
+ * hand-off configuration already armed is dropped, then on, a declared target
+ * standing in that role only while omp arms it. Configuration files are defaults
+ * the declaration overrides, as for a child; the operator's explicit `--advisor` and
+ * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own dimension.
+ *
+ * ONE KNOWN omp LIMITATION, where launch holds what the declaration says and omp's
+ * own dispatch does not: `read-summarize: true` (omp's dispatch applies only
+ * `false`, so a dispatched child keeps the session's setting). For every other
+ * value, launch holds what omp's dispatch gives a child.
+ *
+ * The active tools are never touched: the session holds exactly what omp grants for
+ * the operator's selection, and nothing here limits whom it dispatches. An unknown
+ * name ends startup with a non-zero exit before any turn. A subagent session, or a
+ * session without the flag, gets nothing of this.
+ */
+export function ompCapabilityExtensions(): HarnessProjection[] {
   return [
-    '// SCOPED BY LOCATION, NAMED BY THE LAUNCH SPEC. This module sits in this',
-    `// persona's own \`${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}/extensions/\` dir, which`,
-    `// omp never scans on its own — the \`${OMP_LAUNCHER_FILE}\` launcher is what passes`,
-    `// \`--config ${OMP_OVERLAY_FILE}\` once it has resolved this persona by name, and that`,
-    '// overlay is what names this directory. A launch that never resolves this',
-    "// persona's overlay — including a bare `omp` — never loads this copy.",
-  ];
-}
-
-// ── Launch spec → <persona>/omp.yml, <session>/omp-agent ─────────────────────
-
-/**
- * The `--config` overlay's text — identical for every persona; only the
- * DESTINATION (and so the token substituted into it) differs by scope.
- *
- * `{{SCOPE_DIR_TOKEN}}` names this file's OWN eventual directory and is resolved
- * at DEPLOY, never here: omp's `extensions:` entries are resolved with a plain
- * path join against the LAUNCH process's cwd (`resolveExtensionLoadPath` in the
- * installed package's resource loader), never against this file's own directory
- * and never against a shell variable — a literal `$HOME` segment in a config
- * value was measured loading as a directory literally NAMED `$HOME`, not
- * expanded. A relative entry here would therefore point wherever the operator
- * happened to `cd` before running the launcher, and `$HOME` (`export`ed by the
- * launcher, the way `hookCommand` bakes it into a shell command) is exactly the
- * option that fails, because this file is not read by a shell that could expand
- * it. So the path is resolved once, at deploy, from the same `--home` the
- * artifact itself lands under — see `SCOPE_DIR_TOKEN`'s own doc and
- * `deploy/hooks.ts`, which performs the substitution.
- *
- * NAMES THE DIRECTORY, not one file inside it. This persona's own guardrail
- * module and its session module both land in `extensions/`, and a directory
- * entry in `extensions:` sweeps every loose `.ts`/`.js` file inside it — the
- * same routine a native config root's own auto-discovery uses, confirmed
- * against the installed package's `collectAutoExtensionEntries` and reproduced
- * empirically (a directory entry loaded both files; a literal `$HOME` entry
- * failed to resolve at all). Naming one file here by name would silently stop
- * loading the other the day it is added, which is exactly the silent
- * enforcement loss a `--profile`-scanned directory never had.
- */
-export function ompOverlayYaml(): string {
-  return [
-    `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-    '#',
-    "# This persona's --config overlay (see ompOverlayYaml in forge's omp adapter",
-    '# for why the path below is a directory, and why it is a deploy-time token',
-    '# rather than a literal path).',
-    'extensions:',
-    `  - ${SCOPE_DIR_TOKEN}/extensions`,
-    '',
-    "# THE CELL IS THE ONLY VOICE. omp's default prompt renders a personality block",
-    '# chosen by this setting, and a persona already states its register completely —',
-    '# `formality` carries the prose contract, `audience-adaptation` sets density,',
-    '# `transparency` and `handoff` fix what a reply discloses and how it ends. A preset',
-    '# beside those is a second, uncoordinated statement of the same thing.',
-    '#',
-    '# `none` and not a preset, because omp runs every SUBAGENT with `none` regardless.',
-    '# Left at a preset, one definition means two different voices depending on whether',
-    '# it was launched or dispatched — the exact defect the single definition and the',
-    "# launcher's `autoloadSkills` rendering close on the other two axes.",
-    'personality: none',
-    '',
-  ].join('\n');
-}
-
-/**
- * The launcher's text — ONE script for every persona on the host, which is the
- * whole shape change: the agent is resolved at RUN time out of the definitions
- * omp already discovers, so nothing here is per-agent and nothing has to be
- * regenerated when an agent is added, renamed or retired.
- *
- * TWO WAYS TO NAME THE AGENT, and the second is the one operators actually use.
- * `omp-agent mav` reads `$1`. `mav` — a symlink in a `PATH` dir — reads argv[0]
- * itself, busybox-style, and does NOT consume `$1`, so every remaining word on
- * that command line is omp's own. The dispatch is decided BEFORE the symlink
- * walk, because the walk resolves away the very name argv[0] is carrying.
- *
- * AND IT FOLLOWS SYMLINKS, because `dirname "$0"` alone does not. Linking this
- * script into a `PATH` directory is the normal way to run a persona by name, and
- * `$0` is then the LINK: the launcher computed the link's directory, passed
- * `--config <that dir>/omp.yml`, and omp died with `Config overlay not found:
- * ~/.local/bin/omp.yml` — measured, on an operator's host. Every path below
- * names a descendant of the REAL file's directory, so the real file is what has
- * to be found. Hops are capped the way a kernel caps them, so a link cycle fails
- * the launch instead of hanging it, and `readlink` is used without `-f` (a GNU
- * extension absent from the BSD `readlink` on a stock macOS).
- *
- * IT RESOLVES ITS OWN DIRECTORY rather than a baked-in absolute path, so the
- * SAME bytes are correct whether deploy wrote them under a real `$HOME` or the
- * sandboxed `--home` a test used. `omp.yml`'s abs path has no such option (see
- * `ompOverlayYaml`), but a shell script has a shell, and its own location is a
- * fact true at every site this file can land — unlike `--home`, which the script
- * never sees and does not need to.
- *
- * THE PROMPT IS AN ARGUMENT, NOT A FILE. `--append-system-prompt` takes either,
- * and a temp file is the shape that leaks: this script EXECs, so there would be
- * no process left to remove one. What binds an argument on Linux is not
- * `ARG_MAX` (the whole argv plus environment) but the per-argument
- * `MAX_ARG_STRLEN`, 32 pages — 128 KiB on 4 KiB pages. The largest composed
- * prompt measured at ef78db59 is about 34 KB: nico's 6.5 KB definition plus
- * the 27.4 KB of its design, deliver, plan and note bodies. No guard enforces
- * the limit; a prompt past it fails the `exec` with `E2BIG` rather than
- * starting a session.
- *
- * THE IDENTITY LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION. Every
- * adapter must carry the cell's `name` into whatever surface its harness reads
- * an identity from: claude has a front-matter `name:` field. A MAIN omp session
- * has none — `--append-system-prompt` is a TRUE
- * augment, so omp's base prompt survives underneath and asserts its OWN identity
- * ("Oh My Pi coding assistant"). Appending a body headed `# ✈️ mav` therefore
- * leaves TWO identities in one prompt, and which one answers depends on the
- * question. Asked "what is your name and your Prime Principle?" the session
- * answered `mav` and recited cratylism; asked the bare "what is your name?" the
- * SAME session answered "I'm ChatGPT, an AI assistant running in the Oh My Pi
- * harness." Both measured, on `omp/17.2.9`, blank cwd, `--no-skills`. With this
- * line prepended the bare question answers `mav`. It lives HERE rather than in
- * the definition because a DISPATCHED subagent does not need it: there the body
- * IS the entire system prompt, with no rival identity under it.
- *
- * `autoloadSkills` IS HONOURED HERE BECAUSE OMP HONOURS IT ONLY FOR A SPAWN.
- * The field injects skills before a SUBAGENT's first prompt and has no
- * main-session path at all, so one definition would otherwise mean two
- * different things depending on how it was reached. So the launcher does what
- * a spawn does, through omp's OWN resolver: for each listed skill, in order,
- * it runs `omp read skill://<name>` from the launch directory and inlines
- * what omp returns — the same `SKILL.md` a session started there resolves,
- * whichever root it came from (user or project) and whatever settings gate
- * them — with its front matter stripped. There is no second copy of omp's
- * discovery here to drift from the first.
- *
- * NO BASE DIRECTORY, BECAUSE NONE IS NEEDED. omp exposes a skill's body but
- * not its location, and `skill://…` does not execute. Every projected
- * `scripts/<capability>.mjs` is a thin forwarder to the host CLI (`CLI_BIN`)
- * (`runtimeShimContent`), so each inlined skill opens, under `# Skill: <name>`,
- * with one line per GENERATED shim among its `scripts/`, saying which CLI
- * command that route runs as. A shim is known by its signature line
- * (`SHIM_SIGNATURE`), which also names the capability it forwards to; a script
- * the skill's author wrote gets no line. A skill omp cannot resolve is not
- * dropped: it degrades to a `skill://` line under `## Required reading`, and
- * the launcher says so on stderr, once per skill, before it launches.
- *
- * omp's own skill flags are read off the arguments passed through to it:
- * `--no-skills` inlines none, and a `--skills` filter, which is not mirrored,
- * earns one stderr line.
- *
- * THE MODEL ROUTE IS READ FROM THE SAME DEFINITION, so a persona launched by
- * name starts where a dispatched holder of its role runs: on the definition's
- * `model` list ({@link agentToOmpMd}), one definition and two readers. omp's
- * `--model` takes a role alias, and takes a comma-separated list of them with
- * the first it resolves winning (both measured on omp 18.4.9) — but where a
- * dispatched agent falls through a role the host never mapped, `--model` on one
- * is `Model "@architect" not found` and no session starts. So the launcher asks
- * omp which roles the host maps (`omp config get modelRoles`) and passes only
- * the `@role` selectors among them, a selector naming a model as written. Where
- * the definition routes nothing, or the host maps none of its roles, no model
- * is passed and omp chooses as it always did: `--model @default` against a host
- * with no default role is not that choice (measured: it picks a provider with no
- * credentials). A `--model` the operator passes wins, and nothing is added.
- *
- * THE SAME READER serves the `model` list and `autoloadSkills` (`fm_list`).
- *
- * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
- * FLOW sequence from the skill closure projection hands it; an operator
- * hand-editing a definition writes YAML's BLOCK sequence. Reading only one of
- * them would drop the declaration in silence, which is the same session as one
- * that never made it.
- */
-export const OMP_LAUNCHER_SCRIPT = [
-  '#!/bin/sh',
-  `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-  '#',
-  `# ONE launcher for every persona: \`${OMP_LAUNCHER_FILE} <agent> [omp flags]\`, or a`,
-  '# symlink named after the agent (`ln -s … ~/.local/bin/mav`), which is then a',
-  "# command taking omp's own flags and nothing else.",
-  '',
-  '# WHICH AGENT — decided before the symlink walk below, because that walk',
-  '# resolves away the very name argv[0] is carrying.',
-  'invoked=${0##*/}',
-  `if [ "$invoked" = "${OMP_LAUNCHER_FILE}" ]; then`,
-  '  if [ "$#" -eq 0 ]; then',
-  `    printf 'usage: ${OMP_LAUNCHER_FILE} <agent> [omp flags ...]\\n' >&2`,
-  '    exit 2',
-  '  fi',
-  '  name=$1',
-  '  shift',
-  'else',
-  '  name=$invoked',
-  'fi',
-  '',
-  '# Resolves its own directory rather than a baked-in path: this exact file is',
-  '# deployed once, but has to run from wherever it landed - including through a',
-  '# symlink in a PATH dir, which holds none of the files named below.',
-  'self=$0',
-  'hops=0',
-  'while [ -L "$self" ] && [ "$hops" -lt 40 ]; do',
-  '  hops=$((hops + 1))',
-  '  target=$(readlink "$self") || exit 1',
-  '  case $target in',
-  '    /*) self=$target ;;',
-  '    *) self=$(dirname -- "$self")/$target ;;',
-  '  esac',
-  'done',
-  'dir=$(CDPATH= cd -- "$(dirname -- "$self")" && pwd) || exit 1',
-  '',
-  '# THE DEFINITION IS THE SOURCE OF TRUTH, and it is the same file a DISPATCHED',
-  `# subagent of this name reads: omp's own \`${OMP_AGENT_DEF_DIR}/\` dir, one hop below this`,
-  '# script, is the user-level task-agent root it discovers from.',
-  `def=$dir/${OMP_AGENT_DEF_DIR}/$name.md`,
-  'if [ ! -f "$def" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: no definition for agent %s\\n' "$name" >&2`,
-  `  printf '${OMP_LAUNCHER_FILE}: expected it at %s\\n' "$def" >&2`,
-  '  exit 1',
-  'fi',
-  '',
-  "# TEXT AFTER THE FRONT MATTER, leading blank lines dropped: a definition's body",
-  '# and a skill body alike. Front matter is dispatch metadata and must never reach',
-  '# the model as literal text.',
-  "after_fm='",
-  '  NR == 1 && $0 == "---" { fm = 1; next }',
-  '  fm { if ($0 == "---") fm = 0; next }',
-  '  !started && $0 ~ /^[ \\t]*$/ { next }',
-  '  { started = 1; print }',
-  "'",
-  '',
-  '# THE BODY IS THE SYSTEM PROMPT.',
-  'composed=$(awk "$after_fm" "$def")',
-  'if [ -z "$composed" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: %s carries no system prompt\\n' "$def" >&2`,
-  '  exit 1',
-  'fi',
-  '',
-  '# A front-matter field read here, in either YAML spelling: one value per line.',
-  '# `\\047` spells the apostrophe the surrounding quotes cannot; awk unescapes it',
-  '# before the string is used as a regex.',
-  'fm_list() {',
-  `  awk -v key="$1" '`,
-  '    function clean(s) { gsub(strip, "", s); return s }',
-  '    BEGIN { strip = "^[ \\t\\"\\047]+|[ \\t\\"\\047,]+$" }',
-  '    NR == 1 { if ($0 == "---") next; exit }',
-  '    $0 == "---" { exit }',
-  '    list && $0 ~ /^[ \\t]*-[ \\t]*/ {',
-  '      s = $0; sub(/^[ \\t]*-[ \\t]*/, "", s); s = clean(s)',
-  '      if (s != "") print s',
-  '      next',
-  '    }',
-  '    { list = 0 }',
-  '    index($0, key ":") == 1 {',
-  '      rest = substr($0, length(key) + 2)',
-  '      sub(/^[ \\t]+/, "", rest)',
-  '      gsub(/^\\[|\\]$/, "", rest)',
-  '      if (rest == "") { list = 1; next }',
-  '      m = split(rest, part, ",")',
-  '      for (i = 1; i <= m; i++) { s = clean(part[i]); if (s != "") print s }',
-  '    }',
-  `  ' "$def"`,
-  '}',
-  'skills=$(fm_list autoloadSkills)',
-  'model=$(fm_list model)',
-  '',
-  "# THE SKILL BODIES, as a spawn would have them, read through omp's OWN",
-  "# resolver from the launch directory — see this script's doc.",
-  "nl='",
-  "'",
-  "# omp's own skill flags, read off the arguments it is about to receive.",
-  '# `--no-skills` means omp loads none, so none are inlined; a `--skills`',
-  '# filter is not mirrored, and saying so is the alternative to diverging quietly.',
-  'filtered=',
-  'for arg in "$@"; do',
-  '  case $arg in',
-  '    --no-skills) skills= ;;',
-  '    --skills | --skills=*) filtered=1 ;;',
-  '  esac',
-  'done',
-  'if [ -n "$filtered" ] && [ -n "$skills" ]; then',
-  `  printf '${OMP_LAUNCHER_FILE}: agent %s: --skills filters which skills omp loads, which this launcher does not apply; its inlined skills may differ from what omp loads\\n' "$name" >&2`,
-  'fi',
-  'missing=',
-  'while IFS= read -r skill; do',
-  '  [ -n "$skill" ] || continue',
-  '  if ! text=$(omp read "skill://$skill" </dev/null 2>/dev/null); then',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp resolves no skill %s from %s; naming it as required reading instead\\n' "$name" "$skill" "$PWD" >&2`,
-  '    missing="$missing$nl- \\`skill://$skill\\`"',
-  '    continue',
-  '  fi',
-  '  # Each shim forwards to the host CLI, so its route needs no location.',
-  '  routes=',
-  '  set -f',
-  '  for script in $(omp read "skill://$skill/scripts" </dev/null 2>/dev/null); do',
-  '    # A route line only for a shim forge generated, named by its signature:',
-  "    # any other script is the skill author's, and its route is not ours to state.",
-  `    cap=$(omp read "skill://$skill/scripts/$script" </dev/null 2>/dev/null | awk -v sig='${SHIM_SIGNATURE}' 'NR <= 3 && index($0, sig) == 1 { print substr($0, length(sig) + 1); exit }')`,
-  `    [ -n "$cap" ] && routes="$routes$nl\\\`scripts/$script <verb>\\\` runs as \\\`${CLI_BIN} $cap <verb>\\\`."`,
-  '  done',
-  '  set +f',
-  `  composed="$composed$nl$nl# Skill: $skill\${routes:+$nl$routes}$nl$nl$(printf '%s\\n' "$text" | awk "$after_fm")"`,
-  'done <<EOF',
-  '$skills',
-  'EOF',
-  'if [ -n "$missing" ]; then',
-  '  composed="$composed$nl$nl## Required reading$nl${nl}These skills are REQUIRED reading for this session, not background:${nl}read each one in full before you act.$nl$missing"',
-  'fi',
-  '',
-  "# THE IDENTITY ASSERTION — see this script's own doc for the measurement that",
-  '# earned it. Held in a variable so the backticks sit inside single quotes and',
-  '# stay literal rather than becoming a command substitution.',
-  "id='You are `%s`. That is your name and the identity you answer as in this session, superseding any other name this system prompt gave you.'",
-  'append=$(printf "$id\\n\\n%s\\n" "$name" "$composed")',
-  '',
-  '# THE MODEL ROUTE: the SAME `model` list a DISPATCHED holder of this role routes',
-  "# by, read from the definition this script already read. omp's --model takes a",
-  '# role alias and a comma-separated list, first one it resolves wins - but a role',
-  '# the host never mapped is "Model not found", where a dispatched agent falls',
-  "# through. So each `@role` is kept only when the host's modelRoles has it, as",
-  '# omp itself reports them; a selector that names a model is kept as written.',
-  '# A definition routing nothing, a host mapping none of its roles, and an',
-  '# operator-given --model each leave omp to choose.',
-  'operator=',
-  'for arg in "$@"; do',
-  '  case $arg in',
-  '    --model | --model=*) operator=1 ;;',
-  '  esac',
-  'done',
-  'route=',
-  'if [ -z "$operator" ] && [ -n "$model" ]; then',
-  '  if ! roles=$(omp config get modelRoles </dev/null 2>/dev/null); then',
-  '    roles=',
-  `    printf '${OMP_LAUNCHER_FILE}: agent %s: omp would not report the host modelRoles; starting on omp default model, not on the route its definition names\\n' "$name" >&2`,
-  '  fi',
-  '  while IFS= read -r selector; do',
-  '    [ -n "$selector" ] || continue',
-  '    case $selector in',
-  '      @*)',
-  '        role=${selector#@}',
-  '        role=${role%%:*}',
-  '        case $roles in',
-  '          *"\\"$role\\":"*) ;;',
-  '          *) continue ;;',
-  '        esac',
-  '        ;;',
-  '    esac',
-  '    route="$route${route:+,}$selector"',
-  '  done <<EOF',
-  '$model',
-  'EOF',
-  '  [ -z "$route" ] || set -- --model "$route" "$@"',
-  'fi',
-  '',
-  "# The persona's OWN extensions, named by its OWN overlay: the placement that",
-  '# makes a mechanism module load under this persona and under no other. Absent',
-  '# for a definition forge did not project, which is not an error — that agent is',
-  '# launchable, just ungoverned — and passing a `--config` that is not there',
-  '# would be a refusal omp prints instead of starting.',
-  `overlay=$dir/${OMP_PERSONA_DIR}/$name/${OMP_OVERLAY_FILE}`,
-  'if [ -f "$overlay" ]; then',
-  '  exec omp --append-system-prompt "$append" --config "$overlay" "$@"',
-  'fi',
-  'exec omp --append-system-prompt "$append" "$@"',
-  '',
-].join('\n');
-
-/**
- * The launch spec: ONE generic launcher, plus one `--config` overlay per
- * projected agent.
- *
- * ASYMMETRIC ON PURPOSE. The launcher is SESSION-scoped because it names no
- * agent — it reads one at run time out of the definitions deploy already placed
- * — so a corpus of ten agents ships one script instead of ten identical ones.
- * The overlay is PER-AGENT because it names that persona's own `extensions/`
- * directory, and that naming is exactly what keeps a mechanism module from
- * loading under anybody else.
- *
- * The SESSION scope gets the launcher and never an overlay: a bare `omp` reads
- * the session root's own `extensions/` natively and has no persona to name.
- *
- * AN EMPTY AGENT SET EMITS NOTHING AT ALL, launcher included. A launcher with no
- * definition it could ever resolve is a file that reads as an affordance and
- * delivers a usage error.
- */
-export function ompLaunchSurface(
-  agentNames: readonly string[],
-): HarnessProjection[] {
-  if (agentNames.length === 0) return [];
-  const out: HarnessProjection[] = [
     {
-      filename: OMP_LAUNCHER_FILE,
+      filename: OMP_CRATYLUS_MODULE,
       scope: SESSION_SCOPE,
-      content: OMP_LAUNCHER_SCRIPT,
-      executable: true,
+      content: [
+        `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
+        `// Offers each capability of the installed \`${CLI_BIN}\` command that explains itself as one`,
+        '// tool, composed at session load from what the command explains of it, and run by that',
+        '// command on every call; and starts the main session as an agent declaration omp',
+        '// discovers, by `omp --agent <name>`, holding the whole declaration as a dispatched child',
+        '// holds it: its text, model, effort, skills loaded at start, read summarisation, advisor',
+        "// and pre-planning, and no default personality; the operator's own flags win. One value",
+        "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
+        '//',
+        '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
+        "// installed command's own explanation, so a newer installed package changes the tools in",
+        '// the next session and this file not at all. Nothing here names an agent either: the',
+        "// declaration is the one omp's own discovery finds, read afresh for each session.",
+        '',
+        'import { execFile } from "node:child_process";',
+        'import { existsSync, readFileSync } from "node:fs";',
+        'import { dirname, isAbsolute } from "node:path";',
+        'import { fileURLToPath } from "node:url";',
+        "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+        'import { type Args, parseArgs } from "@oh-my-pi/pi-coding-agent/cli/args";',
+        'import {',
+        '  DEFAULT_PREWALK_TARGET,',
+        '  resolveAgentAdvisorRolePattern,',
+        '  resolveAgentAdvisorSelection,',
+        '  resolveAgentModelSelection,',
+        '  resolveAgentPrewalkPattern,',
+        '  resolveConfiguredModelPatterns,',
+        '  resolveModelOverrideWithAuthFallback,',
+        '} from "@oh-my-pi/pi-coding-agent/config/model-resolver";',
+        'import { cfgModelRoles } from "@oh-my-pi/pi-coding-agent/config/model-settings";',
+        'import { lookup } from "@oh-my-pi/pi-coding-agent/config/registry";',
+        'import { findScopedSettings, type Settings, settings } from "@oh-my-pi/pi-coding-agent/config/settings";',
+        'import { buildSkillPromptMessage, getActiveSkills } from "@oh-my-pi/pi-coding-agent/extensibility/skills";',
+        'import { cfgPersonality, cfgPrewalkEnabled } from "@oh-my-pi/pi-coding-agent/session/settings";',
+        'import { discoverAgents } from "@oh-my-pi/pi-coding-agent/task/discovery";',
+        'import { resolveAgentPrewalkDefault } from "@oh-my-pi/pi-coding-agent/task/prewalk";',
+        'import {',
+        '  cfgTaskAgentAdvisor,',
+        '  cfgTaskAgentModelOverrides,',
+        '  cfgTaskAgentPrewalk,',
+        '  cfgTaskPrewalk,',
+        '} from "@oh-my-pi/pi-coding-agent/task/settings";',
+        'import type { AgentDefinition } from "@oh-my-pi/pi-coding-agent/task/types";',
+        'import { cfgReadSummarizeEnabled } from "@oh-my-pi/pi-coding-agent/tools/settings";',
+        'import { parseFrontmatter } from "@oh-my-pi/pi-utils";',
+        '',
+        `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
+        `const INSTALLATION_ENV = ${JSON.stringify(INSTALLATION_ENV)};`,
+        '// Where every capability call names the agent making it.',
+        `const ACTING_AGENT = ${JSON.stringify(ACTING_AGENT_ENV)};`,
+        '// The version tool as the build that projected this installation explains it: carried here, so',
+        '// it is offered whatever command the capabilities reach, one that predates it included.',
+        `const SKEW = ${JSON.stringify('versionSkew' satisfies Capability)};`,
+        `const SKEW_EXPLAINED: Explanation = ${JSON.stringify(explain(VERSION_SKEW))};`,
+        '// The installation this module was placed in: the root above its `extensions/`.',
+        'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
+        `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
+        '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
+        '// its purpose cut short.',
+        `const ESSENTIAL: readonly string[] = ${JSON.stringify(OMP_ESSENTIAL_CAPABILITIES)};`,
+        `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
+        "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
+        '// check every handoff is shown, here and at a launch alike.',
+        `const assignmentIn: (text: string) => unknown = (${String(assignmentIn)});`,
+        `const checkAssignment: (agent: string, schema: unknown, value: unknown) => { problem?: string } = (${String(checkAssignment)});`,
+        `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
+        '// What an agent dispatching a delegate from `eval` code is warned, and that code.',
+        `const EVAL_DISPATCH_WARNING = ${JSON.stringify(EVAL_DISPATCH_WARNING)};`,
+        `const EVAL_DISPATCH = ${String(EVAL_DISPATCH)};`,
+        `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
+        '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
+        'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
+        '',
+        'interface Parameter {',
+        '  name: string;',
+        '  description: string;',
+        '  required: boolean;',
+        '  schema: Record<string, unknown>;',
+        '  positional?: true;',
+        '}',
+        'interface Verb {',
+        '  name: string;',
+        '  concept: string;',
+        '  purpose: string;',
+        '  when: string;',
+        '  effect: "reads" | "appends";',
+        '  parameters: Parameter[];',
+        '}',
+        'interface Explanation {',
+        '  name: string;',
+        '  purpose: string;',
+        '  when: string;',
+        '  verbs: Verb[];',
+        '}',
+        '',
+        "// A program's output; its own message, when it refuses.",
+        'function execOf(file: string, args: string[], cwd?: string, signal?: AbortSignal, env?: NodeJS.ProcessEnv): Promise<string> {',
+        '  const { promise, resolve, reject } = Promise.withResolvers<string>();',
+        '  execFile(file, args, { cwd, signal, env, maxBuffer: 64 * 1024 * 1024 }, (error, stdout, stderr) => {',
+        '    if (error) reject(new Error(String(stderr).trim() || String(stdout).trim() || error.message));',
+        '    else resolve(String(stdout));',
+        '  });',
+        '  return promise;',
+        '}',
+        "// The installed command's output; its own message, when it refuses. Every call names the",
+        '// installation this module was placed in, so the command can say which build projected it,',
+        '// and the agent making it, when one is known.',
+        'const run = (args: string[], cwd?: string, signal?: AbortSignal, agent?: string): Promise<string> =>',
+        '  execOf(COMMAND, args, cwd, signal, {',
+        '    ...process.env,',
+        '    [INSTALLATION_ENV]: INSTALLATION,',
+        '    ...(agent === undefined ? {} : { [ACTING_AGENT]: agent }),',
+        '  });',
+        '',
+        '// The capabilities this installation expects that the reached command does not provide,',
+        '// each with its own refusal, as found at load.',
+        'const lacking = new Map<string, string>();',
+        '// The version that projected this installation, as its own package records it.',
+        'function projected(): string {',
+        '  try {',
+        '    const { version } = JSON.parse(readFileSync(`${INSTALLATION}/package.json`, "utf8")) as { version?: unknown };',
+        '    if (typeof version === "string") return version;',
+        '  } catch {',
+        '    // said below',
+        '  }',
+        '  return "an unrecorded version";',
+        '}',
+        '// VERSION SKEW, said at every session start before any tool is called: the build that',
+        '// projected this installation, as it records itself, against the version the reached',
+        '// command answers for itself, whichever is older, and any capability the command lacks.',
+        '// Silent when they match; nothing here chooses between builds.',
+        '// The version the reached command answers for itself, which every build of it answers.',
+        'const reached = async (): Promise<string> => (await run(["--version"])).trim();',
+        'async function warnSkew(session: Session): Promise<void> {',
+        '  const artifacts = projected();',
+        '  let command: string;',
+        '  try {',
+        '    command = await reached();',
+        '  } catch (error) {',
+        '    command = `unknown (${(error as Error).message})`;',
+        '  }',
+        '  if (artifacts === command && lacking.size === 0) return;',
+        '  const missing =',
+        '    lacking.size === 0',
+        '      ? ""',
+        '      : ` It does not provide ${[...lacking].map(([c, why]) => `${c} (${why})`).join(", ")}, which this installation expects, so ${lacking.size === 1 ? "that is" : "those are"} not offered.`;',
+        '  session.ui.notify(',
+        '    `${COMMAND} version skew: this installation was projected by ${COMMAND} ${artifacts}, but the ${COMMAND} command its capabilities run is ${command}.${missing} Install again with the ${COMMAND} in use: ${COMMAND} install --harness omp`,',
+        '    "warning",',
+        '  );',
+        '}',
+        '',
+        '// THIS MODULE AS LOADED. omp loads an extension once per process and every session of that',
+        '// process, a dispatched one included, runs the module as loaded: an install that replaces it',
+        '// reaches only processes started afterwards. So a session started in an older process says',
+        "// so, since the checks of its dispatches and their capture in the ledger are the old module's.",
+        'const MODULE = fileURLToPath(import.meta.url);',
+        'const LOADED = readFileSync(MODULE, "utf8");',
+        'function warnReplaced(session: Session): void {',
+        '  const installed = existsSync(MODULE) ? readFileSync(MODULE, "utf8") : undefined;',
+        '  if (installed === LOADED) return;',
+        '  session.ui.notify(',
+        '    `${COMMAND}: this omp process runs the ${COMMAND} extension it loaded when it started, which the installation has since ${installed === undefined ? "removed" : "replaced"}; its sessions, dispatched ones included, keep the earlier tools, dispatch checks and ledger capture until omp is restarted. Restart omp to run the installed one.`,',
+        '    "warning",',
+        '  );',
+        '}',
+        '',
+        'const requirement = (p: Parameter): string => (p.required ? "required" : "optional");',
+        '',
+        'function description(e: Explanation): string {',
+        '  return [',
+        '    e.purpose,',
+        '    `When: ${e.when}`,',
+        '    ...e.verbs.map((v) =>',
+        '      [',
+        '        `Verb ${v.name} (concept: ${v.concept}; ${v.effect})`,',
+        '        `Purpose: ${v.purpose}`,',
+        '        `When: ${v.when}`,',
+        '        ...v.parameters.map((p) => `Parameter ${p.name} (${requirement(p)}): ${p.description}`),',
+        '      ].join("\\n"),',
+        '    ),',
+        '  ].join("\\n\\n");',
+        '}',
+        '',
+        '// A required `verb` (implied where the capability explains one verb alone), then each',
+        '// parameter once, with what each verb says of it and its schema: the one schema every',
+        '// verb declares, or each distinct one under `anyOf`.',
+        'function parameters(e: Explanation): Record<string, unknown> {',
+        '  const sole = e.verbs.length === 1;',
+        '  const properties: Record<string, Record<string, unknown>> = sole',
+        '    ? {}',
+        '    : {',
+        '        verb: {',
+        '          type: "string",',
+        '          enum: e.verbs.map((v) => v.name),',
+        '          description: e.verbs.map((v) => `${v.name} (${v.effect})`).join("; "),',
+        '        },',
+        '      };',
+        '  const said = new Map<string, { schemas: Map<string, Record<string, unknown>>; lines: string[] }>();',
+        '  for (const v of e.verbs)',
+        '    for (const p of v.parameters) {',
+        '      const entry = said.get(p.name) ?? { schemas: new Map(), lines: [] };',
+        '      entry.schemas.set(JSON.stringify(p.schema), p.schema);',
+        '      entry.lines.push(`${v.name} (${requirement(p)}): ${p.description}`);',
+        '      said.set(p.name, entry);',
+        '    }',
+        '  for (const [name, { schemas, lines }] of said) {',
+        '    const distinct = [...schemas.values()];',
+        '    properties[name] = {',
+        '      ...(distinct.length === 1 ? distinct[0] : { anyOf: distinct }),',
+        '      description: lines.join("\\n"),',
+        '    };',
+        '  }',
+        '  return { type: "object", properties, required: sole ? [] : ["verb"] };',
+        '}',
+        '',
+        '// The command line of one call: the verb, its positional, then each flag given as one',
+        '// `--flag=value` token, so a value led by `-` is never read as a flag. A positional led by',
+        '// `-` is one the command cannot take literally; it goes as a flag-shaped token of its own',
+        '// (`=` appended where it has none), which the command refuses in its own words and never',
+        '// reads as a request for its help or its explanation.',
+        'function argv(capability: string, verb: Verb | undefined, args: Record<string, unknown>): string[] {',
+        '  const positional = verb?.parameters.find((p) => p.positional === true)?.name;',
+        '  const words = [capability, verb?.name ?? String(args.verb)];',
+        '  if (positional !== undefined && args[positional] != null) {',
+        '    const word = String(args[positional]);',
+        '    words.push(word.startsWith("-") && word !== "-" && !word.includes("=") ? `${word}=` : word);',
+        '  }',
+        '  for (const [key, value] of Object.entries(args)) {',
+        '    if (key === "verb" || key === positional || value == null || value === false) continue;',
+        '    if (Array.isArray(value)) for (const item of value) words.push(`--${key}=${String(item)}`);',
+        '    else if (value === true) words.push(`--${key}`);',
+        '    else words.push(`--${key}=${String(value)}`);',
+        '  }',
+        '  return words;',
+        '}',
+        '',
+
+        'interface Launched {',
+        "  // One agent declaration as omp's own discovery parses it.",
+        '  declaration: AgentDefinition;',
+        '  mark?: string;',
+        '  // The schema its assignment must fit, when the declaration carries one.',
+        '  assignment?: Schema;',
+        '}',
+        '// What of a session the launch reads or sets.',
+        'interface Session {',
+        '  cwd: string;',
+        '  agent?: { kind: string; name?: string };',
+        '  model?: { provider: string; id: string };',
+        '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
+        '  ui: {',
+        '    setStatus(key: string, text: string | undefined): void;',
+        '    notify(message: string, type?: "info" | "warning" | "error"): void;',
+        '  };',
+        "  // The session's entries on its current branch, as omp's session manager keeps them.",
+        '  sessionManager?: { getBranch?(): readonly { type?: string; message?: { role?: string } }[] };',
+        '}',
+        '',
+        '// Whether the session already holds a conversation since its last compaction: a resumed',
+        '// session continuing one, not a new session or one compacted since it last spoke.',
+        'function conversed(session: Session): boolean {',
+        '  const branch = session.sessionManager?.getBranch?.() ?? [];',
+        '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
+        '  return branch',
+        '    .slice(since + 1)',
+        '    .some((entry) => entry.type === "message" && (entry.message?.role === "user" || entry.message?.role === "assistant"));',
+        '}',
+        'type Level = Parameters<ExtensionAPI["setThinkingLevel"]>[0];',
+        '// A setting a launch holds as a runtime override.',
+        'interface Overridable<T> {',
+        '  segments: readonly string[];',
+        '  override(scope: Settings, value: T): void;',
+        '  clearOverride(scope: Settings): void;',
+        '}',
+        '',
+        "// The declaration omp's task dispatch runs by `name` from `cwd`, discovered afresh by omp",
+        '// itself (nearest project `.omp/agents/`, then the user agent dir, then extension packages,',
+        '// plugins and bundled agents; first name wins), with the mark its front matter declares. A',
+        '// bundled declaration has no file (`embedded:<name>.md`): omp declares no mark on one.',
+        'async function discover(name: string, cwd: string): Promise<{ found?: Launched; names: string[] }> {',
+        '  const agents: AgentDefinition[] = (await discoverAgents(cwd)).agents;',
+        '  const names = agents.map((a) => a.name);',
+        '  const declaration = agents.find((a) => a.name === name);',
+        '  if (declaration === undefined) return { names };',
+        '  const said = frontmatterOf(declaration);',
+        '  const mark = typeof said.mark === "string" && said.mark.trim() !== "" ? said.mark.trim() : undefined;',
+        '  return { found: { declaration, mark, assignment: schemaOf(said) }, names };',
+        '}',
+        '',
+        "// A declaration's front matter as its file says it, read with omp's own parser. A bundled",
+        '// declaration has no file (`embedded:<name>.md`), and so none.',
+        'function frontmatterOf(declaration: AgentDefinition | undefined): Record<string, unknown> {',
+        '  const file = declaration?.filePath;',
+        '  return file !== undefined && isAbsolute(file) && existsSync(file)',
+        '    ? parseFrontmatter(readFileSync(file, "utf8"), { location: file }).frontmatter',
+        '    : {};',
+        '}',
+        '',
+        '// The assignment schema a declaration carries, when it carries one.',
+        'function schemaOf(said: Record<string, unknown>): Schema | undefined {',
+        '  const schema = said[ASSIGNMENT_KEY];',
+        '  return typeof schema === "object" && schema !== null ? (schema as Schema) : undefined;',
+        '}',
+        '',
+        '// ── Typed handoffs ──',
+        '',
+        '// The fields a schema requires, as typed handoffs state them.',
+        'interface Schema {',
+        '  required?: readonly string[];',
+        '}',
+        '// What a cut brief requires: a dispatch whose agent takes one opens the cut (a lead).',
+        'const CUT_BRIEF: readonly string[] = ["cut", "concepts", "examples", "decisions"];',
+        'const requires = (schema: Schema | undefined, fields: readonly string[]): boolean =>',
+        '  schema !== undefined && fields.every((f) => (schema.required ?? []).includes(f));',
+        '',
+        '// One item of a `task` call: the agent it runs as and its own id (its name, else its',
+        '// position), with its assignment once checked.',
+        'interface Handoff {',
+        '  item: Record<string, unknown>;',
+        '  agent: string;',
+        '  id: string;',
+        '  index: number;',
+        '  schema?: Schema;',
+        '  assignment?: Record<string, unknown>;',
+        '}',
+        '',
+        '// A dispatch is known by what it carries — the agent each item runs as and its task, one item',
+        '// or a batch of them — never by what the harness calls the tool carrying it, which a host or',
+        '// a provider may present under another name.',
+        'function isDispatch(input: Record<string, unknown>): boolean {',
+        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
+        '  return items.length > 0 && items.every((raw) => {',
+        '    if (typeof raw !== "object" || raw === null) return false;',
+        '    const item = raw as Record<string, unknown>;',
+        '    return typeof item.task === "string" && (typeof item.agent === "string" || typeof input.agent === "string");',
+        '  });',
+        '}',
+        '',
+        '// The items of a dispatch, batch (`tasks[]`) or flat, each with the agent it names.',
+        'function itemsOf(input: Record<string, unknown>): Handoff[] {',
+        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
+        '  return items.flatMap((raw, index) => {',
+        '    if (typeof raw !== "object" || raw === null) return [];',
+        '    const item = raw as Record<string, unknown>;',
+        '    const agent = typeof item.agent === "string" ? item.agent : typeof input.agent === "string" ? input.agent : "task";',
+        '    const named = [item.name, item.id].find((v): v is string => typeof v === "string" && v !== "");',
+        '    return [{ item, agent, id: named ?? String(index), index }];',
+        '  });',
+        '}',
+        '',
+        '// The assignment an item is dispatched with: the block in its own text, else the one in the',
+        "// batch's shared context.",
+        'function assignmentOf(item: Record<string, unknown>, input: Record<string, unknown>): unknown {',
+        '  const own = typeof item.task === "string" ? assignmentIn(item.task) : undefined;',
+        '  if (own !== undefined) return own;',
+        '  return typeof input.context === "string" ? assignmentIn(input.context) : undefined;',
+        '}',
+        '',
+        "// The cut's state and reading, as the work package capability computes them now.",
+        'interface CutState {',
+        '  branch: string | null;',
+        '  workPackages: { name: string; status: string }[];',
+        '  ready: string[];',
+        '}',
+        'interface CutInventory {',
+        '  unserved: string[];',
+        '  unowned: string[];',
+        '  examples: { ref: string; package?: string | null }[];',
+        '}',
+        '// A cut opened and not integrated, as `workPackage frozen` answers it: its visible examples',
+        '// no frozen check names.',
+        'interface FrozenCut {',
+        '  cut: string;',
+        '  unchecked: string[];',
+        '}',
+        'const cutRead = async <T>(verb: string, cut: string, cwd: string, agent: string | undefined): Promise<T> =>',
+        '  JSON.parse(await run(["workPackage", verb, "--cut", cut], cwd, undefined, agent)) as T;',
+        'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
+        '',
+        "// What a lead's dispatch is warned of: it opens the cut's work, which wants the cut recorded",
+        '// with its branch, and that branch checked out here.',
+        'async function leadWarning(cut: string, cwd: string, agent: string | undefined): Promise<string | undefined> {',
+        '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --architect <context>=<architect>`;',
+        '  let state: CutState;',
+        '  try {',
+        '    state = await cutRead<CutState>("state", cut, cwd, agent);',
+        '  } catch (error) {',
+        '    return `lead dispatch of cut ${cut}: ${messageOf(error)}; record the cut with its branch (${open})`;',
+        '  }',
+        '  if (typeof state.branch !== "string")',
+        '    return `lead dispatch of cut ${cut}: the cut has no record naming its branch; record it (${open})`;',
+        '  let head: string;',
+        '  try {',
+        '    head = (await execOf("git", ["rev-parse", "--abbrev-ref", "HEAD"], cwd)).trim();',
+        '  } catch (error) {',
+        '    head = `no branch (${messageOf(error)})`;',
+        '  }',
+        '  return head === state.branch',
+        '    ? undefined',
+        '    : `lead dispatch of cut ${cut}: its branch ${state.branch} is not checked out (${head} is), and the lead works in this checkout`;',
+        '}',
+        '',
+        "// What a builder's dispatch is warned of (ruling 0083): its package not ready, a concept of",
+        '// the cut unserved, a visible example unowned, or one it owns unchecked by a frozen check.',
+        'async function builderWarning(cut: string, packages: readonly string[], cwd: string, agent: string | undefined): Promise<string | undefined> {',
+        '  let state: CutState;',
+        '  let inventory: CutInventory;',
+        '  let frozen: FrozenCut[];',
+        '  try {',
+        '    [state, inventory, frozen] = await Promise.all([',
+        '      cutRead<CutState>("state", cut, cwd, agent),',
+        '      cutRead<CutInventory>("inventory", cut, cwd, agent),',
+        '      run(["workPackage", "frozen"], cwd, undefined, agent).then((text) => (JSON.parse(text) as { cuts: FrozenCut[] }).cuts),',
+        '    ]);',
+        '  } catch (error) {',
+        '    return `builder dispatch of cut ${cut}: ${messageOf(error)}`;',
+        '  }',
+        '  const problems: string[] = [];',
+        '  if (inventory.unserved.length > 0)',
+        '    problems.push(`concepts no work package serves: ${inventory.unserved.join(", ")}`);',
+        '  if (inventory.unowned.length > 0)',
+        '    problems.push(`visible examples no work package owns: ${inventory.unowned.join(", ")}`);',
+        '  const unchecked = new Set(frozen.find((c) => c.cut === cut)?.unchecked ?? []);',
+        '  for (const name of packages) {',
+        '    const known = state.workPackages.find((p) => p.name === name);',
+        '    if (known === undefined) problems.push(`${name} is no work package of the cut`);',
+        '    else if (!state.ready.includes(name))',
+        '      problems.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once every package it depends on has returned and it is not yet dispatched, returned to build by a finding, or returned into a fix round by a failing whole check)`);',
+        '    const bare = inventory.examples.filter((e) => e.package === name && unchecked.has(e.ref)).map((e) => e.ref);',
+        '    if (bare.length > 0)',
+        '      problems.push(`work package ${name} owns visible examples no frozen check names: ${bare.join(", ")} (${COMMAND} workPackage freeze --cut ${cut} --check <path>)`);',
+        '  }',
+        '  return problems.length === 0 ? undefined : `builder dispatch of cut ${cut}: ${problems.join("; ")}`;',
+        '}',
+        '',
+        "// What a returned deliverable records: a lead's report (`outcomes`) or an assayer's",
+        '// verdicts (`verdicts`, each on a work package).',
+        'function deliverableEntry(',
+        '  deliverable: unknown,',
+        '  at: { cut: string; run: string; assayer: string },',
+        '): Record<string, unknown> | undefined {',
+        '  if (typeof deliverable !== "object" || deliverable === null) return undefined;',
+        '  const d = deliverable as Record<string, unknown>;',
+        '  if (Array.isArray(d.outcomes))',
+        '    return { kind: "reported", transition: `${at.run}/reported`, cut: at.cut, run: at.run, report: d };',
+        '  if (Array.isArray(d.verdicts) && d.verdicts.every((v) => typeof v === "object" && v !== null && "workPackage" in v))',
+        '    return {',
+        '      kind: "verdict",',
+        '      transition: `${at.run}/verdict`,',
+        '      cut: at.cut,',
+        '      assayer: at.assayer,',
+        '      run: at.run,',
+        '      verdicts: d.verdicts,',
+        '      hardeningNotes: Array.isArray(d.hardeningNotes) ? d.hardeningNotes : [],',
+        '    };',
+        '  return undefined;',
+        '}',
+        '',
+        "// A returned text's JSON, when it is JSON.",
+        'function jsonIn(text: unknown): unknown {',
+        '  if (typeof text !== "string") return undefined;',
+        '  try {',
+        '    return JSON.parse(text);',
+        '  } catch {',
+        '    return undefined;',
+        '  }',
+        '}',
+        '',
+        "// omp's own sections that prescribe an identity, a stance or a procedure, by heading: a session",
+        '// launched as a declaration takes all three from the declaration alone. Every other section,',
+        '// one omp adds later included, describes the harness and is kept.',
+        'const PRESCRIBES: readonly string[] = ["Role", "Engineering", "Workflow", "Delivery", "Critical"];',
+        "// The line of omp's tool policy that prescribes a stance (never settle for plausibility).",
+        'const PRESCRIBED_LINE = /settle for plausibility/i;',
+        '',
+        "// One part of omp's system prompt without the sections that prescribe: a `§` section or a `#`",
+        '// one so titled, to its next heading of the same or a higher level; the `<critical>` blocks',
+        '// opening the Critical section, which ends where they do; the `<critical>` blocks of the',
+        '// project context; and the prescriptive line of the tool policy. The titles removed are said.',
+        'function harnessOnly(text: string): { text: string; removed: string[] } {',
+        '  const removed: string[] = [];',
+        '  const say = (title: string) => {',
+        '    if (!removed.includes(title)) removed.push(title);',
+        '  };',
+        '  const out: string[] = [];',
+        '  let section = "";',
+        '  let dropping = 0;',
+        '  let critical = false;',
+        '  let inBlock = false;',
+        '  for (const raw of text.split("\\n")) {',
+        '    let line = raw;',
+        '    const top = /^§\\s+(.+?)\\s*$/.exec(line);',
+        '    if (top) {',
+        '      section = top[1] ?? "";',
+        '      critical = false;',
+        '      inBlock = false;',
+        '      dropping = PRESCRIBES.includes(section) ? 1 : 0;',
+        '      if (dropping === 0) out.push(line);',
+        '      else {',
+        '        say(section);',
+        '        critical = section === "Critical";',
+        '      }',
+        '      continue;',
+        '    }',
+        '    if (critical) {',
+        '      // The Critical section is its opening `<critical>` blocks; what follows them is not.',
+        '      let rest = line;',
+        '      for (;;) {',
+        '        if (inBlock) {',
+        '          const end = rest.indexOf("</critical>");',
+        '          if (end < 0) {',
+        '            rest = "";',
+        '            break;',
+        '          }',
+        '          rest = rest.slice(end + "</critical>".length);',
+        '          inBlock = false;',
+        '          continue;',
+        '        }',
+        '        const trimmed = rest.trimStart();',
+        '        if (!trimmed.startsWith("<critical>")) {',
+        '          rest = trimmed;',
+        '          break;',
+        '        }',
+        '        inBlock = true;',
+        '        rest = trimmed.slice("<critical>".length);',
+        '      }',
+        '      if (inBlock || rest === "") continue;',
+        '      critical = false;',
+        '      dropping = 0;',
+        '      line = rest;',
+        '    }',
+        '    const sub = /^#{1,2}\\s+(.+?)\\s*$/.exec(line);',
+        '    if (sub) {',
+        '      if (dropping === 2) dropping = 0;',
+        '      if (PRESCRIBES.includes(sub[1] ?? "")) {',
+        '        say(sub[1] ?? "");',
+        '        if (dropping === 0) dropping = 2;',
+        '      }',
+        '    }',
+        '    if (dropping > 0) continue;',
+        '    if (section === "Tool Policy" && PRESCRIBED_LINE.test(line)) {',
+        '      say("Tool Policy: plausibility");',
+        '      continue;',
+        '    }',
+        '    out.push(line);',
+        '  }',
+        '  // The project context describes the host; its `<critical>` blocks, inside it or right after',
+        '  // it, prescribe.',
+        '  const joined = out',
+        '    .join("\\n")',
+        '    .replace(/(<project-context>[\\s\\S]*?<\\/project-context>)((?:\\s*<critical>[\\s\\S]*?<\\/critical>)*)/g, (_all, context: string, after: string) => {',
+        '      const inner = context.replace(/\\s*<critical>[\\s\\S]*?<\\/critical>/g, "");',
+        '      if (inner !== context || after !== "") say("project context <critical>");',
+        '      return inner;',
+        '    });',
+        '  return { text: joined, removed };',
+        '}',
+        '',
+        '// The form an agent takes its assignment in, read from its schema: one fenced `assignment`',
+        '// block holding a JSON object, then each field with its type, its least number of items,',
+        '// whether it is required, and what it names.',
+        'function formOf(agent: string, schema: Schema): string {',
+        '  const s = schema as {',
+        '    properties?: Record<string, { type?: string; minItems?: number; description?: string; items?: { type?: string } }>;',
+        '    required?: readonly string[];',
+        '  };',
+        '  const fields = Object.entries(s.properties ?? {}).map(([name, f]) => {',
+        '    const type = f.type === "array" ? `list of ${f.items?.type ?? "value"}s` : (f.type ?? "value");',
+        '    const least = f.minItems ? `, at least ${f.minItems}` : f.type === "array" ? ", may be empty" : "";',
+        '    const need = (s.required ?? []).includes(name) ? "required" : "optional";',
+        '    return `  - \\`${name}\\` (${type}${least}, ${need})${f.description ? `: ${f.description}` : ""}`;',
+        '  });',
+        '  return [',
+        '    `- ${agent}: give its assignment in the task text as one fenced code block with info string \\`assignment\\` holding one JSON object:`,',
+        '    `  \\`\\`\\`assignment\\n  {${Object.keys(s.properties ?? {}).map((n) => `"${n}": …`).join(", ")}}\\n  \\`\\`\\``,',
+        '    ...fields,',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// One `### <name>` section of a declaration body, without its heading; empty when absent.',
+        'function declared(body: string, name: string): string {',
+        '  return new RegExp(`^### ${name}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=^#{1,3} |(?![\\\\s\\\\S]))`, "m").exec(body)?.[1] ?? "";',
+        '}',
+        '',
+        '// The session-start note of a declaration whose procedure starts with reconstitution,',
+        '// rendered from that procedure value as its body states it; none for any other.',
+        'function reconstitutionNote(body: string): string | undefined {',
+        '  const value = /^- \\*\\*reconstitution\\*\\*(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
+        '  if (value === null) return undefined;',
+        '  return [',
+        '    "# Session start: reconstitution",',
+        '    "",',
+        '    `This session starts with reconstitution${value[1] ? ` (${value[1]})` : ""}.`,',
+        '    "Read each touched context\'s overview first, then the detail you need of its design and of its cuts.",',
+        '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
+        '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.",',
+        '    "Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.",',
+        '    "Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration whose decision rights hold meaning (D), rendered from',
+        '// that right as the design holds it: the meaning of the contexts it holds is its own,',
+        '// the approval of their examples included (0086), and a decision whose grounds it holds is',
+        '// taken in the turn it holds them (0090); none for any other.',
+        'function meaningNote(body: string): string | undefined {',
+        '  if (!/^- meaning(?: \\([^)]*\\))?: \\*\\*D\\*\\*/m.test(declared(body, "decision-rights"))) return undefined;',
+        '  return [',
+        '    "# Meaning: yours",',
+        '    "",',
+        '    "The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.",',
+        '    "Approval judges one thing: whether an example expresses its concepts\' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context\'s model its own; send back only an example that misses its meaning, naming the meaning it misses.",',
+        '    "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party\'s return or anyone\'s answer.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The per-turn note of a declaration that keeps the records as its source of truth under the',
+        '// honesty guardrail, rendered from those two values: where things stand is what the records',
+        '// show, observed apart from inferred; none for any other.',
+        'function recordsNote(body: string): string | undefined {',
+        '  if (!/^- \\*\\*source-of-truth\\*\\*/m.test(declared(body, "memory"))) return undefined;',
+        '  if (!/^- \\*\\*honesty\\*\\*/m.test(declared(body, "guardrails"))) return undefined;',
+        '  return [',
+        '    "# The records",',
+        '    "",',
+        '    "The journal, the ledger and your delegates\' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
+        '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// The declaration as the system prompt carries it: its front matter as one sentence of',
+        '// prose, then its body.',
+        'function instructions({ name, description, systemPrompt }: AgentDefinition): string {',
+        '  return `You are the agent ${name}: ${description}\\n\\n${systemPrompt}`;',
+        '}',
+        '',
+        '// The skills the declaration loads at start, found among those omp discovered for the session',
+        '// (a name omp does not know is skipped, as dispatch skips it), each as omp renders it for a',
+        "// dispatched child: its full instructions in omp's autoload message.",
+        'async function skills({ autoloadSkills }: AgentDefinition): Promise<string[]> {',
+        '  const known = getActiveSkills();',
+        '  const loaded = (autoloadSkills ?? [])',
+        '    .map((name) => known.find((skill) => skill.name === name))',
+        '    .filter((skill) => skill !== undefined);',
+        '  return Promise.all(',
+        '    loaded.map(async (skill) => (await buildSkillPromptMessage(skill, { args: "" }, "autoload")).message),',
+        '  );',
+        '}',
+        '',
+        "// What the session's runtime settings layer holds at `path`, so a launch puts back exactly that.",
+        'function runtimeAt(scope: Settings, path: readonly string[]): unknown {',
+        '  let at: unknown = scope.overlayLayers().overrides;',
+        '  for (const key of path)',
+        '    at = typeof at === "object" && at !== null ? (at as Record<string, unknown>)[key] : undefined;',
+        '  return at;',
+        '}',
+        '',
+        '// Holds `value` as a session-scoped runtime override of `setting`, which omp never persists,',
+        '// and returns what puts the runtime layer back as it was.',
+        'function hold<T>(scope: Settings, setting: Overridable<T>, value: T): () => void {',
+        '  const prior = runtimeAt(scope, setting.segments);',
+        '  setting.override(scope, value);',
+        '  return () => (prior === undefined ? setting.clearOverride(scope) : setting.override(scope, prior as T));',
+        '}',
+        '',
+        "// The runtime layer's model roles with `role` as `pattern`; every other role still resolves",
+        '// through whichever layer configures it.',
+        'function withRole(scope: Settings, role: string, pattern: string): Record<string, string> {',
+        '  const runtime = runtimeAt(scope, cfgModelRoles.segments);',
+        '  return { ...(typeof runtime === "object" && runtime !== null ? (runtime as Record<string, string>) : {}), [role]: pattern };',
+        '}',
+        '',
+        "// omp's settings listeners act a microtask after a change; past one macrotask they have acted.",
+        'function settled(): Promise<void> {',
+        '  const { promise, resolve } = Promise.withResolvers<void>();',
+        '  setTimeout(resolve, 0);',
+        '  return promise;',
+        '}',
+        '',
+        'export default async function (pi: ExtensionAPI) {',
+        '  // The acting agent is only what this module names on each call: an ambient one is dropped,',
+        '  // so no shell command inherits a name.',
+        '  delete process.env[ACTING_AGENT];',
+        '  pi.registerFlag(AGENT_FLAG, {',
+        '    description: "Start the session as the agent declaration omp discovers by this name",',
+        '    type: "string",',
+        '  });',
+        '  let launched: Launched | undefined;',
+        '  // The launch whose typed assignment no prompt has carried yet.',
+        '  let awaiting: { name: string; schema: Schema } | undefined;',
+        "  // Whether the launch has been told which of omp's prompt sections it runs without.",
+        '  let told = false;',
+        "  // Whether the launch's first turn carries the session-start note: its procedure starts",
+        '  // with reconstitution and its session is new, or was compacted, rather than continuing',
+        '  // a conversation.',
+        '  let owed = false;',
+        '  let noted = false;',
+        '  // What puts back each setting the current launch holds, in the order it took them.',
+        '  const undo: (() => void)[] = [];',
+        '',
+        '  // The agent making a call: the declaration a main session was launched as, the agent a',
+        '  // dispatched session runs as; unknown otherwise.',
+        '  function actor(session: Session | undefined): string | undefined {',
+        '    const kind = session?.agent?.kind;',
+        '    const name = kind === "sub" ? session?.agent?.name : kind === "main" ? launched?.declaration.name : undefined;',
+        '    return name === "" ? undefined : name;',
+        '  }',
+        '',
+        "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call's command is led by a line naming the",
+        "  // session's agent in `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so what the command",
+        "  // records in the journal is that agent's own (a commit records the git user, as git does); in",
+        '  // a session that is no agent the line unsets it, naming no one. No call is refused (0143).',
+        '  pi.on("tool_call", (event, ctx) => {',
+        '    if (event.toolName !== "bash" || typeof event.input !== "object" || event.input === null) return undefined;',
+        '    const input = event.input as Record<string, unknown>;',
+        '    if (typeof input.command !== "string") return undefined;',
+        '    const agent = actor(ctx as unknown as Session);',
+        "    const named = agent === undefined ? `unset ${ACTING_AGENT}` : `export ${ACTING_AGENT}='${agent.replaceAll(\"'\", \"'\\\\''\")}'`;",
+        '    input.command = `${named}\\n${input.command}`;',
+        '    return undefined;',
+        '  });',
+        '',
+        '  // A launch ends: its prompt and every setting it holds go with it.',
+        '  function end(): void {',
+        '    launched = undefined;',
+        '    awaiting = undefined;',
+        '    told = false;',
+        '    owed = false;',
+        '    noted = false;',
+        '    for (const restore of undo.splice(0).reverse()) restore();',
+        '  }',
+        '',
+        '  // The launch comes to owe the session-start note, when its procedure starts with reconstitution.',
+        '  function owe(declaration: AgentDefinition): void {',
+        '    owed = reconstitutionNote(declaration.systemPrompt) !== undefined;',
+        '    noted = false;',
+        '  }',
+        '',
+        "  // The rest of the declaration, as omp's task dispatch resolves it for a child, each held",
+        "  // only where the operator's own command line says nothing of that dimension. Configuration",
+        '  // files are defaults the declaration overrides, as they are for a dispatched child.',
+        '  async function settle(scope: Settings, declaration: AgentDefinition, operator: Args): Promise<void> {',
+        '    const keep = <T>(setting: Overridable<T>, value: T) => undo.push(hold(scope, setting, value));',
+        '    // No default personality, as every dispatched child runs.',
+        '    keep(cfgPersonality, "none");',
+        "    // Summarised reads: on or off as declared; undeclared, the session's own setting. (omp's",
+        '    // own dispatch applies only `false`; launch holds `true` as the declaration says.)',
+        '    if (declaration.readSummarize !== undefined) keep(cfgReadSummarizeEnabled, declaration.readSummarize);',
+        "    // The advisor: `task.agentAdvisor` first, then the declaration's `advisor`; none without",
+        "    // either, as for a child. A pattern is that advisor's model, expanded against the",
+        "    // session's roles; the live session starts or stops its advisor as `advisor.enabled` moves.",
+        '    if (operator.advisor !== true) {',
+        '      const advisor = resolveAgentAdvisorSelection({',
+        '        settingsOverride: cfgTaskAgentAdvisor.get(scope)[declaration.name],',
+        '        agentAdvisor: declaration.advisor,',
+        '      });',
+        '      if (advisor?.model !== undefined)',
+        '        keep(cfgModelRoles, withRole(scope, "advisor", resolveAgentAdvisorRolePattern(advisor.model, scope)));',
+        '      keep(ADVISOR_ENABLED, advisor !== undefined);',
+        '    }',
+        "    // Pre-planning: `task.agentPrewalk` first, then the declaration's `prewalk`. The live main",
+        "    // session disarms as `prewalk.enabled` turns off and arms omp's default target (`@smol`)",
+        '    // as it turns on, but only when nothing is armed; so it is turned off first, dropping a',
+        '    // hand-off the configuration armed, and a declared target stands in `@smol` only while',
+        '    // omp resolves the arm. Its listener runs a microtask after each change: hence `settled`.',
+        '    if (operator.prewalk !== true && operator.noPrewalk !== true && operator.prewalkInto === undefined) {',
+        '      const target = resolveAgentPrewalkPattern({',
+        '        settingsOverride: cfgTaskAgentPrewalk.get(scope)[declaration.name],',
+        '        agentPrewalk: resolveAgentPrewalkDefault(declaration, cfgTaskPrewalk.get(scope)),',
+        '      });',
+        '      keep(cfgPrewalkEnabled, false);',
+        '      if (target !== undefined) {',
+        '        await settled();',
+        '        const patterns = resolveConfiguredModelPatterns(target, scope);',
+        '        const standIn =',
+        '          target === DEFAULT_PREWALK_TARGET',
+        '            ? undefined',
+        '            : hold(',
+        '                scope,',
+        '                cfgModelRoles,',
+        '                withRole(scope, DEFAULT_PREWALK_TARGET.slice(1), patterns.length > 0 ? patterns.join(",") : target),',
+        '              );',
+        '        cfgPrewalkEnabled.override(scope, true);',
+        '        await settled();',
+        '        standIn?.();',
+        '      }',
+        '    }',
+        '  }',
+        '',
+        '  // A new main session reads the declaration afresh: its model, effort, settings and status',
+        '  // now, its prompt at each turn. An unknown name ends startup; later, it only ends the launch.',
+        '  async function launch(ctx: Session, startup: boolean): Promise<void> {',
+        '    if (ctx.agent?.kind !== "main") return;',
+        '    end();',
+        '    const name = pi.getFlag(AGENT_FLAG);',
+        '    if (typeof name !== "string") return;',
+        '    const { found, names } = await discover(name, ctx.cwd);',
+        '    if (found === undefined) {',
+        '      const message = `Unknown agent "${name}". Available: ${names.join(", ")}`;',
+        '      if (startup) {',
+        '        process.stderr.write(`${COMMAND}: ${message}\\n`);',
+        '        process.exit(1);',
+        '      }',
+        '      ctx.ui.setStatus(AGENT_STATUS, undefined);',
+        '      ctx.ui.notify(message, "error");',
+        '      return;',
+        '    }',
+        '    const { declaration } = found;',
+        "    // The session's own settings: every resolution reads them and every override lands there.",
+        '    const scope = findScopedSettings() ?? settings;',
+        "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
+        '    // omp reads its command line, win; the declaration applies where the operator gave none.',
+        '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
+        '    // A launch as an agent taking a typed assignment is shown it as a dispatch of it is: a',
+        '    // prompt given on the command line is checked now; with none, the first prompt is.',
+        '    if (found.assignment !== undefined) {',
+        '      const given = (operator as { messages?: unknown }).messages;',
+        '      const prompts = Array.isArray(given) ? given.filter((m): m is string => typeof m === "string") : [];',
+        '      if (startup && prompts.length > 0) checkLaunch(ctx, name, found.assignment, prompts.join("\\n\\n"));',
+        '      else awaiting = { name, schema: found.assignment };',
+        '    }',
+        '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
+        "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
+        '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
+        "    // the session's own model; then the effort a selector's `:level` carries, else the",
+        "    // declaration's `thinking-level`, else the level the resolved selector implies.",
+        '    const patterns =',
+        '      operator.model !== undefined',
+        '        ? [operator.model]',
+        '        : resolveAgentModelSelection({',
+        '            settingsOverride: cfgTaskAgentModelOverrides.get(scope)[name],',
+        '            agentModel: declaration.model,',
+        '            settings: scope,',
+        '            activeModelPattern: current,',
+        '          }).patterns;',
+        '    const resolved = await resolveModelOverrideWithAuthFallback(patterns, current, ctx.modelRegistry, scope);',
+        '    const model = resolved.model;',
+        '    if (operator.model === undefined) {',
+        '      if (model === undefined) {',
+        '        if (patterns.length > 0)',
+        '          ctx.ui.notify(`Agent "${name}": no available model matches ${patterns.join(", ")}`, "warning");',
+        '      } else if (model.provider !== ctx.model?.provider || model.id !== ctx.model?.id) {',
+        '        await pi.setModel(model);',
+        '      }',
+        '    }',
+        '    const level = resolved.explicitThinkingLevel',
+        '      ? resolved.thinkingLevel',
+        '      : (declaration.thinkingLevel ?? resolved.thinkingLevel);',
+        '    if (operator.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
+        '    await settle(scope, declaration, operator);',
+        '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
+        '    launched = found;',
+        '    if (!conversed(ctx)) owe(declaration);',
+        '  }',
+        '  pi.on("session_start", async (_event, ctx) => {',
+        '    warnReplaced(ctx as unknown as Session);',
+        '    await warnSkew(ctx as unknown as Session);',
+        '    return launch(ctx as unknown as Session, true);',
+        '  });',
+        '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
+        '  // A compacted session has lost its conversation, so the launch owes the session-start note again.',
+        '  pi.on("session_compact", (_event, ctx) => {',
+        '    if (launched !== undefined && (ctx as unknown as Session).agent?.kind === "main") owe(launched.declaration);',
+        '  });',
+        "  // A launch's first prompt checked against its typed assignment: a misfit is warned of, with",
+        '  // the form, and the agent starts all the same.',
+        '  function checkLaunch(session: Session, name: string, schema: Schema, prompt: string): void {',
+        '    awaiting = undefined;',
+        '    const { problem } = checkAssignment(name, schema, assignmentIn(prompt));',
+        '    if (problem !== undefined)',
+        '      session.ui.notify(`${name} starts with an incomplete assignment: ${problem}\\n${formOf(name, schema)}`, "warning");',
+        '  }',
+        '  pi.on("input", (event, ctx) => {',
+        '    const session = ctx as unknown as Session;',
+        '    if (awaiting !== undefined && session.agent?.kind === "main")',
+        '      checkLaunch(session, awaiting.name, awaiting.schema, String(event.text ?? ""));',
+        '    return undefined;',
+        '  });',
+        "  // Every turn's prompt is omp's own, kept where it describes the harness and without what",
+        '  // prescribes an identity, a stance or a procedure, then the declaration and the full',
+        '  // instructions of the skills it loads at start, so the declaration is the only source of',
+        '  // who the agent is and how it works, and a rebuilt base prompt drops neither. A launch',
+        '  // whose first prompt came by a route with no `input` event has it checked here. In every',
+        '  // session, launched or not, main or dispatched, the turn also carries the assignment form',
+        '  // of each agent that takes a typed one; the first turn of a launch whose procedure starts',
+        '  // with reconstitution carries a note saying so; and every turn of a launch whose decision',
+        '  // rights hold meaning, or that keeps the records as its source of truth under honesty,',
+        '  // carries a note of each.',
+        '  pi.on("before_agent_start", async (event, ctx) => {',
+        '    const now = launched;',
+        '    const session = ctx as unknown as Session;',
+        '    const forms = await dispatchForms(session);',
+        '    if (now === undefined || session.agent?.kind !== "main")',
+        '      return forms === undefined ? undefined : { systemPrompt: [...event.systemPrompt, forms] };',
+        '    if (awaiting !== undefined) checkLaunch(session, awaiting.name, awaiting.schema, String(event.prompt ?? ""));',
+        '    const removed: string[] = [];',
+        '    const base = event.systemPrompt.map((part: string) => {',
+        '      const kept = harnessOnly(part);',
+        '      removed.push(...kept.removed.filter((title) => !removed.includes(title)));',
+        '      return kept.text;',
+        '    });',
+        '    if (removed.length > 0 && !told) {',
+        '      told = true;',
+        '      session.ui.notify(`Launched as ${now.declaration.name}: omp prompt sections removed: ${removed.join(", ")}`, "info");',
+        '    }',
+        '    // The first turn of a launch that owes the session-start note alone: a turn-scoped note,',
+        '    // gone from every later turn.',
+        '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
+        '    noted = true;',
+        '    const meaning = meaningNote(now.declaration.systemPrompt);',
+        '    const records = recordsNote(now.declaration.systemPrompt);',
+        '    return {',
+        '      systemPrompt: [',
+        '        ...base,',
+        '        instructions(now.declaration),',
+        '        ...(await skills(now.declaration)),',
+        '        ...(forms === undefined ? [] : [forms]),',
+        '        ...(start === undefined ? [] : [start]),',
+        '        ...(meaning === undefined ? [] : [meaning]),',
+        '        ...(records === undefined ? [] : [records]),',
+        '      ],',
+        '    };',
+        '  });',
+        '',
+        '  // The assignment form of each agent that takes a typed one. None: no section.',
+        '  async function dispatchForms(session: Session): Promise<string | undefined> {',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const forms = agents.flatMap((a) => {',
+        '      const schema = schemaOf(frontmatterOf(a));',
+        '      return schema === undefined ? [] : [formOf(a.name, schema)];',
+        '    });',
+        '    return forms.length === 0',
+        '      ? undefined',
+        '      : ["# Assignment forms", "", "Give a dispatch of these agents its assignment in its task text so:", "", ...forms].join("\\n");',
+        '  }',
+        '',
+        '  // The harness event appended to the ledger of the repository holding `cwd`. A refusal of a',
+        '  // transition already written is the same event delivered twice, and nothing more.',
+        '  async function capture(event: Record<string, unknown>, at: { cwd: string; agent?: string }, ctx?: Session): Promise<void> {',
+        '    try {',
+        '      await run(["lifecycle", JSON.stringify(event)], at.cwd, undefined, at.agent);',
+        '    } catch (error) {',
+        '      const message = messageOf(error);',
+        '      if (!message.includes(String(event.transition))) ctx?.ui.notify(`${COMMAND} lifecycle: ${message}`, "warning");',
+        '    }',
+        '  }',
+        '  // Each item dispatched for a cut, by its task call and position: what its return records,',
+        '  // and the agent that dispatched it, whose capture its return is.',
+        '  interface Dispatch {',
+        '    cut: string;',
+        '    role: string;',
+        '    run: string;',
+        '    workPackage?: string;',
+        '    cwd: string;',
+        '    agent?: string;',
+        '  }',
+        '  const dispatches = new Map<string, Dispatch>();',
+        '  async function returned(at: Dispatch, assayer: string, deliverable: unknown, tokens: unknown, ctx?: Session): Promise<void> {',
+        '    const { cut, role, run: runId, workPackage } = at;',
+        '    await capture(',
+        '      {',
+        '        kind: "returned",',
+        '        transition: `${runId}/returned`,',
+        '        cut,',
+        '        role,',
+        '        run: runId,',
+        '        ...(workPackage === undefined ? {} : { workPackage }),',
+        '        ...(typeof tokens === "number" ? { tokens } : {}),',
+        '      },',
+        '      at,',
+        '      ctx,',
+        '    );',
+        '    const entry = deliverableEntry(deliverable, { cut, run: runId, assayer });',
+        '    if (entry !== undefined) await capture(entry, at, ctx);',
+        '  }',
+        '',
+        "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
+        '  // through `tool`) never reaches the `task` call where its assignment is shown and checked and',
+        '  // its lifecycle captured. So a session launched as an agent, or a delegate whose declaration',
+        "  // carries a typed assignment, is warned so; the call goes ahead. A plain session and omp's own",
+        '  // delegates are told nothing.',
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    if (event.toolName !== "eval") return undefined;',
+        '    const input: unknown = event.input;',
+        '    const code = input !== null && typeof input === "object" && "code" in input ? input.code : undefined;',
+        '    if (typeof code !== "string" || !EVAL_DISPATCH.test(code)) return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const agent = session.agent;',
+        '    if (agent?.kind === "main" && launched === undefined) return undefined;',
+        '    if (agent?.kind === "sub") {',
+        '      const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === agent.name);',
+        '      if (schemaOf(frontmatterOf(declaration)) === undefined) return undefined;',
+        '    } else if (agent?.kind !== "main") return undefined;',
+        '    session.ui.notify(EVAL_DISPATCH_WARNING, "warning");',
+        '    return undefined;',
+        '  });',
+        '',
+        "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
+        '  // contract, then the cut it serves; each problem is warned of, and the dispatch goes ahead.',
+        '  pi.on("tool_call", async (event, ctx) => {',
+        '    const input = (event.input ?? {}) as Record<string, unknown>;',
+        '    if (!isDispatch(input)) return undefined;',
+        '    const session = ctx as unknown as Session;',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const handoffs = itemsOf(input);',
+        '    const problems: string[] = [];',
+        '    for (const h of handoffs) {',
+        '      h.schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
+        '      if (h.schema === undefined) continue;',
+        '      const value = assignmentOf(h.item, input);',
+        '      const { problem } = checkAssignment(h.agent, h.schema, value);',
+        '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, h.schema)}`);',
+        '      if (typeof value === "object" && value !== null && !Array.isArray(value))',
+        '        h.assignment = value as Record<string, unknown>;',
+        '    }',
+        '    const leads = new Set<string>();',
+        '    const builders = new Map<string, string[]>();',
+        '    for (const { schema, assignment } of handoffs) {',
+        '      const cut = assignment?.cut;',
+        '      if (typeof cut !== "string") continue;',
+        '      if (requires(schema, CUT_BRIEF)) leads.add(cut);',
+        '      if (requires(schema, ["workPackage"]) && typeof assignment?.workPackage === "string")',
+        '        builders.set(cut, [...(builders.get(cut) ?? []), assignment.workPackage]);',
+        '    }',
+        '    for (const cut of leads) {',
+        '      const problem = await leadWarning(cut, session.cwd, actor(session));',
+        '      if (problem !== undefined) problems.push(problem);',
+        '    }',
+        '    for (const [cut, packages] of builders) {',
+        '      const problem = await builderWarning(cut, packages, session.cwd, actor(session));',
+        '      if (problem !== undefined) problems.push(problem);',
+        '    }',
+        '    if (problems.length > 0) session.ui.notify(`dispatch warning, going ahead: ${problems.join("\\n")}`, "warning");',
+        '    for (const h of handoffs) {',
+        '      const cut = h.assignment?.cut;',
+        '      if (typeof cut !== "string") continue;',
+        '      const workPackage = typeof h.assignment?.workPackage === "string" ? h.assignment.workPackage : undefined;',
+        '      const at: Dispatch = { cut, role: h.agent, run: `${event.toolCallId}/${h.id}`, workPackage, cwd: session.cwd, agent: actor(session) };',
+        '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
+        '      await capture(',
+        '        {',
+        '          kind: "dispatched",',
+        '          transition: `${at.run}/dispatched`,',
+        '          cut,',
+        '          role: h.agent,',
+        '          run: at.run,',
+        '          ...(workPackage === undefined ? {} : { workPackage }),',
+        '        },',
+        '        at,',
+        '        session,',
+        '      );',
+        '    }',
+        '    return undefined;',
+        '  });',
+        '',
+        '  // A settled dispatch returns each item it ran: its return, tokens and deliverable. The call',
+        '  // is known by its id, whatever the tool carrying it is called.',
+        '  pi.on("tool_result", async (event, ctx) => {',
+        '    const details = (event as { details?: { results?: unknown } }).details;',
+        '    const results = Array.isArray(details?.results) ? details.results : [];',
+        '    for (const raw of results) {',
+        '      const r = (raw ?? {}) as Record<string, unknown>;',
+        '      const at = dispatches.get(`${event.toolCallId}#${String(r.index)}`);',
+        '      if (at === undefined) continue;',
+        '      const structured = r.structuredOutput as { data?: unknown } | undefined;',
+        '      const deliverable = structured?.data ?? jsonIn(r.output);',
+        '      await returned(at, typeof r.id === "string" ? r.id : at.run, deliverable, r.tokens, ctx as unknown as Session);',
+        '    }',
+        '    return undefined;',
+        '  });',
+        "  // A background item settles outside its call: omp's own lifecycle event says so, and its",
+        '  // structured deliverable sits beside its session file.',
+        '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
+        '  bus?.on?.("task:subagent:lifecycle", (data) => {',
+        '    const e = (data ?? {}) as Record<string, unknown>;',
+        '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
+        '    const at = dispatches.get(`${String(e.parentToolCallId)}#${String(e.index)}`);',
+        '    if (at === undefined) return;',
+        '    const file = typeof e.sessionFile === "string" ? e.sessionFile.replace(/\\.jsonl$/, ".json") : undefined;',
+        '    const deliverable = file !== undefined && existsSync(file) ? jsonIn(readFileSync(file, "utf8")) : undefined;',
+        '    void returned(at, typeof e.id === "string" ? e.id : at.run, deliverable, undefined);',
+        '  });',
+        '',
+        '  // Each capability as its installed command explains it, asked once, at load, and offered',
+        '  // as one tool with every verb it explains, to every agent. One the command cannot explain',
+        '  // is not offered and is said at session start: a skew never fails the load.',
+        '  for (const capability of CAPABILITIES) {',
+        '    let explanation: Explanation;',
+        '    if (capability === SKEW) explanation = SKEW_EXPLAINED;',
+        '    else',
+        '      try {',
+        '        explanation = JSON.parse(await run([capability, "--explain"]));',
+        '        if (!Array.isArray(explanation.verbs)) throw new Error("it explains no verbs");',
+        '      } catch (error) {',
+        '        lacking.set(capability, (error as Error).message.split("\\n")[0] ?? "");',
+        '        continue;',
+        '      }',
+        '    const verbs = new Map(explanation.verbs.map((v) => [v.name, v]));',
+        '    // A capability explaining one verb alone takes no `verb`: it is that one.',
+        '    const sole = explanation.verbs.length === 1 ? explanation.verbs[0] : undefined;',
+        '    const verbOf = (args: Record<string, unknown>): Verb | undefined => sole ?? verbs.get(String(args.verb));',
+        '    const tool = explanation.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");',
+        '    pi.registerTool({',
+        '      name: tool,',
+        '      label: explanation.name,',
+        '      description: description(explanation),',
+        '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
+        '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
+        '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
+        '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: Session) {',
+        '        // The version tool reports what each side holds of itself: the version this installation',
+        '        // records, and the one the reached command answers now.',
+        '        if (capability === SKEW)',
+        '          return { content: [{ type: "text" as const, text: JSON.stringify({ artifacts: projected(), command: await reached() }, null, 2) }] };',
+        "        // A refusal is a tool error carrying the command's own message.",
+        '        try {',
+        '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal, actor(ctx));',
+        '          return { content: [{ type: "text" as const, text }] };',
+        '        } catch (error) {',
+        '          return { content: [{ type: "text" as const, text: messageOf(error) }], isError: true };',
+        '        }',
+        '      },',
+        '    });',
+        '  }',
+        '}',
+        '',
+      ].join('\n'),
     },
   ];
-  for (const agent of [...agentNames].sort()) {
-    out.push({
-      filename: OMP_OVERLAY_FILE,
-      scope: agent,
-      content: ompOverlayYaml(),
-    });
-  }
-  return out;
-}
-
-// ── Persona badge → <persona>/extensions/<bin>-persona-badge.ts ─────────────
-
-/**
- * The persona badge: ONE module per projected agent, in that persona's own
- * scope, that puts the persona's mark emoji and name where the operator of a
- * session it runs can see it. Never the SESSION scope — a bare launch runs no
- * persona, so there is nothing to badge.
- *
- * THE NAME IS BAKED AT PROJECTION. omp calls a launched persona `main`
- * (`ctx.agent.name`), so the running session cannot say which persona it is;
- * placement already does, and the badge text is written from the agent cell
- * here. A null provenance carries no mark, and the badge is the name alone.
- *
- * THE HUE IS NEVER READ: omp strips ANSI from an extension's status text, so a
- * hue could reach the status line only as a word nobody asked for.
- *
- * WHERE IT SHOWS. Only in the top-level interactive session, never a dispatched
- * subagent's. `ctx.agent.kind === "main"` says so on an omp that has `ctx.agent`
- * (18.3.2 and later) — and the module reads `ctx.agent?.kind`, so an older omp
- * does not make it throw at launch. Without `ctx.agent`, omp still says `ctx.mode
- * === "tui"` only of the interactive terminal host (a subagent session runs in
- * `print`), so the badge shows there on `hasUI` and `mode` together; where
- * neither is there to tell by, the module says so once, in one line, on
- * `ctx.ui.notify`, and shows no badge.
- *
- * WHERE IT SHOWS ITS TEXT. Always in the status (`ctx.ui.setStatus`), which omp
- * draws inline where the layout lists `status` and on a row beneath the editor
- * otherwise. That row is the host's to hide (`statusLine.showHookStatus:
- * false`), and install can turn it back on only where it can read the host's
- * `statusLine` — not where that is an alias to a mapping written elsewhere in
- * the file. So the module reads the host's config text the way install does
- * (as text, never as a layout) and, where the row is hidden and no `status`
- * segment is listed to draw the badge inline, ALSO puts the badge in a widget
- * beneath the editor, which no status setting reaches. Where the row is shown
- * or `status` is listed, the widget is not set, so the badge is never twice.
- * That decision lives here, in what omp loads, because deploy cannot know the
- * state of a file the host edits after it.
- */
-export function ompPersonaBadgeExtensions(
-  agents: readonly Agent[],
-): HarnessProjection[] {
-  return [...agents]
-    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
-    .map((a) => {
-      const text = a.provenance
-        ? `${a.provenance.mark.emoji} ${a.name}`
-        : a.name;
-      return {
-        filename: OMP_PERSONA_BADGE_MODULE,
-        scope: a.name,
-        content: [
-          `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-          `// The persona badge of \`${a.name}\`: its mark and name, in the status line.`,
-          '//',
-          ...personaPlacement(a.name),
-          '// The name is baked in below, never asked for: omp calls a launched persona',
-          '// `main`, so what this badge shows is known only at projection. It shows only',
-          "// in a top-level interactive session, never in a subagent's. Where the host hid",
-          '// the status row and lists no `status` segment, it is also set in a widget',
-          '// beneath the editor, so it is somewhere visible rather than nowhere.',
-          '',
-          "import { existsSync, readFileSync } from 'node:fs';",
-          "import { homedir } from 'node:os';",
-          "import { join } from 'node:path';",
-          "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
-          '',
-          `const KEY = ${JSON.stringify(OMP_PERSONA_BADGE_KEY)};`,
-          `const BADGE = ${JSON.stringify(text)};`,
-          'const NOTICE =',
-          `  ${JSON.stringify(`${CLI_BIN} persona badge: this omp does not say which agent a session is, so no badge is shown; it needs omp 18.3.2 or later.`)};`,
-          '',
-          '// The host config text, comments removed — the file omp reads its settings from',
-          '// (`config.yml`, or `config.yaml` where that is the only one), or undefined.',
-          'function hostConfig(): string | undefined {',
-          '  const dir =',
-          "    process.env.PI_CODING_AGENT_DIR ?? join(homedir(), '.omp', 'agent');",
-          "  const file = ['config.yml', 'config.yaml']",
-          '    .map((name) => join(dir, name))',
-          '    .find((path) => existsSync(path));',
-          '  if (file === undefined) return undefined;',
-          '  try {',
-          "    return readFileSync(file, 'utf8')",
-          '      .split(/\\r?\\n/)',
-          '      .map((line) => line.replace(/(^|[ \\t])#.*$/, "$1"))',
-          "      .join('\\n');",
-          '  } catch {',
-          '    return undefined;',
-          '  }',
-          '}',
-          '',
-          '// True where the status row is hidden (`showHookStatus: false`, found as text',
-          '// wherever it is written, an alias target included) and no `status` segment is',
-          '// listed to draw the status inline: there setStatus reaches nobody.',
-          'function statusUnseen(): boolean {',
-          '  const text = hostConfig();',
-          '  if (text === undefined) return false;',
-          '  const hidden =',
-          '    /\\bshowHookStatus["\']?[ \\t]*:[ \\t]*(?:false|False|FALSE)(?=[ \\t,}\\]]|$)/m;',
-          '  const listed =',
-          '    /^[ \\t]*-[ \\t]+["\']?status["\']?[ \\t]*$/m.test(text) ||',
-          '    /\\b(?:left|right)Segments["\']?[ \\t]*:[ \\t]*\\[[^\\]]*\\bstatus\\b/.test(text);',
-          '  return hidden.test(text) && !listed;',
-          '}',
-          '',
-          'let said = false;',
-          '',
-          'export default function (pi: ExtensionAPI) {',
-          '  pi.on("session_start", (_event, ctx) => {',
-          '    if (!ctx.hasUI) return;',
-          '    const agent = ctx.agent as { kind?: string } | undefined;',
-          '    const topLevel =',
-          '      agent !== undefined ? agent.kind === "main" : ctx.mode === "tui";',
-          '    if (!topLevel) {',
-          '      if (agent === undefined && ctx.mode === undefined && !said) {',
-          '        said = true;',
-          '        ctx.ui.notify?.(NOTICE, "info");',
-          '      }',
-          '      return;',
-          '    }',
-          '    ctx.ui.setStatus(KEY, BADGE);',
-          '    if (statusUnseen()) ctx.ui.setWidget(KEY, [BADGE], { placement: "belowEditor" });',
-          '  });',
-          '}',
-          '',
-        ].join('\n'),
-      };
-    });
 }
 
 // ── HarnessAdapter port ──────────────────────────────────────────────────────
@@ -1934,31 +2213,20 @@ export function ompPersonaBadgeExtensions(
  * The omp realization of the `HarnessAdapter` port.
  *
  * No `hooks()`: that op returns a JSON settings fragment for a harness that keeps
- * hook config in a file, and omp keeps none. BOTH halves of the mechanism go
- * through code instead — `enforcingSurface` for the agent-composed constraints and
- * `scopeActivatedSurface` for the cells no agent composes — and each returns
- * `{filename, scope, content}`, which is a `.ts` module and its destination scope.
+ * hook config in a file, and omp keeps none. The cells no agent composes go through
+ * code instead — `scopeActivatedSurface`, a `.ts` module at the session scope.
  *
- * The second half was missing, and `project` reads the ABSENCE of `hooks()` as "no
- * session-scoped surface", so every scope-activated cell degraded here while this
- * header claimed the harness could scope anything it could fire. It can — the
- * claim was true of `enforcingSurface` and there was nothing to answer for the
- * rest.
+ * No `enforcingSurface`: omp loads no module for one agent alone, so a constraint
+ * composed into named agents cannot be narrowed to them (`scopes` is false), and
+ * projection reports it as a hook omp cannot scope per agent.
  */
 export const ompHarnessAdapter: HarnessAdapter = {
   name: 'omp',
   substrate: 'harness',
   home: '.omp',
   agentExt: '.md',
-  // Declared because the port requires it, and truthful: it is the artifact omp's
-  // enforcement lands in. It is never merged into a host config the way claude's
-  // `settings.json` is, because `hooks()` is absent and
-  // deploy therefore has no fragment to merge.
-  hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
-  // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds
-  // the session's own model and runs the worker around a judgment it makes
-  // itself, so there is no CLI to name and no second process to spawn.
-  judgeBin: '',
+  // OMP loads this generated session hook module.
+  hooksFile: `extensions/${OMP_SESSION_MODULE}`,
   // `autoloadSkills` names skills omp preloads into the agent it defines.
   preloadsSkills: true,
   // omp's agent definition reader takes no field that isolates an agent: its task
@@ -1966,68 +2234,50 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // worktree of its own off a line. Projection warns; `dispatchIsolation` is what
   // the agent gets instead.
   startsInWorktree: false,
-  // The role → model table: the definition names the role, install seeds the
-  // host's `modelRoles` entry for it.
+  // The model roles: a definition names the role named for its agent, then the tier
+  // and effort it holds; the host binds roles and tiers, install only as answered.
   roleRouting: ompRoleRouting,
-  // The isolated task a declared worktree becomes, and the host settings it needs.
+  // The owned root is linked into omp's plugin directory, as `omp plugin link` does.
+  packageDir: OMP_PACKAGE_DIR,
+  // The isolated task a declared worktree becomes, and the settings it holds.
   dispatchIsolation: ompDispatchIsolation,
   statusSegment: ompStatusSegment,
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,
-  // SCOPABLE ⇔ REALIZABLE, and for a reason neither sibling has: the mechanism is a
-  // file in the agent's own scope dir, so an event omp can fire at all is an event
-  // this adapter can narrow to one agent. That is what closes the bootstrap's
-  // central finding — that every enforcing fragment degraded to `steer` on omp
-  // because there was no identity to scope to. The identity is the agent
-  // DEFINITION, and the scope is the directory its overlay names.
-  scopes: (event) => ompBindingOf(event) !== undefined,
+  // NOTHING IS SCOPABLE: omp loads extension modules for every session, and no
+  // agent declaration names one of its own, so no event can be narrowed to one
+  // agent. A hook an agent composes is reported, never widened to every session.
+  scopes: () => false,
   // `$HOME` and not a resolved path: the emitted module is read at RUN time on
   // whatever host it lands on, so it must not bake in the projecting machine's home.
   hookCommand: (anchor, workerFilename) =>
-    `sh "$HOME/.omp/hooks/${anchor}/${workerFilename}"`,
+    `sh "$HOME/.${CLI_BIN}/omp/hooks/${anchor}/${workerFilename}"`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
   skillRel: ompSkillRel,
-  enforcingSurface: (bindings, mechanisms) =>
-    ompGuardrailExtensions(bindings, mechanisms),
-  scopeActivatedSurface: (hooks, agentNames) =>
-    ompScopeActivatedExtensions(hooks, agentNames),
-  // The launch spec, then each persona's badge: the identity a launch carries on
-  // a harness with no native identity field includes what the operator SEES.
-  launchSurface: (agents) => [
-    ...ompLaunchSurface(agents.map((a) => a.name)),
-    ...ompPersonaBadgeExtensions(agents),
-    ...ompIsolationExtensions(agents),
-  ],
-  launcherFile: OMP_LAUNCHER_FILE,
-  // The SESSION scope reads as itself OR as omission, so a caller may pass a
-  // projection's `scope` field straight through. Requiring the translation put the
-  // same `=== SESSION_SCOPE` conditional at every call site, and a call site that
-  // forgot it asked for a persona named `_session`.
-  //
-  // The overlay and the launcher sit at the scope's OWN top level; the guardrail,
-  // session and persona badge modules sit one level down, in `extensions/`, because that is the
-  // subdirectory omp's loader (native scan, or a directory named in `--config`)
-  // actually reads — see `OMP_EXTENSION_FILES`.
-  //
-  // EVERY scope now lives under omp's OWN session root: the SESSION copy at
-  // `agent/`, which omp scans natively, and each persona at
-  // `agent/personas/<name>/`, which nothing scans and only that persona's own
-  // overlay reaches. The two used to straddle two roots — the persona half sat
-  // in the harness-NEUTRAL `.agents/`, beside a persona file that no longer
-  // lives there — which left the ONE launcher no way to reach an overlay except
-  // by hard-coding this module's own layout into shell.
+  // The session module: the cells no agent composes.
+  scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),
+  // The dispatch isolation module: what this harness composes from the agents
+  // beyond their definitions. Starting a session as one goes through `omp --agent`,
+  // which the capability module below registers, so nothing here launches anything.
+  launchSurface: (agents) => ompIsolationExtensions(agents),
+  // The capabilities a plain session is offered as tools, each composed at load
+  // from the installed command's own explanation, and `--agent`.
+  capabilitySurface: ompCapabilityExtensions,
+  // Every scoped artifact is an extension module at the SESSION scope, which reads as
+  // itself OR as omission, so a caller may pass a projection's `scope` field straight
+  // through: it lands in `extensions/`, which the owned root's package names. Nothing is
+  // placed per agent, so an agent's scope is refused rather than widened.
   scopedRel: (filename, agent) => {
-    const dir =
-      agent === undefined || agent === SESSION_SCOPE
-        ? OMP_SESSION_DIR
-        : `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/${agent}`;
-    return OMP_EXTENSION_FILES[filename]
-      ? `${dir}/extensions/${filename}`
-      : `${dir}/${filename}`;
+    if (agent !== undefined && agent !== SESSION_SCOPE) {
+      throw new Error(
+        `omp places nothing for one agent alone, but '${filename}' is staged for '${agent}'; project the tree again`,
+      );
+    }
+    return `${OMP_EXTENSIONS_DIR}/${filename}`;
   },
 };

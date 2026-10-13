@@ -1,31 +1,23 @@
-// The omp (Oh My Pi) harness surface. PROJECTION-ONLY, like claude's.
+// The OMP-native projection.
 
-// The anatomy→omp projection — the only one of the two harnesses whose
-// persona is a NATIVE artifact of the harness: one `agent/agents/<name>.md`
-// definition that omp discovers itself, read back by ONE generic launcher for a
-// main session. The composed Target body is harness-neutral, so the
-// `ResolvedSkill` shape is shared with the claude adapter.
+// The anatomy→omp projection: one `agents/<name>.md` definition under the owned
+// root, which omp discovers itself as an extension package's, for dispatch and for
+// `omp --agent <name>` alike. The composed Target body is harness-neutral.
 export {
   OMP_AGENT_DEF_DIR,
-  OMP_GUARDRAIL_MODULE,
+  OMP_EXTENSIONS_DIR,
   OMP_ISOLATION_MODULE,
-  OMP_LAUNCHER_FILE,
-  OMP_LAUNCHER_SCRIPT,
-  OMP_OVERLAY_FILE,
-  OMP_PERSONA_DIR,
-  OMP_PERSONA_BADGE_MODULE,
-  OMP_SESSION_DIR,
+  OMP_ASSIGNMENT_KEY,
+  OMP_PACKAGE_DIR,
   OMP_SESSION_MODULE,
   type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,
+  ompCapabilityExtensions,
+  OMP_CRATYLUS_MODULE,
   ompDispatchIsolation,
-  ompGuardrailExtensions,
   ompIsolationExtensions,
   ompHarnessAdapter,
-  ompLaunchSurface,
-  ompOverlayYaml,
-  ompPersonaBadgeExtensions,
   ompRoleRouting,
   ompScopeActivatedExtensions,
   ompSkillRel,

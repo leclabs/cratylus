@@ -36,7 +36,8 @@ jobs:
       - uses: ./.github/actions/setup
 
       # THE IMMUTABILITY GATE: every commit in the range is judged against each of its
-      # parents, and any change under the records root that is not an addition is refused,
+      # parents, and any change under a protected root (the records root `records/` and
+      # the concept journal `design/journal/`) that is not an addition is refused,
       # naming its paths — so a later commit cannot mask an earlier edit. It runs from
       # source, so it needs no build and runs before one. A pull request is read as its
       # commits (base..head: those head holds and base does not, so records main gained

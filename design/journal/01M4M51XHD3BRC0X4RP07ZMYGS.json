@@ -1,0 +1,13 @@
+{
+  "id": "01M4M51XHD3BRC0X4RP07ZMYGS",
+  "at": "2026-10-11T00:15:56.973Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision",
+  "wording": "a recorded choice about the conceptual design or about how it is realized, of the kind meaning or realization: its context, the decision and its consequences, recorded as open or as accepted, and later superseded; a decision about realization is a constraint the work must keep to, for a choice that cannot be observed but matters; a decision is never edited: an open one is settled by recording its acceptance, its kind by recording its classification, each an entry of its own, and an accepted one changes only by a later decision that supersedes it by name, so how a choice was reached stays readable.",
+  "builtFrom": [],
+  "reason": "0065: a decision carries its kind.",
+  "supersedes": [
+    "01M4JDR3VJM30SZSG2YYBM3X7B"
+  ]
+}

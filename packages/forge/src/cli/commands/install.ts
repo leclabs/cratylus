@@ -23,11 +23,23 @@
 // the loader's own one-line message, writing nothing: falling back to the default
 // corpus there would install something other than what the config names.
 //
-// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
-// which harness, which of the corpus's practices, whether to link their launch
-// commands, and which model each held role routes to. Each has a flag; a decision
-// given by flag is never asked. The practices are the one decision no run takes for
-// the operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
+// WHERE IT PLACES: THE OWNED ROOT. Everything install places for the user on the
+// harness lives under one root it owns (`~/.cratylus/<harness>`, `deploy/owned-root.ts`):
+// the corpus's agents and skills, the harness's adapters, and the version of cratylus
+// that projected them. The harness's own surfaces only refer into it — for omp, the
+// owned root linked into omp's plugin directory as an extension package, as `omp plugin
+// link` would — so every project of the user is offered it and no host file is
+// overwritten. Installing again REPLACES THE ROOT WHOLE: an upgrade leaves exactly what
+// the new version places, and with the same version changes nothing. An EARLIER
+// INSTALLATION (the layout before the owned root, on the harness's own surfaces) is
+// taken back by its own record as part of the run, leaving what the host placed or
+// changed.
+//
+// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
+// which harness, which of the corpus's practices, and which model each tier the agents
+// fall back to, and each persona's own role, runs on. Each has a flag; a decision given
+// by flag is never asked. The practices are the one decision no run takes for the
+// operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
 // `--yes`, given the practices already installed here, or on a fresh host the corpus's
 // preselected ones) and a run with no terminal refuses, writing nothing. Of the rest a
 // run with no terminal (or `--yes`) takes the default. Before anything is written the
@@ -39,24 +51,28 @@
 // report is what is shown — so the preview cannot describe something the placement
 // then does differently.
 //
-// WHAT THE HOST HAS ALREADY SET IS NEVER ASKED AND NEVER CHANGED. A role the host
-// routes itself is left as it is, named as the host's, and a `--model-roles` entry for
-// it is left as the host set it and said so.
+// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING (decision 0112). An agent
+// declaration names its own model role first, then the tier and effort it holds
+// (decision 0111), and is never re-rendered with a model. The model a tier or a
+// persona's role runs on is the operator's to choose: install asks for it where the host
+// binds none and writes the answer into the host's own model roles, recording nothing of
+// it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
+// never asked and never changed. Where install is neither told nor can ask, it places
+// everything else and names, as the next step, each tier the agents fall back to that
+// the host does not bind.
+//
+// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT (decision 0113). It is asked
+// only where the host hides the row an extension's status shows in, and was neither
+// told (`--agent-status`) nor answered at an earlier install of this root. The answer
+// is written as the host's own setting — shown, or left hidden as it is — and the record
+// says only that it was answered, never what, so no later install asks for it or applies
+// it again, and upgrade and uninstall leave the setting as the host has it. Where it can
+// neither be told nor asked, it is named as a next step beside the unbound tiers.
 
-import {
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-} from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
-import { basename, join, resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { mergeManifest } from '@cratylus/schema';
-import {
-  CLAUDE_MODEL_TIERS,
-  CLAUDE_ROLE_TIERS,
-} from '../../adapters/claude/render.js';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
@@ -73,32 +89,17 @@ import {
   requirePlugins,
 } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import { keepsHostModel } from '../../deploy/deploy.js';
 import {
-  MANIFEST_REL,
-  type ModelRoleEntry,
-  type PersonaCommandsOpts,
   addModelRoles,
-  describePersonaCommands,
-  ensureBadgeStatusLine,
-  ensureHostSettings,
+  capabilityConfiguration,
   ensureStatusSegment,
-  hasManifest,
-  hostModelClaim,
-  markMigratedConfig,
-  modelRoleLine,
-  noteHostEdit,
-  noteHostRoutes,
-  personaLauncherOf,
-  placePersonaCommands,
-  planPersonaCommands,
+  hidesExtensionStatus,
+  linkOwnedRoot,
+  ownedRootIn,
+  placeOwnedRoot,
+  readInstallationRecord,
   readManifest,
-  recordedLines,
-  recordsHostEdits,
-  removePersonaCommands,
-  retargetHostEdit,
-  treeNames,
-  writeManifest,
+  rootFiles,
 } from '../../deploy/index.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import {
@@ -106,23 +107,29 @@ import {
   discoverFragments,
   projectPluginSet,
   resolveFragmentBodies,
-  writeRenderTree,
 } from '../../project/index.js';
+import { resolveSkills } from '../../project/resolve-skills.js';
 import type { AgentPlugin } from '../../resolve/index.js';
 import { fail as failLine, say, warn as warnLine } from '../style.js';
-import { deployTree } from './deploy.js';
 import {
   type InstallPrompts,
   type RoleQuestion,
   hasTerminal,
   terminalPrompts,
 } from './install-prompts.js';
+import { removeEarlierInstallation } from './uninstall.js';
+
+/** The operator's answer to whether the status line shows the session's agent. */
+type AgentStatus = 'show' | 'hide';
 
 export interface InstallCmdOpts {
   /** Harness adapter name (`--harness`). Absent: the one the host has, or asked. */
   harness?: string;
   /** The corpus this CLI was composed with, imported statically by its owner. */
   corpus?: AgentPlugin;
+  /** The declared version of the build doing the install, recorded in the owned root
+   *  as the version that projected it. */
+  version?: string;
   /** Show what would be placed and stop; write nothing. */
   dryRun?: boolean;
   cwd?: string;
@@ -132,14 +139,15 @@ export interface InstallCmdOpts {
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
   all?: boolean;
-  /** Link a command named after each installed persona into `~/.local/bin`
-   *  (`--link-persona-commands`), or link none (`--no-link-persona-commands`). Absent:
-   *  asked, or — where nothing is asked — none. */
-  linkPersonaCommands?: boolean;
-  /** `--model-roles <role=model,…|default>`: the model each named held role routes
-   *  to; `default` leaves every role on cratylus's routing. Given at all, it settles
-   *  the decision: a role it does not name takes the default. Absent: asked. */
+  /** `--model-roles <role=model,…|default>`: the model each named role runs on,
+   *  bound in the host's own settings: a tier the agents fall back to, or the role
+   *  named for an agent. `default` binds none. Given at all, it settles the decision.
+   *  Absent: each tier and persona role the host does not bind is asked. */
   modelRoles?: string;
+  /** `--agent-status <show|hide>`: whether the host's status line, where the host
+   *  hides it, shows the session's agent. Given at all, it settles the decision.
+   *  Absent: asked where the host hides it and no earlier install was answered. */
+  agentStatus?: string;
   /** `--yes`: on a terminal, take the default of every decision not given (the
    *  practices already installed here, or on a fresh host the corpus's preselected
    *  ones), ask nothing, and place without asking to go ahead. It is no answer to the
@@ -151,12 +159,10 @@ export interface InstallCmdOpts {
   prompts?: InstallPrompts;
   /** Whether questions may be asked at all. Default: stdin and stdout are a terminal. */
   interactive?: boolean;
-  /** `PATH`, for the on-PATH report. Default: the process's. */
-  pathEnv?: string;
-  /** The user's HOME, when the run is for another: the harness's files go in
-   *  `<home>/<its dot-directory>`. Absent, each harness's own directory — its
-   *  environment variable's where it has one and that is set, else under the
-   *  process's HOME. */
+  /** The user's HOME, when the run is for another: the owned root goes in
+   *  `<home>/.cratylus/<harness>` and the references in that home's harness directory.
+   *  Absent, the process's HOME, and each harness's own directory — its environment
+   *  variable's where it has one and that is set. */
   home?: string;
 }
 
@@ -177,10 +183,7 @@ export function detectHarnesses(home?: string): string[] {
 /** A run that stops before writing, for a reason the operator can act on. */
 class Refusal extends Error {}
 
-/** A model value as it may be written on a claude def's `model:` line. */
-const CLAUDE_MODEL = /^[A-Za-z0-9][A-Za-z0-9._:/[\]-]*$/;
-/** A model value as it may be written in omp's `modelRoles`: an alias (`@slow`) or a
- *  selector (`provider/model:high`), quoted when written. */
+/** A model value as omp writes in its `modelRoles`: an alias or selector. */
 const OMP_MODEL = /^\S+$/;
 
 /** What the steps of one run did (or, under `dry`, would do). */
@@ -189,49 +192,34 @@ interface Findings {
   detail: string[];
   /** Each on its own line, always shown. */
   warnings: string[];
-  /** What a deploy that failed said, as its own lines, always shown. */
-  failures: string[];
-  /** The runtime config the deploy wrote (or would), which lives outside the
-   *  harness directory. */
-  runtimeConfig: string | undefined;
-  /** Directories outside the harness directory the deploy placed files in, with
-   *  how many. */
-  outside: Record<string, number>;
   /** Host files edited: the path and what changed in it. */
   edits: { path: string; what: string }[];
-  /** The models the operator chose for roles, as `role → model`. */
+  /** The references the harness's own surfaces hold into the root, placed or kept. */
+  references: string[];
+  /** How many items of an earlier installation were taken back. */
+  earlier: number;
+  /** The model roles bound for the operator in the host's settings, as `role → model`. */
   routes: string[];
+  /** The tiers the agents fall back to that the host binds no model to. */
+  unbound: string[];
+  /** Whether the host hides the session's agent and was neither told nor asked
+   *  whether to show it. */
+  displayOpen: boolean;
   /** What the host had set and was left alone. */
   left: string[];
-  /** The persona commands. */
-  commands: {
-    binDir: string | undefined;
-    linked: string[];
-    adopted: string[];
-    /** Names that could be linked and were not asked to be. */
-    offered: string[];
-    /** The personas whose commands were taken out again, their practice dropped. */
-    unlinked: string[];
-  };
 }
 
 function emptyFindings(): Findings {
   return {
     detail: [],
     warnings: [],
-    failures: [],
-    runtimeConfig: undefined,
-    outside: {},
     edits: [],
+    references: [],
+    earlier: 0,
     routes: [],
+    unbound: [],
+    displayOpen: false,
     left: [],
-    commands: {
-      binDir: undefined,
-      linked: [],
-      adopted: [],
-      offered: [],
-      unlinked: [],
-    },
   };
 }
 
@@ -259,7 +247,7 @@ function parseModelRoles(
     const model = eq < 0 ? '' : entry.slice(eq + 1).trim();
     if (role === '' || model === '') {
       throw new Refusal(
-        `--model-roles: '${entry}' must be <role>=<model>; pass <role>=<model>,… or the single word 'default'`,
+        `--model-roles: '${entry}' must be <name>=<model>; pass <name>=<model>,… or the single word 'default'`,
       );
     }
     if (!valid.test(model)) {
@@ -361,6 +349,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   }
   const adapter = adapterByName(harness);
   const harnessDir = harnessDirIn(adapter, opts.home);
+  const root = ownedRootIn(adapter, opts.home);
+  // The installation this one replaces: its record, under the owned root.
+  const prior = readInstallationRecord(root);
 
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
   const configPath = join(cwd, CONFIG_FILE);
@@ -417,9 +408,13 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const declaredNames = declared.map((p) => p.name);
   const declaredList =
     declaredNames.length === 0 ? 'none' : list(declaredNames);
-  const recorded = readManifest(harnessDir).practices;
-  // What is installed here: the practices the last install recorded that this corpus
-  // still declares. A host with none recorded is a fresh one.
+  // What is installed here: the practices the last install recorded (in its owned
+  // root, or an earlier installation's deploy record) that this corpus still declares.
+  // A host with none recorded is a fresh one.
+  const recorded =
+    prior !== null
+      ? (prior.practices ?? null)
+      : readManifest(harnessDir).practices;
   const installed =
     recorded === null ? [] : declaredNames.filter((n) => recorded.includes(n));
   const preselection =
@@ -479,112 +474,84 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const decided = chosen === undefined ? undefined : { chosen, removed };
   const tree: ProjectedTree = rendered.report;
 
-  // ── WHAT TO ROUTE ────────────────────────────────────────────────────────────
-  // A role the host already routes is the host's: never asked, never changed.
+  // ── WHICH MODELS ─────────────────────────────────────────────────────────────
+  // The model each tier the agents fall back to, and each persona's own role, runs on
+  // (decision 0112): told by flag, or asked where the host binds none, and bound as the
+  // host's own setting. A role the host binds is its own: never asked, never changed.
   const routing = adapter.roleRouting;
-  const routesDefs = routing === undefined && keepsHostModel(adapter.home);
-  const validModel = routesDefs ? CLAUDE_MODEL : OMP_MODEL;
-  const hostRouted = new Set<string>();
-  // omp: the roles whose entry is install's own seed, still as it wrote it.
-  const seeded = new Set<string>();
-  let routable = tree.heldRoles;
-  let configRefused = false;
+  const agentModels = tree.agentModels;
+  const agentRoles = Object.keys(agentModels).sort();
+  const tierAgents = new Map<string, string[]>();
   if (routing !== undefined) {
-    const path = hostConfigPath(routing.configRels, harnessDir);
-    const probe = addModelRoles(
-      path,
-      tree.heldRoles.map((role) => ({ role, value: '' })),
-      { dry: true },
-    );
-    configRefused = probe.refused !== undefined;
-    const missing = new Set(probe.added.map((e) => e.role));
-    // An entry is install's own seed while it stands as install wrote it and no
-    // operator chose it: a later run may move it to the model chosen now. Any other
-    // entry is the host's, an operator's choice included.
-    const written = recordedLines(harnessDir, path);
-    const chosen = readManifest(harnessDir).hostRoutes;
-    // A host installed before edits were recorded has no such record; its seeds are
-    // the lines this install would write itself, which it adopts.
-    const legacy = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
-    for (const role of tree.heldRoles) {
-      if (configRefused || missing.has(role)) continue;
-      const line = probe.current[role] as string;
-      const seed = `${modelRoleLine(
-        { role, value: `@${routing.nearest(role)}` },
-        '',
-      )}${/\r?\n$/.exec(line)?.[0] ?? ''}`;
-      const own =
-        !chosen.includes(role) &&
-        (written.has(line) || (legacy && line.trimStart() === seed));
-      if (own) seeded.add(role);
-      else hostRouted.add(role);
+    for (const [agent, { tier }] of Object.entries(agentModels)) {
+      const role = routing.tierRole(tier);
+      tierAgents.set(role, [...(tierAgents.get(role) ?? []), agent]);
     }
-  } else if (routesDefs) {
-    const prior = readManifest(harnessDir);
-    for (const [role, holders] of Object.entries(tree.roleHolders)) {
-      const routed = holders.some((name) => {
-        const path = join(harnessDir, adapter.agentRel(name));
-        return (
-          existsSync(path) &&
-          hostModelClaim(prior, name, readFileSync(path, 'utf-8'))?.line !==
-            undefined
-        );
-      });
-      if (routed) hostRouted.add(role);
-    }
-  } else {
-    routable = [];
   }
-  const askable = routable.filter((r) => !hostRouted.has(r));
+  const tierRoles = [...tierAgents.keys()].sort();
+  const configFile =
+    routing === undefined
+      ? undefined
+      : hostConfigPath(routing.configRels, harnessDir);
+  const hostBound = new Map(
+    configFile === undefined
+      ? []
+      : addModelRoles(configFile, [], { dry: true }).host,
+  );
 
   const choices: Record<string, string> = {};
   const left: string[] = [];
   if (opts.modelRoles !== undefined) {
-    if (routing === undefined && !routesDefs) {
+    if (routing === undefined) {
       throw new Refusal(
         `--model-roles: the '${adapter.name}' harness routes no roles; drop --model-roles`,
       );
     }
-    const given = parseModelRoles(opts.modelRoles, validModel);
+    const given = parseModelRoles(opts.modelRoles, OMP_MODEL);
     if (given !== 'default') {
       const unknown = Object.keys(given).filter(
-        (r) => !tree.heldRoles.includes(r),
+        (r) => !tierRoles.includes(r) && !agentRoles.includes(r),
       );
       if (unknown.length > 0) {
         throw new Refusal(
-          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no role the installed agents hold (roles: ${list(tree.heldRoles)}); name one of those roles`,
+          `--model-roles: ${list(unknown.map((r) => `'${r}'`))} ${unknown.length === 1 ? 'is' : 'are'} no tier or agent of this install (tiers: ${list(tierRoles)}; agents: ${list(agentRoles)}); name one of those`,
         );
       }
       for (const [role, model] of Object.entries(given)) {
-        if (hostRouted.has(role)) {
+        if (hostBound.has(role)) {
           left.push(
-            `--model-roles ${role}=${model}: the host already routes ${role}, so it is left as the host set it`,
+            `--model-roles ${role}=${model}: the host already binds the model role ${role}, so it is left as the host set it`,
           );
         } else {
           choices[role] = model;
         }
       }
     }
-  } else if (askable.length > 0 && !configRefused) {
-    open = true;
-    if (interactive) {
-      const questions: RoleQuestion[] = askable.map((role) => ({
+  } else if (routing !== undefined) {
+    const options = [...new Set(hostBound.values())]
+      .filter((m) => !m.startsWith('@'))
+      .sort();
+    const questions: RoleQuestion[] = [
+      ...tierRoles.map((role) => ({
         role,
-        holders: tree.roleHolders[role] ?? [],
-        options: routing
-          ? routing.offered.map((r) => `@${r}`)
-          : CLAUDE_MODEL_TIERS,
-        initial: routing
-          ? `@${routing.nearest(role)}`
-          : Object.hasOwn(CLAUDE_ROLE_TIERS, role)
-            ? CLAUDE_ROLE_TIERS[role]
-            : undefined,
-      }));
+        roleOf: 'tier' as const,
+        agents: tierAgents.get(role) ?? [],
+        options,
+      })),
+      ...tree.personas.map((role) => ({
+        role,
+        roleOf: 'persona' as const,
+        agents: [role],
+        options,
+      })),
+    ].filter((q) => !hostBound.has(q.role));
+    if (questions.length > 0) open = true;
+    if (interactive && questions.length > 0) {
       const picked = await answered(prompts.routes(questions));
       for (const q of questions) {
         const model = picked[q.role];
-        if (model === undefined || model === q.initial) continue;
-        if (!validModel.test(model)) {
+        if (model === undefined) continue;
+        if (!OMP_MODEL.test(model)) {
           throw new Refusal(
             `'${model}' is not a usable model name; pass a name the harness accepts`,
           );
@@ -593,254 +560,191 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       }
     }
   }
+  // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
+  // Asked only where the host hides it and it was neither told nor answered before
+  // (decision 0113); the answer is the host's own setting from then on.
+  const statusHost =
+    adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
+  const statusFile =
+    statusHost === undefined
+      ? undefined
+      : hostConfigPath(statusHost.configRels, harnessDir);
+  // Hidden: the host turned the row beneath the editor off, and its layout does not
+  // list the segment that shows the session's agent inside the line instead.
+  const hidden =
+    statusHost !== undefined &&
+    statusFile !== undefined &&
+    existsSync(statusFile) &&
+    hidesExtensionStatus(readFileSync(statusFile, 'utf8')) &&
+    ensureStatusSegment(statusFile, statusHost, { dry: true }).state !==
+      'present';
+  const answeredBefore = prior?.answered?.includes('agentStatus') === true;
+  let agentStatus: AgentStatus | undefined;
+  let statusAnswered = answeredBefore;
+  if (opts.agentStatus !== undefined) {
+    const told = opts.agentStatus.trim();
+    if (told !== 'show' && told !== 'hide') {
+      throw new Refusal(
+        `--agent-status: '${told}' is neither show nor hide; pass --agent-status show or --agent-status hide`,
+      );
+    }
+    if (statusHost === undefined) {
+      throw new Refusal(
+        `--agent-status: the '${adapter.name}' harness has no status line install shows an agent on; drop --agent-status`,
+      );
+    }
+    if (answeredBefore) {
+      left.push(
+        `--agent-status ${told}: answered at an earlier install, so whether the status line shows the session's agent is the host's own setting, left as it is`,
+      );
+    } else {
+      statusAnswered = true;
+      if (hidden) agentStatus = told;
+      else if (told === 'hide')
+        left.push(
+          `--agent-status hide: the host's status line already shows the session's agent, as the host set it, so it is left as it is`,
+        );
+    }
+  } else if (hidden && !answeredBefore && interactive) {
+    open = true;
+    agentStatus = (await answered(prompts.agentStatus())) ? 'show' : 'hide';
+    statusAnswered = true;
+  }
+  const displayOpen = hidden && !statusAnswered;
 
-  // ── STAGE, THEN THE COMMANDS ─────────────────────────────────────────────────
-  // The tree is a TEMP artifact and is removed. `install` is not `project`: the
-  // operator asked for agents on their machine, not for a render tree to keep, and
-  // leaving one in their cwd would be this command inventing a project for someone
-  // who told us they have none.
-  const stage = mkdtempSync(join(tmpdir(), `${CLI_BIN}-install-`));
-  try {
-    writeRenderTree(stage, tree.files);
-    const stageTree = {
-      agentsDir: resolve(stage, 'agents'),
-      skillsDir: resolve(stage, 'skills'),
-    };
-    // A corpus with no skills (or no agents) renders no such dir. This is install's own
-    // scratch tree, so an empty one is the truth about it; deploy refuses a render dir
-    // that is absent, as it must for one an operator named.
-    mkdirSync(stageTree.agentsDir, { recursive: true });
-    mkdirSync(stageTree.skillsDir, { recursive: true });
-    const agentNames = treeNames('agent', stageTree, adapter.agentExt);
-    // The agents an earlier install placed that this one does not: their practice is
-    // dropped, and so are their launch commands.
-    const droppedAgents = Object.keys(
-      readManifest(harnessDir).kinds.agent ?? {},
-    ).filter((n) => !agentNames.includes(n));
+  const placedTree: ProjectedTree = rendered.report;
+  // Each capability's configuration, as the corpus's skills declare it.
+  const configuration = capabilityConfiguration(
+    (await resolveSkills(plugins)).map((s) => s.skill),
+  );
 
-    const commandsCtx = personaCommandsOf(adapter, agentNames, opts);
-    const placeable =
-      commandsCtx === undefined
-        ? []
-        : planPersonaCommands(commandsCtx).links.filter(
-            (l) => l.state === 'place' || l.state === 'adopt',
-          );
-    let link = false;
-    if (opts.linkPersonaCommands !== undefined) {
-      link = opts.linkPersonaCommands;
-    } else if (placeable.length > 0) {
-      open = true;
-      if (interactive && commandsCtx !== undefined) {
-        link = await answered(
-          prompts.linkCommands(linkQuestion(commandsCtx, placeable)),
+  const apply = (dry: boolean): Findings => {
+    const found = emptyFindings();
+    found.warnings.push(...rendered.warnings);
+    found.left.push(...left);
+    found.detail.push(`corpus: ${source}`, `harness: ${harness} → ${root}`);
+    // An earlier installation first: what it placed on the harness's own surfaces is
+    // taken back by its record, so what follows meets the host's own files.
+    const earlier = removeEarlierInstallation(adapter, {
+      ...(opts.home === undefined ? {} : { home: opts.home }),
+      dryRun: dry,
+    });
+    if (earlier !== undefined) {
+      found.earlier = earlier.removed.length;
+      for (const r of earlier.removed)
+        found.detail.push(`  earlier: ${r.what}`);
+      for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
+    }
+    // Whether the status line shows the session's agent: the operator's answer, written
+    // as the host's own setting and recorded nowhere as cratylus's (decision 0113).
+    if (agentStatus === 'show' && statusFile !== undefined)
+      showAgentStatus(found, statusFile, adapter, dry);
+    else if (agentStatus === 'hide')
+      found.detail.push(
+        `  statusLine: ${statusFile} — the session's agent stays hidden, as answered`,
+      );
+    found.displayOpen = displayOpen;
+    // The models the operator chose, bound in the host's own model roles and recorded
+    // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
+    const bound = new Set<string>();
+    const wanted = Object.entries(choices).map(([role, value]) => ({
+      role,
+      value,
+    }));
+    if (configFile !== undefined && wanted.length > 0) {
+      const result = addModelRoles(configFile, wanted, { dry });
+      if (result.refused !== undefined) {
+        found.warnings.push(
+          `did not bind ${list(wanted.map((e) => e.role))} in ${configFile}: ${result.refused}; bind ${wanted.length === 1 ? 'it' : 'them'} under modelRoles there yourself`,
         );
       }
-    }
-
-    // A host this ran on before edits were recorded has the lines its install put in
-    // the host's config files with nothing saying so. Read BEFORE the deploy rewrites
-    // the record: what this install finds there, byte for byte what it would write,
-    // it adopts.
-    const migrating = hasManifest(harnessDir) && !recordsHostEdits(harnessDir);
-
-    // Claude's route is the `model:` line of each agent holding the role.
-    const models: Record<string, string> = routesDefs
-      ? Object.fromEntries(
-          Object.entries(choices).flatMap(([role, model]) =>
-            (tree.roleHolders[role] ?? []).map((name) => [name, model]),
-          ),
-        )
-      : {};
-
-    const apply = async (
-      dry: boolean,
-    ): Promise<{ rc: number; found: Findings }> => {
-      const found = emptyFindings();
-      found.warnings.push(...rendered.warnings);
-      found.left.push(...left);
-      found.detail.push(
-        `corpus: ${source}`,
-        `harness: ${harness} → ${harnessDir}`,
-      );
-      const deployed = await deployTree({
-        agentsDir: stageTree.agentsDir,
-        skillsDir: stageTree.skillsDir,
-        hooksDir: stage,
-        companions: {},
-        kind: 'all',
-        scope: 'user',
-        harness,
-        // The harness's own directory, which deploy takes verbatim when this run was
-        // given a home (a bare home dir would make it print its self-correcting NOTE
-        // on every run of every kind), and resolves as this run did when it was not.
-        home: opts.home === undefined ? null : harnessDir,
-        command: 'install',
-        project: null,
-        config: existsSync(configPath) ? configPath : null,
-        only: null,
-        // THE PLUGIN SET TRAVELS WITH THE CALL. `install` has no config file by
-        // definition, so deploy must be handed the plugin set rather than sent to read
-        // it back off disk — otherwise the zero-config path deploys agents and skills
-        // onto a host whose runtime cannot validate an event name or read the
-        // configuration its capabilities need.
-        plugins,
-        dryRun: dry,
-        check: false,
-        log: (line) => found.detail.push(line),
-        warn: (message) => found.warnings.push(message),
-        fail: (message) => found.failures.push(message),
-        ...(Object.keys(models).length > 0 ? { models } : {}),
-      });
-      const rc = deployed.rc;
-      if (rc !== 0) return { rc, found };
-      found.runtimeConfig = deployed.runtimeConfig?.path;
-      found.outside = deployed.outside;
-      // What this install chose, for the next to preselect from and for the record to
-      // say what is installed here.
-      if (!dry && chosen !== undefined) {
-        writeManifest(harnessDir, {
-          ...readManifest(harnessDir),
-          practices: chosen,
-        });
-      }
-      // The routes the definitions just placed name roles; the host maps a role to a
-      // model. Deploy is unchanged — this is install's own step, and a deploy that
-      // failed places no routes to back.
-      seedModelRoles(found, adapter, tree.heldRoles, choices, seeded, {
-        harnessDir,
-        dry,
-        adopt: migrating,
-      });
-      // The settings a dispatched agent's isolation needs: install's own step, for the
-      // agents the projection could not start in a worktree.
-      seedDispatchIsolation(found, adapter, tree.unisolated, {
-        harnessDir,
-        dry,
-      });
-      if (routesDefs) {
-        describeClaudeRoles(found, adapter, tree.heldRoles);
-        for (const [role, model] of Object.entries(choices)) {
-          found.routes.push(`${role} → ${model}`);
-        }
-        for (const role of hostRouted) {
-          found.left.push(`the model of ${role}, which the host set`);
-        }
-      }
-      // Then the badge, which is what the operator sees of those personas: the host's
-      // own status line, made to show it.
-      showPersonaBadge(found, adapter, agentNames, {
-        harnessDir,
-        dry,
-        adopt: migrating,
-      });
-      // Then the persona commands: install's own step too, after the launcher they
-      // link to has been placed.
-      if (commandsCtx !== undefined) {
-        linkPersonaCommands(found, commandsCtx, { link, dry });
-        if (droppedAgents.length > 0) {
-          const removal = removePersonaCommands({
-            ...commandsCtx,
-            personas: droppedAgents,
-            only: true,
-            dry,
-          });
-          for (const l of removal.links) {
-            if (l.state === 'removed' || l.state === 'remove') {
-              found.commands.unlinked.push(basename(l.link));
-            }
-          }
-        }
-      }
-      return { rc, found };
-    };
-
-    const confirming = interactive && open && opts.dryRun !== true;
-    if (opts.dryRun === true || confirming) {
-      const planned = await apply(true);
-      if (planned.rc !== 0) return failed(planned.found, planned.rc, opts);
-      for (const line of describe(planned.found, {
-        adapter,
-        harnessDir,
-        tree,
-        practices: decided,
-        dry: true,
-      })) {
-        say(line);
-      }
-      if (opts.verbose) for (const line of planned.found.detail) say(line);
-      warnAll(planned.found);
-      if (opts.dryRun === true) return 0;
-      const go = await answered(prompts.confirm('Install this?'));
-      if (!go) {
-        say('Nothing was written.');
-        return 0;
+      for (const e of result.added) {
+        bound.add(e.role);
+        found.routes.push(`${e.role} → ${e.value}`);
       }
     }
-
-    const placed = await apply(false);
-    if (placed.rc !== 0) return failed(placed.found, placed.rc, opts);
-    if (opts.verbose) for (const line of placed.found.detail) say(line);
-    for (const line of describe(placed.found, {
+    found.unbound.push(
+      ...tierRoles.filter((t) => !hostBound.has(t) && !bound.has(t)),
+    );
+    const linked = linkOwnedRoot({ adapter, harnessDir, root, prior, dry });
+    found.references.push(
+      ...linked.references.map((r) => join(harnessDir, r.path)),
+    );
+    for (const l of linked.left)
+      found.warnings.push(`did not refer ${l.what} to ${root}: ${l.why}`);
+    const placed = placeOwnedRoot({
       adapter,
-      harnessDir,
-      tree,
+      root,
+      files: rootFiles(adapter, placedTree.files),
+      ...(opts.version === undefined ? {} : { version: opts.version }),
+      configuration,
+      record: {
+        ...(chosen === undefined ? {} : { practices: chosen }),
+        references: linked.references,
+        ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
+      },
+      dry,
+    });
+    for (const file of placed.files) found.detail.push(`  ${root}/${file}`);
+    return found;
+  };
+
+  const confirming = interactive && open && opts.dryRun !== true;
+  const show = (found: Findings, dry: boolean): void => {
+    for (const line of describe(found, {
+      adapter,
+      root,
+      tree: placedTree,
       practices: decided,
-      dry: false,
+      config: configFile,
+      dry,
     })) {
       say(line);
     }
-    warnAll(placed.found);
-    return 0;
-  } finally {
-    rmSync(stage, { recursive: true, force: true });
+    if (opts.verbose) for (const line of found.detail) say(line);
+    for (const message of new Set(found.warnings)) warnLine('install', message);
+  };
+  if (opts.dryRun === true || confirming) {
+    show(apply(true), true);
+    if (opts.dryRun === true) return 0;
+    const go = await answered(prompts.confirm('Install this?'));
+    if (!go) {
+      say('Nothing was written.');
+      return 0;
+    }
   }
-}
-
-/** A run that failed: what the deploy said, its detail under `--verbose`, and its
- *  code. */
-function failed(
-  found: Findings,
-  rc: number,
-  opts: Pick<InstallCmdOpts, 'verbose'>,
-): number {
-  for (const message of found.failures) failLine('install', message);
-  if (opts.verbose) {
-    for (const line of found.detail) process.stderr.write(`${line}\n`);
-  }
-  warnAll(found);
-  return rc;
-}
-
-/** Every warning, one line each, after the rest: a warning is never verbose's. */
-function warnAll(found: Findings): void {
-  for (const message of new Set(found.warnings)) warnLine('install', message);
+  show(apply(false), false);
+  return 0;
 }
 
 /**
- * What a run shows an operator, before it places (`dry`) and after: the harness and
- * its home; the practices; the counts; each host file edited and what changed in it;
- * the models chosen; the launch commands; what the host had set and was left alone —
- * and, once placed, what to do next.
+ * What a run shows an operator, before it places (`dry`) and after: the root and the
+ * harness; the practices; the counts; the references into the root; an earlier
+ * installation taken back; each host file edited and what changed in it; the models
+ * bound for the operator; what the host had set and was left alone — and, once placed,
+ * what to do next, the tiers no model is bound to among it.
  */
 function describe(
   found: Findings,
   ctx: {
     adapter: HarnessAdapter;
-    harnessDir: string;
+    root: string;
     tree: ProjectedTree;
     /** The practices installed and those taken out, or `undefined` where the corpus
      *  declares none. */
     practices:
       | { chosen: readonly string[]; removed: readonly string[] }
       | undefined;
+    /** The host config file holding its model roles, where the harness has one. */
+    config: string | undefined;
     dry: boolean;
   },
 ): string[] {
   const { adapter, tree, dry } = ctx;
   const lines = [
     dry
-      ? `${CLI_BIN} would install into ${adapter.name} (${ctx.harnessDir}):`
-      : `${CLI_BIN} is installed in ${adapter.name} (${ctx.harnessDir}):`,
+      ? `${CLI_BIN} would install into ${adapter.name}, under ${ctx.root}:`
+      : `${CLI_BIN} is installed in ${adapter.name}, under ${ctx.root}:`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (ctx.practices !== undefined) {
@@ -850,38 +754,22 @@ function describe(
         : '';
     lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
   }
+  if (found.references.length > 0) {
+    lines.push(
+      `  ${adapter.name} ${dry ? 'would load' : 'loads'} it in every project, by ${list(found.references)}`,
+    );
+  }
+  if (found.earlier > 0) {
+    lines.push(
+      `  ${dry ? 'would take back' : 'took back'} the earlier installation (${plural(found.earlier, 'item')})`,
+    );
+  }
   for (const edit of found.edits) {
     lines.push(`  ${dry ? 'would edit' : 'edited'} ${edit.path}: ${edit.what}`);
   }
-  // EVERY FILE WRITTEN OUTSIDE THE HARNESS DIRECTORY IS NAMED, the runtime config
-  // included: the operator reads this to learn what the run touches.
-  for (const [root, count] of Object.entries(found.outside)) {
-    lines.push(
-      `  ${dry ? 'would write' : 'wrote'} ${plural(count, 'file')} in ${root}`,
-    );
-  }
-  if (found.runtimeConfig !== undefined) {
-    lines.push(
-      `  ${dry ? 'would write' : 'wrote'} the runtime config ${found.runtimeConfig}`,
-    );
-  }
   if (found.routes.length > 0) {
     lines.push(
-      `  models you chose: ${list(found.routes)}; every other role follows the default routing`,
-    );
-  }
-  const { commands } = found;
-  const named = (verb: string, names: readonly string[]): string =>
-    `  ${verb} ${plural(names.length, 'launch command')} in ${commands.binDir}: ${list(names)}`;
-  if (commands.linked.length > 0) {
-    lines.push(named(dry ? 'would link' : 'linked', commands.linked));
-  }
-  if (commands.adopted.length > 0) {
-    lines.push(named(dry ? 'would adopt' : 'adopted', commands.adopted));
-  }
-  if (commands.unlinked.length > 0) {
-    lines.push(
-      `  ${dry ? 'would unlink' : 'unlinked'} the command${commands.unlinked.length === 1 ? '' : 's'} of ${list(commands.unlinked)}`,
+      `  ${dry ? 'would bind' : 'bound'} in ${ctx.config}, as your own setting (upgrade and uninstall keep it): ${list(found.routes)}`,
     );
   }
   // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
@@ -898,7 +786,7 @@ function describe(
     const { dispatchIsolation } = adapter;
     const rest =
       dispatchIsolation === undefined
-        ? `so ${one ? 'it builds' : 'they build'} in the checkout that dispatches ${one ? 'it' : 'them'}, and the land gate refuses work built in the main checkout`
+        ? `so ${one ? 'it builds' : 'they build'} in the checkout that dispatches ${one ? 'it' : 'them'}`
         : `${one ? 'it runs' : 'they run'} in an isolated copy of ${one ? 'its' : 'their'} dispatcher's checkout, never writing the main checkout, ${dispatchIsolation.lacks}`;
     lines.push(
       `  not realized: ${subject} on ${adapter.name}${dispatchIsolation === undefined ? ', ' : '; '}${rest}`,
@@ -909,115 +797,26 @@ function describe(
   }
   if (dry) return lines;
 
-  const next = [`start or restart ${adapter.name}`];
-  if (commands.linked.length + commands.adopted.length > 0) {
-    next.push(
-      `launch a persona by its name: ${list([...commands.linked, ...commands.adopted])}`,
-    );
-  } else if (commands.offered.length > 0) {
-    next.push(
-      `to launch personas by name, run again with --link-persona-commands (${plural(commands.offered.length, 'command')} into ${commands.binDir})`,
-    );
-  }
-  next.push(`to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`);
+  const next = [
+    `start or restart ${adapter.name}`,
+    ...(found.unbound.length > 0
+      ? [
+          `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
+        ]
+      : []),
+    ...(found.displayOpen
+      ? [
+          `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
+        ]
+      : []),
+    `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,
+  ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;
 }
 
-/** The persona commands' shared inputs, or `undefined` where the harness has no
- *  launcher to link to. No agent to name a command after is still a context: the
- *  commands of the personas an install drops are removed through it. The launcher a
- *  command links to is the harness's, and every OTHER harness's is passed along so a
- *  name already taken by one is reported as held by it. */
-function personaCommandsOf(
-  adapter: HarnessAdapter,
-  personas: readonly string[],
-  opts: InstallCmdOpts,
-): PersonaCommandsOpts | undefined {
-  const harnessDir = harnessDirIn(adapter, opts.home);
-  const self = personaLauncherOf(harnessDir, adapter);
-  if (self === undefined) return undefined;
-  return {
-    home: opts.home ?? homedir(),
-    harnessDir,
-    self,
-    personas,
-    peers: HARNESS_NAMES.filter((n) => n !== adapter.name).flatMap((n) => {
-      const peer = personaLauncherOf(
-        harnessDirIn(adapterByName(n), opts.home),
-        adapterByName(n),
-      );
-      return peer ? [peer] : [];
-    }),
-    ...(opts.pathEnv !== undefined ? { pathEnv: opts.pathEnv } : {}),
-  };
-}
-
-/** What a yes to linking does, in the two ways it acts: a free name is linked, and a
- *  hand-made link to this launcher is only recorded — so the two are counted apart. */
-function linkQuestion(
-  ctx: PersonaCommandsOpts,
-  placeable: readonly { state: string }[],
-): string {
-  const count = (state: string) =>
-    placeable.filter((l) => l.state === state).length;
-  const link = count('place');
-  const adopt = count('adopt');
-  const binDir = planPersonaCommands(ctx).binDir;
-  return link === 0
-    ? `Adopt ${plural(adopt, 'persona command')} already linked in ${binDir}?`
-    : `Link ${plural(link, 'persona command')} into ${binDir}${adopt > 0 ? `, and adopt ${adopt} already linked there` : ''}?`;
-}
-
-/**
- * Say what commands named after the installed personas would be placed in the user's
- * bin dir, and place them when `link` says to. Anywhere else nothing is placed and the
- * report says how to.
- */
-function linkPersonaCommands(
-  found: Findings,
-  ctx: PersonaCommandsOpts,
-  run: { link: boolean; dry: boolean },
-): void {
-  const say = (lines: readonly string[]): void => {
-    found.detail.push(...lines);
-  };
-  if (run.link) {
-    const report = placePersonaCommands({ ...ctx, dry: run.dry });
-    say(describePersonaCommands(report, run.dry));
-    found.commands.binDir = report.binDir;
-    for (const l of report.links) {
-      if (l.state === 'place' || l.state === 'placed') {
-        found.commands.linked.push(l.persona);
-      } else if (l.state === 'adopt' || l.state === 'adopted') {
-        found.commands.adopted.push(l.persona);
-      } else if (l.state === 'blocked') {
-        found.warnings.push(
-          `persona command ${l.persona} was not linked: ${l.link} is ${l.heldBy ? `linked to the ${l.heldBy} launcher` : l.current} and is left alone`,
-        );
-      }
-    }
-    if (!report.onPath && found.commands.linked.length > 0) {
-      found.warnings.push(
-        `${report.binDir} is not on PATH — add it to PATH to run the persona commands by name`,
-      );
-    }
-    return;
-  }
-  const plan = planPersonaCommands(ctx);
-  say(describePersonaCommands(plan, true));
-  found.commands.binDir = plan.binDir;
-  const offered = plan.links.filter(
-    (l) => l.state === 'place' || l.state === 'adopt',
-  );
-  if (offered.length === 0) return;
-  found.commands.offered.push(...offered.map((l) => l.persona));
-  say(['  none placed — pass --link-persona-commands to link them']);
-}
-
-/** The host config file a harness reads its settings from, and so the one to edit: the
- *  FIRST that exists, because the harness ignores the rest; a host with none gets the
- *  first, and never a file that would shadow one it already has. */
+/** The host config file a harness reads its settings from: the FIRST that exists,
+ *  because the harness ignores the rest; a host with none gets the first. */
 function hostConfigPath(
   configRels: readonly string[],
   harnessDir: string,
@@ -1027,353 +826,61 @@ function hostConfigPath(
 }
 
 /**
- * Make the host hold the settings its isolation of a dispatched agent needs, for the
- * agents the projection could not start in a worktree of their own, and say what was
- * done. A harness without such an isolation, or an install that places no such agent,
- * touches no host config.
+ * Show the session's agent on the host's status line at `path`, which hides it, as the
+ * operator answered, and say what was done. The edit is the host's own setting from
+ * then on: recorded nowhere as cratylus's (decision 0113).
  *
- * The file is the host's, so the settings are written as the lines they are, a value
- * the host held is replaced in place, and the edit is recorded in the deploy manifest
- * for an uninstall to take back: an inserted line goes, a replaced one is the host's
- * original again. A file this cannot edit safely is left as it is and reported, with the
- * lines to write by hand, and the install itself still succeeds.
+ * omp's status line is a list of segments (`adapter.statusSegment`). An extension's
+ * status — where the cratylus extension puts the name and mark of the agent a session
+ * was started as — renders in the row beneath the editor unless the host set
+ * `statusLine.showHookStatus: false`, and inside the line only where the layout lists
+ * `status`. So `status` is listed in the host's own layout, or, where that layout is not
+ * one install can extend, the row is shown again. A failure to edit is reported, and the
+ * install itself still succeeds.
  */
-function seedDispatchIsolation(
+function showAgentStatus(
   found: Findings,
+  path: string,
   adapter: HarnessAdapter,
-  isolated: readonly string[],
-  run: { harnessDir: string; dry: boolean },
+  dry: boolean,
 ): void {
-  const isolation = adapter.dispatchIsolation;
-  if (isolation === undefined || isolated.length === 0) return;
-  const { harnessDir, dry } = run;
-  const path = hostConfigPath(isolation.configRels, harnessDir);
-  const result = ensureHostSettings(path, isolation.settings, { dry });
-  if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
-  const parent = isolation.settings.parent.join('.');
-  if (result.refused !== undefined) {
-    const wanted = Object.entries(isolation.settings.entries).map(
-      ([key, value]) => `${parent}.${key}: ${value}`,
-    );
-    found.warnings.push(
-      `did not edit ${path} — ${result.refused}. Set ${list(wanted)} there yourself, or ${adapter.name} refuses a dispatch of ${list(isolated)}.`,
-    );
-    return;
-  }
-  if (result.changed.length === 0) {
-    found.detail.push(`  ${parent}: ${path} — already holds the settings`);
-    return;
-  }
-  const said = result.changed.map(
-    (c) =>
-      `${c.setting.slice(parent.length + 1)}: ${c.to}${c.from === undefined ? '' : ` (was ${c.from})`}`,
-  );
-  found.detail.push(
-    `  ${parent}${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'set' : 'would set'}`,
-  );
-  for (const line of said) found.detail.push(`    ${line}`);
-  found.edits.push({ path, what: `${parent} sets ${list(said)}` });
-}
-
-/**
- * Make the host's status line show the persona badge the projection just placed, and
- * say what was done. Nothing is placed when no persona was installed, so there is no
- * badge to show.
- *
- * The two harnesses' status lines differ in kind, and each declares its own on the
- * port. Claude Code's is ONE command (`adapter.statusLine` names the worker that
- * fills it): set where the host has none, and WRAPPED where it has one — the worker
- * runs the host's command and prints the badge in front of its first line, and prints
- * that command's output byte for byte in a session that runs no persona, so the badge
- * is never left off and nothing the host shows is taken away. The host's command is
- * recorded in the deploy manifest for an uninstall to restore. omp's is a list of
- * segments (`adapter.statusSegment`), which shows an extension's status only where it
- * lists `status`: install adds it to the layout in the config file the harness reads,
- * moving a host on the default preset to the `custom` one that reads a list at all,
- * and leaving a host on any other named preset as it is. Either failure to edit is
- * reported and the install itself still succeeds.
- */
-function showPersonaBadge(
-  found: Findings,
-  adapter: HarnessAdapter,
-  personas: readonly string[],
-  run: { harnessDir: string; dry: boolean; adopt: boolean },
-): void {
-  if (personas.length === 0) return;
-  const { dry, adopt } = run;
-  const say = (line: string): void => {
-    found.detail.push(line);
-  };
-  const refused = (path: string, why: string, leftAs: string): void => {
-    found.warnings.push(`did not edit ${path} — ${why}. ${leftAs}`);
-  };
-
-  const worker = adapter.statusLine;
-  if (worker !== undefined) {
-    const { harnessDir } = run;
-    const path = join(harnessDir, adapter.hooksFile);
-    const recorded = readManifest(harnessDir).statusLine;
-    const result = ensureBadgeStatusLine(path, worker.command, {
-      dry,
-      ...(recorded !== null ? { recorded } : {}),
-    });
-    const tag = `statusLine${dry ? ' (dry-run)' : ''}: ${path}`;
-    if (result.state === 'refused') {
-      refused(
-        path,
-        result.refused as string,
-        'The persona badge is not on the status line.',
+  const host = adapter.statusSegment;
+  if (host === undefined) return;
+  const result = ensureStatusSegment(path, host, { dry });
+  const rowShown = result.hookRowShown
+    ? ` Its \`showHookStatus\` was false, which hid the only place there for the name and mark of the agent a session was started as, so ${dry ? 'it would be' : 'it is'} now true.`
+    : '';
+  switch (result.state) {
+    case 'refused':
+      found.warnings.push(
+        `did not edit ${path} — ${result.refused}. A session's agent shows nowhere while \`statusLine.showHookStatus\` is false; set it true, or list the \`${host.segment}\` segment in a \`custom\` layout, to see it.`,
       );
       return;
-    }
-    // What an uninstall restores the host's line from. A line this run found already
-    // wrapped is recorded too where no record stands, so a host installed before the
-    // record began still has one; a host command that cannot be read back out of it
-    // leaves the record as it was.
-    if (!dry && result.host !== undefined) {
-      const manifest = readManifest(harnessDir);
-      if (result.state !== 'kept' || manifest.statusLine === null) {
-        writeManifest(harnessDir, {
-          ...manifest,
-          statusLine: {
-            placed: result.placed as string,
-            host: result.host,
-          },
-        });
-      }
-    }
-    switch (result.state) {
-      case 'set':
-        say(
-          `  ${tag} — ${dry ? 'would set' : 'set'} to the persona badge (${worker.command})`,
-        );
+    case 'present':
+      found.detail.push(
+        `  statusLine: ${path} — \`${host.segment}\` already listed in leftSegments`,
+      );
+      return;
+    case 'other-preset':
+    case 'own-layout':
+      found.detail.push(
+        `  statusLine: ${path} — the host's own layout is left as it is.${rowShown}`,
+      );
+      for (const line of result.advice ?? []) found.detail.push(`    ${line}`);
+      if (result.hookRowShown)
         found.edits.push({
           path,
-          what: 'the status line shows the persona badge',
+          what: "the row beneath the editor shows again, where a session's agent renders, as you answered",
         });
-        return;
-      case 'wrapped':
-        say(
-          `  ${tag} — ${dry ? 'would wrap' : 'wrapped'} the host's status line command in the persona badge: the badge is printed before the first line of its output, and its output is passed through byte for byte in a session with no persona; the original command (${result.host}) ${dry ? 'would be' : 'is'} recorded in ${join(harnessDir, MANIFEST_REL)}`,
-        );
-        found.edits.push({
-          path,
-          what: 'your status line command is wrapped in the persona badge (its output is unchanged in a session with no persona)',
-        });
-        return;
-      case 'kept':
-        say(`  statusLine: ${path} — already shows the persona badge`);
-        return;
-    }
+      return;
+    case 'added':
+      found.detail.push(
+        `  statusLine${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join('; ')}`,
+      );
+      found.edits.push({
+        path,
+        what: "the status line lists the segment that shows a session's agent, as you answered",
+      });
+      return;
   }
-
-  // A harness whose status line is a list of segments: list the one the badge renders
-  // in, in the file the harness reads its layout from.
-  const host = adapter.statusSegment;
-  if (host !== undefined) {
-    const path = hostConfigPath(host.configRels, run.harnessDir);
-    const result = ensureStatusSegment(path, host, { dry, adopt });
-    if (result.edit !== undefined) {
-      noteHostEdit(run.harnessDir, path, result.edit);
-    }
-    if (adopt && !dry && existsSync(path)) {
-      markMigratedConfig(run.harnessDir, path);
-    }
-    // The row beneath the editor is the badge's place wherever the layout has none of
-    // its own; a host that had hidden it is told it is shown now, and why.
-    const rowShown = result.hookRowShown
-      ? ` Save one value: its \`showHookStatus\` was false, which hid the persona badge's only place there, so ${dry ? 'it would be' : 'it is'} now true.`
-      : '';
-    switch (result.state) {
-      case 'refused':
-        if (result.hookRowShown) {
-          found.warnings.push(
-            `could not list \`${host.segment}\` in ${path} — ${result.refused}. The persona badge renders beneath the status line, not in it.${rowShown}`,
-          );
-          return;
-        }
-        refused(
-          path,
-          result.refused as string,
-          'The persona badge renders beneath the status line, not in it, unless the host set `statusLine.showHookStatus: false`, which hides it there; set it true, or list the `status` segment in a `custom` layout, to see the badge.',
-        );
-        return;
-      case 'present':
-        say(
-          `  statusLine: ${path} — \`${host.segment}\` already listed in leftSegments`,
-        );
-        return;
-      case 'other-preset':
-        say(
-          `  statusLine: ${path} — preset \`${result.preset}\` is the host's own choice and its layout has no \`${host.segment}\` segment, so the persona badge renders beneath the status line; left as it is.${rowShown}`,
-        );
-        for (const line of result.advice ?? []) say(`    ${line}`);
-        found.left.push(
-          `the status line preset \`${result.preset}\` in ${path}; the persona badge renders beneath it`,
-        );
-        return;
-      case 'own-layout':
-        say(
-          `  statusLine: ${path} — the host set ${(result.keys ?? []).map((k) => `\`${k}\``).join(', ')} with no preset, and \`preset: custom\` would change the line it sees; left as it is, so the persona badge renders beneath the status line.${rowShown}`,
-        );
-        for (const line of result.advice ?? []) say(`    ${line}`);
-        found.left.push(
-          `the status line layout in ${path}; the persona badge renders beneath it`,
-        );
-        return;
-      case 'added':
-        say(
-          `  statusLine${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would add' : 'added'} ${result.written.join('; ')}`,
-        );
-        found.edits.push({
-          path,
-          what: 'the status line lists the persona badge segment',
-        });
-        return;
-    }
-  }
-}
-
-/**
- * Give every held role the host has not mapped an entry — the operator's choice for
- * it, or else an alias of the harness's nearest built-in role — and say what was
- * added. An entry that is install's own seed (`seeded`) moves to the operator's choice
- * for it, and otherwise stands; an entry the host has is never changed; a `modelRoles`
- * that cannot be safely extended is reported and left as it is — the install itself
- * still succeeds. What the operator chose is recorded as the host's from then on.
- */
-function seedModelRoles(
-  found: Findings,
-  adapter: HarnessAdapter,
-  heldRoles: readonly string[],
-  choices: Readonly<Record<string, string>>,
-  seeded: ReadonlySet<string>,
-  run: { harnessDir: string; dry: boolean; adopt: boolean },
-): void {
-  const routing = adapter.roleRouting;
-  if (routing === undefined || heldRoles.length === 0) return;
-  const { harnessDir, dry, adopt } = run;
-  const path = hostConfigPath(routing.configRels, harnessDir);
-  const wanted: ModelRoleEntry[] = heldRoles.map((role) => ({
-    role,
-    value: choices[role] ?? `@${routing.nearest(role)}`,
-  }));
-  const result = addModelRoles(path, wanted, {
-    dry,
-    adopt,
-    retarget: wanted.filter((e) => seeded.has(e.role) && e.role in choices),
-  });
-  // What an uninstall takes out again: the lines just put in, and nothing of the host's.
-  if (result.edit !== undefined) noteHostEdit(harnessDir, path, result.edit);
-  if (!dry) {
-    for (const m of result.retargeted) {
-      retargetHostEdit(harnessDir, path, m.from, m.to, m.hunk);
-    }
-  }
-  if (adopt && !dry && existsSync(path)) {
-    markMigratedConfig(harnessDir, path);
-  }
-  if (result.refused !== undefined) {
-    found.warnings.push(
-      `did not edit ${path} — ${result.refused}. Held roles ${list(heldRoles)} fall back to \`${routing.defaultRole}\`.`,
-    );
-    return;
-  }
-  const moved = wanted.filter((e) =>
-    result.retargeted.some((m) => m.role === e.role),
-  );
-  // A seed the operator chose the very value of is already what they chose: nothing
-  // moves, and the entry is still theirs from now on, as a moved one is.
-  const kept = wanted.filter(
-    (e) =>
-      seeded.has(e.role) &&
-      Object.hasOwn(choices, e.role) &&
-      !moved.some((m) => m.role === e.role),
-  );
-  if (!dry) {
-    noteHostRoutes(
-      harnessDir,
-      [...result.added, ...moved, ...kept]
-        .filter((e) => e.role in choices)
-        .map((e) => e.role),
-      result.added.filter((e) => !(e.role in choices)).map((e) => e.role),
-    );
-  }
-  // Only the host's own entries are the host's to be credited with; install's seeds,
-  // standing as it wrote them, are not.
-  const routed = wanted.filter(
-    (e) => !result.added.some((a) => a.role === e.role) && !seeded.has(e.role),
-  );
-  if (routed.length > 0) {
-    found.left.push(
-      `the model of ${list(routed.map((e) => e.role))}, which ${path} already routes`,
-    );
-  }
-  for (const entry of kept) found.routes.push(`${entry.role} → ${entry.value}`);
-  if (result.added.length === 0 && moved.length === 0) {
-    found.detail.push(`  modelRoles: ${path} — no entry was missing`);
-    return;
-  }
-  if (result.added.length > 0) {
-    found.detail.push(
-      `  modelRoles${result.wrote ? '' : ' (dry-run)'}: ${path} — ${result.wrote ? 'added' : 'would add'}`,
-    );
-  }
-  for (const entry of result.added) {
-    found.detail.push(`    ${modelRoleLine(entry, '')}`);
-  }
-  if (moved.length > 0) {
-    found.detail.push(
-      `  modelRoles${dry ? ' (dry-run)' : ''}: ${path} — ${dry ? 'would move' : 'moved'} the entries install seeded to the models you chose`,
-    );
-    for (const entry of moved)
-      found.detail.push(`    ${modelRoleLine(entry, '')}`);
-  }
-  for (const entry of [...result.added, ...moved]) {
-    if (Object.hasOwn(choices, entry.role)) {
-      found.routes.push(`${entry.role} → ${entry.value}`);
-    }
-  }
-  found.edits.push({
-    path,
-    what: [
-      ...(result.added.length > 0
-        ? [`modelRoles gains ${list(result.added.map((e) => e.role))}`]
-        : []),
-      ...(moved.length > 0
-        ? [`modelRoles moves ${list(moved.map((e) => e.role))} to your choice`]
-        : []),
-    ].join('; '),
-  });
-}
-
-/**
- * Show the host the roles it can set, on the harness with no role map of its own.
- * Claude Code names a subagent's model in one place — the `model:` line of its
- * definition — so each held role is listed with the tier the definitions holding it
- * carry, and how the host changes it: edit that line (a deploy keeps it), or override
- * every subagent at once with the documented environment pair.
- */
-function describeClaudeRoles(
-  found: Findings,
-  adapter: HarnessAdapter,
-  heldRoles: readonly string[],
-): void {
-  if (adapter.name !== 'claude' || heldRoles.length === 0) return;
-  found.detail.push(
-    `  roles (${heldRoles.length}): each agent runs on its role's tier until the host sets its model`,
-  );
-  for (const role of heldRoles) {
-    const tier = Object.hasOwn(CLAUDE_ROLE_TIERS, role)
-      ? CLAUDE_ROLE_TIERS[role]
-      : undefined;
-    found.detail.push(
-      tier === undefined
-        ? `    ${role}: no tier — runs on the session's model; set it with the \`model:\` line of each agent holding it (kept across installs)`
-        : `    ${role}: tier ${tier} (\`model: ${tier}\`) — set it with the \`model:\` line of each agent holding it (kept across installs)`,
-    );
-  }
-  found.detail.push(
-    '  every subagent at once: CLAUDE_CODE_SUBAGENT_MODEL_FORCE=1 with CLAUDE_CODE_SUBAGENT_MODEL=<model>',
-  );
 }

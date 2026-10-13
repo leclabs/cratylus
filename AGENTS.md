@@ -3,7 +3,7 @@
 **CRITICAL INVARIANT:** You **MUST Read** these documents upon session-start:
 
 - [`CANON.md`](./CANON.md) — **overview and primer**
-- [`CRATYLISM`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
+- [`CRATYLISM`](./packages/canon/src/genus/prime-principle.ts) — The First Principle (**LOCKED**)
 - [`VISION.md`](./VISION.md) — **why** the canon exists
 - [`MODEL.md`](./MODEL.md) — **what** exists: conceptual objectives and acceptance criteria
 - [`ENGINE.md`](./ENGINE.md) — **how** primitives are discovered, validated, and projected
@@ -14,3 +14,7 @@
 - Conventional Commits, header ≤100 chars (commitlint, `commit-msg` hook).
 - **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only `git push` is gated: push only when the operator asks.
 - **Green-field register:** existing code, records, and docs constrain work only where explicitly declared; compatibility is never a goal.
+- **Reach for an established library before writing or adopting machinery.** Where a well-known problem has an actively maintained, widely used library with a small API, use it; never adopt a workflow or orchestration engine. Wrap it behind cratylus's own capability, so agents learn one small cratylus API, not the library's.
+- **Branching strategy: GitHub flow.** Cut a short-lived feature branch from `main` for each change and merge it back into `main` by pull request; never commit to `main` directly. A session may adopt another flow for a while, such as an integration branch ahead of `main`, and says so when it does.
+- **Tests cover cratylus's own deterministic code only** (decision 0144): CI and the local suite test cratylus's code and the files it produces, never by starting omp, an agent or a model. Agent behaviour is judged in real use. The supported omp version is 18.10.2; after an omp upgrade the operator or the architect tries one real session by hand.
+- **Commit only what you changed:** stage and commit your own paths by name, never everything in the tree, and never amend or rewrite history others may share.

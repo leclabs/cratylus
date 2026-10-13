@@ -1,7 +1,7 @@
 // deploy-drift-notice behavioral gate — the SessionStart advisory speaks when the
-// deployed tree is not the rendered one, and is SILENT when it is. Drives the
+// deployed omp tree is not the rendered one, and is SILENT when it is. Drives the
 // committed worker (`targets/guardrail/deploy-drift-notice.sh`) end to end with
-// crafted stdin, a corpus it builds itself, and a deployed `.claude` it controls
+// crafted stdin, a corpus it builds itself, and an omp deployment it controls
 // byte for byte.
 //
 // THE COMPARATOR IS REAL. `<corpus>/node_modules/.bin/<tool>` points at the built
@@ -16,14 +16,9 @@
 // silent leg is paired with a one-byte mutation of the same host that must make the
 // same worker speak. That pairing is what makes the silence evidence.
 //
-// THE WORKER IS NOW ONE PER HARNESS, and the suite reflects it. The cell's
-// `workers[].content` is a TEMPLATE naming its harness by fact, so `resolveWorker`
-// over `projectionFacts(adapter)` produces a claude worker and an omp worker from
-// the one cell. The committed `.sh` this file drives is the claude resolution; the
-// two-harness section below resolves both and runs them against the SAME corpus
-// carrying BOTH render trees and BOTH deployed homes. Cross-silence is what proves
-// they are reading different roots — a leg where each merely spoke about its own
-// drift would pass if both were reading claude's.
+// THE WORKER IS THE OMP RESOLUTION. The cell's `workers[].content` is a
+// template, so the fixture resolves it with the only shipped adapter and exercises
+// the deployed omp worker.
 
 import { spawnSync } from 'node:child_process';
 import {
@@ -61,14 +56,14 @@ const worker = join(
  *  the fixture shims what a real host actually runs. */
 const forgeCli = join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js');
 
-/** omp's hook-config artifact, read off its adapter — a nested path, unlike claude's. */
+/** omp's hook-config artifact, read off its adapter. */
 const OMP_HOOKS_FILE = adapterByName('omp').hooksFile;
 
-/** The cell's one worker, RESOLVED for `harness` — the bytes that harness deploys. */
-function workerFor(harness: string): string {
+/** The cell's worker resolved for the only shipped harness. */
+function workerFor(): string {
   const w = deployDriftNotice.workers[0];
   if (!w) throw new Error('the cell carries no worker');
-  return resolveWorker(w, projectionFacts(adapterByName(harness)), [
+  return resolveWorker(w, projectionFacts(adapterByName('omp')), [
     ...(deployDriftNotice.speech ?? []),
   ]).content;
 }
@@ -84,7 +79,7 @@ const declared = (sh: string, key: string): string | undefined =>
  * TEMPLATE: that match would capture the placeholder and every fixture would shim
  * a program called `{{fact:deploy-bin}}`.
  */
-const DEPLOY_TOOL = declared(workerFor('claude'), 'DEPLOY_TOOL') as string;
+const DEPLOY_TOOL = declared(workerFor(), 'DEPLOY_TOOL') as string;
 
 /** The axiom the fixture plants, and the one it supersedes it with. */
 const RENDERED_AXIOM = 'FIRST PRINCIPLE: names are natural, never conventional';
@@ -110,14 +105,14 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'deploy-drift-'));
   corpus = join(root, 'corpus');
   home = join(root, 'home');
-  tree = join(corpus, '.cratylus/claude');
-  deployedAgents = join(home, '.claude', 'agents');
+  tree = join(corpus, '.cratylus/omp');
+  deployedAgents = join(home, '.cratylus', 'omp', 'agents');
 
   // THE CORPUS MARKER — the file `deploy` itself reads to learn which corpus it is
   // operating on, and therefore the one the worker walks up for.
   put(join(corpus, 'cratylus.config.ts'), '// fixture corpus\n');
-  // THE RENDER TREE, by shape: agents/ + skills/ + the claude adapter's hooks file.
-  put(join(tree, 'settings.json'), '{}\n');
+  // THE RENDER TREE, by shape: agents/ + skills/ + the omp adapter's hooks file.
+  put(join(tree, OMP_HOOKS_FILE), '{}\n');
   put(join(tree, 'agents', 'nico.md'), `name: nico\n${RENDERED_AXIOM}\n`);
   mkdirSync(join(tree, 'skills'), { recursive: true });
   // THE DEPLOYED HOST, in sync to start with.
@@ -149,7 +144,9 @@ interface Run {
 /**
  * Run the worker with `HOME` pinned at the fixture host (which is how the comparator
  * resolves the user-scope deploy root) and the discovery env scrubbed, so every leg
- * exercises the worker's OWN resolution unless it deliberately overrides it.
+ * exercises the worker's OWN resolution unless it deliberately overrides it. `TMPDIR`
+ * is pinned inside the fixture too: the worker keeps its per-session record under it,
+ * and the shared `/tmp/cratylus-deploy-drift` is a deployed host's, not this suite's.
  *
  * Exit status is asserted here, in every leg: an advisory that ever exits non-zero
  * has stopped being an advisory, and no leg should have to remember to check.
@@ -165,10 +162,10 @@ function run(
     env: {
       ...process.env,
       HOME: home,
+      TMPDIR: join(root, 'tmp'),
       CRATYLUS_CORPUS: '',
       CRATYLUS_RENDER_TREE: '',
       CRATYLUS_DEPLOY_CHECK: '',
-      CLAUDE_PROJECT_DIR: '',
       ...env,
     },
   });
@@ -269,26 +266,19 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     expect(stdout).toBe('');
   });
 
-  it('picks the render tree by SHAPE — an omp tree beside it is not the claude one', () => {
-    // The tree is discovered, never named: `--out` is an operator's choice. What
-    // identifies THIS harness's tree is its hooks file. A sibling omp render tree
-    // is tried first by the discovery glob and must still not be chosen — if it
-    // were, the comparator would read a tree that carries no `settings.json` and
-    // report the whole host.
-    const omp = join(corpus, '.render-omp');
-    put(join(omp, OMP_HOOKS_FILE), '// omp extension\n');
-    put(join(omp, 'agents', 'nico.md'), 'name: nico\nOMP PROJECTION\n');
-    mkdirSync(join(omp, 'skills'), { recursive: true });
+  it('uses the omp render tree identified by its hooks file', () => {
+    // The tree is discovered, never named: `--out` is an operator's choice.
+    // Its hooks file identifies the omp projection to compare.
     supersedeHost();
     const { stdout } = run();
-    expect(stdout).toContain(RENDERED_AXIOM); // the claude tree was the subject
-    expect(stdout).not.toContain('OMP PROJECTION');
+    expect(stdout).toContain(RENDERED_AXIOM);
+    expect(comparedCount(stdout)).toBeGreaterThan(0);
   });
 
   it('honours the explicit render-tree declaration over its own discovery', () => {
     // The operator's seam, and the one this suite would otherwise leave unproven.
     const other = join(root, 'elsewhere');
-    put(join(other, 'settings.json'), '{}\n');
+    put(join(other, OMP_HOOKS_FILE), '{}\n');
     put(join(other, 'agents', 'nico.md'), 'name: nico\nDECLARED TREE AXIOM\n');
     mkdirSync(join(other, 'skills'), { recursive: true });
     const { stdout } = run({ CRATYLUS_RENDER_TREE: other });
@@ -363,7 +353,7 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     // The residual this closes. `1` is forge's choice, not POSIX's, so it travels
     // as a fact; `0` is success everywhere and needs no telling. If the tool ever
     // renumbers drift, the worker follows without being edited.
-    const sh = workerFor('claude');
+    const sh = workerFor();
     expect(declared(sh, 'DRIFT_RC')).toBe('1');
     expect(sh).toContain('"$rc" -eq "$DRIFT_RC"');
     // and the format coupling is GONE, not merely unused
@@ -386,168 +376,5 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
     supersedeHost();
     expect(comparedCount(run().stdout)).toBeGreaterThan(0);
     expect(clean, `clean path took ${clean}ms`).toBeLessThan(3_000);
-  });
-});
-
-// ── (b) EACH HARNESS REPORTS ON ITS OWN DEPLOYMENT ─────────────────────────────
-//
-// The worker identified the render tree by SHAPE, which is right — `--out` is an
-// operator's choice and must never be assumed — but the shape it matched was the
-// CLAUDE adapter's, and the home the comparator audited was claude's default. So an
-// omp session was told about the claude deployment: never a false report (the
-// relayed header names the root it read) but about someone else's host, and an
-// omp session with a stale omp tree and a fresh claude one was told nothing.
-//
-// THE FIXTURE IS ONE CORPUS WITH BOTH TREES AND BOTH HOMES, and the conviction is
-// CROSS-SILENCE. A leg where each worker merely spoke about its own harness's
-// drift would pass if both were reading claude's root — so drift is planted in
-// exactly one deployment at a time and the OTHER worker is required to stay silent.
-// The claude tree also sorts FIRST in the discovery glob, so the omp worker has
-// to reject it rather than fall through to it.
-
-describe('deploy-drift-notice — an omp session reports on the omp deployment', () => {
-  const AXIOM = 'FIRST PRINCIPLE: names are natural, never conventional';
-  const STALE = 'FIRST PRINCIPLE: a name is whatever we agreed to call it';
-
-  /** Per harness: how its render tree and its deployed host are laid out. */
-  const HARNESSES = {
-    claude: {
-      tree: '.render-1-claude',
-      hooksFile: 'settings.json',
-      agents: '.claude/agents',
-    },
-    omp: {
-      tree: '.render-2-omp',
-      hooksFile: OMP_HOOKS_FILE,
-      agents: '.omp/agent/agents',
-    },
-  } as const;
-  type Harness = keyof typeof HARNESSES;
-  const BOTH = Object.keys(HARNESSES) as Harness[];
-
-  let bi: string;
-  let biCorpus: string;
-  let biHome: string;
-  const workerPath: Record<string, string> = {};
-
-  beforeEach(() => {
-    bi = mkdtempSync(join(tmpdir(), 'deploy-drift-bi-'));
-    biCorpus = join(bi, 'corpus');
-    biHome = join(bi, 'home');
-    put(join(biCorpus, 'cratylus.config.ts'), '// fixture corpus\n');
-    put(
-      join(biCorpus, 'node_modules', '.bin', DEPLOY_TOOL),
-      `#!/usr/bin/env sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(forgeCli)} "$@"\n`,
-      0o755,
-    );
-    for (const h of BOTH) {
-      const { tree, hooksFile, agents } = HARNESSES[h];
-      // the render tree, in the shape THAT harness's projection produces
-      put(join(biCorpus, tree, hooksFile), '{}\n');
-      put(join(biCorpus, tree, 'agents', 'nico.md'), `name: nico\n${AXIOM}\n`);
-      mkdirSync(join(biCorpus, tree, 'skills'), { recursive: true });
-      // …and a host deployed from it, in sync to start with
-      put(join(biHome, agents, 'nico.md'), `name: nico\n${AXIOM}\n`);
-      // the worker THAT harness's projection ships — one cell, two resolutions
-      workerPath[h] = join(bi, `${h}.sh`);
-      put(workerPath[h] as string, workerFor(h), 0o755);
-    }
-  });
-  afterEach(() => rmSync(bi, { recursive: true, force: true }));
-
-  /** Make one harness's DEPLOYED copy carry doctrine its tree no longer renders. */
-  function supersede(h: Harness): void {
-    const { agents } = HARNESSES[h];
-    put(join(biHome, agents, 'nico.md'), `name: nico\n${STALE}\n`);
-  }
-
-  /** Run one harness's worker against the shared corpus. */
-  function speak(h: Harness): string {
-    const res = spawnSync('sh', [workerPath[h] as string], {
-      input: JSON.stringify({ session_id: 'sess-bi', cwd: biCorpus }),
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        HOME: biHome,
-        CRATYLUS_CORPUS: '',
-        CRATYLUS_RENDER_TREE: '',
-        CRATYLUS_DEPLOY_CHECK: '',
-        CLAUDE_PROJECT_DIR: '',
-      },
-    });
-    expect(res.error, `${h} worker failed to spawn`).toBeUndefined();
-    expect(res.status, `${h} worker exited ${res.status}: ${res.stderr}`).toBe(
-      0,
-    );
-    return res.stdout;
-  }
-
-  it('the two workers carry DIFFERENT harness identities from one cell', () => {
-    // The precondition for everything below, asserted rather than assumed: if the
-    // projector handed both resolutions the same facts, every behavioural leg in
-    // this block would be about one worker run twice.
-    expect(declared(workerFor('claude'), 'HARNESS')).toBe('claude');
-    expect(declared(workerFor('omp'), 'HARNESS')).toBe('omp');
-    expect(declared(workerFor('claude'), 'HARNESS_HOOKS_FILE')).toBe(
-      'settings.json',
-    );
-    expect(declared(workerFor('omp'), 'HARNESS_HOOKS_FILE')).toBe(
-      OMP_HOOKS_FILE,
-    );
-    expect(workerFor('omp')).not.toBe(workerFor('claude'));
-  });
-
-  it('both are silent when both hosts are in sync', () => {
-    // The floor. Without it a worker that always spoke would satisfy the drift
-    // legs below and a worker that never spoke would satisfy the silence ones.
-    for (const h of BOTH) expect(speak(h), `${h} spoke`).toBe('');
-  });
-
-  it('OMP drift wakes the omp worker and the claude worker stays silent', () => {
-    supersede('omp');
-    const omp = speak('omp');
-    expect(omp).toMatch(/DEPLOY DRIFT/);
-    expect(omp).toContain(STALE);
-    // it audited the OMP home, and says so in the header it relays
-    expect(omp).toMatch(/\.omp/);
-    expect(omp).not.toMatch(/-> \S*\.claude/);
-    expect(comparedCount(omp)).toBeGreaterThan(0);
-    // THE CONVICTION. The claude deployment was not touched, so a claude worker
-    // reading its own root has nothing to say. If it spoke, both workers are
-    // reading one tree and the fix is cosmetic.
-    expect(speak('claude'), 'the claude worker reported omp drift').toBe('');
-  });
-
-  it('CLAUDE drift wakes the claude worker and the omp worker stays silent', () => {
-    // The same claim in the other direction, which is not redundant: the failure
-    // being retired was ONE root winning always, and a fixture that only ever
-    // planted drift in the loser could not tell that apart from a fixed winner.
-    supersede('claude');
-    const claude = speak('claude');
-    expect(claude).toMatch(/DEPLOY DRIFT/);
-    expect(claude).toContain(STALE);
-    expect(claude).toMatch(/\.claude/);
-    expect(comparedCount(claude)).toBeGreaterThan(0);
-    expect(speak('omp'), 'the omp worker reported claude drift').toBe('');
-  });
-
-  it('the omp worker REJECTS the claude tree even though it sorts first', () => {
-    // The discovery glob walks `.render*` in name order and `.render-1-claude`
-    // comes first. A worker that took the first tree with `agents/` + `skills/`
-    // would land on it, compare its files against the omp host, and report
-    // the whole deployment absent. Its own hooks file is what it holds out for.
-    rmSync(join(biCorpus, HARNESSES.omp.tree), {
-      recursive: true,
-      force: true,
-    });
-    // With no omp tree left, the omp worker must find NOTHING rather than
-    // settle for the claude one — proven by planting drift it would otherwise see.
-    supersede('omp');
-    supersede('claude');
-    expect(speak('omp'), 'the omp worker fell through to the claude tree').toBe(
-      '',
-    );
-    // control: the claude worker, same corpus, same instant, is not silent
-    expect(speak('claude')).toMatch(/DEPLOY DRIFT/);
   });
 });

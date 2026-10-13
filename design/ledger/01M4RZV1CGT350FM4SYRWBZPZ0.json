@@ -1,0 +1,15 @@
+{
+  "id": "01M4RZV1CGT350FM4SYRWBZPZ0",
+  "at": "2026-10-12T21:21:00.816Z",
+  "kind": "commit",
+  "transition": "commit:simplification:bd3ab52f0f7c4f223649f6b6bebde082b32e7797",
+  "cut": "simplification",
+  "workPackage": "agent-binding",
+  "commit": {
+    "sha": "bd3ab52f0f7c4f223649f6b6bebde082b32e7797",
+    "message": "fix(forge): install no longer names a land gate that does not exist",
+    "paths": [
+      "packages/forge/src/cli/commands/install.ts"
+    ]
+  }
+}

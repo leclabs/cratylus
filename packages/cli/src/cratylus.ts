@@ -3,10 +3,13 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`eventTap`, `design`, `plan`, `note`), and `@cratylus/canon` the corpus `install`
+// (`concepts`, `workPackage`, `versionSkew`) and the hidden harness-facing commands
+// (`lifecycle`, `completion-check`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
-// channel to configure anything through.
+// channel to configure anything through. Both the projector's and the capabilities'
+// commands are handed this package's declared version: `install` records it in what it
+// places, and `versionSkew` reports it as the command's.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -30,7 +33,7 @@ import { fileURLToPath } from 'node:url';
 import canon from '@cratylus/canon';
 import { fail, projectorCommands, usageExitCode } from '@cratylus/forge/cli';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { capabilityCommands } from '@cratylus/runtime/main';
+import { capabilityCommands, harnessCommands } from '@cratylus/runtime/main';
 import { Command, type CommanderError } from 'commander';
 
 /**
@@ -103,10 +106,13 @@ export function commandLine(): Command {
     )
     .version(VERSION, '-v, --version', 'Print the version and exit')
     .enablePositionalOptions();
-  const { consumer, author } = projectorCommands({ defaultCorpus: canon });
+  const { consumer, author } = projectorCommands({
+    defaultCorpus: canon,
+    version: VERSION,
+  });
   for (const command of consumer)
     program.addCommand(command.helpGroup('Commands:'));
-  for (const command of capabilityCommands())
+  for (const command of capabilityCommands({ version: VERSION }))
     program.addCommand(command.helpGroup('Capabilities:'));
   for (const command of author)
     program.addCommand(command.helpGroup('Corpus authoring:'));
@@ -149,14 +155,34 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
-  const program = commandLine();
+  // A harness-facing command (`lifecycle`, `completion-check`) is held by a program
+  // of its own, never by the one whose help, README and agent tools list commands:
+  // the harness's channel and the post-commit hook's check are no one's to offer.
+  const harness = harnessCommands().find(
+    (command) => command.name() === argv[0],
+  );
+  const program =
+    harness === undefined
+      ? commandLine()
+      : new Command(CLI_BIN).addCommand(harness);
+  if (harness !== undefined) register(program);
   if (argv.length === 0) {
     program.outputHelp({ error: true });
     process.exitCode = 1;
     return;
   }
+  // A first word that names no command is refused as one, even with `--help` after
+  // it: Commander answers the program's help before it refuses the word, which
+  // would read as though the program had it.
+  const first = argv[0] as string;
+  const unknown =
+    !first.startsWith('-') &&
+    !program.commands.some(
+      (command) =>
+        command.name() === first || command.aliases().includes(first),
+    );
   try {
-    await program.parseAsync(argv, { from: 'user' });
+    await program.parseAsync(unknown ? [first] : argv, { from: 'user' });
   } catch (error) {
     // Help and version end a parse by the same route a usage error does, with 0.
     if (error instanceof UsageError && error.refusal.exitCode === 0) return;

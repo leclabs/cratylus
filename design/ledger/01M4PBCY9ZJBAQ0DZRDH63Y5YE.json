@@ -1,0 +1,14 @@
+{
+  "id": "01M4PBCY9ZJBAQ0DZRDH63Y5YE",
+  "at": "2026-10-11T20:45:18.527Z",
+  "kind": "check",
+  "transition": "check:meaning-roles:01M4PBCY9XBZ1W4EMWPDKS5X1S",
+  "cut": "meaning-roles",
+  "failures": [
+    "freeze: a refused supersession or retirement is refused, but its line opens with the command's name, which the freeze checks' form assertion rejects pending check-ruling 0121 (workflow/24, 25, 29, 31, 32, 33, 34, 36, 38)",
+    "freeze: the command's reference omits the new freeze, integrate and frozen verbs of the ledger",
+    "architect: the catalog re-cut checks still transcribe the architect's earlier ordering, decisive and role text",
+    "architect: the reply checks' recordings are not in the project's own format",
+    "architect: the visible live examples last run had not all passed (workflow/20, workflow/23, agents/17, agents/18, agents/21, agents/24, agents/28), and their live judge is out of quota"
+  ]
+}

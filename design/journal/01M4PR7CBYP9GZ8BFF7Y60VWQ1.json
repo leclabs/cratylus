@@ -1,0 +1,15 @@
+{
+  "id": "01M4PR7CBYP9GZ8BFF7Y60VWQ1",
+  "at": "2026-10-12T00:29:27.806Z",
+  "kind": "decide",
+  "decisionId": "0123",
+  "context": "workflow",
+  "title": "Cut 7 split: freeze proceeds, the architect's reply values leave for a different approach",
+  "situation": "Cut 7's judgment rejected on both halves. Freeze has two defects in the work (held-out checks frozen before seen red; a frozen check changed through the harness's structural-edit device not refused) and one architect act, now done (the earlier cuts' integration recorded). The architect's reply values, held by its own text as 0106 requires, passed every visible example after 12 rounds of rewording against live runs, but failed held-out agents 2 and 3 (overreaching onto a fact it lacked; an unestablished setup) and agents 24's never-assertion; agents 23 was re-run until it passed. That was about 500 live architect runs and 68 million tokens, after the reconstitution cut's own loop on the same values. Efficiency requires a method that burns effort without converging to be corrected, not continued; 0104 committed to this split.",
+  "decision": "Cut 7 is the freeze of concepts, supersession, the cut's per-context scope, the architect's part in a cut, and the structural enforcement examples (agents 11, 25 to 27): fixed in one round and judged again. The architect's reply examples (workflow 20 and 23; agents 13, 14, 17, 18, 20 to 24, 28 and 29; and the run held-out agents 1 to 3 as visible 30 to 32) leave unchanged for a reply-discipline round (0124), which approaches them differently instead of rewording again. The architect text written in this cut ships as the best text so far: it passed every visible reply example, and its known shortfalls are these judgment findings, recorded here and owned by 0124.",
+  "consequences": "0122 travels with agents 24. The parked reply checks go with the moved examples.",
+  "status": "accepted",
+  "supersedes": "0116",
+  "supersedesEntry": "01M4P6A8DR8X9EYR5DQ427V8GC",
+  "decisionKind": "meaning"
+}

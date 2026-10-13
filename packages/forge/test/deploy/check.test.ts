@@ -2,7 +2,7 @@
 //
 // Every gate in this suite before it was a claim about how a Target is PRODUCED:
 // `deploy-valid ⇔ REGENERABLE` says a Target is deploy-owned, deterministic, and
-// never hand-edited. The render oracle hashes `.cratylus/claude` — the corpus's own
+// never hand-edited. The render oracle hashes `.cratylus/omp` — the corpus's own
 // output — and proves the projector is deterministic. NONE of that is a claim
 // about what is sitting on the host right now, so the two trees could diverge
 // silently and indefinitely with every gate green. They did: on 2026-08-04 an
@@ -28,9 +28,9 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runDeploy } from '../../src/cli/commands/deploy.js';
-import { placeHooksLocal } from '../../src/deploy/hooks.js';
-import { DEPLOY_CHECK_EXIT, deploySingle } from '../../src/deploy/index.js';
+import { deploySingle, ownedRootIn } from '../../src/deploy/index.js';
 import {
   type AuditOpts,
   auditLocal,
@@ -38,9 +38,17 @@ import {
   placeSkillsLocal,
   renderedFiles,
 } from '../../src/deploy/local.js';
-import { buildHooksTree, buildRenderTree, tmp } from './helpers.js';
+import { buildRenderTree, tmp } from './helpers.js';
 
-const silent = { log: () => {}, warn: () => {} };
+const OMP = adapterByName('omp');
+const OMP_LAYOUT: AuditOpts = {
+  agentExt: OMP.agentExt,
+  agentRel: (name) => OMP.agentRel(name),
+  skillRel: (name, agents) => OMP.skillRel(name, agents),
+  agents: ['mav', 'nico'],
+};
+
+const silent = { dry: false, log: () => {}, warn: () => {} };
 
 /** The live line of the first principle, and the superseded one it replaced —
  *  verbatim from the incident, because the point of the report is that an
@@ -48,31 +56,37 @@ const silent = { log: () => {}, warn: () => {} };
 const LIVE = '∀ authored-surface ⟨σ* ∨ ⊕σ* · prose ≡ identifier ≡ path⟩';
 const SUPERSEDED = '∀ name ⟨anchor · dimension · skill · agent · file · dir⟩';
 
-/** A render tree whose `nico` def carries the LIVE axiom, plus a host that has
- *  been deployed from it. Returns both roots. */
-function deployedHost(): {
+interface DeployedHost {
   root: string;
   agentsDir: string;
   skillsDir: string;
-  hooksDir: string;
   home: string;
   harnessDir: string;
-} {
+  layout: AuditOpts;
+}
+
+/** A render tree whose `nico` def carries the LIVE axiom, plus a host that has
+ *  been deployed from it. Returns both roots. */
+function deployedHost(): DeployedHost {
   const root = tmp('check-render-');
   const { agentsDir, skillsDir } = buildRenderTree(root);
-  const { hooksDir } = buildHooksTree(root);
   writeFileSync(
     join(agentsDir, 'nico.md'),
     `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${LIVE}\n`,
     'utf-8',
   );
   const home = tmp('check-home-');
-  for (const kind of ['agent', 'skill', 'hooks'] as const) {
+  for (const kind of ['agent', 'skill'] as const) {
     const r = deploySingle({
       kind,
       scope: 'user',
-      tree: { agentsDir, skillsDir, hooksDir },
-      home,
+      tree: { agentsDir, skillsDir },
+      // A user-scope host IS the owned root: the placers write its layout there.
+      home: ownedRootIn(OMP, home),
+      harnessHome: OMP.name,
+      agentExt: OMP.agentExt,
+      agentRel: (name) => OMP.agentRel(name),
+      skillRel: (name, agents) => OMP.skillRel(name, agents),
       ...silent,
     });
     expect(r.rc).toBe(0);
@@ -81,13 +95,38 @@ function deployedHost(): {
     root,
     agentsDir,
     skillsDir,
-    hooksDir,
     home,
-    harnessDir: join(home, '.claude'),
+    harnessDir: ownedRootIn(OMP, home),
+    layout: OMP_LAYOUT,
   };
 }
-
 /** Every file under `dir`, dir-relative POSIX, recursively. */
+
+function agentPath(h: DeployedHost, name: string): string {
+  return join(h.harnessDir, OMP.agentRel(name));
+}
+
+function skillPath(h: DeployedHost, name: string): string {
+  return join(
+    h.harnessDir,
+    OMP.skillRel(name, OMP_LAYOUT.agents ?? [])[0] ?? '',
+    'SKILL.md',
+  );
+}
+
+function audit(
+  h: DeployedHost,
+  kind: Parameters<typeof auditLocal>[1],
+  names: readonly string[],
+) {
+  return auditLocal(
+    h.harnessDir,
+    kind,
+    { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
+    names,
+    h.layout,
+  );
+}
 function allFiles(dir: string, rel = ''): string[] {
   const out: string[] = [];
   for (const e of readdirSync(join(dir, rel)).sort()) {
@@ -106,7 +145,7 @@ describe('the control: the machinery that predates this file stays silent', () =
     const h = deployedHost();
     // The exact incident: the deployed def is superseded doctrine.
     writeFileSync(
-      join(h.harnessDir, 'agents', 'nico.md'),
+      agentPath(h, 'nico'),
       `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${SUPERSEDED}\n`,
       'utf-8',
     );
@@ -116,6 +155,10 @@ describe('the control: the machinery that predates this file stays silent', () =
       scope: 'user',
       tree: { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
       home: h.home,
+      harnessHome: OMP.home,
+      agentExt: OMP.agentExt,
+      agentRel: (name) => OMP.agentRel(name),
+      skillRel: (name, agents) => OMP.skillRel(name, agents),
       dry: true,
       log: (l) => lines.push(l),
       warn: (l) => lines.push(l),
@@ -133,53 +176,42 @@ describe('auditLocal — CONVICTION', () => {
   it('names the divergence in a deployed def that drifted from the render tree', () => {
     const h = deployedHost();
     writeFileSync(
-      join(h.harnessDir, 'agents', 'nico.md'),
+      agentPath(h, 'nico'),
       `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${SUPERSEDED}\n`,
       'utf-8',
     );
-    const rep = auditLocal(
-      h.harnessDir,
-      'agent',
-      { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
-      ['mav', 'nico'],
-    );
+    const rep = audit(h, 'agent', ['mav', 'nico']);
     const stale = rep.divergences.filter((d) => d.kind === 'stale');
-    expect(stale.map((d) => d.path)).toEqual(['agents/nico.md']);
+    expect(stale.map((d) => d.path)).toEqual([OMP.agentRel('nico')]);
     // NAMES what would be lost — not "1 file differs".
     expect(stale[0]?.missing).toContain(LIVE);
     expect(stale[0]?.superseded).toContain(SUPERSEDED);
     // `mav` did not drift and is not accused.
-    expect(rep.divergences.map((d) => d.path)).not.toContain('agents/mav.md');
+    expect(rep.divergences.map((d) => d.path)).not.toContain(
+      OMP.agentRel('mav'),
+    );
   });
 
   it('reports a rendered artifact that never landed as ABSENT', () => {
     const h = deployedHost();
-    rmSync(join(h.harnessDir, 'skills', 'wake', 'SKILL.md'));
-    const rep = auditLocal(
-      h.harnessDir,
-      'skill',
-      { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
-      ['memory', 'wake'],
-    );
+    rmSync(skillPath(h, 'wake'));
+    const rep = audit(h, 'skill', ['memory', 'wake']);
     const absent = rep.divergences.filter((d) => d.kind === 'absent');
-    expect(absent.map((d) => d.path)).toEqual(['skills/wake/SKILL.md']);
+    expect(absent.map((d) => d.path)).toEqual([
+      `${OMP.skillRel('wake', OMP_LAYOUT.agents ?? [])[0]}/SKILL.md`,
+    ]);
     expect(absent[0]?.gist).toMatch(/wake/);
     expect(rep.divergences.some((d) => d.kind === 'stale')).toBe(false);
   });
 
   it('reports a file we did not render as FOREIGN, never as ours, and never deletes it', () => {
     const h = deployedHost();
-    const theirs = join(h.harnessDir, 'agents', 'lex-own.md');
+    const theirs = agentPath(h, 'lex-own');
     writeFileSync(theirs, '# the operator wrote this\n', 'utf-8');
-    const rep = auditLocal(
-      h.harnessDir,
-      'agent',
-      { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
-      ['mav', 'nico'],
-    );
+    const rep = audit(h, 'agent', ['mav', 'nico']);
     const foreign = rep.divergences.filter((d) => d.kind === 'foreign');
     expect(foreign).toHaveLength(1);
-    expect(foreign[0]?.path).toBe('agents/lex-own.md');
+    expect(foreign[0]?.path).toBe(OMP.agentRel('lex-own'));
     expect(foreign[0]?.ours).toBe(false);
     // A report, not a repair.
     expect(existsSync(theirs)).toBe(true);
@@ -191,34 +223,23 @@ describe('auditLocal — CONVICTION', () => {
   it('a retired artifact a PRIOR deploy left behind is foreign-but-OURS', () => {
     const h = deployedHost();
     // The render tree retires `mav`; the host still carries the def we placed.
-    const rep = auditLocal(
-      h.harnessDir,
-      'agent',
-      { agentsDir: h.agentsDir, skillsDir: h.skillsDir },
-      ['nico'],
-    );
+    const rep = audit(h, 'agent', ['nico']);
     const foreign = rep.divergences.filter((d) => d.kind === 'foreign');
-    expect(foreign.map((d) => d.path)).toEqual(['agents/mav.md']);
+    expect(foreign.map((d) => d.path)).toEqual([OMP.agentRel('mav')]);
     expect(foreign[0]?.ours).toBe(true);
-    expect(existsSync(join(h.harnessDir, 'agents', 'mav.md'))).toBe(true);
+    expect(existsSync(agentPath(h, 'mav'))).toBe(true);
   });
 });
 
 describe('auditLocal — EXONERATION', () => {
   it('a host in sync has ZERO divergences, for every kind', () => {
     const h = deployedHost();
-    const tree = {
-      agentsDir: h.agentsDir,
-      skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
-    };
     const cases: [Parameters<typeof auditLocal>[1], string[]][] = [
       ['agent', ['mav', 'nico']],
       ['skill', ['memory', 'wake']],
-      ['hooks', ['stance-guardrail']],
     ];
     for (const [kind, names] of cases) {
-      const rep = auditLocal(h.harnessDir, kind, tree, names);
+      const rep = audit(h, kind, names);
       expect({ kind, d: rep.divergences }).toEqual({ kind, d: [] });
       expect(rep.compared).toBeGreaterThan(0);
     }
@@ -231,20 +252,11 @@ describe('auditLocal — EXONERATION', () => {
     expect(
       existsSync(join(h.harnessDir, '.forge', 'deploy-manifest.json')),
     ).toBe(true);
-    for (const kind of ['agent', 'skill', 'hooks'] as const) {
-      const rep = auditLocal(
-        h.harnessDir,
+    for (const kind of ['agent', 'skill'] as const) {
+      const rep = audit(
+        h,
         kind,
-        {
-          agentsDir: h.agentsDir,
-          skillsDir: h.skillsDir,
-          hooksDir: h.hooksDir,
-        },
-        kind === 'agent'
-          ? ['mav', 'nico']
-          : kind === 'skill'
-            ? ['memory', 'wake']
-            : ['stance-guardrail'],
+        kind === 'agent' ? ['mav', 'nico'] : ['memory', 'wake'],
       );
       expect(rep.divergences.filter((d) => d.path.includes('.forge'))).toEqual(
         [],
@@ -254,27 +266,14 @@ describe('auditLocal — EXONERATION', () => {
 
   it('the audit MUTATES NOTHING — the host is byte-identical after a check', () => {
     const h = deployedHost();
-    const before = allFiles(h.harnessDir).map(
-      (f) => `${f}:${readFileSync(join(h.harnessDir, f)).toString('base64')}`,
+    const before = allFiles(h.home).map(
+      (f) => `${f}:${readFileSync(join(h.home, f)).toString('base64')}`,
     );
-    for (const kind of ['agent', 'skill', 'hooks'] as const) {
-      auditLocal(
-        h.harnessDir,
-        kind,
-        {
-          agentsDir: h.agentsDir,
-          skillsDir: h.skillsDir,
-          hooksDir: h.hooksDir,
-        },
-        kind === 'agent'
-          ? ['mav', 'nico']
-          : kind === 'skill'
-            ? ['memory', 'wake']
-            : ['stance-guardrail'],
-      );
+    for (const kind of ['agent', 'skill'] as const) {
+      audit(h, kind, kind === 'agent' ? ['mav', 'nico'] : ['memory', 'wake']);
     }
-    const after = allFiles(h.harnessDir).map(
-      (f) => `${f}:${readFileSync(join(h.harnessDir, f)).toString('base64')}`,
+    const after = allFiles(h.home).map(
+      (f) => `${f}:${readFileSync(join(h.home, f)).toString('base64')}`,
     );
     expect(after).toEqual(before);
   });
@@ -284,14 +283,23 @@ describe('renderedFiles agrees with the placers own testimony', () => {
   it('the READ path enumerates exactly what the WRITE path records having written', () => {
     const root = tmp('check-render-');
     const { agentsDir, skillsDir } = buildRenderTree(root);
-    const harnessDir = join(tmp('check-home-'), '.claude');
+    const harnessDir = join(tmp('check-home-'), '.omp');
     mkdirSync(harnessDir, { recursive: true });
-    const a = placeAgentsLocal(harnessDir, agentsDir, ['mav', 'nico'], {
-      dry: true,
+    const layout = {
+      agentExt: OMP.agentExt,
+      agentRel: (name: string) => OMP.agentRel(name),
+      skillRel: (name: string, agents: readonly string[]) =>
+        OMP.skillRel(name, agents),
       ...silent,
-    });
+    };
+    const a = placeAgentsLocal(harnessDir, agentsDir, ['mav', 'nico'], layout);
     expect(
-      renderedFiles('agent', { agentsDir, skillsDir }, ['mav', 'nico'])
+      renderedFiles(
+        'agent',
+        { agentsDir, skillsDir },
+        ['mav', 'nico'],
+        OMP_LAYOUT,
+      )
         .map((f) => f.rel)
         .sort(),
     ).toEqual(Object.values(a.report.written).flat().sort());
@@ -299,80 +307,18 @@ describe('renderedFiles agrees with the placers own testimony', () => {
       harnessDir,
       { agentsDir, skillsDir },
       ['memory', 'wake'],
-      { dry: true, ...silent },
+      layout,
     );
     expect(
-      renderedFiles('skill', { agentsDir, skillsDir }, ['memory', 'wake'])
+      renderedFiles(
+        'skill',
+        { agentsDir, skillsDir },
+        ['memory', 'wake'],
+        OMP_LAYOUT,
+      )
         .map((f) => f.rel)
         .sort(),
     ).toEqual(Object.values(s.report.written).flat().sort());
-  });
-
-  it('enumerates SHARED assets, which a prune would otherwise eat', () => {
-    // THE DEFECT THIS PINS WAS FOUND POINTING AT A LIVE HOST. `placeHooksLocal`
-    // writes a worker's `shared` assets to the vendor-neutral root and records
-    // them under `shared:<id>`; `renderedFiles` enumerated workers and scoped
-    // modules and not those. The audit therefore called the stance RUBRIC — the
-    // one file every verdict is scored against — "deployed, not rendered (OURS,
-    // retired: a deploy would prune it)", and the prune borrows that same set as
-    // its candidates. An audit that condemns the artifact it exists to protect.
-    const root = tmp('check-shared-');
-    const { agentsDir, skillsDir } = buildRenderTree(root);
-    const { hooksDir } = buildHooksTree(root);
-    const sharedDir = join(hooksDir, 'shared', 'stance-guardrail');
-    mkdirSync(sharedDir, { recursive: true });
-    writeFileSync(join(sharedDir, 'stance-judge-prompt.md'), '# rubric\n');
-    const tree = { agentsDir, skillsDir, hooksDir };
-    const harnessDir = join(tmp('check-shared-home-'), '.omp');
-    mkdirSync(harnessDir, { recursive: true });
-    const h = placeHooksLocal(harnessDir, tree, ['stance-guardrail'], {
-      dry: true,
-      ...silent,
-    });
-    const rels = renderedFiles('hooks', tree, ['stance-guardrail']).map(
-      (f) => f.rel,
-    );
-    expect(rels).toContain(
-      '../.agents/stance-guardrail/stance-judge-prompt.md',
-    );
-    expect(rels.sort()).toEqual(Object.values(h.report.written).flat().sort());
-  });
-
-  it('compares a `{{scopeDir}}` artifact AFTER the substitution the placer makes', () => {
-    // A permanently-red report is one nobody reads. omp's persona overlay names
-    // its own extensions dir with `{{scopeDir}}`, which `placeHooksLocal`
-    // resolves against the real destination at write — so the rendered bytes can
-    // never equal the deployed bytes, and six overlays sat STALE on every check
-    // forever. Measured on a live host: 6 stale, 0 of them real.
-    const root = tmp('check-token-');
-    const { agentsDir, skillsDir } = buildRenderTree(root);
-    const { hooksDir } = buildHooksTree(root);
-    const scopeDir = join(hooksDir, 'enforcing', 'mav');
-    mkdirSync(scopeDir, { recursive: true });
-    writeFileSync(
-      join(scopeDir, 'omp.yml'),
-      'extensions:\n  - {{scopeDir}}/x\n',
-    );
-    const tree = { agentsDir, skillsDir, hooksDir };
-    const harnessDir = join(tmp('check-token-home-'), '.omp');
-    mkdirSync(harnessDir, { recursive: true });
-    const layout: AuditOpts = {
-      scopedRel: (filename: string, agent?: string) =>
-        `agent/personas/${agent ?? '_session'}/${filename}`,
-    };
-    placeHooksLocal(harnessDir, tree, ['stance-guardrail'], {
-      dry: false,
-      ...silent,
-      ...layout,
-    });
-    const rep = auditLocal(
-      harnessDir,
-      'hooks',
-      tree,
-      ['stance-guardrail'],
-      layout,
-    );
-    expect(rep.divergences).toEqual([]);
   });
 });
 
@@ -380,7 +326,7 @@ describe('cratylus deploy --check', () => {
   it('CONVICTS a drifted host: rc 1, and the report names the lost line', async () => {
     const h = deployedHost();
     writeFileSync(
-      join(h.harnessDir, 'agents', 'nico.md'),
+      agentPath(h, 'nico'),
       `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${SUPERSEDED}\n`,
       'utf-8',
     );
@@ -388,17 +334,17 @@ describe('cratylus deploy --check', () => {
     const rc = await runDeploy({
       agentsDir: h.agentsDir,
       skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
       kind: 'all',
       scope: 'user',
+      harness: 'omp',
       home: h.home,
       check: true,
-      log: (l) => lines.push(l),
+      log: (line) => lines.push(line),
     });
     expect(rc).toBe(1);
     const said = lines.join('\n');
     expect(said).toMatch(/STALE/);
-    expect(said).toMatch(/agents\/nico\.md/);
+    expect(said).toMatch(/(?<!\/)agents\/nico\.md/);
     expect(said).toContain(LIVE);
     expect(said).toContain(SUPERSEDED);
   });
@@ -409,12 +355,12 @@ describe('cratylus deploy --check', () => {
     const rc = await runDeploy({
       agentsDir: h.agentsDir,
       skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
       kind: 'all',
       scope: 'user',
+      harness: 'omp',
       home: h.home,
       check: true,
-      log: (l) => lines.push(l),
+      log: (line) => lines.push(line),
     });
     expect(rc).toBe(0);
     expect(lines.join('\n')).toMatch(/in sync/i);
@@ -422,121 +368,37 @@ describe('cratylus deploy --check', () => {
 
   it('foreign alone does NOT convict — it is reported, not charged to us', async () => {
     const h = deployedHost();
-    writeFileSync(
-      join(h.harnessDir, 'agents', 'lex-own.md'),
-      '# mine\n',
-      'utf-8',
-    );
+    writeFileSync(agentPath(h, 'lex-own'), '# mine\n', 'utf-8');
     const lines: string[] = [];
     const rc = await runDeploy({
       agentsDir: h.agentsDir,
       skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
       kind: 'all',
       scope: 'user',
+      harness: 'omp',
       home: h.home,
       check: true,
-      log: (l) => lines.push(l),
+      log: (line) => lines.push(line),
     });
     expect(rc).toBe(0);
     expect(lines.join('\n')).toMatch(/lex-own/);
   });
 
-  it('a check that COULD NOT RUN exits `noVerdict`, never `drift`', async () => {
-    // THE DISTINCTION THE EXIT CODE COULD NOT DRAW. `--check` returned 1 both when
-    // the host was stale and when the check itself failed, so its only caller that
-    // had to tell them apart — the SessionStart advisory — recovered the verdict by
-    // matching the report's closing LINE. That made a hook worker's correctness a
-    // function of the report's FORMAT: reword it and drift silently reclassifies as
-    // a broken tool. The code carries the distinction now.
-    const h = deployedHost();
-    // Make the check fail for a reason that is the CHECK's, not the host's: an
-    // unknown harness has no adapter, so scope resolution throws before any
-    // artifact is opened.
-    const lines: string[] = [];
-    const rc = await runDeploy({
-      agentsDir: h.agentsDir,
-      skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
-      kind: 'all',
-      scope: 'user',
-      harness: 'not-a-harness',
-      home: h.home,
-      check: true,
-      log: (l) => lines.push(l),
-    });
-    expect(rc).toBe(DEPLOY_CHECK_EXIT.noVerdict);
-    // PROVEN TO HAVE REACHED THE BRANCH IT CLAIMS: it produced no verdict at all,
-    // in either direction. A leg that only read the code would pass on a run that
-    // happened to exit 2 while reporting a clean host.
-    const said = lines.join('\n');
-    expect(said).not.toMatch(/in sync/i);
-    expect(said).not.toMatch(/NOT running what the corpus renders/);
-  });
-
-  it('the drifted and the unusable exits are DIFFERENT codes', async () => {
-    // The whole claim, in one comparison, over two runs that are each proven to
-    // have taken the branch they are named for. Without this the two legs above
-    // could drift onto the same value and both stay green.
-    const drifted = deployedHost();
-    writeFileSync(
-      join(drifted.harnessDir, 'agents', 'nico.md'),
-      `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${SUPERSEDED}\n`,
-      'utf-8',
-    );
-    const driftLines: string[] = [];
-    const driftRc = await runDeploy({
-      agentsDir: drifted.agentsDir,
-      skillsDir: drifted.skillsDir,
-      hooksDir: drifted.hooksDir,
-      kind: 'all',
-      scope: 'user',
-      home: drifted.home,
-      check: true,
-      log: (l) => driftLines.push(l),
-    });
-    // the drift branch, evidenced by the report before the code is read
-    expect(driftLines.join('\n')).toMatch(
-      /NOT running what the corpus renders/,
-    );
-
-    const broken = deployedHost();
-    const brokenLines: string[] = [];
-    const brokenRc = await runDeploy({
-      agentsDir: broken.agentsDir,
-      skillsDir: broken.skillsDir,
-      hooksDir: broken.hooksDir,
-      kind: 'all',
-      scope: 'user',
-      harness: 'not-a-harness',
-      home: broken.home,
-      check: true,
-      log: (l) => brokenLines.push(l),
-    });
-    expect(brokenLines.join('\n')).not.toMatch(/in sync|NOT running/i);
-
-    expect(driftRc).not.toBe(brokenRc);
-    expect({ driftRc, brokenRc }).toEqual({
-      driftRc: DEPLOY_CHECK_EXIT.drift,
-      brokenRc: DEPLOY_CHECK_EXIT.noVerdict,
-    });
-  });
-
   it('--check changes nothing on the host (a report, not a repair)', async () => {
     const h = deployedHost();
-    rmSync(join(h.harnessDir, 'agents', 'nico.md'));
+    rmSync(agentPath(h, 'nico'));
     const rc = await runDeploy({
       agentsDir: h.agentsDir,
       skillsDir: h.skillsDir,
-      hooksDir: h.hooksDir,
       kind: 'all',
       scope: 'user',
+      harness: 'omp',
       home: h.home,
       check: true,
       log: () => {},
     });
     expect(rc).toBe(1);
     // The check did NOT re-place the file it found missing.
-    expect(existsSync(join(h.harnessDir, 'agents', 'nico.md'))).toBe(false);
+    expect(existsSync(agentPath(h, 'nico'))).toBe(false);
   });
 });

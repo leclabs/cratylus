@@ -1,0 +1,20 @@
+{
+  "id": "01M4NV3K84XH9APC9RCXE65MG2",
+  "at": "2026-10-11T16:00:35.076Z",
+  "kind": "submit",
+  "transition": "submit:delivery:01M4NV3K82D40R48WYQNDF7XE2",
+  "cut": "delivery",
+  "workPackage": "journal-reader",
+  "outputs": [
+    "packages/runtime/src/capabilities/concepts/",
+    "packages/runtime/test/concepts.test.ts",
+    "packages/runtime/test/overview/",
+    "packages/runtime/test/tolerant-reader.test.ts",
+    ".changeset/delivery-tolerant-journal.md"
+  ],
+  "concepts": [
+    "concept journal"
+  ],
+  "dependsOn": [],
+  "needs": []
+}

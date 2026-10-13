@@ -7,10 +7,10 @@ It sits at the **bottom of the dependency graph**. `canon` authors against it, `
 projects against it, and it holds no opinion about either. What every package is for is
 [ARCHITECTURE.md](../../ARCHITECTURE.md)'s; this README is for the author of a corpus.
 
-This module is the contract and **only** the contract. It states that a dimension _has_ an axis, a
-repertoire, an arity and a `required`, and derives an entire dimension type-system from any manifest
-obeying that shape. It does **not** state which dimensions exist — that is the corpus's, and it
-rides the plugin as `manifest`.
+This module is the contract and **only** the contract. It states that a dimension _has_ a group, a
+repertoire, an arity, a default enforcement level and a projection, and derives an entire dimension
+type-system from any manifest obeying that shape. It does **not** state which dimensions exist —
+that is the corpus's, and it rides the plugin as `manifest`.
 
 ## Install
 
@@ -26,11 +26,27 @@ A corpus declares its manifest once and reads its whole dimension type-system ou
 import type { AgentOf, DimensionMeta } from '@cratylus/schema';
 
 export const MANIFEST = {
-  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
+  role: {
+    group: 'Identity',
+    repertoire: 'open',
+    arity: 'scalar',
+    level: 'fixed',
+    projection: 'text',
+  },
+  model: {
+    group: 'Cognition',
+    repertoire: 'curated',
+    arity: 'slots',
+    level: 'firm',
+    projection: 'binding',
+    slots: [{ name: 'tier' }, { name: 'effort' }],
+  },
   guardrails: {
-    axis: 'Constitution',
+    group: 'Governance',
     repertoire: 'curated',
     arity: 'set',
+    level: 'fixed',
+    projection: 'text',
     required: true,
   },
 } as const satisfies Record<string, DimensionMeta>;
@@ -43,14 +59,20 @@ export type Agent = AgentOf<typeof MANIFEST>;
 widens the keys to `string`, which silently collapses every derivation to `string` and takes the
 corpus's dimension typing with it.
 
-`AgentOf<A>` reads arity and nullability off the manifest, so the three facts about a dimension —
-is it multi-valued, may it be omitted, what is it called — are stated exactly once. A wrong
-dimension→value or a wrong arity is a **compile error**: each value is a nominal-branded string
-keyed to its dimension.
+`AgentOf<A>` gives every dimension whose arity is not `'attribute'` one field, named in camelCase,
+holding a list of `Entry` — `{ value, level, slot?, note? }`: the catalog value, the enforcement
+level it holds at, the slot it fills and a qualifier the design states. An explicitly empty
+dimension is `[]`. A wrong dimension→value is a **compile error**: each value is a nominal-branded
+string keyed to its dimension.
 
-The axis is a `Genus`, one of `'Persona'` and `'Constitution'`; the repertoire says how the
-dimension's values are sourced (`'latent'`, `'open'` or `'curated'`), and the arity says whether a
-field holds one value (`'scalar'`) or many (`'set'`).
+The group files a dimension; groups are ordered by first appearance and the projected text has one
+section each. The repertoire says how the dimension's values are sourced (`'latent'`, `'open'`,
+`'curated'`, or `'fixed'` — a closed list the design fixes). The arity says whether a field holds one
+value (`'scalar'`), many (`'set'`), one per named `Slot` (`'slots'`), or is no field at all but an
+attribute of other values (`'attribute'`). The level is the `EnforcementLevel` (`'advisory'`,
+`'firm'` or `'fixed'`) an entry takes by default, `null` when none applies. The projection says
+whether the dimension is rendered as `'text'` or compiled to harness settings (`'binding'`).
+`required` forbids holding the dimension empty.
 
 ## Declaring a plugin
 
@@ -85,7 +107,7 @@ directories as absolute paths; [`@cratylus/canon`](../canon/README.md) shows one
 | export                                                                  | what it is                                                               |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `DimensionMeta` · `DimensionManifest` · `mergeManifest`                 | a dimension's metadata, the manifest shape, and the per-key merge        |
-| `Genus` · `Repertoire` · `Arity`                                        | a dimension's axis, how its values are sourced, and one value or many    |
+| `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`          | how values are sourced, how many a field holds, and one held value       |
 | `DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `AgentOf`    | generic derivations over any manifest                                    |
 | `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `anchorOf` | a dimension value, bare or self-enforcing, and its α/residue split       |
 | `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                         |
@@ -95,10 +117,11 @@ directories as absolute paths; [`@cratylus/canon`](../canon/README.md) shows one
 | `AgentPlugin` · `Layout` · `defineAgentPlugin`                          | a package's plugin declaration                                           |
 | `Practice` · `Plumbing` · `Agent.dispatches`                            | a way of working, its shared plumbing, and an agent's dispatch           |
 
-An `Agent` also names, optionally, the `skills` it operates through, the role it `holds` and the
-roles it `dispatches` to. The corpus's own fold copies the held role's anchor to `holds` because the
-projector is blind to which dimension is the role; a harness keys its model routing by that anchor,
-and a practice is closed under `dispatches`.
+An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
+`null`), and optionally the role it `holds`, the roles it `dispatches` to, its model `routing`
+(`{ tier, effort }`), `readOnly`, the `skills` it operates through and its `isolation`. The corpus's
+own fold copies these from its dimensions because the projector is blind to which dimension is
+which; a harness binds model routing per agent, and a practice is closed under `dispatches`.
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic event name (`EventName`), the
 `Substrate` a constraint is realized on, the `Hook` wire shape, `NativeBinding`, and

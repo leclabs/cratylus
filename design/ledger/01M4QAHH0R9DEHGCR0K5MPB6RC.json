@@ -1,0 +1,17 @@
+{
+  "id": "01M4QAHH0R9DEHGCR0K5MPB6RC",
+  "at": "2026-10-12T05:49:34.616Z",
+  "kind": "commit",
+  "transition": "commit:meaning-roles:aae3da2bc34e9e1fc4a9992d049b12c989ac504b",
+  "cut": "meaning-roles",
+  "workPackage": "freeze-record",
+  "commit": {
+    "sha": "aae3da2bc34e9e1fc4a9992d049b12c989ac504b",
+    "message": "fix(runtime): reach every work tree and push with the freeze gate (0133)\n\nThe CLI README states the wiring: the hook in the repository's common hooks\nfolder, core.hooksPath unset. This repository's prepare names its husky hooks\nfolder absolutely, and its hook runs the gate from the checkout's source with\ntsx where git runs it, so linked work trees and pushes meet it too.",
+    "paths": [
+      ".husky/reference-transaction",
+      "package.json",
+      "packages/cli/README.md"
+    ]
+  }
+}

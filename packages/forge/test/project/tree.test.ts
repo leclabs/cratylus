@@ -34,7 +34,7 @@ const plugin: ProjectablePlugin = {
 async function tree() {
   return projectPluginSet({
     plugins: [plugin],
-    adapter: adapterByName('claude'),
+    adapter: adapterByName('omp'),
   });
 }
 
@@ -65,18 +65,18 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
-    // The launch spec: the launcher, the status-line worker (both session-scoped) and
-    // the persona's badge file in its own scope — names derived from the bin.
+    // OMP's session-hook modules and cratylus's own module, which offers the
+    // capabilities as tools and `--agent`, alongside the hook worker and skills. No
+    // per-agent module (omp cannot scope a guard to one agent), launcher, persona
+    // overlay or badge.
     expect(paths).toEqual(
       [
         'agents/probe.md',
-        'enforcing/_session/claude-agent',
-        `enforcing/_session/${CLI_BIN}-status-line.sh`,
-        `enforcing/probe/${CLI_BIN}-persona-badge.txt`,
+        `enforcing/_session/${CLI_BIN}.ts`,
+        `enforcing/_session/${CLI_BIN}-session.ts`,
         'hooks/ping/ping.sh',
-        'settings.json',
         'skills/greet/SKILL.md',
-        'skills/greet/scripts/note.mjs',
+        'skills/greet/scripts/concepts.mjs',
       ].sort(),
     );
     // Bytes, not paths-on-disk: every entry carries its own content.
@@ -98,18 +98,18 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const skill = t.files.find((f) => f.path === 'skills/greet/SKILL.md');
     expect(skill?.content).toContain('G ≜ ⟨greeting⟩');
     const shim = t.files.find(
-      (f) => f.path === 'skills/greet/scripts/note.mjs',
+      (f) => f.path === 'skills/greet/scripts/concepts.mjs',
     );
     expect(shim?.executable).toBe(true);
-    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['note'`);
+    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['concepts'`);
   });
 
-  it('carries the hooks settings fragment and the worker byte-anchor', async () => {
+  it('carries the OMP session-hook module and worker byte-anchor', async () => {
     const t = await tree();
-    const settings = t.files.find((f) => f.path === 'settings.json');
-    expect(JSON.parse(settings?.content ?? '{}')).toMatchObject({
-      hooks: { SessionStart: expect.any(Array) },
-    });
+    const sessionHooks = t.files.find(
+      (f) => f.path === `enforcing/_session/${CLI_BIN}-session.ts`,
+    );
+    expect(sessionHooks?.content.length).toBeGreaterThan(0);
     const worker = t.files.find((f) => f.path === 'hooks/ping/ping.sh');
     expect(worker?.content).toBe('#!/bin/sh\nexit 0\n');
     expect(worker?.executable).toBe(true);

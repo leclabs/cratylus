@@ -1,0 +1,14 @@
+{
+  "id": "01M4JQS2DMR0WRGPPAJBEASGDH",
+  "at": "2026-10-10T11:04:41.140Z",
+  "kind": "decide",
+  "decisionId": "0043",
+  "context": "workflow",
+  "title": "Checks bind only what their example fixes",
+  "situation": "Across cuts 3 and 6, six frozen checks bound what their examples never fixed: usage printing counted as acting; a journal pinned to its seed; omp's whole tool registry; a credential-less home; one transport for tool calls; and the reconstitution check's wiring, which reads the operator's own architect launch text from the host and requires one literal command in it, so editing that text on the host failed dev's pre-push suite on 2026-10-10. Each needed an architect ruling. Judgment also noted that example 7's never-assertion of cut 6 covers the shell but not direct writes to the journal's files.",
+  "decision": "Before a check is frozen, prove offline that it binds only what its example states: for each assertion, name the words of the example it binds, and add a negative only where the example's words call for one. A check reads nothing from the operator's host that the example does not name.",
+  "consequences": "Belongs to cut 5 (0026), with offline proof of behavioral checks; the reconstitution check's host dependency is corrected there.",
+  "status": "open",
+  "supersedes": "0041",
+  "supersedesEntry": "01M4JPFPVXS0940T4AHE5EB002"
+}

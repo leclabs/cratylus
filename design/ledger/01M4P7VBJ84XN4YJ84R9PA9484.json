@@ -1,0 +1,10 @@
+{
+  "id": "01M4P7VBJ84XN4YJ84R9PA9484",
+  "at": "2026-10-11T19:43:16.552Z",
+  "kind": "dispatched",
+  "transition": "toolu_01MZ73CNLQ1QkRnmaaWcnBQm/FreezeRecord/dispatched",
+  "cut": "meaning-roles",
+  "role": "builder",
+  "run": "toolu_01MZ73CNLQ1QkRnmaaWcnBQm/FreezeRecord",
+  "workPackage": "freeze-record"
+}

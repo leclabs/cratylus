@@ -1,56 +1,33 @@
-// RUNTIME-SHIM gate — the BUILD→RUNTIME seam of the projection.
+// RUNTIME-SHIM gate — the BUILD→RUNTIME seam of OMP projection.
 //
-// When a skill cell declares `runtime: {capability}`, the projection emits, beside
-// SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
-// `cratylus <capability>` CLI. This gate pins the shim's SHAPE:
-//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus eventTap`);
-//   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
-//   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
-//   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
-// THIS IS THE REVERSE OF THE DESIGN IT REPLACED. The superseded plan was to give
-// canon a tsup build that COMPOSED a skill's TS domain module ⊕ the target
-// harness's adapter impl into ONE dependency-free standalone `.mjs`, emitted at
-// projection into `skills/<name>/scripts/` — self-contained so it would run under
-// bare `node` with no `node_modules`. A ~15-line `spawnSync` shim meets that same
-// acceptance and strictly dominates it: the capability logic stays in the runtime
-// host, one copy, versioned with the host rather than frozen into every projected
-// artifact. No tsup build was ever added to canon, and none is wanted.
-//
-// It ALSO pins the shim's SINGLE HOME. There is exactly one emitter,
-// `@cratylus/forge/project`; every harness projection rides it. A second copy
-// beside a harness CLI is not a variant, it is a fork: the canon fork missed a
-// change the single emitter carried for the whole life of its divergence, so every
-// forked-CLI-projected skill script ran a shim that no longer matched the others. The
-// identity gate below is what makes a re-fork impossible to land quietly: project
-// the SAME cell down BOTH harness paths and compare the emitted bytes.
+// When a skill cell declares `runtime: {capability}`, projection emits a thin
+// `scripts/<capability>.mjs` shim forwarding to `cratylus <capability>`. This gate
+// pins the shim's shape and executable mode, read from a real projection of canon
+// with the shim-carrier fixture, whose cell declares `workPackage`.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, dirname, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  HARNESS_NAMES,
-  adapterByName,
-} from '@cratylus/forge/adapters/registry';
-import {
-  emitRuntimeShim,
-  projectPluginSet,
-  writeRenderTree,
-} from '@cratylus/forge/project';
+import { emitRuntimeShim } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
-import { requireRepoRoot } from '@cratylus/tooling/repo-root';
-import { beforeAll, describe, expect, it } from 'vitest';
-import canonPlugin from '../src/index.js';
-import { RUNTIME_CAPABILITIES } from '../src/manifest.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
- *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
-const CELL = 'event-tap';
-const CAPABILITY = 'eventTap';
+/** A cell that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
+const CELL = 'carrier';
+const CAPABILITY = 'workPackage';
+const CARRIER = join(canonRoot, 'test', 'fixtures', 'shim-carrier');
 
 const shimOf = (out: string): string =>
   readFileSync(
@@ -58,35 +35,26 @@ const shimOf = (out: string): string =>
     'utf-8',
   );
 
+const scratch: string[] = [];
+function tmp(prefix: string): string {
+  const d = mkdtempSync(join(tmpdir(), prefix));
+  scratch.push(d);
+  return d;
+}
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 /** The emitted shim for `capability`, straight from the single emitter. */
 function emitted(capability: string): string {
-  const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
+  const dir = tmp('runtime-shim-');
   return readFileSync(emitRuntimeShim(dir, capability), 'utf-8');
 }
 
-let claudeShim = '';
 let ompShim = '';
 
-/**
- * The shipped build-time CLI's entry, resolved from forge's OWN manifest.
- *
- * NOT `node_modules/.bin/cratylus`, and the difference is a real defect this gate
- * used to have. pnpm creates a workspace bin symlink only if the TARGET FILE
- * EXISTS AT INSTALL TIME — proven by an A/B on a clean tree: with `dist/` present
- * the link appears, with `dist/` absent it silently does not. A genuine cold clone
- * runs checkout -> install -> build -> test, so at install time `dist/` has never
- * been built and the link is never created. This suite passed only because nobody
- * had ever run it on a tree that cold; the first CI run would have been red.
- *
- * Reading `bin` out of the manifest keeps ONE home for the entry path — the same
- * key npm itself reads — and makes the gate independent of install ORDER while
- * still driving the shipped command rather than a private code path.
- */
+/** Resolve the shipped CLI entry from the CLI package's declared bin. */
 function buildCli(): string {
-  // THE COMMAND SHIPS FROM THE HUB, not from `forge`. Forge is a library and
-  // declares no bin at all now, so reading its manifest for one yields `undefined`
-  // — which is how this gate found the move rather than silently driving a private
-  // code path. Same derivation, same single home, different manifest.
   const pkgPath = join(canonRoot, '..', 'cli', 'package.json');
   const manifest = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
     name: string;
@@ -99,22 +67,7 @@ function buildCli(): string {
 }
 
 beforeAll(async () => {
-  const base = mkdtempSync(join(tmpdir(), 'runtime-shim-projection-'));
-  const claudeOut = join(base, 'claude');
-  const ompOut = join(base, 'omp');
-
-  // The CLAUDE path, driven straight off the projector API.
-  // V7 made the projector RETURN the artifact tree; the caller is the one writer.
-  const claudeReport = await projectPluginSet({
-    plugins: [canonPlugin],
-    adapter: adapterByName('claude'),
-  });
-  writeRenderTree(claudeOut, claudeReport.files);
-
-  // The OMP path, through its real CLI — the fork's live call site. That call site
-  // is now the SHIPPED command: `cratylus project --harness omp`, reading the
-  // repository's own `cratylus.config.ts`. Driving a private per-harness CLI
-  // here was what let the fork exist at all; there is none to drive.
+  const ompOut = join(tmp('runtime-shim-projection-'), 'omp');
   execFileSync(
     process.execPath,
     [
@@ -123,14 +76,13 @@ beforeAll(async () => {
       '--harness',
       'omp',
       '--config',
-      join(requireRepoRoot(canonRoot), 'cratylus.config.ts'),
+      join(CARRIER, 'cratylus.config.ts'),
       '--out',
       ompOut,
     ],
     { cwd: canonRoot, stdio: 'pipe' },
   );
 
-  claudeShim = shimOf(claudeOut);
   ompShim = shimOf(ompOut);
 }, 120_000);
 
@@ -155,7 +107,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
     // the runtime binary on PATH — never an imported @cratylus package.
     expect(shim).not.toContain('@cratylus/');
     // No compiled-in capability mechanism (the impl lives host-side behind the port).
-    expect(shim).not.toMatch(/MemoryStrategy|EventTapHost|require\(/);
+    expect(shim).not.toMatch(/MemoryStrategy|dispatchWorkPackage|require\(/);
     // The sole import is node's own child_process — nothing else.
     const imports = shim.match(/^import .*/gm) ?? [];
     expect(imports).toEqual([
@@ -164,7 +116,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
   });
 
   it('emits scripts/<capability>.mjs executable', () => {
-    const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
+    const dir = tmp('runtime-shim-');
     const dest = emitRuntimeShim(dir, CAPABILITY);
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
@@ -186,42 +138,8 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
   });
 });
 
-describe('runtime shim has ONE home across harnesses', () => {
-  it('claude and omp projections emit BYTE-IDENTICAL shims for one cell', () => {
-    // The falsifier for a forked emitter: any second copy drifts, and drift shows
-    // up here as a byte diff for one and the same capability.
-    expect(ompShim).toBe(claudeShim);
-  });
-
-  it('no shim names a session: every capability, every harness, one plain forwarder', async () => {
-    for (const harness of HARNESS_NAMES) {
-      const { files } = await projectPluginSet({
-        plugins: [canonPlugin],
-        adapter: adapterByName(harness),
-      });
-      // What THIS harness's projection emits, keyed by the capability it forwards to.
-      const projected = new Map(
-        files
-          .filter((f) => /^skills\/[^/]+\/scripts\/[^/]+\.mjs$/.test(f.path))
-          .map((f) => [basename(f.path, '.mjs'), f.content]),
-      );
-      expect(projected.size, harness).toBeGreaterThan(0);
-      for (const [capability, shim] of projected) {
-        expect(shim, `${harness} ${capability}`).toBe(emitted(capability));
-      }
-      for (const capability of RUNTIME_CAPABILITIES) {
-        const shim = projected.get(capability) ?? emitted(capability);
-        expect(shim, `${harness} ${capability}`).not.toMatch(/session/i);
-        expect(shim, `${harness} ${capability}`).toMatch(
-          new RegExp(`spawnSync\\('${CLI_BIN}', \\['${capability}',`),
-        );
-      }
-    }
-  });
-
+describe('runtime shim is emitted for OMP', () => {
   it('the projected shim IS the single emitter output, verbatim', () => {
-    // No harness-local post-processing: what the emitter returns is what lands in
-    // the harness's tree.
     expect(ompShim).toBe(emitted(CAPABILITY));
   });
 });

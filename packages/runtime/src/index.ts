@@ -1,15 +1,60 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // @cratylus/runtime — the per-host RUNTIME contract leaf.
 //
-// The barrel for the `.` export: the runtime-owned lifecycle-event taxonomy and
-// the capability PORT interfaces (EventTapHost, DesignHost, PlanHost, NoteHost).
-// The events and the event-tap port are also reachable at their own subpaths
-// (`./events`, `./ports/event-tap`); the design, plan and note ports ship in the
-// barrel only. PURE contracts — zero implementation, zero `@cratylus/*` deps.
+// The barrel for the `.` export: the example substrate.
+// Zero `@cratylus/*` deps.
+//
+// THE LEDGER API, for a harness binding (the omp extension's builder dispatch
+// check) and for another package (forge): the ledger fold,
+// readiness, served concepts and owned examples of a cut (`cutView`), every
+// recorded cut with its phase (`cutsInLedger`), every frozen cut with what it
+// freezes (`frozenCuts`), the pure fold and reading, and the lifecycle append
+// (`appendLifecycle`). The same facts are reached out of process through the
+// CLI: `cratylus workPackage state|inventory --cut <name>`, `cratylus
+// workPackage frozen` and `cratylus lifecycle '<event-json>'`. The acting
+// agent a capability call is made by is named in `ACTING_AGENT_ENV`.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export * from './events.js';
-export * from './ports/event-tap.js';
-export * from './ports/design.js';
-export * from './ports/plan.js';
-export * from './ports/note.js';
+export * from './example-substrate.js';
+// The concept journal as it explains itself: its verbs, each with its effect.
+export { JOURNAL } from './capabilities/concepts/dispatch.js';
+// The version skew capability as it explains itself, which the omp extension carries in the
+// artifacts it projects, so the version tool is offered whatever command they reach.
+export { VERSION_SKEW } from './capabilities/version-skew/index.js';
+export { explain } from './explanation.js';
+export { ACTING_AGENT_ENV, actingAgent } from './acting-agent.js';
+export {
+  type CommitRecord,
+  type ConceptVerdict,
+  type Cut,
+  type CutConcept,
+  type CutExample,
+  type CutPhase,
+  type CutReading,
+  type CutRecord,
+  type CutState,
+  type CutView,
+  type Figures,
+  type FrozenCut,
+  JUDGMENT_DIR,
+  LEDGER_DIR,
+  LIFECYCLE_KINDS,
+  type LedgerDraft,
+  type LedgerEntry,
+  type OwnedExample,
+  type PackageStatus,
+  type Round,
+  type ServedConcept,
+  type WorkPackage,
+  cutView,
+  cutsInLedger,
+  foldCut,
+  frozenCuts,
+  readCut,
+} from './capabilities/work-package/index.js';
+export {
+  type LifecycleEvent,
+  appendLifecycle,
+  lifecycleEvent,
+} from './lifecycle/index.js';
+export { WATCHED, completionCheck } from './completion-check/index.js';

@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5R8Q81DY0BNKB5E0BAJ67",
+  "at": "2026-10-10T05:49:40.456Z",
+  "kind": "decide",
+  "decisionId": "0005",
+  "context": "workflow",
+  "title": "Held-out examples by omission",
+  "situation": "Builders that see every example can satisfy the visible proxy while missing the concept. Telling a builder not\nto look for held-out examples announces that they exist, and a mechanism that prevents reading them guards\nagainst a misbehaviour that does not occur: builders in practice stay within their work package. Kept outside\nthe repository, held-out examples would be unversioned, tied to one machine, and invisible to continuous\nintegration.",
+  "decision": "Held-out examples are withheld **by omission**: kept in the repository with the rest of the conceptual design\n(`design/judgment/`), outside every work package, and never named in any brief, role or example a builder is\ngiven. Only judgment is pointed at them. No mechanism prevents reading them and no instruction forbids it,\nbecause a prohibition would announce them. When one fails, builders learn the concept and the shortfall, never\nthe case; a case revealed to fix it becomes visible and is replaced.",
+  "consequences": "Builder briefs and work packages never reference `design/judgment/`; that is the only discipline required.",
+  "status": "accepted",
+  "supersedes": null
+}

@@ -1,0 +1,15 @@
+{
+  "id": "01M4NP6G8NPR74RTH19MSH3TCJ",
+  "at": "2026-10-11T14:34:47.445Z",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "enforcement-level",
+  "wording": "how firmly a value holds: advisory, firm unless the operator overrides it, or fixed; a firm or fixed value is enforced at the most reliable place that can hold it, by permission first, then by a capability, then by a guard that checks the act before it takes effect, and by text only where nothing else can. A reply the harness shows as it is written takes effect as it is shown, so no guard holds what a reply says; its values are held by the agent's text and checked by examples.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "0106. The operator suspected a timing problem in the bottom-line guard. The lead's account from the code: the guard judges the turn's final reply at turn end, after the architect has already taken the turn's acts and, by every sign, after the reply has been shown to the operator; a refusal can only make the agent write a second reply, which the operator also sees, and it cannot undo an act, so about 44 of 344 refusals could not be met truthfully. The hand-back and unrecorded guards judge replies at turn end the same way.",
+  "supersedes": [
+    "01M4K2GDQDB7JS27YX0YYDP4ZW"
+  ]
+}

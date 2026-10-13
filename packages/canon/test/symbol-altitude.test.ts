@@ -58,17 +58,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   green: 'REFERENCE', // both: a gate-pass reached by FIXING, never by loosening
   realize: 'REFERENCE', // exemplify carries `@ materialize`
   boundary: 'REFERENCE', // both: this cell's remit against its neighbour's
-  // ── the design → plan → deliver trio ────────────────────────────────────────
-  // Four signs shared across the workflow cells, every one a REFERENCE: the trio is
-  // one pipeline, so a downstream cell restating an upstream sign tersely is the
-  // design working, not debt. Each borrower carries its `@ home` binding.
-  anchor: 'REFERENCE', // design carries `@ signify`; materialize gives the emission form
-  gloss: 'REFERENCE', // both: what a concept IS, one line
-  verify: 'REFERENCE', // both: run the stated check against the stated criteria
-  yield: 'REFERENCE', // both: what execution established and intent could not derive
-  // `gate` — create-agent's is the full corpus suite a shard must pass; deliver's is the
-  // project's whole check the combined tree must pass once a unit is integrated. One concept at two scopes.
-  gate: 'REFERENCE',
   // `c` RECLASSIFIED, not renamed: probe gives it in INTENSION ("a target concept"), elicit in
   // EXTENSION ("a closed distinction-set"). conceptualize defines `C ≜ { X ⊆ D | cl(X) = X }`,
   // so a closed distinction-set IS a concept. Same referent; the divergence was presentational,

@@ -100,8 +100,8 @@ export interface AcceptCell {
   readonly dimension?: string;
   /**
    * D(c) — the definiens (the core σ* fragment). Sourced TYPED from the IR field,
-   * NEVER fence-scraped: a dimension value's branded string, a skill's `formalBlock`
-   * (`SkillExpression` — see `acceptCellOfSkill`), or an agent's `archetype`. Each is a
+   * NEVER fence-scraped: a dimension value's branded string or a skill's `formalBlock`
+   * (`SkillExpression` — see `acceptCellOfSkill`). Each is a
    * branded string, so `string` is the widest home; the skill bridge keeps the payload
    * the typed IR field, not a markdown scrape.
    *
@@ -423,7 +423,7 @@ export function failingLegs(verdicts: readonly LegVerdict[]): Leg[] {
   return verdicts.filter((v) => !v.pass).map((v) => v.leg);
 }
 
-// ── COMPOSED — the agent-only conjunct (light; tsc enforces dimension/arity) ────────
+// ── COMPOSED — the agent-only conjunct (light; composition enforces arity) ─────────
 
 /** An agent composite: dimension → selected value-anchors, in source order. */
 export interface AgentComposite {
@@ -433,9 +433,11 @@ export interface AgentComposite {
 
 /**
  * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one dimension is
- * redundant). Arity ∈ NatSet and value ∈ catalog are TYPE-enforced upstream
- * (`@cratylus/schema` — wrong dimension/arity = a compile error); this
- * catches the one class types miss: a duplicated selection within a dimension set.
+ * redundant). Value ∈ catalog is TYPE-enforced upstream (`@cratylus/schema` — a
+ * wrong dimension is a compile error) and arity — `scalar` (one value), `set` (many),
+ * `slots` (exactly one value per named slot) or `attribute` (no field on an agent;
+ * its values are attributes of other values) — is refused where the corpus composes
+ * an agent; this catches a duplicated selection within a dimension set.
  */
 export function composed(agent: AgentComposite): {
   pass: boolean;

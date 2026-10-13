@@ -1,0 +1,19 @@
+{
+  "id": "01M4J5R9G1SYWJ6DM3Y3AGHVKE",
+  "at": "2026-10-10T05:49:41.249Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "roles",
+  "wording": "the parties of the workflow and what each sees and changes; what a role can see, reach and change is enforced by the harness's own permissions and by the freeze rather than by instruction, and what a role decides is checked by examples of its behavior.",
+  "builtFrom": [
+    "operator",
+    "meaning-holder",
+    "architect",
+    "illustrator",
+    "lead",
+    "builder",
+    "assayer"
+  ],
+  "reason": "decided in 0008: Roles by permission not prose",
+  "supersedes": []
+}

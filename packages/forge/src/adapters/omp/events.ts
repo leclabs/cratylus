@@ -1,8 +1,8 @@
 // Canonical event → Oh My Pi (`omp`) hook event name.
 //
 // EVERY NAME BELOW IS READ OFF `omp`'s OWN `HookAPI` — the twenty-four `on(event:
-// "…")` overloads in `src/extensibility/hooks/types.ts:481-513` of
-// `@oh-my-pi/pi-coding-agent@17.2.9`. Nothing here is inferred from a canonical
+// "…")` overloads in `src/extensibility/hooks/types.ts` of
+// `@oh-my-pi/pi-coding-agent`. Nothing here is inferred from a canonical
 // name's resemblance to a native one, because three of the four resemblances in
 // this map are FALSE FRIENDS and two of them would have shipped as silent
 // misbehaviour. They are called out at their entries.
@@ -55,7 +55,7 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  *    realize `subagent.*`; the `task` tool's `tool_call`/`tool_result` does, which
  *    is why those live in the ACT table below and not here.
  *
- * ABSENT ON PURPOSE: `worktree.create`. omp 18.4.9 makes no worktree for a single
+ * ABSENT ON PURPOSE: `worktree.create`. omp makes no worktree for a single
  * agent and fires no event when one is made — its task isolation is a session-wide
  * setting that applies a task's changes back to the parent checkout — so the moment
  * has no omp peer and a cell bound to it is projected with the loss declared.

@@ -1,0 +1,10 @@
+{
+  "id": "01M4RX7CWEZGXBY3E4X4BZAR4B",
+  "at": "2026-10-12T20:35:20.078Z",
+  "kind": "dispatched",
+  "transition": "toolu_01Hu7EcyHJzEQUH1KJna88bn/AgentBindingBuilder/dispatched",
+  "cut": "simplification",
+  "role": "builder",
+  "run": "toolu_01Hu7EcyHJzEQUH1KJna88bn/AgentBindingBuilder",
+  "workPackage": "agent-binding"
+}

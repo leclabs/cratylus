@@ -1,0 +1,17 @@
+{
+  "id": "01M4Q4BNXG867RJXPGG28E47M0",
+  "at": "2026-10-12T04:01:31.568Z",
+  "kind": "commit",
+  "transition": "commit:meaning-roles:c63a04d9f256b95d9f4584b1523eba8120b8b290",
+  "cut": "meaning-roles",
+  "workPackage": "freeze-gate",
+  "commit": {
+    "sha": "c63a04d9f256b95d9f4584b1523eba8120b8b290",
+    "message": "fix(forge): name the agent in the bash command itself; omp's bash tool takes no env\n\nEach bash call's command is led by a line exporting CRATYLUS_AGENT (quoted), or\nunsetting it in a session that is no agent. Confirmed against live omp 18.8.9.",
+    "paths": [
+      ".changeset/meaning-roles-freeze-gate.md",
+      "packages/forge/src/adapters/omp/render.ts",
+      "packages/forge/test/adapters/omp.test.ts"
+    ]
+  }
+}

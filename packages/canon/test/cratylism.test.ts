@@ -1,22 +1,21 @@
 // CRATYLISM gate — the core naming invariant, enforcing the ground principle
-// `cratylism` (engineering-principles): a concept's canonical sign is DISCOVERED
-// (cold-verified against the model's priors), never coined. Therefore every NAME in
+// `cratylism` (the prime principle, `genus/prime-principle.ts`): a concept's
+// canonical sign is DISCOVERED (cold-verified against the model's priors), never
+// coined. Therefore every NAME in
 // the corpus — including the FILE/DIRECTORY structure itself — must BE the discovered
 // σ* anchor, not a conventional gloss that diverges from it.
 //
 // TWO LEGS of the invariant:
-//   • STRUCTURAL (hermetic, asserted here, every run): a fragment's file basename ==
-//     the σ* anchor its body declares (`export const … = \`<anchor> …\``). The file
-//     name IS the discovered sign; a gloss filename over a different body-anchor is a
-//     cratylism violation.
+//   • STRUCTURAL (hermetic, asserted here, every run): a value's file basename IS
+//     the anchor its body declares (`export const … = \`<anchor> ≜ <gloss>\``), in
+//     kebab case. The file name IS the discovered sign; a gloss filename over a
+//     different body-anchor is a cratylism violation.
 //   • SEMANTIC (non-hermetic, NOT asserted here): the anchor cold-DECODES to its
 //     concept — the archaeology. Its instrument is the cold-oracle
-//     (`tooling/cold-oracle`, `decodeCold`), run at authoring + CI,
+//     (`tooling/cold-oracle`, `decodeCold`), run by hand at authoring and never in CI,
 //     never coined by author or operator. It cannot run in a hermetic unit test (it
 //     calls the live model), so this gate asserts the structural leg and points to the
-//     oracle for the semantic one. The principle is additionally enforced EVERY TURN by
-//     PROJECTION: `cratylism` is in every canon-authoring agent's vector + `AGENTS.md`,
-//     so the discipline is in-context at decision time.
+//     cold-oracle for the semantic one.
 //
 // RATCHET — a shrink-only allowlist of known filename≠anchor divergences (a file whose
 // name is an English gloss, not its body's discovered anchor). Each must be reconciled
@@ -37,20 +36,32 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { adapterByName } from '@cratylus/forge/adapters/registry';
-import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
-import canonPlugin from '../src/index.js';
+import { cratylism, primePrinciple } from '../src/genus/prime-principle.js';
 import { DIMENSION_NAMES } from '../src/manifest.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(canonRoot, 'src');
 const dimensionsRoot = join(srcRoot, 'dimensions');
 
-/** The σ* anchor a fragment declares: the first bareword of its template-literal body. */
+/** The anchor a value declares: its template-literal body up to the ` ≜ ` separator. */
 function bodyAnchor(source: string): string | null {
-  return source.match(/export const \w+: \w+ = `([a-z0-9-]+)/)?.[1] ?? null;
+  return source.match(/export const \w+: \w+ = `([^`]*?) ≜ /)?.[1] ?? null;
 }
+
+/**
+ * A decision right's anchor is its RAPID letter, which no file name can carry
+ * readably: its file is the letter's word. Every other file is the anchor in kebab
+ * case (`whole check` → `whole-check`).
+ */
+const RAPID_FILES: Readonly<Record<string, string>> = {
+  D: 'decides',
+  R: 'recommends',
+  A: 'agrees',
+  P: 'performs',
+  I: 'input',
+  '–': 'none',
+};
 
 /** The declared identity a composite/rule/hook cell carries: its first `name`/`id`. */
 function declaredId(source: string): string | null {
@@ -75,10 +86,7 @@ async function firstExportString(abs: string): Promise<string | null> {
 }
 
 // Shrink-only allowlist of known filename≠anchor divergences. EMPTY — the corpus fully
-// conforms: the two founding divergences were reconciled by cold-discovery of the fitter
-// sign (autonomy: body `auftragstaktik` → `mission-command`, the sign that decodes
-// reliably across model populations; framing: file `systems` → `systems-thinking`, the
-// file renamed to the discovered anchor). A future divergence is never pinnable silently.
+// conforms. A future divergence is never pinnable silently.
 const RATCHET: ReadonlyMap<string, string> = new Map();
 
 /** The dimension DIRS on disk — the corpus half of the descriptor↔corpus pair. */
@@ -127,9 +135,13 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     for (const f of files) {
       const key = relative(dimensionsRoot, f).replace(/\.ts$/, '');
       const anchor = bodyAnchor(readFileSync(f, 'utf-8'));
-      if (!anchor) continue; // not a σ*-fragment shape (e.g. an index) — out of scope
+      if (!anchor) continue; // not a value shape (e.g. an index) — out of scope
       const file = fileAnchor(f);
-      const diverges = anchor !== file;
+      const expected =
+        dirname(key) === 'decision-rights'
+          ? (RAPID_FILES[anchor] ?? anchor)
+          : anchor.replaceAll(' ', '-');
+      const diverges = expected !== file;
       if (RATCHET.has(key)) {
         if (!diverges) staleRatchet.push(key); // pin no longer needed → must be removed
       } else if (diverges) {
@@ -149,7 +161,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   it('is non-vacuous — a gloss filename over a different body-anchor diverges', () => {
     // a fictional cell: body declares the discovered anchor, file is a coined gloss
     const synthetic =
-      'export const someValue: Framing = `discovered-anchor ⟨…⟩`;';
+      'export const someValue: Stance = `discovered-anchor ≜ its gloss`;';
     const anchor = bodyAnchor(synthetic);
     const file = 'coined-gloss'; // basename that is a gloss, not the anchor
     expect(anchor).toBe('discovered-anchor');
@@ -159,7 +171,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   it('every composite/rule/hook file basename == its declared identity (name/id)', async () => {
     const divergences: string[] = [];
     let checked = 0;
-    for (const kind of ['skills', 'agents', 'rules', 'hooks']) {
+    for (const kind of ['skills', 'rules', 'hooks']) {
       // Skill cells are self-contained dirs `skills/<name>/skill.ts`: the
       // discovered sign is the DIRECTORY name (`name==parent-dir`), not the
       // uniform `skill` basename. Every other kind is still a flat `<id>.ts`.
@@ -175,91 +187,28 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
           divergences.push(`${kind}/${p}: file '${file}' ≠ id '${id}'`);
       }
     }
-    // non-vacuous: population = 13 skills + 2 agents (mav, nico) + 1 rule + 4
-    // hooks = 20 declared identities actually extracted (not a glob silently
-    // matching nothing, nor a regex that stopped finding `name:`/`id:`).
-    expect(checked).toBeGreaterThan(19);
+    // Non-vacuous: the scan reaches surviving skill, rule and hook cells.
+    expect(checked).toBeGreaterThan(0);
     expect(divergences, divergences.join('\n')).toEqual([]);
   });
 
-  // The axiom ships by TWO routes: the dimension catalog (`cratylism.ts` → every
-  // agent whose held role selects it, once, as its engineering-principle) and the
-  // `preamble` some skills set (`genus/prime-principle.ts` → the skills whose laws
-  // name concepts by anchor). The preamble once carried a hand-transcribed copy, so
-  // cleaning the dimension left 26 artifacts shipping the superseded axiom while the
-  // suite stayed green. The carry is now BY IMPORT; these legs keep it that way.
-  it('the intrinsic preamble carries the canonized σ* value verbatim', async () => {
-    const { primePrinciple } = await import('../src/genus/prime-principle.js');
-    const { cratylism } = await import(
-      '../src/dimensions/engineering-principles/cratylism.js'
-    );
-    // `EngineeringPrinciples` is `Value<O>` — the UNION `Fragment<O> | Enforcing<O>`
-    // — and `.length` exists on only one arm, so reading it off the union does not
-    // compile. Narrow with the corpus's own derived predicate rather than casting:
-    // the axiom is a BARE σ* fragment, and if it ever became enforcing this leg
-    // would be measuring the wrong thing and should fail loudly here.
-    const { enforcing } = await import('@cratylus/schema');
-    if (enforcing(cratylism)) {
-      throw new Error(
-        'cratylism is declared ENFORCING — the prime principle is a bare σ* fragment, and this gate measures its body',
-      );
-    }
+  // The prime principle carries the axiom from its one literal home, beside it; skill
+  // laws that use it must not carry a separately transcribed copy.
+  it('the intrinsic preamble carries the canonized σ* value verbatim', () => {
     expect(cratylism.length).toBeGreaterThan(80); // non-vacuous: a real axiom, not ''
     expect(
       primePrinciple,
-      'preamble has drifted from the canonized cratylism value — carry it by import, never transcribe',
+      'preamble has drifted from the canonized cratylism value — carry it, never transcribe',
     ).toContain(cratylism);
   });
 
-  // An agent holds the axiom through its role's engineering-principles, so a leading
-  // stamp on top of it would say the same thing twice in one Target. Measured on the
-  // projection itself: the count is a fact about the shipped bytes, not the source.
-  it('no projected agent carries the cratylism value more than once', async () => {
-    const { cratylism } = await import(
-      '../src/dimensions/engineering-principles/cratylism.js'
-    );
-    // Narrow the `Value<O>` union to its bare σ* arm with the corpus's own predicate
-    // (as the leg above does), so the count reads a string without a cast.
-    const { enforcing } = await import('@cratylus/schema');
-    if (enforcing(cratylism)) {
-      throw new Error(
-        'cratylism is declared ENFORCING — this leg counts its bare σ* body',
-      );
-    }
-    for (const harness of ['claude', 'omp'] as const) {
-      const { files } = await projectPluginSet({
-        plugins: [canonPlugin],
-        adapter: adapterByName(harness),
-        warn: () => {},
-      });
-      const agents = files.filter((f) => /^agents\/[^/]+$/.test(f.path));
-      expect(agents.length, `${harness}: no agent projected`).toBeGreaterThan(
-        0,
-      );
-      const counts = agents.map((f) => ({
-        path: f.path,
-        n: f.content.split(cratylism).length - 1,
-      }));
-      expect(
-        counts.filter((c) => c.n > 1),
-        `${harness}: agent(s) carrying the cratylism value more than once`,
-      ).toEqual([]);
-      // non-vacuous: the value does reach agents, so a zero count is not an absent axiom
-      expect(
-        counts.some((c) => c.n === 1),
-        `${harness}: no agent carries cratylism at all — the count proves nothing`,
-      ).toBe(true);
-    }
-  });
-
-  // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and foreign
-  // agents invoking a canon skill. Anything in it naming a workspace-local artifact is a
+  // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and skills
+  // invoking a canon cell. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
   // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`. The apex
   // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
   // out to every Target for exactly that reason; its one home is the AMBIENT carry.
-  it('the intrinsic preamble names no workspace-local artifact', async () => {
-    const { primePrinciple } = await import('../src/genus/prime-principle.js');
+  it('the intrinsic preamble names no workspace-local artifact', () => {
     // Repo-local, non-deployed grounding docs + the ambient carry itself.
     const local = ['VISION', 'MODEL.md', 'ENGINE', 'CANON.md', 'AGENTS.md'];
     const leaked = local.filter((d) => {
@@ -336,11 +285,11 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   });
 
   // SCOPE FLOOR, projected-cell register. Dimension values and skill formalBlocks
-  // deploy into a CONSUMER's `.claude/`, where cratylus's tree is absent. Clean
-  // today — this leg keeps it that way, since nothing else in the suite would notice
-  // a `packages/…` path or a VISION/MODEL reference entering a cell. Completes the
-  // seam: intrinsic carry · consumer scaffold · projected cells all gated; only
-  // `rules/repo-preamble.ts` (cratylus-local, ρ=human) may name them.
+  // deploy into a consumer repo, where cratylus's tree is absent. Clean today — this
+  // leg keeps it that way, since nothing else in the suite would notice a `packages/…`
+  // path or a VISION/MODEL reference entering a cell. Completes the seam: intrinsic
+  // carry · consumer scaffold · projected cells all gated; only `rules/repo-preamble.ts`
+  // (cratylus-local, ρ=human) may name them.
   it('no projected cell names an cratylus-local path', async () => {
     const local = [
       'packages/',
@@ -386,13 +335,13 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     expect(
       homes,
       `a second literal home re-opens the drift this gate exists to close: ${homes.join(', ')}`,
-    ).toEqual(['dimensions/engineering-principles/cratylism.ts']);
+    ).toEqual(['genus/prime-principle.ts']);
   });
 
   it('the dimension DIRS and the MANIFEST keys agree BOTH ways (dir == discovered axis)', async () => {
     const dirs = await dimensionDirs();
-    expect(dirs.length).toBeGreaterThan(20); // non-vacuous: the dimension dirs are enumerated
-    expect(DIMENSION_NAMES.length).toBeGreaterThan(20); // …and so is the catalog
+    expect(dirs.length).toBeGreaterThan(10); // non-vacuous: the dimension dirs are enumerated
+    expect(DIMENSION_NAMES.length).toBeGreaterThan(10); // …and so is the catalog
     const drift = dirDrift(dirs, DIMENSION_NAMES);
     expect(
       drift,

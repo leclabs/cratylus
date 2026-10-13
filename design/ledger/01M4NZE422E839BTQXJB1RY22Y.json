@@ -1,0 +1,13 @@
+{
+  "id": "01M4NZE422E839BTQXJB1RY22Y",
+  "at": "2026-10-11T17:16:14.274Z",
+  "kind": "check",
+  "transition": "check:delivery:01M4NZE420HPERRYAGT8NE8FDQ",
+  "cut": "delivery",
+  "failures": [
+    "forge test typecheck: an adapter unit test spreads a non-object",
+    "cli typecheck: the delivery checks' discovery observer imports harness modules without types",
+    "capability port control: the host-placed witness extension is no longer among the modules the fixture lists",
+    "capability port example 2 and 4 and package control: the runtime-replacement harness mixes a registry runtime into the install, so the command cannot load"
+  ]
+}

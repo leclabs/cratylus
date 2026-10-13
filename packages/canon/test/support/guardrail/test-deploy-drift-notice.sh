@@ -37,7 +37,7 @@ SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 . "$SELF_DIR/../../../../tooling/src/repo-root.sh"
 CANON="$(require_repo_root "$SELF_DIR")/packages/canon"
 REPO_ROOT="$(require_repo_root "$SELF_DIR")"
-# See test-stance-guardrail.sh: the workers are generated and still under src/.
+# The workers are generated and still under src/.
 WORKERS_DIR="$CANON/targets/guardrail"
 WORKER="${DRIFT_WORKER:-$WORKERS_DIR/deploy-drift-notice.sh}"
 [ -f "$WORKER" ] || { echo "FAIL: no worker at $WORKER"; exit 1; }
@@ -56,9 +56,9 @@ FORGE_ENTRY="$REPO_ROOT/packages/forge/$(node -e 'const p=require(process.argv[1
 DEPLOY_TOOL="$(sed -n 's/^DEPLOY_TOOL=\(.*\)$/\1/p' "$WORKER" | head -1)"
 [ -n "$DEPLOY_TOOL" ] || { echo "FAIL: the worker declares no DEPLOY_TOOL"; exit 1; }
 HOOKS_FILE="$(sed -n 's/^HARNESS_HOOKS_FILE=\(.*\)$/\1/p' "$WORKER" | head -1)"
-HARNESS_HOME=".$(sed -n 's/^HARNESS=\(.*\)$/\1/p' "$WORKER" | head -1)"
+HARNESS_HOME=".omp"
 
-WORK="$(mktemp -d)"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/test-deploy-drift-notice.XXXXXX")"
 trap 'rm -rf "$WORK"' EXIT
 fail=0
 pass() { printf '  ok   — %s\n' "$1"; }
@@ -66,7 +66,7 @@ bad()  { printf '  FAIL — %s\n' "$1"; fail=1; }
 
 CORPUS="$WORK/corpus"
 HOST="$WORK/home"
-TREE="$CORPUS/.cratylus/claude"
+TREE="$CORPUS/.cratylus/omp"
 DEPLOYED="$HOST/$HARNESS_HOME/agents"
 
 AXIOM='FIRST PRINCIPLE: names are natural, never conventional'
@@ -97,7 +97,7 @@ prompt() {
 		CRATYLUS_CORPUS= \
 		CRATYLUS_RENDER_TREE= \
 		CRATYLUS_DEPLOY_CHECK= \
-		CLAUDE_PROJECT_DIR= \
+		OMP_PROJECT_DIR= \
 		sh "$WORKER" 2>&1
 }
 
@@ -214,7 +214,7 @@ esac
 anon() {
 	printf '{"cwd":"%s"}' "$CORPUS" | env \
 		HOME="$HOST" TMPDIR="$WORK/tmp" CRATYLUS_CORPUS= CRATYLUS_RENDER_TREE= \
-		CRATYLUS_DEPLOY_CHECK= CLAUDE_PROJECT_DIR= sh "$WORKER" 2>&1
+		CRATYLUS_DEPLOY_CHECK= OMP_PROJECT_DIR= sh "$WORKER" 2>&1
 }
 first="$(anon)"; second="$(anon)"
 if [ -n "$first" ] && [ -n "$second" ]; then
@@ -228,7 +228,7 @@ fi
 rc=0
 printf '{"session_id":"sess-C","cwd":"%s"}' "$CORPUS" | env \
 	HOME="$HOST" TMPDIR="$WORK/tmp" CRATYLUS_CORPUS= CRATYLUS_RENDER_TREE= \
-	CRATYLUS_DEPLOY_CHECK= CLAUDE_PROJECT_DIR= sh "$WORKER" >/dev/null 2>&1 || rc=$?
+	CRATYLUS_DEPLOY_CHECK= OMP_PROJECT_DIR= sh "$WORKER" >/dev/null 2>&1 || rc=$?
 [ "$rc" -eq 0 ] && pass "exit 0 on the drift path" || bad "the advisory exited $rc"
 
 [ "$fail" -eq 0 ] && echo "ALL PASS" || echo "FAILURES"

@@ -1,0 +1,13 @@
+{
+  "id": "01M4JVAAWJ82QRP5R6YY9XXHSX",
+  "at": "2026-10-10T12:06:32.594Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "persona",
+  "wording": "an individually named agent over one role, whose residue is above all its expertise, the bounded contexts it holds and the industry knowledge of their domains, with any value it overrides; it overrides a role's single values and extends its sets, may narrow but never widen its reach, and cannot override an invariant.",
+  "builtFrom": [
+    "role"
+  ],
+  "reason": "Discovery 2026-10-10: keeps the canon's persona-over-role fold; a persona whose residue is only a name is the generic holder renamed.",
+  "supersedes": []
+}

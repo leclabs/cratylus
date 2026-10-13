@@ -1,0 +1,16 @@
+{
+  "id": "01M4PS5W1KFZHFAP9XEV4ABZCN",
+  "at": "2026-10-12T00:46:06.899Z",
+  "kind": "update",
+  "transition": "update:meaning-roles:01M4PS5W1HGQASNT6KWARSSPY6",
+  "cut": "meaning-roles",
+  "workPackage": "freeze-gate",
+  "changes": {
+    "concepts": [
+      "freeze",
+      "supersession",
+      "cut",
+      "architect"
+    ]
+  }
+}

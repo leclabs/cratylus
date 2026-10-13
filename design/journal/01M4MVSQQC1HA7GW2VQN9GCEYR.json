@@ -1,0 +1,14 @@
+{
+  "id": "01M4MVSQQC1HA7GW2VQN9GCEYR",
+  "at": "2026-10-11T06:53:26.124Z",
+  "kind": "decide",
+  "decisionId": "0091",
+  "context": "agents",
+  "title": "A never-assertion is judged on what takes effect; a guard-refused attempt is held drift",
+  "situation": "Guards now hold the architect's hand-back, descend and readback values. When a guard refuses an act or reply and the architect corrects itself, judges still count the refused attempt as the tell, failing agents 13, 16, workflow 20 and 31; the lead asked whether a harness-refused attempt violates a never-assertion.",
+  "decision": "A never-assertion is judged over what the agent delivers: acts that take effect and replies that reach their reader. An attempt the harness refused never took effect and does not violate it, because the value is then held by the guard, as enforcement-level intends: by the most reliable place that can hold it. Each refused attempt is recorded as drift held by a guard and reported with the run, so how often the text alone fails stays visible; it is never hidden and never counted as a pass of the text.",
+  "consequences": "Retained runs are re-judged on this reading, judging only. Guard refusals are reported per example in the cut's outcome as held drift, and their cost is counted in the cut's efficiency.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

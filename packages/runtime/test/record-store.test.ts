@@ -2,8 +2,7 @@
 // that must refuse, the fold's heads (settled, withdrawn, reinstated, diverged,
 // reconciled), incoherence over a supplied reference relation, real branch merges,
 // and a read that must leave the records root untouched; writes held back until
-// flushed. Then the two pure rules every domain writes through: the repair rule
-// and canonical set order.
+// flushed.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -14,16 +13,15 @@ import {
   readFileSync,
   readdirSync,
   realpathSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { canonicalOrder } from '../src/record-store/canonical-order.js';
+import { afterAll, describe, expect, it } from 'vitest';
 import { divergence, fold, incoherence } from '../src/record-store/fold.js';
 import type { Record } from '../src/record-store/record.js';
-import { introduced } from '../src/record-store/repair.js';
 import {
   RECORDS_ROOT,
   RecordStore,
@@ -49,8 +47,19 @@ function git(cwd: string, ...args: string[]): string {
   );
 }
 
+// Each repository sits one level inside its own temp dir, because a plan's line is a
+// worktree cut NEXT TO the repository (`<repo>.plan-<plan>`); removing the temp dir
+// removes both.
+const scratch: string[] = [];
+afterAll(() => {
+  for (const d of scratch) rmSync(d, { recursive: true, force: true });
+});
+
 function repository(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'record-store-'));
+  const parent = mkdtempSync(join(tmpdir(), 'record-store-'));
+  scratch.push(parent);
+  const dir = join(parent, 'repo');
+  mkdirSync(dir);
   git(dir, 'init', '-q', '-b', 'main');
   return dir;
 }
@@ -557,51 +566,6 @@ describe('a staged store', () => {
     expect(disk.read(DOMAIN).map((r) => r.envelope.id)).toEqual([
       first.envelope.id,
       next.envelope.id,
-    ]);
-  });
-});
-
-describe('the repair rule', () => {
-  const cycle = { kind: 'cycle', entities: ['a', 'b', 'c'] };
-
-  it('a violation whose entities a standing one of the same kind already binds is not introduced', () => {
-    expect(
-      introduced([cycle], [{ kind: 'cycle', entities: ['a', 'b'] }]),
-    ).toEqual([]);
-    expect(introduced([cycle], [cycle])).toEqual([]);
-  });
-
-  it('the same entities under another kind are introduced', () => {
-    const name = { kind: 'name', entities: ['a', 'b'] };
-    expect(introduced([cycle], [name])).toEqual([name]);
-  });
-
-  it('a violation grown beyond its standing one is introduced', () => {
-    const grown = { kind: 'cycle', entities: ['a', 'b', 'c', 'd'] };
-    expect(introduced([cycle], [grown])).toEqual([grown]);
-  });
-
-  it('with no standing violations, every one is introduced, in the order given', () => {
-    const after = [{ kind: 'name', entities: ['x', 'y'] }, cycle];
-    expect(introduced([], after)).toEqual(after);
-  });
-});
-
-describe('canonical order', () => {
-  it("a set's canonical form is independent of its input order", () => {
-    const members = ['01K2B', '01K2A', '01K2C'];
-    expect(canonicalOrder(members)).toEqual(['01K2A', '01K2B', '01K2C']);
-    expect(canonicalOrder([...members].reverse())).toEqual(
-      canonicalOrder(members),
-    );
-    expect(members).toEqual(['01K2B', '01K2A', '01K2C']);
-  });
-
-  it("a duplicate is kept for the domain's set law to refuse, never absorbed", () => {
-    expect(canonicalOrder(['01K2B', '01K2A', '01K2B'])).toEqual([
-      '01K2A',
-      '01K2B',
-      '01K2B',
     ]);
   });
 });

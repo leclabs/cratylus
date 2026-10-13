@@ -8,7 +8,7 @@
 // SOURCE-GRAIN, not markdown: the TS modules are the source now (the `.md` is a
 // projection). The "fence interior" of a skill is its `body`'s fenced block(s) (which is
 // exactly the pre-extracted `body`); of a fragment it is any fenced block in its
-// `definiens` (the current corpus has none — provenance `glyph·color` marks live in
+// `definiens` (the current corpus has none — an agent's `glyph·color` mark lives in
 // PROSE, never a fence, so they are out of register-scope, exactly as the Python gate
 // only ever scanned fence interiors). The declared table IS the `operator-lexicon` source
 // module (the single home; DRY) — read directly, never a markdown projection.
@@ -238,7 +238,7 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
 
   it('PASSES the same glyph when it sits in PROSE (no fence) — register-scoped', () => {
     // A bare ✗ outside any fence is out of the gate's scope (it scans fence
-    // interiors only) — exactly why provenance `glyph·color` marks never trip it.
+    // interiors only) — exactly why an agent's `glyph·color` mark never trips it.
     const prose = '\n# ok\n\nthis ✗ is prose, not a fenced formal block\n';
     expect(offendingGlyphs('fixture prose', prose, declared)).toEqual([]);
   });

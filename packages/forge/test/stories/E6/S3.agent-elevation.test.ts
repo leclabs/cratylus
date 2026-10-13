@@ -15,13 +15,11 @@
  * replacement no-loss (REC ≽: the source NL recoverable from the vector),
  * and single-source replacement (the source file is removed on accept).
  *
- * `archetype` and `provenance` are NOT `Dimension` fragment members (D13/D3) — the
+ * Name, description, mark and key are identity details, not dimensions — the
  * `ElevationSpec.dimensions` record is keyed by the 22 fragment dimensions only, so
- * this SPEC carries the source raw NL on `objective` (an `open` scalar dimension)
- * rather than on a `archetype` dimension key (which the frame would now refuse as
- * unknown).
+ * this SPEC carries the source raw NL on `objective` (an `open` scalar dimension).
  *
- * The elevation TARGET contract (22 dimensions, arities, axes) stays GREEN via
+ * The elevation TARGET contract (22 dimensions, arities, groups) stays GREEN via
  * the runtime-introspection companion below.
  */
 
@@ -87,10 +85,9 @@ story(
     expect(Object.keys(FIXTURE_MANIFEST).sort()).toEqual(
       [...THE_22_DIMENSIONS].sort(),
     );
-    // Axis split: 5 Persona / 17 Constitution (archetype + provenance no longer
-    // Persona fragment dimensions — D13/D3).
+    // Group split: 5 Persona / 17 Constitution.
     const persona = FIXTURE_DIMENSION_NAMES.filter(
-      (o: FixtureDimension) => FIXTURE_MANIFEST[o].axis === 'Persona',
+      (o: FixtureDimension) => FIXTURE_MANIFEST[o].group === 'Persona',
     );
     expect(persona).toHaveLength(5);
     // Arity: exactly the six documented set dimensions take arrays (autonomy is
@@ -127,12 +124,11 @@ const inheritAll = (): Record<FixtureDimension, DimensionPlan> =>
  *  Quotes are verbatim spans of SOURCE_PERSONA (the frame verifies). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
+  description: 'Reviews migrations before they land.',
   dimensions: {
     ...inheritAll(),
-    // No `archetype` key: archetype is a plain identity field now, not an
-    // `Dimension` fragment — the frame refuses an unrecognized dimension key. The
-    // source raw NL is instead carried verbatim on `objective` (an `open`
-    // scalar dimension), which satisfies replacement no-loss (REC ≽).
+    // The source raw NL is carried verbatim on `objective` (an `open` scalar
+    // dimension), which satisfies replacement no-loss (REC ≽).
     objective: {
       kind: 'value',
       fragments: [{ slug: 'migration-reviewer', definiens: SOURCE_PERSONA }],
@@ -189,7 +185,7 @@ afterEach(() => {
 
 story(
   'E6.S3',
-  'exemplify+elicit elevates a free-text source form to a compiling 22-dimension vector with a provenance trace per non-null dimension',
+  'exemplify+elicit elevates a free-text source form to a compiling 22-dimension vector with a provenance trace per non-empty dimension',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
@@ -205,13 +201,21 @@ story(
     // Typed against the schema contract (compiles by construction).
     expect(src).toContain("import type { Agent } from '@cratylus/schema'");
     expect(src).toContain('export const reviewer: Agent = {');
-    // All 22 dimension fields present — a value fragment or the explicit null.
+    expect(src).toContain('  mark: null,\n  key: null,');
+    // All 22 dimension fields present — a list of entries, or the explicit `[]`.
     for (const dimension of THE_22_DIMENSIONS) {
       expect(src, `dimension field for '${dimension}' missing`).toMatch(
-        new RegExp(`\\b${DIMENSION_FIELD[dimension] as string}: `),
+        new RegExp(`\\b${DIMENSION_FIELD[dimension] as string}: \\[`),
       );
     }
-    // A provenance trace per non-null dimension — exactly the selected set.
+    // Each selected fragment is an entry at its dimension's default level.
+    expect(src).toContain(
+      '{ value: "review ≜ review changes end-to-end before they land", level: "fixed" }',
+    );
+    expect(src).toContain(
+      '{ value: "small-reversible-steps ≜ prefer small reversible steps", level: null }',
+    );
+    // A provenance trace per non-empty dimension — exactly the selected set.
     const provenance = JSON.parse(
       readFileSync(join(cwd, 'agents', 'reviewer.provenance.json'), 'utf8'),
     ) as Record<string, { type: string; note: string }>;
@@ -230,6 +234,7 @@ story(
       renderAgentVector(
         {
           name: 'reviewer',
+          description: 'Reviews migrations before they land.',
           dimensions: {
             ...inheritAll(),
             formality: {
@@ -274,7 +279,11 @@ story(
       elevateAgent({
         sourcePath: join(cwd, 'source-b.md'),
         outDir: cwd,
-        spec: { name: 'reviewer2', dimensions: inheritAll() },
+        spec: {
+          name: 'reviewer2',
+          description: 'Reviews migrations before they land.',
+          dimensions: inheritAll(),
+        },
         manifest: FIXTURE_MANIFEST,
       }),
     ).toThrow(/REC/);

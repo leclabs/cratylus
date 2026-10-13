@@ -1,0 +1,14 @@
+{
+  "id": "01M4JQS2C2BN6S6C4WZAYAMNZ3",
+  "at": "2026-10-10T11:04:41.090Z",
+  "kind": "decide",
+  "decisionId": "0042",
+  "context": "workflow",
+  "title": "Assayer, by its natural name in context",
+  "situation": "Decision 0018 named the judging role from a context-free cold reading of 'assayer' and 'reviewer'. That reading is the corpus's oracle for finding the single best signifier; a role in the workflow context needs a name that is natural within that context, read by someone working in it. Raised by the operator on 2026-10-10.",
+  "decision": "The role that judges a cut once against fixed criteria stays named assayer, for reasons that hold within the context: to a software engineer, 'reviewer' naturally means code review against standards the reviewer supplies, the re-derived judging that keeps a workflow from converging (0006); 'assayer' carries testing work against a fixed standard, independently, without repairing it. It also leaves omp's bundled reviewer agent free for ordinary code review.",
+  "consequences": "No change to the role, its agent or its model routing; only the evidence for the name is restated in context.",
+  "status": "accepted",
+  "supersedes": "0018",
+  "supersedesEntry": "01M4J5R995266887EXGNT5R5AZ"
+}

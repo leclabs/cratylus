@@ -93,8 +93,9 @@
 // unpoliced — the ones that already carried convicting fixtures
 // did so because their authors were told to, not because anything checked. The
 // sibling dirs are now read BY PATH, the precedent this corpus already set for a
-// cross-package test (`event-tap-cell.test.ts` reads the runtime's `TapVerb` union
-// as source text rather than invent a package edge to carry a test). Per-package
+// cross-package test (`capability-keyspace.test.ts` reads the runtime's
+// `CAPABILITIES` as source text rather than invent a package edge to carry a
+// test). Per-package
 // copies of this mechanism were the alternative, and duplicated gates drift.
 
 import { readdirSync } from 'node:fs';
@@ -121,8 +122,11 @@ const TEST_ROOTS: Readonly<Record<string, string>> = {
  * green when the corpus is clean, so it owes a convicting fixture.
  * BEHAVIORAL — drives one unit with inputs it supplies itself. Its negative cases
  * ARE its fixtures; a separate convicting test would be ceremony.
+ * FROZEN — a cut's frozen checks, registered as their folder (a key ending in `/`
+ * classifies every test file under it): only the cut's architect changes them, so
+ * this gate classifies them and demands nothing of their bodies.
  */
-type Kind = 'GATE' | 'BEHAVIORAL';
+type Kind = 'GATE' | 'BEHAVIORAL' | 'FROZEN';
 
 const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── canon ────────────────────────────────────────────────────────────
@@ -145,30 +149,17 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
   'canon/cell-gloss-census.test.ts': 'GATE',
-  'canon/command-veracity.test.ts': 'GATE',
+  // BEHAVIORAL: drives `holder`/`persona` with the role cells and residues it states
+  // itself; its refused composition (a persona removing `none`) is its own negative case.
+  'canon/compose.test.ts': 'BEHAVIORAL',
   'canon/cratylism.test.ts': 'GATE',
-  // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.claude` itself and
-  // drives the committed SessionStart worker over both, so its negative cases ARE its
+  // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.omp` itself and
+  // drives the committed session worker over both, so its negative cases ARE its
   // fixtures. Every SILENT leg is paired with a one-byte mutation of the same host
   // that must make the same worker speak — the control that separates a working
   // in-sync check from one that compared nothing.
   'canon/deploy-drift-notice.test.ts': 'BEHAVIORAL',
-  'canon/event-tap-cell.test.ts': 'GATE',
-  // censuses the LIVE `packages/*/src` corpus for a SECOND event-name list, then
-  // crosses the two seams no compiler reaches: every adapter map key against canon's
-  // tuple, and the host config `deploy` emits parsed back by the RUNTIME's own
-  // reader. Its convicting fixtures drive the same pure predicates over the exact
-  // 28-name tuple `runtime/src/events.ts` used to carry, over a map key that is not
-  // a declared event, and over an emitted config missing one member.
-  'canon/event-vocabulary.test.ts': 'GATE',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
-  // holds the operator's harness-independence law: no deployed worker names
-  // another harness's home in executable shell, and no cell template names a
-  // vendor CLI where a projection fact belongs. Both legs were CONVICTED before
-  // being admitted — a `$HOME/.claude/...` line injected into a committed worker
-  // and a `:-claude}` default restored to the cell each produced exactly one
-  // finding, and removing them returned the gate to green.
-  'canon/harness-independence.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
   // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
   // LIVE `accept.ts`, asserting S ⊆ G (never =, so refinement stays legal). Neither
@@ -176,66 +167,38 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // level up. Its convicting fixtures drive the same pure property over S∪{widget}
   // and over the exact fifth Kind (`hook`) the gate was built from.
   'canon/ground-conformance.test.ts': 'GATE',
-  'canon/harness-parity.test.ts': 'GATE',
-  // projects the LIVE `stance-guardrail-pre` cell through BOTH shipped adapters and
-  // asserts the cell declares an act while the adapter computes the selector; its
-  // convicting fixture drives the SAME projector over the pre-repair shape (a plain
-  // `tool.use.pre` binding) and shows claude emitting it in total silence.
-  'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
-  'canon/null-dimension.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
-  // BEHAVIORAL, on the same reading as `stance-guardrail-dark`: it drives the worker
-  // with verdicts it supplies itself and carries its own negative controls (a read is
-  // never judged, a fabricated citation is discarded, an unenrolled scope is silent).
-  'canon/purview-guardrail.test.ts': 'BEHAVIORAL',
   'canon/reader-density.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
   'canon/pack-smoke.test.ts': 'GATE',
-  // enumerates the LIVE agents: a role-named agent carries exactly its role's identity and a
-  // persona a description, archetype and mark of its own. Its convicting fixtures hand
-  // the fold a persona with no archetype, with no mark, with its role's mark, and a
-  // role-named agent that declares a dimension value or only an identity.
-  'canon/persona.test.ts': 'GATE',
-  // holds the declared practices against the LIVE corpus: the set is exactly the four,
-  // every agent, skill and harness hook cell is placed by a practice or the plumbing,
-  // and each practice renders alone on both harnesses. Its convicting fixtures feed the
-  // placement predicate a cell no practice lists and a practice that places an
-  // architect without the roles it dispatches.
-  'canon/practices.test.ts': 'GATE',
   'canon/version-single-home.test.ts': 'GATE',
   // BEHAVIORAL, not GATE: it exercises a helper's four resolution cases. It polices no
   // property of the corpus — the law that no path is built from a hop COUNT is a gate
   // this plan still owes, and it is a different file.
   'canon/repo-root.test.ts': 'BEHAVIORAL',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
-  // projects the live corpus under claude and asserts every skill's launch-hook output
-  // fits claude's per-hook cap; its convicting fixture feeds the same predicate a skill
-  // one character over it.
-  'canon/skill-hook-cap.test.ts': 'GATE',
   'canon/skill-shape.test.ts': 'GATE',
-  // drives the guardrail worker with a broken judge it supplies itself, and
-  // carries its own negative control (opted-out ⇒ silent).
-  'canon/stance-guardrail-dark.test.ts': 'BEHAVIORAL',
-  'canon/structural-parsimony.test.ts': 'GATE',
   'canon/symbol-altitude.test.ts': 'GATE',
   'canon/symbol-probe-gate.test.ts': 'GATE',
   'canon/symbols.test.ts': 'GATE',
+  // The simplification cut's frozen checks (decisions 0142-0145), the whole folder.
+  'canon/simplification/': 'FROZEN',
 
   // ── forge ────────────────────────────────────────────────────────────
-  'forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
-  // Drives the claude adapter and the enrollment builder with cells and adapters it
-  // supplies itself; its negative cases are its own fixtures (an unrealizable event,
-  // an adapter realizing nothing, the session scope that must stay unenrolled).
-  'forge/adapters/claude.test.ts': 'BEHAVIORAL',
   // Drives the omp adapter with bindings and agents it supplies itself; its
   // negative cases are its own fixtures (an unrealizable event, an absent
   // mechanism, a non-blocking event that must not claim to block).
   'forge/adapters/omp.test.ts': 'BEHAVIORAL',
+  // drives `agentBody` over a small catalog and agents it supplies itself; its refused
+  // vector (a text factor that is not a list of entries) is its own negative case.
+  'forge/core/agent-body.test.ts': 'BEHAVIORAL',
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
+  // drives the slots-dimension reader over vectors it builds itself, an optional slot left unfilled.
+  'forge/core/vector-slots.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'forge/catalog/manifest-descriptor.test.ts': 'GATE',
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
@@ -253,12 +216,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/cli/cli.test.ts': 'BEHAVIORAL',
   'forge/cli/compose.test.ts': 'BEHAVIORAL',
   'forge/cli/explain.test.ts': 'BEHAVIORAL',
-  // drives `runInstall` through injected prompts over a corpus and a tmp HOME it writes
-  // itself, and asserts on the host's bytes: nothing is written before the confirmation
-  // or on a decline, a decision given by flag asks nothing, a run with no terminal and
-  // no practices named is refused before a byte is written, and a role the host already
-  // routed is neither asked nor changed — it polices no corpus.
-  'forge/cli/install.test.ts': 'BEHAVIORAL',
   'forge/config/loader.test.ts': 'BEHAVIORAL',
   'forge/config/scaffold.test.ts': 'BEHAVIORAL',
   'forge/core/runtime-shim-binding.test.ts': 'BEHAVIORAL',
@@ -267,51 +224,34 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and asserted SILENT, which is the defect held green in perpetuity.
   'forge/deploy/check.test.ts': 'BEHAVIORAL',
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
-  'forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
-  'forge/deploy/hooks.test.ts': 'BEHAVIORAL',
-  // drives `addModelRoles` and `runInstall` over host configs and a corpus it builds
-  // itself, and asserts the negatives (an existing entry, a flow mapping, a dry run
-  // leave the bytes untouched) — it polices no corpus.
+  // drives `addModelRoles` and install/uninstall over host configs it writes itself,
+  // including a document it must refuse and a `--model-roles` name no agent has.
   'forge/deploy/model-roles.test.ts': 'BEHAVIORAL',
-  // drives the persona-command placement API and `runInstall` over a tmp HOME whose bin
-  // dir it fills itself with a regular file, a foreign link, an unrecorded identical link
-  // and the other harness's launcher, and asserts every one is left as it was — the
-  // never-overwrite negatives are its fixtures, and it polices no corpus.
-  'forge/deploy/persona-commands.test.ts': 'BEHAVIORAL',
-  // drives `ensureBadgeStatusLine`, `ensureStatusSegment` and `runInstall` over host
-  // settings and configs it writes itself — a host's own status line, a list that
-  // already has `status`, shapes it cannot extend, a dry run — and asserts each is left
-  // as the bytes were: the never-replace negatives are its fixtures, and it polices no
-  // corpus.
+  // links and relinks the owned root into a temp host's plugin directory, leaving the
+  // reference places the host holds otherwise.
+  'forge/deploy/owned-root.test.ts': 'BEHAVIORAL',
+  // exercises the OMP status-line config editor and install path, including byte-preserving
+  // edits, custom layouts, host-owned settings, and dry-run behavior.
   'forge/deploy/status-line.test.ts': 'BEHAVIORAL',
-  // runs `runInstall` then `runUninstall` over a tmp HOME the host has already written
-  // to, and compares the whole tree byte for byte; its convicting fixtures are the host's
-  // own edits (a placed file, a status line, a config line, a hook entry, a persona
-  // link), each asserted still there, and a record it cannot trust — it polices no
-  // corpus.
+  // covers generic manifest line-edit behavior without depending on a harness
+  // integration or the deleted workflow artifacts.
   'forge/deploy/uninstall.test.ts': 'BEHAVIORAL',
-  // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
-  // negative (`.claude` absent) so the old hardcode cannot pass it.
+  // drives install and uninstall over a fixture home holding an earlier install's
+  // persona launcher, overlay, badge and linked command, and asserts each is removed.
+  'forge/deploy/retired-launch.test.ts': 'BEHAVIORAL',
+  // drives scaffoldProject with a supplied OMP harness home and asserts its `.omp` path.
   'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
   // drives `probeRuntimeBin`/`assertShimsResolvable` against stranded and live host
   // fixtures it builds itself, with the real shim bytes.
   'forge/deploy/runtime-bin-resolvable.test.ts': 'BEHAVIORAL',
-  'forge/deploy/integrate-smoke.test.ts': 'BEHAVIORAL',
   'forge/deploy/local.test.ts': 'BEHAVIORAL',
   'forge/deploy/prune.test.ts': 'BEHAVIORAL',
-  'forge/project/bindings.test.ts': 'BEHAVIORAL',
   'forge/project/realization.test.ts': 'BEHAVIORAL',
-  'forge/project/degradation.test.ts': 'BEHAVIORAL',
-  // projects a fixture plugin it owns under both adapters and reads the warnings.
-  'forge/project/event-tap-degradation.test.ts': 'BEHAVIORAL',
+  // projects fixture plugins it writes itself; its refusals (an unclosed handoff, a
+  // module named by file, duplicate names, a module exporting no Agent) are its fixtures.
+  'forge/project/practice-closure.test.ts': 'BEHAVIORAL',
   'forge/project/skill-closure.test.ts': 'BEHAVIORAL',
-  // projects a fixture plugin set it owns, declaring practices, plumbing and a dispatch
-  // relation, and reads the placed cells back; its refusals (an unclosed dispatch or
-  // skill, an undeclared name, an empty choice) ARE its fixtures.
-  'forge/project/practices.test.ts': 'BEHAVIORAL',
-  // projects a fixture plugin it owns whose skills straddle the claude hook cap, and
-  // asserts the oversized one is unhooked, named as required reading and warned once;
-  // its boundary cases (exactly the cap, one over) ARE its fixtures.
+  // OMP keeps oversized skills available without a main-session hook.
   'forge/project/skill-hook-cap.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
@@ -321,9 +261,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // control would leave open.
   'forge/project/write-prune.test.ts': 'BEHAVIORAL',
   'forge/project/tree.test.ts': 'GATE',
-  // BEHAVIORAL: it projects a fixture plugin it owns under BOTH adapters and reads the
-  // emitted worker bytes back, so the divergence is the fixture rather than a claim
-  // about the live corpus. Its derivation half is convicted the same way — `binNameOf`
+  // BEHAVIORAL: it projects a fixture plugin it owns under OMP and reads the emitted
+  // worker bytes back. Its derivation half is convicted the same way — `binNameOf`
   // is fed synthetic manifests, including the two it must refuse.
   'forge/project/projection-facts.test.ts': 'BEHAVIORAL',
   'forge/validate/enforced.test.ts': 'BEHAVIORAL',
@@ -339,46 +278,63 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/stories/E6/S7.opt-in-lossless.test.ts': 'BEHAVIORAL',
 
   // ── runtime ──────────────────────────────────────────────────────────
+  // Checks execution/output/rubric examples plus held-out secrecy and
+  // capability-protected red-first freeze behavior using fixtures it supplies.
+  'runtime/example-substrate.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
-  // drives the `design` verb surface over temporary git repositories it builds and
-  // merges itself; its refusals ARE its fixtures.
-  'runtime/design.test.ts': 'BEHAVIORAL',
-  // the DAG-guard leg scans every capability source file for a forge import.
-  'runtime/event-tap.test.ts': 'GATE',
-  // drives the verb surface under injected omp / Claude Code / bare environments and
-  // scratch settings paths it builds itself; polices no live artifact.
-  'runtime/event-tap-harness.test.ts': 'BEHAVIORAL',
-  // drives `install` over requests it builds itself — all mapped, some, none — against
-  // a host config it supplies; polices no live artifact.
-  'runtime/event-tap-skipped.test.ts': 'BEHAVIORAL',
+  // drives `dispatchConcepts` over scratch git repositories it builds itself; its
+  // refusals (a flag given twice, a journal entry that is not one, a directory
+  // outside git) ARE its fixtures.
+  'runtime/concepts.test.ts': 'BEHAVIORAL',
+  // asserts over the live concept journal declaration and cratylus's own live design:
+  // each verb's concept is a live concept, its help says what it explains, and what
+  // it calls required is refused without. A verb whose concept the design retired,
+  // in a scratch journal, convicts it.
+  'runtime/explanation.test.ts': 'GATE',
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
+  // runs the leakage detector over text it supplies and the journal verbs in scratch git
+  // repositories it builds itself; its leaking and plain passages ARE its fixtures.
+  'runtime/leakage.test.ts': 'BEHAVIORAL',
+  // runs the pure ledger fold over entries it builds itself: statuses, approval by two
+  // distinct assayers, failing and disputed packages, phase, ready, figures, report.
+  'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
+  // runs the ledger store, lifecycle, open, integrate and completion check in
+  // throwaway git repos; its refused repeated transitions and integration by a
+  // non-architect, and its warnings, ARE its fixtures.
+  'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
+  // runs the pure context overview over designs, decisions and cuts it builds itself:
+  // whole before parts, named cycles, and the account told in that order.
+  'runtime/overview/overview.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
   // capability's, a first word that is no capability) ARE its fixtures.
   'runtime/main.test.ts': 'BEHAVIORAL',
-  // drives the `note` verb surface over temporary git repositories it builds and
-  // merges itself; its refusals ARE its fixtures.
-  'runtime/note.test.ts': 'BEHAVIORAL',
-  // drives the `plan` verb surface over temporary git repositories it builds and
-  // merges itself, under a lifecycle configuration it writes; its refusals ARE its
-  // fixtures.
-  'runtime/plan.test.ts': 'BEHAVIORAL',
   // races producers and drainers against a store in temp dirs it makes itself.
   'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',
   // writes, folds and merges records in temp repositories it builds itself; its
   // refusals (an existing record id, another entity's version) ARE its fixtures.
   'runtime/record-store.test.ts': 'BEHAVIORAL',
   'runtime/runtime-config.test.ts': 'BEHAVIORAL',
+  // reads and appends to concept journals it writes itself in scratch repositories;
+  // its unknown-kind and unreadable entries ARE its fixtures.
+  'runtime/tolerant-reader.test.ts': 'BEHAVIORAL',
   'runtime/ulid.test.ts': 'BEHAVIORAL',
   // the live capabilities' verbs are each checked for a summary, a positional and a
   // description of every flag; a verb and a flag it leaves unsaid are its fixtures.
   'runtime/verb-descriptions.test.ts': 'GATE',
+  // drives `dispatchWorkPackage` over scratch git repositories it builds itself;
+  // its refusals (an overlapping output, an unowned need, a commit git refuses)
+  // and its warning (a commit outside the package's outputs) ARE its fixtures.
+  'runtime/work-package.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
   // supplies itself; its negative cases ARE its fixtures.
   'schema/enforcing.test.ts': 'BEHAVIORAL',
+  // drives `checkAssignment`/`assignmentIn` with schemas and assignments it supplies;
+  // its missing and ill-typed assignments ARE its fixtures.
+  'schema/contract.test.ts': 'BEHAVIORAL',
 };
 
 /** The vocabulary a convicting fixture announces itself in, as the corpus already
@@ -413,6 +369,17 @@ function testFiles(): Map<string, string> {
   return found;
 }
 
+/** A test file's kind: its own entry, else the entry of the registered folder
+ *  holding it. */
+function kindOf(file: string): Kind | undefined {
+  return (
+    REGISTRY[file] ??
+    Object.entries(REGISTRY).find(
+      ([key]) => key.endsWith('/') && file.startsWith(key),
+    )?.[1]
+  );
+}
+
 describe('META-GATE — a gate without a convicting fixture is indistinguishable from a dark one', () => {
   it('reaches every policed test dir — a root that scanned empty is a DARK scan, not a clean one', () => {
     // Without this, a mistyped or moved root path would silently police nothing
@@ -427,7 +394,7 @@ describe('META-GATE — a gate without a convicting fixture is indistinguishable
 
   it('every test file is classified — a new one cannot slip in unclassified', () => {
     const unclassified = [...testFiles().keys()].filter(
-      (f) => REGISTRY[f] === undefined,
+      (f) => kindOf(f) === undefined,
     );
     expect(
       unclassified,
@@ -435,9 +402,13 @@ describe('META-GATE — a gate without a convicting fixture is indistinguishable
     ).toEqual([]);
   });
 
-  it('the registry names no file that no longer exists (shrink-only)', () => {
-    const present = testFiles();
-    const stale = Object.keys(REGISTRY).filter((f) => !present.has(f));
+  it('the registry names no file that no longer exists, nor a folder holding none (shrink-only)', () => {
+    const present = [...testFiles().keys()];
+    const stale = Object.keys(REGISTRY).filter((key) =>
+      key.endsWith('/')
+        ? !present.some((f) => f.startsWith(key))
+        : !present.includes(key),
+    );
     expect(stale, `remove from REGISTRY: ${stale.join(', ')}`).toEqual([]);
   });
 

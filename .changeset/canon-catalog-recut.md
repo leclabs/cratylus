@@ -1,0 +1,11 @@
+---
+'@cratylus/canon': minor
+---
+
+Canon's catalog is re-cut to the eighteen factors of the agent catalog design, in six groups: Identity (`role`, `objective`, `expertise`, `procedure`, `stance`, `communication-style`), Authority (`decision-rights`, `autonomy`), Reach (`perception-scope`, `action-scope`, `handoffs`), Cognition (`model`, `memory`), Interface (`assignment`, `deliverable`) and Governance (`guardrails`, `enforcement-level`, `evaluation`). Each `MANIFEST` entry states its group, arity, repertoire, default enforcement level, projection and, for a slots factor, its slots: `objective` has `drive` and `stopping-rule`, `communication-style` has `register`, `density` and `rationale`, `model` has `tier` and `effort`, and `decision-rights` has one slot per decision class, each with a gloss. `guardrails` is required. `enforcement-level` is an attribute on held values and is not an agent field.
+
+Every value module under `dimensions/<factor>/` is now `'<anchor> ≜ <gloss>'`: the anchor, then one or two plain sentences saying what it means. Value aliases are `Role`, `Objective`, `Expertise`, `Procedure`, `Stance`, `CommunicationStyle`, `DecisionRights`, `Autonomy`, `PerceptionScope`, `ActionScope`, `Handoffs`, `Model`, `Memory`, `Assignment`, `Deliverable`, `Guardrails`, `Enforcement` and `Evaluation`. A decision right's file is its letter's word (`decides`, `recommends`, `agrees`, `performs`, `input`, `none`).
+
+Removed: the dimensions `heuristics`, `situation-awareness`, `learning`, `trigger`, `modalities` and `reasoning-strategy` (no replacement); `capabilities` (now `expertise`), `actions` (now `action-scope`), `output-format` (now `deliverable`), `self-evaluation` (now `evaluation`), `engineering-principles` and `framing` (folded into `stance`), `formality`, `audience-adaptation` and `transparency` (folded into `communication-style`), and `satisficing` (now the objective's `stopping-rule`), with their aliases and every value the design does not list.
+
+The dense `cratylism` axiom keeps its text and now lives in `genus/prime-principle.ts` beside the prime principle that carries it. The `cratylism` stance value carries the principle in plain words. The repository preamble and its projected `AGENTS.md` link to the new home.

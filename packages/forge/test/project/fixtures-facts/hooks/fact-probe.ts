@@ -1,11 +1,6 @@
-// A FIXTURE hook cell whose only job is to name every projection fact and be
-// projected. It exists so the pass-through from `opts.adapter` to the bytes a
-// worker template resolves to can be convicted WITHOUT rendering the whole canon
-// corpus: the property under test is the projector's, not the corpus's.
-//
-// It names EVERY member of `ProjectionFact`, so a fact added to the union and not
-// bound by `projectionFacts()` fails here — `resolveWorker` throws on a name it
-// cannot resolve — rather than on the day a real cell first asks for it.
+// A fixture hook cell naming the projection facts used by the emitted worker.
+// It proves that projection binds OMP's values into worker bytes without rendering
+// the whole canon corpus.
 
 import type { HookCell } from '@cratylus/schema';
 
@@ -25,11 +20,9 @@ export const factProbe: HookCell = {
         '#!/bin/sh',
         'CLI_BIN={{fact:runtime-bin}}',
         'DEPLOY_BIN={{fact:deploy-bin}}',
-        'STANCE_MANIFEST={{fact:stance-manifest}}',
         'HARNESS={{fact:harness-name}}',
         'HARNESS_HOOKS_FILE={{fact:harness-hooks-file}}',
         'DRIFT_RC={{fact:deploy-check-drift-code}}',
-        'PERSONA_ROOT={{fact:harness-persona-root}}',
         'exit 0',
         '',
       ].join('\n'),

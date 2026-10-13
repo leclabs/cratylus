@@ -2,8 +2,9 @@
 // The dimension META-MODEL as a TypeScript type system.
 //
 // THIS MODULE IS THE CONTRACT, and ONLY the contract. It states that a
-// dimension HAS an axis, a repertoire, an arity and a `required`, and it derives an
-// entire dimension type-system from any manifest obeying that shape
+// dimension HAS a group, a repertoire, an arity, a default enforcement level and a
+// projection, and it derives an entire dimension type-system from any manifest
+// obeying that shape
 // (`DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `DimensionFieldsOf`
 // · `AgentOf`). It does NOT state WHICH dimensions exist. That is the corpus's,
 // and it rides the PLUGIN (`AgentPlugin.manifest`) — a
@@ -22,9 +23,9 @@
 // A corpus (canon is the first) declares its manifest, derives its own
 // `Dimension`, `Agent` and per-dimension aliases from it, and authors its
 // dimension values / agents / skills against those. Composition is ESM `import`;
-// an agent is a flat, explicit dimension vector (`null` = omit-to-inherit). A
-// wrong dimension→value or a wrong arity is a **compile error** — the brand keys
-// each string to its dimension so an `Actions` cannot be assigned where an
+// an agent is a flat, explicit dimension vector of ENTRIES (`[]` = explicitly
+// empty). A wrong dimension→value is a **compile error** — the brand keys each
+// string to its dimension so an `Actions` cannot be assigned where an
 // `Objective` is expected.
 //
 // Exported from `@cratylus/schema` — NOT from the projector. These are the
@@ -32,13 +33,21 @@
 // `@cratylus/forge` are a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { AgentContract } from './contract.js';
 import type { HookSubstrate } from './hook-cell.js';
 import type { EventName } from './hook/index.js';
 
-// ── Type-level metadata axes ────────────────────────────────────────────────
+// ── Type-level metadata ─────────────────────────────────────────────────────
 
-/** The MECE filing axis: how the agent comes across vs what it is inclined to do. */
-export type Genus = 'Persona' | 'Constitution';
+/**
+ * How firmly a value holds — the repertoire of the corpus's enforcement-level
+ * factor, which is an ATTRIBUTE of every value an agent holds rather than a value
+ * of its own (see {@link Entry.level}).
+ * - `advisory` — guidance the agent weighs and may depart from.
+ * - `firm`     — holds unless the operator overrides it.
+ * - `fixed`    — holds without exception; only the design changes it.
+ */
+export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
 
 /**
  * A runtime CAPABILITY name — the BOUND, not the members.
@@ -67,11 +76,13 @@ export type Genus = 'Persona' | 'Constitution';
 export type CapabilityName = string;
 
 /**
- * How a dimension's value-catalog is sourced — the axis is WHO OWNS THE VALUE
- * SET, and the three members partition it:
+ * How a dimension's value-catalog is sourced — WHO OWNS THE VALUE SET, and the
+ * four members partition it:
  * - `latent`  — the MODEL's own value set, read out by blind introspection.
  * - `open`    — named PER-AGENT; where identity lives.
  * - `curated` — a closed catalog the CORPUS assembled.
+ * - `fixed`   — a closed list the DESIGN fixes (decision classes, reach
+ *   ceilings, the roles); the corpus transcribes it, it does not tend it.
  *
  * The third member read `coined` until 2026-08-05, and that was a defect the
  * corpus's own first principle names: `cratylism` states a canonical sign is
@@ -134,12 +145,27 @@ export type CapabilityName = string;
  * (reads as mutating-from-telemetry, which inverts the closure) · `emergent` ·
  * `endogenous` (imported jargon, breaks register with `open`/`curated`).
  */
-export type Repertoire = 'latent' | 'open' | 'curated';
+export type Repertoire = 'latent' | 'open' | 'curated' | 'fixed';
 
-/** Whether a dimension field holds one value (`scalar`) or many (`set`). */
-export type Arity = 'scalar' | 'set';
+/**
+ * How many values a dimension field holds:
+ * - `scalar`    — one value;
+ * - `set`       — many;
+ * - `slots`     — exactly one value per named {@link Slot}, in slot order;
+ * - `attribute` — no field on an agent at all: its values are attributes of the
+ *   values other dimensions hold (the enforcement level of an {@link Entry}).
+ */
+export type Arity = 'scalar' | 'set' | 'slots' | 'attribute';
 
-// ── The provenance mark ─────────────────────────────────────────────────────
+/** One named coordinate of a `slots` dimension, with an optional plain gloss. */
+export interface Slot {
+  readonly name: string;
+  readonly gloss?: string;
+  /** `true` ⇒ a role may leave this coordinate unfilled; every other slot takes exactly one value. */
+  readonly optional?: true;
+}
+
+// ── The mark ────────────────────────────────────────────────────────────────
 
 /** The emoji·hue mark an agent carries (drives its color). Data, not a σ* value. */
 export interface Mark {
@@ -316,16 +342,19 @@ export const withBody = <O extends string>(
   body: Fragment<O>,
 ): Value<O> => (enforcing(v) ? { ...v, body } : body);
 
-// ── The runtime dimension descriptor (axis / repertoire / arity) ──────────────────────
+// ── The runtime dimension descriptor ────────────────────────────────────────
 // A consumer that needs a dimension's metadata at runtime (e.g. `cratylus catalog`)
 // reads the manifest its corpus declares. This package owns the SHAPE of an entry;
 // WHICH dimensions exist is the corpus's to state, and the corpus derives its own
 // `Dimension` union and per-dimension aliases from it with the helpers below.
 
-/** The runtime-readable metadata for one dimension (axis = genus). */
+/** The runtime-readable metadata for one dimension. */
 export interface DimensionMeta {
-  /** The MECE filing axis (the `Genus` of the dimension's values). */
-  readonly axis: Genus;
+  /**
+   * The factor GROUP the dimension is filed under. Groups are ordered by their
+   * first appearance in the manifest, and the projected text has one section each.
+   */
+  readonly group: string;
   /**
    * How the value-catalog is sourced (the `Repertoire`).
    *
@@ -339,10 +368,22 @@ export interface DimensionMeta {
    * property ABOUT the dimension, not the dimension's identity. `RuleCell` keeps it.
    */
   readonly repertoire: Repertoire;
-  /** Whether the dimension field holds one value or many (the `Arity`). */
+  /** How many values the dimension field holds (the `Arity`). */
   readonly arity: Arity;
   /**
-   * May an agent OMIT this dimension? Absent ⇒ omittable (`| null`, inherit).
+   * The DEFAULT enforcement level of the values an agent holds here; an entry
+   * that states none takes it. `null` ⇒ no enforcement level applies.
+   */
+  readonly level: EnforcementLevel | null;
+  /**
+   * How the dimension reaches a harness: `text` is rendered into the agent's
+   * body; `binding` is never text — it compiles to the harness's settings.
+   */
+  readonly projection: 'text' | 'binding';
+  /** The named coordinates of a `slots` dimension, in order. Absent otherwise. */
+  readonly slots?: readonly Slot[];
+  /**
+   * May an agent hold this dimension EMPTY? Absent ⇒ it may (`[]`).
    *
    * Catalog DATA, not a type-level special case. Whether the ideal agent may
    * exist without a given dimension is a canon question, and the one dimension
@@ -350,7 +391,23 @@ export interface DimensionMeta {
    * exception inside the `Agent` interface, i.e. a doctrine the canon stated and
    * the projector enforced with no link between them.
    */
-  readonly required?: boolean;
+  readonly required?: true;
+}
+
+/**
+ * One value AS AN AGENT HOLDS IT: the catalog value, the enforcement level it
+ * holds at (the enforcement-level factor is an attribute, so it lives here and
+ * never as a field of its own), the slot it fills for a `slots` dimension, and a
+ * qualifier the design states (e.g. `in realization`).
+ */
+export interface Entry<D extends string = string> {
+  /** The catalog value, body `'<anchor> ≜ <gloss>'`. */
+  readonly value: Value<D>;
+  readonly level: EnforcementLevel | null;
+  /** The slot it fills, for arity `slots`. */
+  readonly slot?: string;
+  /** A qualifier the design states, e.g. `in realization`. */
+  readonly note?: string;
 }
 
 /**
@@ -359,7 +416,7 @@ export interface DimensionMeta {
  *
  * Distinct from MODEL's `catalog : DimensionName → ℘(fragment)`, which is the
  * same index set with a different codomain: a catalog maps a dimension to its
- * VALUES, a manifest maps it to its METADATA (axis/repertoire/arity/required). That
+ * VALUES, a manifest maps it to its METADATA (group/repertoire/arity/level/…). That
  * disambiguation used to live only in the prose.
  *
  * This is the parameter type of every function that reads one, and no projector
@@ -448,43 +505,39 @@ export type SetDimensionOf<A extends DimensionManifest> = {
   [D in DimensionOf<A>]: A[D]['arity'] extends 'set' ? D : never;
 }[DimensionOf<A>];
 
-/** The dimensions of `A` an agent may NOT omit — read off `required`. */
+/** The dimensions of `A` an agent may NOT hold empty — read off `required`. */
 export type RequiredDimensionOf<A extends DimensionManifest> = {
   [D in DimensionOf<A>]: A[D] extends { required: true } ? D : never;
 }[DimensionOf<A>];
 
+/** The dimensions of `A` that occupy a FIELD on an agent: every one whose arity
+ *  is not `attribute` (an attribute rides the entries of the others). */
+export type FieldDimensionOf<A extends DimensionManifest> = {
+  [D in DimensionOf<A>]: A[D]['arity'] extends 'attribute' ? never : D;
+}[DimensionOf<A>];
+
 /**
- * Every dimension FIELD an agent carries under manifest `A`.
+ * Every dimension FIELD an agent carries under manifest `A`: one list of
+ * {@link Entry} per non-attribute dimension, whatever its arity. A scalar holds
+ * one entry, a `slots` dimension one per slot, a set any number; an explicitly
+ * empty set is `[]`, and there is no `null`.
  *
- * Arity and nullability come from the manifest, so the three facts about a
- * dimension (is it multi-valued · may it be omitted · what is it called) are
- * stated exactly once, where the dimension is declared.
- *
- * THE CATCH-ALL LIVES HERE, as `required: true` manifest data rather than a
- * hand-written exception. Attachment-based governance fails OPEN — Spring
- * Security prescribes a catch-all authorization rule for unannotated methods;
- * AppArmor runs unprofiled tasks "in an unconfined state". Two unrelated
- * systems, one weakness, both prescribing a catch-all underneath. Ours is
- * stronger than either because it is `tsc` rather than a runtime backstop: an
- * agent composed without a bound does not compile. WHICH dimension is required
- * is a canon question, and the canon answers it in its own manifest.
+ * Arity, the slot names and `required` are manifest DATA, checked where an agent
+ * is composed (the corpus's composition refuses a scalar without exactly one
+ * entry, a slot left unfilled, or a required dimension held empty); the name of
+ * each field is derived here, so it is stated exactly once, where the dimension
+ * is declared.
  */
 export type DimensionFieldsOf<A extends DimensionManifest> = {
-  readonly [D in DimensionOf<A> as DimensionFieldName<D>]: D extends SetDimensionOf<A>
-    ? D extends RequiredDimensionOf<A>
-      ? readonly Value<D>[]
-      : readonly Value<D>[] | null
-    : D extends RequiredDimensionOf<A>
-      ? Value<D>
-      : Value<D> | null;
+  readonly [D in FieldDimensionOf<A> as DimensionFieldName<D>]: readonly Entry<D>[];
 };
 
 /**
  * The STRICT agent vector over manifest `A` — the shape a corpus exports as its
  * own `Agent`, and the shape its agent modules are authored against.
  *
- * Every dimension key is REQUIRED (completeness law); omission is spelled
- * `null` (explicit omit-to-inherit), never a missing key.
+ * Every dimension key is REQUIRED (completeness law); an empty dimension is
+ * spelled `[]`, never a missing key.
  */
 export type AgentOf<A extends DimensionManifest> = Agent & DimensionFieldsOf<A>;
 
@@ -501,12 +554,11 @@ export const kebabToCamel = <S extends string>(s: S): KebabToCamel<S> =>
  *
  * A corpus's own agents are the strict `AgentOf<typeof itsCatalog>` — a flat,
  * explicit dimension vector (depth 1, composition over inheritance) whose fields
- * carry branded values, arity-checked, `null` for omit-to-inherit. Forge is
- * deliberately blind to that half: nothing here branches on a dimension's
- * identity, so it reads the dimension fields STRUCTURALLY off the manifest it is
- * given (`dimensionValueOf`) and never names one. `archetype` and `provenance`
- * are NOT fragment dimensions — archetype is a plain identity description,
- * provenance the structured `{mark}`.
+ * each carry a list of {@link Entry}. Forge is deliberately blind to that half:
+ * nothing here branches on a dimension's identity, so it reads the dimension
+ * fields STRUCTURALLY off the manifest it is given (`dimensionValueOf`) and never
+ * names one. Name, description, mark and key are identity details, not
+ * dimensions.
  *
  * No index signature: a strict `AgentOf<A>` must stay assignable here without
  * relying on implicit-index-signature inference.
@@ -518,30 +570,52 @@ export interface Agent {
    *  `description:` the subagent-router reads (NOT σ*). The one-level-up twin of
    *  the skill `description`. */
   readonly description: string;
-  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM above `## Archetype`
-   *  by `agentBody`. The engine knows only "a leading block"; an agent whose
-   *  identity needs one declares it on its own module. Absent ⇒ omitted. */
-  readonly preamble?: string;
-  /** σ* — the model-read identity body → Target body. A plain string, not a branded
-   *  fragment-dimension, but σ* content nonetheless. */
-  readonly archetype: string;
-  /** The emoji·hue mark (drives color) — data, not a fragment. */
-  readonly provenance: { readonly mark: Mark } | null;
+  /** The emoji·hue mark (drives color) — data, not a fragment. `null` ⇒ none. */
+  readonly mark: Mark | null;
+  /** RESERVED for ipseic agents (decision 0048); always empty. */
+  readonly key: null;
+  /**
+   * OPTIONAL — the anchor of the role this agent HOLDS. Absent ⇒ the agent holds
+   * none.
+   *
+   * NOT A DIMENSION READ, and that is the reason it is a field. A corpus may state
+   * a role as one of its dimensions, but the projector is contractually blind to
+   * dimension identity (see `dimensionValueOf`), so the held role could not reach
+   * an adapter at all unless the corpus's own fold copies its anchor here.
+   */
+  readonly holds?: string;
+  /**
+   * OPTIONAL — the anchors of the model tier and thinking effort this agent runs
+   * at, copied by the corpus's own fold from its model dimension. Absent ⇒ the
+   * host's default. A harness binds it through a model role named for the agent.
+   */
+  readonly routing?: { readonly tier: string; readonly effort: string };
+  /**
+   * OPTIONAL — the agent's typed handoff: the JSON Schema its assignment must fit
+   * when it is dispatched or launched, and the one its deliverable must fit when
+   * it returns. Copied by the corpus's own fold from the contracts its assignment
+   * and deliverable values carry. Absent ⇒ its handoff is free text.
+   *
+   * A harness binds the deliverable as its own output schema, shows the assignment
+   * when the agent is dispatched or launched, and warns when it is incomplete.
+   */
+  readonly contract?: AgentContract;
+  /**
+   * OPTIONAL — the per-turn persistence protocol the agent re-grounds its stance
+   * by at the top of every turn, naming its drift tells. Text the corpus's fold
+   * carries for every agent; a harness renders it into the agent's instructions.
+   */
+  readonly persistence?: string;
   /**
    * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
-   * omitted, and an empty list means the same thing as absent. Modelled on
-   * `preamble` above: optional, carried on the identity face, projected by
-   * whichever adapter has somewhere to put it.
+   * omitted, and an empty list means the same thing as absent. Carried on the
+   * identity face, projected by whichever adapter has somewhere to put it.
    *
-   * NOT A DIMENSION, and deliberately outside any manifest. Two reasons, and
-   * both matter. STRUCTURALLY, a dimension's value is a branded σ* fragment
-   * that `agentBody` emits into the Target; a skill name is an ADDRESS a host
-   * resolves against its own skill tree, so declaring it as a dimension would
-   * mint one fragment per skill saying nothing. CONCEPTUALLY, a dimension is a
-   * persona trait — who this agent is — and which skills it loads is
-   * APPARATUS, the equipment it reaches for. Putting apparatus of that kind in
-   * the dimension catalog would misrepresent it as a trait and hand every
-   * agent in every corpus one more required key to spell `null`.
+   * NOT A DIMENSION, and deliberately outside any manifest. STRUCTURALLY, a
+   * dimension's value is a branded σ* fragment that `agentBody` emits into the
+   * Target; a skill name is an ADDRESS a host resolves against its own skill tree.
+   * CONCEPTUALLY, a dimension is a trait — who this agent is — and which skills it
+   * loads is APPARATUS, the equipment it reaches for.
    *
    * WHAT A HARNESS RECEIVES IS THE CLOSURE, not this list: projection hands each
    * adapter these names followed by every skill they transitively compose, so
@@ -553,34 +627,8 @@ export interface Agent {
    */
   readonly skills?: readonly string[];
   /**
-   * OPTIONAL — the anchor of the role this agent HOLDS. Absent ⇒ the agent holds
-   * none. Modelled on `skills` above: optional, carried on the identity face, and
-   * projected by whichever adapter has somewhere to put it.
-   *
-   * NOT A DIMENSION READ, and that is the reason it is a field. A corpus may state
-   * a role as one of its dimensions, but the projector is contractually blind to
-   * dimension identity (see `dimensionValueOf`), so the held role could not reach
-   * an adapter at all unless the corpus's own fold copies its anchor here. The
-   * value is that anchor — a string the HARNESS keys its model routing by — and
-   * carries no model: which model fills the role is the host's choice.
-   */
-  readonly holds?: string;
-  /**
-   * OPTIONAL — the anchors of the roles this agent DISPATCHES work to. Absent ⇒
-   * the agent dispatches none. Modelled on `holds` above: optional, carried on the
-   * identity face, and copied by the corpus's own fold from the role cell.
-   *
-   * The relation exists so that a practice can be CLOSED under it: an agent that
-   * hands work to a role is useless in an install where no agent holds that role,
-   * and prose in the agent's body cannot be checked. Each name is an anchor in the
-   * same vocabulary as {@link Agent.holds}, so projection matches the two with no
-   * knowledge of what either role is.
-   */
-  readonly dispatches?: readonly string[];
-  /**
    * OPTIONAL — that this agent runs in a git worktree of its own. Absent ⇒ it runs
-   * where its dispatcher does. Modelled on `dispatches` above: optional, carried on
-   * the identity face, and copied by the corpus's own fold from the role cell.
+   * where its dispatcher does.
    *
    * A DECLARATION, NOT A TEACHING. How an agent uses a worktree is its own
    * competence and nothing it reads need explain it; what this states is only that
@@ -600,9 +648,9 @@ export interface Agent {
  * Read one dimension FIELD off an agent, by the field name the manifest derives.
  *
  * The one place forge crosses from the identity face to the dimension face. It
- * returns `unknown` on purpose: forge knows a field holds a value, a list of
- * values, or `null`, and knows nothing about WHICH dimension — the strict typing
- * of that field is the corpus's, discharged where the agent is authored.
+ * returns `unknown` on purpose: forge knows a field holds a list of entries and
+ * knows nothing about WHICH dimension — the strict typing of that field is the
+ * corpus's, discharged where the agent is authored.
  */
 export const dimensionValueOf = (a: Agent, field: string): unknown =>
   (a as unknown as Record<string, unknown>)[field];
@@ -692,8 +740,7 @@ export interface Skill<C extends CapabilityName = CapabilityName>
    *  first section (above the fenced formal block). The engine knows only "a
    *  leading block"; a cell whose laws apply a principle fills it (canon sets its
    *  prime principle on the skills that name concepts by anchor), so the
-   *  principle rides the projected bytes of exactly those cells. Absent ⇒ omitted.
-   *  The same shape as `Agent.preamble`. */
+   *  principle rides the projected bytes of exactly those cells. Absent ⇒ omitted. */
   readonly preamble?: string;
 }
 
@@ -723,6 +770,13 @@ export {
   resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
+export {
+  type AgentContract,
+  type ContractCheck,
+  type JsonSchema,
+  assignmentIn,
+  checkAssignment,
+} from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
 // shapes it types. The MEMBERS are the corpus's (`MODEL.md:22`), so there is
@@ -744,12 +798,12 @@ export type { EventName } from './hook/index.js';
 // against" is this package's charter.
 
 /**
- * WHERE a plugin's cells live on disk — the four package-relative dirs a
+ * WHERE a plugin's cells live on disk — the package-relative dirs a
  * projector scans to discover them.
  *
  * This is the half of a plugin declaration that is pure DISCOVERY MECHANICS: it
  * answers "where do I look", which is mapping, and mapping is the projector's to
- * own. It is named rather than left as four loose fields so the resolver can take
+ * own. It is named rather than left as loose fields so the resolver can take
  * a `Layout` without taking a whole plugin.
  *
  * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
@@ -773,11 +827,9 @@ export interface Layout {
  * A PRACTICE — a way of working a corpus offers as one installable choice: the
  * agents, skills and hooks that carry it, installed together.
  *
- * A practice is CLOSED under skill composition and agent dispatch: every agent it
- * installs finds every skill it composes and every agent it dispatches. So it lists
- * the agents it carries INCLUDING the ones its agents dispatch to, and projection
- * refuses a chosen set that is not closed rather than render one that would fail
- * when run.
+ * A practice is CLOSED under skill composition: every agent it installs finds every
+ * skill it composes, and projection refuses a chosen set that is not closed rather
+ * than render one whose agents name skills it does not carry.
  *
  * It is data, not a dimension and not a cell: nothing about WHO an agent is
  * changes by being in one.
@@ -787,7 +839,7 @@ export interface Practice {
   readonly name: string;
   /** σ_human* — the one line an install shows a consumer deciding whether to take it. */
   readonly description: string;
-  /** The agents this practice installs, by name — the roles they dispatch included. */
+  /** The agents this practice installs, by name. */
   readonly agents: readonly string[];
   /**
    * The skills this practice installs BEYOND those its agents are given. A skill
@@ -797,12 +849,12 @@ export interface Practice {
    */
   readonly skills?: readonly string[];
   /**
-   * The hook cells, by id, this practice registers BEYOND the guards its agents'
-   * compositions bind. A guard travels with the agents that compose what it binds
-   * and is named nowhere; a cell that binds no composition, and exists for what a
-   * practice's agents declare rather than compose, is named here, so that every
-   * install that places those agents places the cell. A cell every practice needs is
-   * {@link Plumbing.hooks} instead.
+   * The hook cells, by id, this practice registers BEYOND those its agents'
+   * compositions bind. A hook bound by a composition travels with the agents that
+   * compose what it binds and is named nowhere; a cell that binds no composition, and
+   * exists for what a practice's agents declare rather than compose, is named here, so
+   * that every install that places those agents places the cell. A cell every practice
+   * needs is {@link Plumbing.hooks} instead.
    */
   readonly hooks?: readonly string[];
   /** `true` ⇒ a fresh install selects this practice unless the operator declines. */
@@ -830,7 +882,7 @@ export interface Plumbing {
  *
  * The plugin carries no leading doctrine block. The prime principle rides only
  * the cells whose laws apply it (`Skill.preamble`, and an agent's own held
- * engineering-principles), so a cell that does not use it never holds a host's
+ * stance), so a cell that does not use it never holds a host's
  * authored surfaces to this corpus's naming axiom.
  */
 export interface AgentPlugin extends Layout {
@@ -838,7 +890,7 @@ export interface AgentPlugin extends Layout {
   readonly name: string;
   /**
    * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
-   * against the meta-model (that a dimension has an axis/repertoire/arity) above.
+   * against the meta-model (that a dimension has a group/repertoire/arity/level) above.
    *
    * It rides the plugin for a plain reason: a consumer projecting
    * an extended plugin has no access to the plugin's repo, so a manifest left behind

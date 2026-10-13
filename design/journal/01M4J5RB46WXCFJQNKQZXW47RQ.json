@@ -1,0 +1,13 @@
+{
+  "id": "01M4J5RB46WXCFJQNKQZXW47RQ",
+  "at": "2026-10-10T05:49:42.918Z",
+  "kind": "define",
+  "context": "delivery",
+  "name": "upgrade",
+  "wording": "installing over an earlier installation replaces the owned root whole and rewrites its references, leaving exactly what the new version places and everything the host owns.",
+  "builtFrom": [
+    "owned root"
+  ],
+  "reason": "decided in 0021: Owned root",
+  "supersedes": []
+}

@@ -1,17 +1,6 @@
-// The host's status line — what install may do to it so the persona badge is visible,
-// and what it must never do.
-//
-// Both files are HOST-OWNED, so nearly every case is a byte claim. Claude Code's
-// `settings.statusLine` is one command: install sets it where the host has none and
-// WRAPS a host's own by default — the host's output keeps every byte, the badge goes in
-// front of its first line in a persona's session, every other key beside the command
-// is kept, and it never wraps twice. omp's
-// `statusLine.leftSegments` is a list: `status` is appended to the host's own, no other
-// byte changing, and left alone when already listed. Unit cases drive the two functions
-// on strings a host might really have written; install cases run `runInstall` against
-// a corpus written at run time, with a tmp HOME so no real host is ever read.
+// OMP's status-line editor preserves host configuration while adding only what the
+// status segment needs. These byte-level assertions cover user-owned config files.
 
-import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -22,18 +11,19 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
+import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import type { StatusSegmentHost } from '../../src/core/harness-adapter.js';
-import {
-  ensureBadgeStatusLine,
-  ensureStatusSegment,
-} from '../../src/deploy/status-line.js';
+import { ensureStatusSegment } from '../../src/deploy/status-line.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import { FIXTURE_PRACTICE, fixturePractices } from './helpers.js';
+import {
+  FIXTURE_PRACTICE,
+  fixtureAgentSource,
+  fixturePractices,
+} from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -60,192 +50,6 @@ function file(name: string, content: string | null) {
   };
 }
 
-// ── Claude Code: settings.json ───────────────────────────────────────────────
-
-describe('ensureBadgeStatusLine', () => {
-  const WORKER = 'sh "$HOME/.claude/personas/_session/worker.sh"';
-  const HOST = `${JSON.stringify(
-    {
-      theme: 'dark',
-      statusLine: { type: 'command', command: "printf 'it''s'", padding: 0 },
-      hooks: {},
-    },
-    null,
-    2,
-  )}\n`;
-
-  it('sets the worker as the status line where the host has none, keeping every other key', () => {
-    const f = file(
-      'settings.json',
-      `${JSON.stringify({ theme: 'dark', hooks: { A: [] } }, null, 2)}\n`,
-    );
-    const r = ensureBadgeStatusLine(f.path, WORKER);
-    expect(r).toMatchObject({ state: 'set', wrote: true });
-    expect(JSON.parse(f.read() as string)).toEqual({
-      theme: 'dark',
-      hooks: { A: [] },
-      statusLine: { type: 'command', command: WORKER },
-    });
-  });
-
-  it('creates the file where the host has no settings at all', () => {
-    const f = file('settings.json', null);
-    expect(ensureBadgeStatusLine(f.path, WORKER).state).toBe('set');
-    expect(JSON.parse(f.read() as string)).toEqual({
-      statusLine: { type: 'command', command: WORKER },
-    });
-  });
-
-  it('wraps the host’s own status line with no option, keeping its other keys, and names the host’s command', () => {
-    const f = file('settings.json', HOST);
-    const r = ensureBadgeStatusLine(f.path, WORKER);
-    const placed = `${WORKER} 'printf '\\''it'\\'''\\''s'\\'''`;
-    expect(r).toMatchObject({
-      state: 'wrapped',
-      wrote: true,
-      placed,
-      host: "printf 'it''s'",
-    });
-    const line = JSON.parse(f.read() as string).statusLine;
-    expect(line.padding).toBe(0);
-    expect(line.type).toBe('command');
-    // The host command's own quote survives one round of shell quoting.
-    expect(line.command).toBe(placed);
-    expect(JSON.parse(f.read() as string).theme).toBe('dark');
-  });
-
-  it('never wraps twice, and never re-sets what is already the worker', () => {
-    const f = file('settings.json', HOST);
-    ensureBadgeStatusLine(f.path, WORKER);
-    const wrapped = f.read();
-    // What it made is read back: the host's command comes out as it went in.
-    expect(ensureBadgeStatusLine(f.path, WORKER)).toMatchObject({
-      state: 'kept',
-      wrote: false,
-      host: "printf 'it''s'",
-    });
-    expect(f.read()).toBe(wrapped);
-
-    const bare = file(
-      'settings.json',
-      `${JSON.stringify({ statusLine: { type: 'command', command: WORKER } }, null, 2)}\n`,
-    );
-    const before = bare.read();
-    expect(ensureBadgeStatusLine(bare.path, WORKER)).toMatchObject({
-      state: 'kept',
-      host: null,
-    });
-    expect(bare.read()).toBe(before);
-  });
-
-  describe('a line an earlier install recorded placing, spelled as a former release wrote it', () => {
-    const FORMER = 'sh "$HOME/.claude/personas/_session/worker.sh"';
-    const NOW =
-      'sh "${CLAUDE_HOME:-$HOME/.claude}/personas/_session/worker.sh"';
-    const line = (command: string) =>
-      `${JSON.stringify({ statusLine: { type: 'command', command, padding: 0 } }, null, 2)}\n`;
-
-    it('becomes the current worker where the host had no line of its own, and is not wrapped', () => {
-      const f = file('settings.json', line(FORMER));
-      const r = ensureBadgeStatusLine(f.path, NOW, {
-        recorded: { placed: FORMER, host: null },
-      });
-      expect(r).toMatchObject({
-        state: 'set',
-        wrote: true,
-        placed: NOW,
-        host: null,
-      });
-      expect(JSON.parse(f.read() as string).statusLine).toEqual({
-        type: 'command',
-        command: NOW,
-        padding: 0,
-      });
-    });
-
-    it('keeps the host command it wrapped, now inside the current worker', () => {
-      const hostCmd = "printf 'it''s'";
-      const wrapped = `${FORMER} 'printf '\\''it'\\'''\\''s'\\'''`;
-      const f = file('settings.json', line(wrapped));
-      const r = ensureBadgeStatusLine(f.path, NOW, {
-        recorded: { placed: wrapped, host: hostCmd },
-      });
-      expect(r).toMatchObject({ state: 'wrapped', host: hostCmd });
-      expect(r.placed).toBe(`${NOW} 'printf '\\''it'\\'''\\''s'\\'''`);
-      expect(JSON.parse(f.read() as string).statusLine.command).toBe(r.placed);
-    });
-
-    it('is the host’s again once the host has changed it from what was recorded', () => {
-      const f = file('settings.json', line('printf mine'));
-      const r = ensureBadgeStatusLine(f.path, NOW, {
-        recorded: { placed: FORMER, host: null },
-      });
-      expect(r).toMatchObject({ state: 'wrapped', host: 'printf mine' });
-    });
-  });
-
-  it('leaves a line it recorded placing, current and wrapped or bare, as it is: kept, nothing written', () => {
-    const hostCmd = 'printf host';
-    const NOW =
-      'sh "${CLAUDE_HOME:-$HOME/.claude}/personas/_session/worker.sh"';
-    for (const placed of [NOW, `${NOW} 'printf host'`]) {
-      const f = file(
-        'settings.json',
-        `${JSON.stringify({ statusLine: { type: 'command', command: placed } }, null, 2)}\n`,
-      );
-      const before = f.read();
-      const r = ensureBadgeStatusLine(f.path, NOW, {
-        recorded: { placed, host: placed === NOW ? null : hostCmd },
-      });
-      expect(r).toMatchObject({ state: 'kept', wrote: false });
-      expect(f.read()).toBe(before);
-    }
-  });
-
-  it('keeps a hand-written wrap whose host command cannot be read back, and names no host', () => {
-    const f = file(
-      'settings.json',
-      `${JSON.stringify({ statusLine: { type: 'command', command: `${WORKER} "$(date)"` } })}\n`,
-    );
-    const before = f.read();
-    const r = ensureBadgeStatusLine(f.path, WORKER);
-    expect(r).toMatchObject({ state: 'kept', wrote: false });
-    expect(r.host).toBeUndefined();
-    expect(f.read()).toBe(before);
-  });
-
-  it('writes nothing under dry-run, for a set and for a wrap alike', () => {
-    const none = file('settings.json', '{}\n');
-    expect(
-      ensureBadgeStatusLine(none.path, WORKER, { dry: true }),
-    ).toMatchObject({ state: 'set', wrote: false });
-    expect(none.read()).toBe('{}\n');
-
-    const host = file('settings.json', HOST);
-    expect(
-      ensureBadgeStatusLine(host.path, WORKER, { dry: true }),
-    ).toMatchObject({ state: 'wrapped', wrote: false });
-    expect(host.read()).toBe(HOST);
-
-    const absent = file('settings.json', null);
-    ensureBadgeStatusLine(absent.path, WORKER, { dry: true });
-    expect(absent.read()).toBeNull();
-  });
-
-  it.each([
-    ['a file that is not JSON', '{ not json'],
-    ['a JSON array', '[]'],
-    ['a status line that is not a command', '{"statusLine":{"type":"text"}}'],
-    ['a status line with no command', '{"statusLine":{"type":"command"}}'],
-    ['a status line that is a string', '{"statusLine":"printf x"}'],
-  ])('refuses %s, leaving the file as it was', (_name, content) => {
-    const f = file('settings.json', content);
-    const r = ensureBadgeStatusLine(f.path, WORKER);
-    expect(r.state).toBe('refused');
-    expect(r.refused).toBeTruthy();
-    expect(f.read()).toBe(content);
-  });
-});
 // ── omp: config.yml ──────────────────────────────────────────────────────────
 
 // The default preset's own layout, written out the way install writes it — literal, so
@@ -286,7 +90,7 @@ const OPTIONS = (i: string) => [
   `${i}    showUntracked: true`,
 ];
 // The row omp prints beneath the editor repeating every extension's status: off, so the
-// badge shows once, in the line.
+// status segment appears only once in the configured line.
 const HOOKS = (i: string) => [`${i}showHookStatus: false`];
 const FULL = (i: string) =>
   [...PRESET(i), ...LEFT(i), ...RIGHT(i), ...OPTIONS(i), ...HOOKS(i)].join(
@@ -619,9 +423,9 @@ describe('ensureStatusSegment', () => {
     );
   });
 
-  // The row beneath the editor is the badge's only place wherever the layout lists no
-  // `status`; a host that hid it would see the persona nowhere.
-  describe('where the badge has no place but the row beneath the editor', () => {
+  // The row beneath the editor is the only place for status wherever the layout lists no
+  // `status`; this keeps the extension-status row visible for the host.
+  describe('where the layout has no status segment but the row beneath the editor remains', () => {
     it.each([
       [
         'another named preset',
@@ -760,26 +564,11 @@ describe('ensureStatusSegment', () => {
 function corpus(): ProjectablePlugin {
   const agents = join(tmpRoot(), 'agents');
   mkdirSync(agents, { recursive: true });
-  const nulls = Object.keys(FIXTURE_MANIFEST)
-    .map((k) => `  ${kebabToCamel(k)}: null,`)
-    .join('\n');
   for (const name of ['alpha', 'beta']) {
-    writeFileSync(
-      join(agents, `${name}.ts`),
-      [
-        `export const ${name} = {`,
-        `  name: '${name}',`,
-        `  description: 'fixture agent ${name}',`,
-        `  archetype: '${name} probe',`,
-        nulls,
-        '};',
-        '',
-      ].join('\n'),
-      'utf8',
-    );
+    writeFileSync(join(agents, `${name}.ts`), fixtureAgentSource(name), 'utf8');
   }
   return {
-    name: 'badge-fixture',
+    name: 'status-line-fixture',
     manifest: FIXTURE_MANIFEST,
     agents,
     practices: fixturePractices(['alpha', 'beta']),
@@ -792,7 +581,7 @@ describe('install — the status line', () => {
   let plugin: ProjectablePlugin;
   let out: string;
   const install = (
-    harness: 'claude' | 'omp',
+    harness: 'omp',
     extra: Partial<Parameters<typeof runInstall>[0]> = {},
   ) =>
     runInstall({
@@ -800,14 +589,11 @@ describe('install — the status line', () => {
       home,
       cwd,
       corpus: plugin as never,
-      pathEnv: '/usr/bin',
       practices: FIXTURE_PRACTICE,
       verbose: true,
       ...extra,
     });
-  const settings = () => join(home, '.claude', 'settings.json');
   const ompConfig = () => join(home, '.omp', 'agent', 'config.yml');
-  const worker = () => adapterByName('claude').statusLine?.command as string;
 
   beforeEach(() => {
     const root = tmpRoot();
@@ -830,239 +616,187 @@ describe('install — the status line', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  describe('claude', () => {
-    it('sets the badge as the status line where the host has none, and places the worker and every badge', async () => {
-      expect(await install('claude')).toBe(0);
-      expect(JSON.parse(readFileSync(settings(), 'utf8')).statusLine).toEqual({
-        type: 'command',
-        command: worker(),
-      });
-      expect(out).toContain('set to the persona badge');
-      const scope = join(home, '.claude', 'personas');
-      const adapter = adapterByName('claude');
-      expect(
-        existsSync(
-          join(
-            home,
-            '.claude',
-            adapter.scopedRel?.(adapter.statusLine?.file as string) as string,
-          ),
-        ),
-      ).toBe(true);
-      expect(existsSync(join(scope, 'alpha'))).toBe(true);
-    });
-
-    // The badge is decided by the SESSION, not by install, so the installed command is
-    // RUN the way Claude Code runs it: through a shell, the status line's JSON on stdin.
-    const HOST_LINE = 'printf HOSTLINE-7731';
-    const hostSettings = (command = HOST_LINE) =>
-      `${JSON.stringify({ statusLine: { type: 'command', command, padding: 0 } }, null, 2)}\n`;
-    const runLine = (stdin: string) => {
-      const command = JSON.parse(readFileSync(settings(), 'utf8')).statusLine
-        .command as string;
-      const r = spawnSync('sh', ['-c', command], {
-        input: stdin,
-        env: { ...process.env, CLAUDE_CONFIG_DIR: '', HOME: home },
-        encoding: 'utf8',
-      });
-      expect(r.status).toBe(0);
-      return r.stdout;
-    };
-    const manifest = () =>
-      JSON.parse(
-        readFileSync(
-          join(home, '.claude', '.forge', 'deploy-manifest.json'),
-          'utf8',
-        ),
-      );
-    const withJq = spawnSync('jq', ['--version']).status === 0;
-
-    it('wraps the host’s own status line with no flag, keeps padding, records the original, and a second run changes no byte', async () => {
-      mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(settings(), hostSettings());
-      expect(await install('claude')).toBe(0);
-      const line = JSON.parse(readFileSync(settings(), 'utf8')).statusLine;
-      expect(line).toEqual({
-        type: 'command',
-        command: `${worker()} '${HOST_LINE}'`,
-        padding: 0,
-      });
-      expect(manifest().statusLine).toEqual({
-        placed: line.command,
-        host: HOST_LINE,
-      });
-      expect(out).toContain('wrapped the host');
-      expect(out).toContain('byte for byte');
-      expect(out).toContain(HOST_LINE);
-      const once = readFileSync(settings(), 'utf8');
-      const recorded = readFileSync(
-        join(home, '.claude', '.forge', 'deploy-manifest.json'),
-        'utf8',
-      );
-      expect(await install('claude')).toBe(0);
-      expect(readFileSync(settings(), 'utf8')).toBe(once);
-      expect(
-        readFileSync(
-          join(home, '.claude', '.forge', 'deploy-manifest.json'),
-          'utf8',
-        ),
-      ).toBe(recorded);
-    });
-
-    it('records no host command where the host had no status line', async () => {
-      expect(await install('claude')).toBe(0);
-      expect(manifest().statusLine).toEqual({
-        placed: worker(),
-        host: null,
-      });
-    });
-
-    it('records a wrap that an earlier install made before the record existed', async () => {
-      mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(settings(), hostSettings(`${worker()} '${HOST_LINE}'`));
-      expect(await install('claude')).toBe(0);
-      expect(manifest().statusLine).toEqual({
-        placed: `${worker()} '${HOST_LINE}'`,
-        host: HOST_LINE,
-      });
-    });
-
-    it('passes the host’s output through byte for byte in a session with no persona', async () => {
-      mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(
-        settings(),
-        hostSettings(`printf 'one\\ntwo  \\n\\nthree'`),
-      );
-      expect(await install('claude')).toBe(0);
-      expect(runLine('{}')).toBe('one\ntwo  \n\nthree');
-      // An agent that is no installed persona has no badge either.
-      expect(runLine('{"agent":{"name":"Explore"}}')).toBe(
-        'one\ntwo  \n\nthree',
-      );
-      expect(runLine('')).toBe('one\ntwo  \n\nthree');
-    });
-
-    it.skipIf(!withJq)(
-      'puts the badge in front of the first line of the host’s output in a persona’s session, and only there',
-      async () => {
-        mkdirSync(join(home, '.claude'), { recursive: true });
-        writeFileSync(settings(), hostSettings(`printf 'one\\ntwo\\n'`));
-        expect(await install('claude')).toBe(0);
-        expect(runLine('{"agent":{"name":"alpha"}}')).toBe('alpha one\ntwo\n');
-        expect(runLine('{}')).toBe('one\ntwo\n');
-      },
-    );
-
-    it('leaves a status line that is not a command exactly as it is, and says no badge can show there', async () => {
-      const host = '{"statusLine":{"type":"static","text":"x"}}';
-      mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(settings(), host);
-      expect(await install('claude')).toBe(0);
-      expect(readFileSync(settings(), 'utf8')).toBe(host);
-      expect(out).toContain('no persona badge can show there');
-      expect(manifest().statusLine).toBeNull();
-    });
-
-    it('writes nothing to the status line or the manifest under --dry-run, and says what it would do', async () => {
-      expect(await install('claude', { dryRun: true })).toBe(0);
-      expect(existsSync(settings())).toBe(false);
-      expect(out).toContain('would set');
-
-      mkdirSync(join(home, '.claude'), { recursive: true });
-      writeFileSync(settings(), hostSettings());
-      out = '';
-      expect(await install('claude', { dryRun: true })).toBe(0);
-      expect(readFileSync(settings(), 'utf8')).toBe(hostSettings());
-      expect(out).toContain('would wrap');
-    });
-  });
-
   describe('omp', () => {
     const seed = (host: string) => {
       mkdirSync(dirname(ompConfig()), { recursive: true });
       writeFileSync(ompConfig(), host);
       return () => readFileSync(ompConfig(), 'utf8');
     };
-    // The entries install also seeds in `modelRoles` are its own; a host that has them
-    // already sees the status line and nothing else change.
-    const ROLES =
-      'modelRoles:\n  default: "@default"\n  implementer: "@task"\n  planner: "@plan"\n  architect: "@default"\n  assayer: "@default"\n';
+    // A host with model roles of its own: the agents here bind none, so they stand
+    // as they are, and only the status line changes.
+    const ROLES = 'modelRoles:\n  default: "@default"\n';
 
-    it('moves a host with no statusLine to custom with the default preset’s own layout plus status, the hook row off', async () => {
+    it('leaves a host that never hid an extension’s status untouched, creating no config', async () => {
       expect(await install('omp')).toBe(0);
-      expect(readFileSync(ompConfig(), 'utf8')).toContain(
-        `statusLine:\n${FULL('  ')}\n`,
-      );
-      expect(out).toContain('added preset: custom; leftSegments: pi, vim');
-      expect(out).toContain('showHookStatus: false');
-    });
-
-    it('appends status to a host already on custom and switches the hook row off, changing no other byte, and a second install changes none', async () => {
+      expect(existsSync(ompConfig())).toBe(false);
       const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\ntheme: dark\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
-      expect(read()).toBe(
-        host.replace(
-          '    - model\n',
-          '    - model\n    - status\n  showHookStatus: false\n',
-        ),
-      );
-      const after = read();
-      out = '';
-      expect(await install('omp')).toBe(0);
-      expect(read()).toBe(after);
-      expect(out).toContain('`status` already listed');
+      expect(read()).toBe(host);
     });
 
-    it('leaves a host on another named preset byte-identical, hook row untouched, and tells it that custom replaces the layout', async () => {
+    it('lists status for a corpus that delivers no agent, since any session may start as one', async () => {
+      // The cratylus extension shows the name and mark of any declaration omp
+      // discovers, so the place it renders is made whatever the corpus delivers.
+      const agents = join(tmpRoot(), 'none');
+      mkdirSync(agents, { recursive: true });
+      plugin = { ...plugin, agents, practices: undefined };
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
+      const read = seed(host);
+      expect(
+        await install('omp', { practices: undefined, agentStatus: 'show' }),
+      ).toBe(0);
+      expect(read()).toContain('leftSegments: [model, status]');
+    });
+
+    it('appends status to a host on custom that hid the row beneath the editor, as told, changing no other byte, and a second install changes none', async () => {
+      const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments:\n    - pi\n    - model\n  showHookStatus: false\ntheme: dark\n`;
+      const read = seed(host);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(
+        host.replace('    - model\n', '    - model\n    - status\n'),
+      );
+      const after = read();
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(after);
+    });
+
+    it('leaves a host on another named preset that shows extension status byte-identical', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(host);
-      expect(out).toContain('preset `minimal`');
-      expect(out).toContain("REPLACES the `minimal` preset's layout");
-      expect(out).toContain("<each of minimal's own left segments, in order>");
-      expect(out).toContain('showHookStatus: false');
     });
 
-    it('shows the row beneath the editor for a host that hid it on a layout with no place for the badge, and says so', async () => {
+    it('shows the row beneath the editor for a host that hid it on a layout with no status segment, as told, and says so', async () => {
       const host = `${ROLES}statusLine:\n  preset: minimal\n  showHookStatus: false\n`;
       const read = seed(host);
-      expect(await install('omp')).toBe(0);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
       expect(read()).toBe(
         host.replace('showHookStatus: false', 'showHookStatus: true'),
       );
       expect(out).toContain('`showHookStatus` was false');
       expect(out).toContain('it is now true');
-      const after = read();
-      out = '';
-      expect(await install('omp')).toBe(0);
-      expect(read()).toBe(after);
-      expect(out).not.toContain('`showHookStatus` was false');
     });
 
-    it('leaves a no-preset host with a layout of its own byte-identical and gives it the block to write', async () => {
+    it('leaves a no-preset host with a layout of its own byte-identical', async () => {
       const host = `${ROLES}statusLine:\n  leftSegments:\n    - model\n  separator: ascii\n`;
       const read = seed(host);
       expect(await install('omp')).toBe(0);
       expect(read()).toBe(host);
-      expect(out).toContain('the host set `leftSegments` with no preset');
-      // The exact default-preset block, ready to write (install indents each line).
-      const pad = ' '.repeat(10);
-      expect(out).toContain(
-        `${pad}statusLine:\n${FULL('  ')
-          .split('\n')
-          .map((l) => `${pad}${l}`)
-          .join('\n')}`,
-      );
     });
 
     it('writes nothing under --dry-run, and says what it would add', async () => {
-      const bare = 'theme: dark\n';
-      const read = seed(bare);
-      expect(await install('omp', { dryRun: true })).toBe(0);
-      expect(read()).toBe(bare);
-      expect(out).toContain('would add preset: custom');
+      const hidden = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
+      const read = seed(hidden);
+      expect(await install('omp', { dryRun: true, agentStatus: 'show' })).toBe(
+        0,
+      );
+      expect(read()).toBe(hidden);
+      expect(out).toContain('would add');
+    });
+  });
+
+  // Decision 0113: whether the status line shows the session's agent is the
+  // operator's choice, written as the host's own setting.
+  describe("the operator's choice of showing the session's agent", () => {
+    const HIDDEN = `modelRoles:\n  default: "@default"\nstatusLine:\n  preset: minimal\n  showHookStatus: false\n`;
+    const SHOWN = HIDDEN.replace(
+      'showHookStatus: false',
+      'showHookStatus: true',
+    );
+    const seed = (host: string) => {
+      mkdirSync(dirname(ompConfig()), { recursive: true });
+      writeFileSync(ompConfig(), host);
+      return () => readFileSync(ompConfig(), 'utf8');
+    };
+    /** An install that may ask, recording whether the display was asked. */
+    const asking = (show: boolean) => {
+      const asked: string[] = [];
+      return {
+        asked,
+        run: () =>
+          install('omp', {
+            interactive: true,
+            prompts: {
+              harness: async () => 'omp',
+              practices: async (_offered, initial) => [...initial],
+              routes: async () => ({}),
+              agentStatus: async () => {
+                asked.push('agentStatus');
+                return show;
+              },
+              confirm: async () => true,
+            },
+          }),
+      };
+    };
+
+    it('asks where the host hides it, and writes "show" as the host’s own setting, recorded nowhere as cratylus’s', async () => {
+      const read = seed(HIDDEN);
+      const { asked, run } = asking(true);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual(['agentStatus']);
+      expect(read()).toBe(SHOWN);
+      expect(
+        readFileSync(join(home, '.cratylus/omp/installation.json'), 'utf8'),
+      ).not.toMatch(/hostEdits|statusLine|showHookStatus/);
+    });
+
+    it('keeps it hidden where she answers so, and names no next step for it', async () => {
+      const read = seed(HIDDEN);
+      const { asked, run } = asking(false);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual(['agentStatus']);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain("show the session's agent");
+    });
+
+    it('takes --agent-status hide as the same answer, without asking', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'hide' })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain("show the session's agent");
+    });
+
+    it('never asks where the host already shows it', async () => {
+      const read = seed(SHOWN);
+      const { asked, run } = asking(false);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual([]);
+      expect(read()).toBe(SHOWN);
+    });
+
+    it('names the choice as a next step where it can neither be told nor asked, enabling nothing', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp')).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      expect(out).toContain("show the session's agent");
+      expect(out).toContain('--agent-status show');
+    });
+
+    it('never applies an earlier answer again: the host’s later change survives a reinstall with the same answer, an upgrade and an uninstall', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(SHOWN);
+      // The host hides it again, its own setting.
+      writeFileSync(ompConfig(), HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+      const { asked, run } = asking(true);
+      expect(await run()).toBe(0);
+      expect(asked).toEqual([]);
+      expect(read()).toBe(HIDDEN);
+      expect(out).not.toContain('--agent-status show (or');
+      expect(runUninstall({ harness: 'omp', home })).toBe(0);
+      expect(read()).toBe(HIDDEN);
+    });
+
+    it('leaves a shown status line as it is on uninstall', async () => {
+      const read = seed(HIDDEN);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
+      expect(runUninstall({ harness: 'omp', home })).toBe(0);
+      expect(read()).toBe(SHOWN);
     });
   });
 });

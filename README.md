@@ -1,6 +1,6 @@
 # Cratylus
 
-Cratylus puts a set of named agents, skills and guards on your machine for Claude Code or omp. Each
+Cratylus puts a set of named agents and skills on your machine for Claude Code or omp. Each
 agent is projected from a corpus of meanings whose names were discovered in the model's own
 vocabulary rather than written as prose, so the same corpus renders the same way every time. You
 install it with one command and start an agent by its name. The thesis behind that is in
@@ -23,28 +23,35 @@ You need Node 22 or later, and Claude Code or omp run at least once on this mach
    ```
 
    The run is guided. It asks only what you have not said: which harness, which practices (the ways
-   of working it offers, each installed as one choice), and which model each role routes to. It asks
-   whether to link a launch command for each installed agent, which `--link-persona-commands` answers
-   up front. It shows what it will place, and places it once you confirm.
+   of working it offers, each installed as one choice), and which model each agent falls back to.
+   It shows what it will place, and places it once you confirm. Everything lands under one root
+   cratylus owns, `~/.cratylus/omp/`, which omp loads in every project; omp's own files are only
+   pointed at it, never overwritten.
 
-3. Start an installed agent by its name, where install linked its command:
+3. Start a session as an installed agent, through the harness itself:
 
    ```sh
-   mav
+   omp --agent mav
    ```
 
    Any other word on the command line is the harness's own flag.
 
-4. Take it away again, whenever you like:
+4. Upgrade by installing again with the new cratylus: `npm install -g cratylus`, then
+   `cratylus install`. The root is replaced whole, and an installation from before the owned root
+   is taken back. When the installed artifacts and the `cratylus` command differ, every omp session
+   start warns, naming both versions (`cratylus versionSkew report` shows them).
+
+5. Take it away again, whenever you like:
 
    ```sh
-   cratylus uninstall --harness claude   # or omp
+   cratylus uninstall --harness omp
    ```
 
-   It removes what install placed and leaves whatever the host placed or changed.
+   It removes the owned root and every reference into it, and leaves whatever the host placed or
+   changed.
 
-The questions and their flags, what a refusal says, the status line badge, where Claude Code and
-omp differ, and what uninstall leaves are all in [packages/cli/README.md](./packages/cli/README.md).
+The questions and their flags, what a refusal says, the model routing, version skew and what
+uninstall leaves are all in [packages/cli/README.md](./packages/cli/README.md).
 
 ## Where to go from here
 

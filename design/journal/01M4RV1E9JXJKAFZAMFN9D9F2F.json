@@ -1,0 +1,11 @@
+{
+  "id": "01M4RV1E9JXJKAFZAMFN9D9F2F",
+  "at": "2026-10-12T19:57:07.762Z",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "offline proof",
+  "reason": "0142, 0144: it existed only to prove checks over recorded agent runs; a check is still seen to fail before it is trusted (freeze, check-writer).",
+  "supersedes": [
+    "01M4KKYVZ85WHMXFJQ0JKHK0KN"
+  ]
+}

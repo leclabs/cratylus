@@ -1,4 +1,4 @@
-// A skill whose launch-hook output is over claude's 10,000-character per-hook cap.
+// A large skill that remains available to OMP without a main-session hook.
 import type { Skill } from '@cratylus/schema';
 
 export const huge: Skill = {

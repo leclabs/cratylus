@@ -4,8 +4,8 @@
 // GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
 // model reads is formal σ* under ρ, never human prose. This leg enforces it over the
 // σ* payload set — the fields whose reader binding ρ is σ* (model-read): every dimension
-// VALUE string · every skill `formalBlock` (the typed `SkillExpression`) · every agent
-// `archetype`. Membership is a per-FIELD partition (`RESIDUE_GATED_FIELDS` below), NOT a
+// VALUE string · every skill `formalBlock` (the typed `SkillExpression`). Membership is
+// a per-FIELD partition (`RESIDUE_GATED_FIELDS` below), NOT a
 // per-file rule — the skill cell carries BOTH a σ* field (`formalBlock`) and a σ_human*
 // field (`description`). The σ_human* fields — skill `description` · agent `description`
 // (human-read selection bounds the router/subagent surfaces) — are EXEMPT by ρ
@@ -376,29 +376,27 @@ export function admissibleFormalBlock(
 // AC-RESIDUE gates the σ* fields ONLY. A cell field's reader binding ρ decides
 // membership: σ* (model-read) ⇒ residue-gated at its shape; σ_human* (human-read
 // selection bound) ⇒ EXEMPT. This is a per-FIELD partition, NOT a per-file rule — a
-// skill cell carries a σ* field (`formalBlock`) AND a σ_human* field (`description`),
-// and an agent carries a σ* `archetype` AND a σ_human* `description`.
+// skill cell carries a σ* field (`formalBlock`) AND a σ_human* field (`description`).
 
 /** A cell field's reader binding — the two ρ classes the partition splits on. */
 export type ReaderBinding = 'σ*' | 'σ_human*';
 
 /** A σ*-gated field: its address + the residue shape AC-RESIDUE reads it at. */
 export interface GatedField {
-  readonly field: 'fragment' | 'skill.formalBlock' | 'agent.archetype';
+  readonly field: 'fragment' | 'skill.formalBlock';
   readonly shape: ResidueShape;
 }
 
 /**
  * The σ* fields residue/parsimony gate — the gate's field-partition contract, one
  * home. dimension value (single-line `α ≜ residue`) · skill `formalBlock` (the typed
- * `SkillExpression`, a formalize block) · agent `archetype` (single-line σ* identity).
+ * `SkillExpression`, a formalize block).
  * `skill.description` is DELIBERATELY ABSENT — un-gated on purpose, because it is
  * human-audience prose rather than σ*. This list is the whole gated set; read it here.
  */
 export const RESIDUE_GATED_FIELDS: readonly GatedField[] = [
   { field: 'fragment', shape: 'single-line' },
   { field: 'skill.formalBlock', shape: 'formal-block' },
-  { field: 'agent.archetype', shape: 'single-line' },
 ] as const;
 
 /**

@@ -27,25 +27,24 @@
 // not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { hasEventTapStrategy } from '@cratylus/runtime/capabilities/event-tap';
 import {
   type Agent,
   type Binding,
   type DimensionManifest,
   type Enforcing,
+  type Entry,
   type HookCell,
   type Plumbing,
   type Practice,
   type ProjectionFacts,
   type Skill,
-  type Value,
   anchorOf,
   bodyOf,
   dimensionValueOf,
-  enforcing,
   hookIrOf,
   mergeManifest,
   resolveWorker,
@@ -58,12 +57,6 @@ import {
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
 import {
-  STANCE_MANIFEST,
-  composes,
-  personaRootOf,
-  stanceManifests,
-} from '../core/enrollment.js';
-import {
   dimensionFieldsOf,
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
@@ -71,7 +64,6 @@ import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
-  SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
 import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
 // The DEFINING module, never the `deploy/` barrel: one constant is wanted here,
@@ -121,13 +113,6 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     // comparator's own failure by exit status, and `1` is forge's choice — not
     // POSIX's, the way `0` is. So the one code that is ours travels by name.
     'deploy-check-drift-code': String(DEPLOY_CHECK_EXIT.drift),
-    // EMPTY IS A VALUE HERE, and the worker reads it as one: a harness that
-    // judges in-process names no CLI, and the backend must fail open rather than
-    // fall back to somebody else's.
-    'harness-judge-bin': adapter.judgeBin,
-    // Read back from `scopedRel`, so a worker names no layout of its own.
-    'harness-persona-root': personaRootOf(adapter),
-    'stance-manifest': STANCE_MANIFEST,
   };
 }
 
@@ -206,16 +191,17 @@ export interface ProjectOpts {
    * that means the whole corpus leaves this absent.
    *
    * Given names, exactly the union of those practices' agents and skills is
-   * rendered, with the skills those compose, the plumbing, and the guards a
-   * rendered agent composes. A set that is not CLOSED under skill composition and
-   * agent dispatch is refused before anything is rendered, and so is a name that is
-   * no declared practice.
+   * rendered, with the skills those compose and the plumbing. A set that is not
+   * CLOSED under skill composition is refused before anything is rendered, and so is
+   * a name that is no declared practice.
    */
   readonly practices?: readonly string[];
 }
 
-interface Src {
-  readonly dir: string;
+/** One agent of the plugin set, as its module declares it: the agent is identified by
+ *  its declared `name`, never by the file that carries it. */
+interface AgentSrc {
+  readonly agent: Agent;
   readonly plugin: string;
 }
 
@@ -250,13 +236,16 @@ export interface ProjectedFile {
  */
 export interface ProjectedTree extends ProjectReport {
   readonly files: readonly ProjectedFile[];
-  /** The sorted, distinct roles the rendered agents hold ({@link Agent.holds}), so
-   *  a consumer that routes by role — install — knows them without re-reading a
-   *  definition. Empty when no rendered agent holds one. */
-  readonly heldRoles: readonly string[];
-  /** Each held role → the sorted names of the rendered agents holding it: where a
-   *  consumer that routes by role must act on the agents, not the role. */
-  readonly roleHolders: Readonly<Record<string, readonly string[]>>;
+  /** Each rendered agent that states a model routing ({@link Agent.routing}) → its
+   *  tier and effort, by agent name in sorted order: what an install binds as the
+   *  agent's own model role without re-reading a definition. */
+  readonly agentModels: Readonly<
+    Record<string, { readonly tier: string; readonly effort: string }>
+  >;
+  /** The sorted names of the rendered agents that state a model routing and hold a
+   *  role not named for them (a persona over its role): the agents, besides the tiers,
+   *  whose model role an install asks the operator to bind. */
+  readonly personas: readonly string[];
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
@@ -265,6 +254,18 @@ export interface ProjectedTree extends ProjectReport {
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
   readonly practices: readonly OfferedPractice[];
+  /** Which form each runtime capability took on this harness, in capability order:
+   *  the harness's own facility, the extension tool, or prose generated from the
+   *  capability's explanation, the last resort. */
+  readonly capabilities: readonly ProjectedCapability[];
+}
+
+/** The form a runtime capability takes on a harness. */
+export interface ProjectedCapability {
+  readonly capability: 'concepts' | 'workPackage';
+  readonly form: 'native' | 'extension' | 'prose';
+  /** The harness's own facility holding it, for the native form. */
+  readonly facility?: string;
 }
 
 /** A declared practice as an install offers it. */
@@ -275,15 +276,61 @@ export interface OfferedPractice {
   readonly preselected: boolean;
 }
 
-/** The `<name>: Agent` vector export of an agent module. */
+/** The Agent an agent module exports: its one non-default export carrying a string
+ *  `name`. A module exporting none is refused, naming the module. */
 async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  if (!key) throw new Error(`${modPath}: no Agent export`);
-  return mod[key] as Agent;
+  const agent = Object.entries(mod).find(
+    ([k, v]) =>
+      k !== 'default' &&
+      typeof v === 'object' &&
+      v !== null &&
+      'name' in v &&
+      typeof v.name === 'string',
+  )?.[1];
+  if (agent === undefined) {
+    throw new Error(`agent module ${modPath} exports no Agent`);
+  }
+  // The guard above proved the one field identity needs; the vector is the module's.
+  const declared = agent as Agent;
+  return declared;
+}
+
+/**
+ * Every agent of the plugin set, by its declared `name`. Every agent module is loaded,
+ * because only the module knows the name it declares. A later plugin's agent of the
+ * same name REPLACES an earlier one's (and is logged); two modules of ONE plugin
+ * declaring the same name are refused, naming both.
+ */
+async function declaredAgents(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Promise<Map<string, AgentSrc>> {
+  const byName = new Map<string, AgentSrc>();
+  for (const p of plugins) {
+    if (!p.agents) continue;
+    const own = new Map<string, string>();
+    for (const n of await scanModuleNames(p.agents, ['base'])) {
+      const modPath = await resolveModulePath(p.agents, n);
+      if (!modPath) throw new Error(`agent module not found: ${n}`);
+      const agent = await agentOf(modPath);
+      const twin = own.get(agent.name);
+      if (twin !== undefined) {
+        throw new Error(
+          `plugin '${p.name}' declares the agent '${agent.name}' twice: in ${twin} and in ${modPath}`,
+        );
+      }
+      own.set(agent.name, modPath);
+      const prev = byName.get(agent.name);
+      if (prev)
+        log(`  override agent ${agent.name}: ${prev.plugin} → ${p.name}`);
+      byName.set(agent.name, { agent, plugin: p.name });
+    }
+  }
+  return byName;
 }
 
 /** The `HookCell` export of a hook module (the object carrying `substrate`). */
@@ -297,6 +344,84 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
   return cell ?? null;
+}
+
+/** The runtime capabilities a harness is offered, those that explain themselves. */
+const EXPLAINED_CAPABILITIES: readonly ProjectedCapability['capability'][] = [
+  'concepts',
+  'workPackage',
+];
+
+/** A capability as `<bin> <capability> --explain` answers it: the shape the
+ *  prose is generated from. */
+export interface Explanation {
+  readonly name: string;
+  readonly purpose: string;
+  readonly when: string;
+  readonly verbs: readonly {
+    readonly name: string;
+    readonly concept: string;
+    readonly purpose: string;
+    readonly when: string;
+    readonly effect: string;
+    readonly parameters: readonly {
+      readonly name: string;
+      readonly description: string;
+      readonly required: boolean;
+      readonly positional?: true;
+    }[];
+  }[];
+}
+
+/**
+ * A capability's own explanation, asked of the installed command, as every other
+ * route to a capability is: projection never reaches the runtime's code. Refuses,
+ * naming the command, when it cannot answer — prose is never written from anything
+ * but the capability's own account.
+ */
+function explanationOf(capability: string): Explanation {
+  const asked = spawnSync(CLI_BIN, [capability, '--explain'], {
+    encoding: 'utf8',
+    timeout: 30_000,
+  });
+  if (asked.error !== undefined || asked.status !== 0)
+    throw new Error(
+      `the prose form of '${capability}' is generated from \`${CLI_BIN} ${capability} --explain\`, which did not answer: ${asked.error?.message ?? (asked.stderr.trim() || `exit ${asked.status}`)}`,
+    );
+  return JSON.parse(asked.stdout) as Explanation;
+}
+
+/**
+ * A capability as prose, the last resort: generated from its own explanation
+ * alone (purpose, when, each verb's concept, purpose, when, effect and
+ * parameters), and saying it is reached through the command, since no tool holds
+ * it here.
+ */
+export function capabilityProse(capability: string, e: Explanation): string {
+  const command = `${CLI_BIN} ${capability}`;
+  return [
+    `# ${e.name}`,
+    '',
+    e.purpose,
+    '',
+    `When: ${e.when}`,
+    '',
+    `Reached through the \`${command}\` command: run \`${command} <verb>\` with the parameters below, in the repository it concerns. \`${command} --explain\` prints this explanation as JSON.`,
+    ...e.verbs.flatMap((v) => [
+      '',
+      `## ${v.name} (concept: ${v.concept}; ${v.effect})`,
+      '',
+      v.purpose,
+      '',
+      `When: ${v.when}`,
+      ...(v.parameters.length > 0 ? [''] : []),
+      ...v.parameters.map(
+        (p) =>
+          `- \`${p.positional === true ? `<${p.name}>` : `--${p.name}`}\` (${p.required ? 'required' : 'optional'}): ${p.description}`,
+      ),
+    ]),
+    '',
+  ].join('\n');
 }
 
 /**
@@ -433,18 +558,16 @@ export function resolveFragmentBodies(
 }
 
 /**
- * Rewrite an agent's DIMENSION fields through the resolved-body substitution.
+ * Rewrite an agent's DIMENSION entries through the resolved-body substitution.
  *
- * ONLY the catalog's dimension fields are touched: `archetype` is a plain identity
- * string and `provenance` the structured mark — neither lives in a
- * `fragments` dir, so neither is a fold subject. An empty substitution returns the
- * agent unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ * ONLY the value of each entry the catalog's dimension fields hold is touched:
+ * the identity face (name, description, mark, key, …) does not live in a
+ * `fragments` dir, so it is no fold subject, and an entry's level, slot and note
+ * are the agent's, not the value's. An empty substitution returns the agent
+ * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
  *
- * WHICH fields those are is read off the CATALOG, not listed here. The list used
- * to be 22 hand-written lines, which made this function the last place in the
- * projector that knew a dimension by name — and a corpus that declared a
- * twenty-third would have had its values silently skipped by the fold while the
- * Target still printed them.
+ * WHICH fields those are is read off the CATALOG, not listed here, so a corpus
+ * that declares a dimension has its values folded the day it declares it.
  */
 function withResolvedBodies(
   agent: Agent,
@@ -452,27 +575,25 @@ function withResolvedBodies(
   manifest: DimensionManifest,
 ): Agent {
   if (subst.size === 0) return agent;
-  // Substitute a value's DECLARATION face and put the binding back. A value may
-  // now be an enforcing cell rather than a bare string, and `substrate`/`events`
-  // are not bodies — folding a value must never silently unbind it. Keying the
-  // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
-  // authored body a bare one uses.
-  const sub = (v: Value<string>): Value<string> => {
-    const body = bodyOf(v);
-    return withBody(v, subst.get(body) ?? body);
-  };
   // Spread first, then overwrite in place: every dimension key already exists on
   // the agent (completeness law), so the field ORDER of the copy is the field
   // order of the original — the fold moves bodies, never bytes of structure.
   const folded: Record<string, unknown> = { ...agent };
   for (const field of Object.values(dimensionFieldsOf(manifest))) {
-    const v = dimensionValueOf(agent, field);
-    // `null` is the omit-to-inherit sentinel and stays exactly that; a dimension
-    // the agent does not carry is left untouched rather than minted as `null`.
-    if (v === null || v === undefined) continue;
-    folded[field] = Array.isArray(v)
-      ? (v as readonly Value<string>[]).map(sub)
-      : sub(v as Value<string>);
+    const held = dimensionValueOf(agent, field);
+    if (!Array.isArray(held)) continue;
+    // Substitute a value's DECLARATION face and put the binding back. A value may
+    // be an enforcing cell rather than a bare string, and `substrate`/`events`
+    // are not bodies — folding a value must never silently unbind it. Keying the
+    // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
+    // authored body a bare one uses.
+    folded[field] = (held as readonly Entry[]).map((entry) => {
+      const body = bodyOf(entry.value);
+      return {
+        ...entry,
+        value: withBody(entry.value, subst.get(body) ?? body),
+      };
+    });
   }
   return folded as unknown as Agent;
 }
@@ -513,8 +634,7 @@ function declaredPractices(
 }
 
 /** What a practice selection places, by name: the agents, the skills (closed under
- *  composition), the plumbing hooks and the hooks the chosen practices name. Guards are
- *  not listed: they follow the agents that compose what they bind. */
+ *  composition), the plumbing hooks and the hooks the chosen practices name. */
 interface PracticeSelection {
   readonly agents: ReadonlySet<string>;
   readonly skills: ReadonlySet<string>;
@@ -525,18 +645,17 @@ interface PracticeSelection {
  * Resolve the practices NAMED into what they place, refusing a set that is not
  * closed. Runs before anything is rendered, so a refusal leaves nothing behind.
  *
- * CLOSED means: every agent the set places finds every skill it is given and every
- * role it dispatches. The role is matched against `Agent.holds` by anchor, which is
- * the whole of what forge may know of a role. Each refusal names the practice
- * that placed the agent, the agent, and the role or skill that is missing.
+ * CLOSED means: every agent the set places finds every skill it is given. Each
+ * refusal names the practice that placed the agent, the agent, and the skill that
+ * is missing.
  */
-async function selectPractices(
+function selectPractices(
   names: readonly string[],
   plugins: readonly ProjectablePlugin[],
   declared: readonly Practice[],
-  agentSrc: ReadonlyMap<string, Src>,
+  agentSrc: ReadonlyMap<string, AgentSrc>,
   roster: ReadonlyMap<string, Skill>,
-): Promise<PracticeSelection> {
+): PracticeSelection {
   const chosen: Practice[] = [];
   for (const name of names) {
     const practice = declared.find((p) => p.name === name);
@@ -563,22 +682,7 @@ async function selectPractices(
         `practice '${practice}' names the agent '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
       );
     }
-    const modPath = await resolveModulePath(src.dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    authored.set(name, await agentOf(modPath));
-  }
-
-  const held = new Set<string>();
-  for (const agent of authored.values()) {
-    if (agent.holds !== undefined) held.add(agent.holds);
-  }
-  for (const [name, agent] of authored) {
-    for (const role of agent.dispatches ?? []) {
-      if (held.has(role)) continue;
-      throw new Error(
-        `practice '${placedBy.get(name)}' is not closed: agent '${name}' dispatches the role '${role}', which no agent of the chosen set holds`,
-      );
-    }
+    authored.set(name, src.agent);
   }
 
   const plumbing = plugins.flatMap((p) => (p.plumbing ? [p.plumbing] : []));
@@ -670,18 +774,9 @@ export async function projectPluginSet(
     log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
   }
 
-  // Collect by name across plugins first, so an override is resolved BEFORE any
-  // cell is rendered and can be logged rather than discovered as a clobbered file.
-  const agentSrc = new Map<string, Src>();
-  for (const p of opts.plugins) {
-    if (p.agents) {
-      for (const n of await scanModuleNames(p.agents, ['base'])) {
-        const prev = agentSrc.get(n);
-        if (prev) log(`  override agent ${n}: ${prev.plugin} → ${p.name}`);
-        agentSrc.set(n, { dir: p.agents, plugin: p.name });
-      }
-    }
-  }
+  // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
+  // any cell is rendered and can be logged rather than discovered as a clobbered file.
+  const agentSrc = await declaredAgents(opts.plugins, log);
   const allSkills = await resolveSkills(opts.plugins, log);
   // The roster an agent's skill closure is read against: the cells that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
@@ -693,13 +788,7 @@ export async function projectPluginSet(
   const offered = declaredPractices(opts.plugins, log);
   const selection =
     opts.practices !== undefined
-      ? await selectPractices(
-          opts.practices,
-          opts.plugins,
-          offered,
-          agentSrc,
-          roster,
-        )
+      ? selectPractices(opts.practices, opts.plugins, offered, agentSrc, roster)
       : undefined;
   const contributedSkills = selection
     ? allSkills.filter((s) => selection.skills.has(s.name))
@@ -707,7 +796,7 @@ export async function projectPluginSet(
 
   let agents = 0;
   const agentNames: string[] = [];
-  // Each RENDERED agent, once — what a launch spec composes from.
+  // Each RENDERED agent, once — what the agent surface composes from.
   const rendered: Agent[] = [];
   // Composed vectors, kept so the BINDINGS can be derived from what the agents
   // actually compose — after the fold, since a folded body is the real one.
@@ -717,10 +806,9 @@ export async function projectPluginSet(
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
-  for (const [name, { dir }] of [...agentSrc].sort()) {
-    const modPath = await resolveModulePath(dir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const authored = await agentOf(modPath);
+  for (const [name, { agent: authored }] of [...agentSrc].sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
     if (selection && !selection.agents.has(name)) continue;
     const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
@@ -794,6 +882,36 @@ export async function projectPluginSet(
   // face needs no decision — `agentBody` publishes it for every composed value on
   // every harness, which is why a shortfall here is a warning and not a refusal.
   const bindings = bindingsOf(composed, manifest);
+
+  // CAPABILITY FIDELITY. Each runtime capability takes the highest form this
+  // harness offers: its own facility, else the cratylus extension tool, else prose
+  // generated from the capability's own explanation — the last resort, which every
+  // rendered agent carries and the tree holds as a file of its own.
+  const nativeCapabilities = opts.adapter.nativeCapabilities ?? {};
+  const capabilities: ProjectedCapability[] = EXPLAINED_CAPABILITIES.map(
+    (capability) => {
+      const facility = nativeCapabilities[capability];
+      if (facility !== undefined)
+        return { capability, form: 'native', facility };
+      return {
+        capability,
+        form:
+          opts.adapter.capabilitySurface !== undefined ? 'extension' : 'prose',
+      };
+    },
+  );
+  const prose = capabilities.flatMap(({ capability, form }) =>
+    form === 'prose'
+      ? [
+          {
+            capability,
+            text: capabilityProse(capability, explanationOf(capability)),
+          },
+        ]
+      : [],
+  );
+  const agentProse =
+    prose.length === 0 ? '' : `\n${prose.map((p) => p.text).join('\n')}`;
   const degraded = new Set<string>();
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
@@ -823,7 +941,10 @@ export async function projectPluginSet(
       ...(mechanisms ? { mechanisms } : {}),
       ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
     });
-    files.push({ path: join('agents', filename), content });
+    files.push({
+      path: join('agents', filename),
+      content: content + agentProse,
+    });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
     rendered.push(agent);
@@ -893,26 +1014,15 @@ export async function projectPluginSet(
         s.scope === undefined
           ? s.filename
           : join(ENFORCING_STAGE_DIR, s.scope, s.filename);
-      files.push({
-        path,
-        content: s.content,
-        ...(s.executable ? { executable: true } : {}),
-      });
+      files.push({ path, content: s.content });
       log(`EMIT enforcing surface ${path}`);
     }
   }
 
-  // THE LAUNCH SPEC. Some harnesses have no native identity field for a MAIN
-  // session at all — omp has no `--agent` flag and no per-session name, so
-  // composing a persona means combining flags an operator would otherwise have
-  // to remember and type together every time. That combination is itself worth
-  // generating, not leaving to a README; staged the same way
-  // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
-  // scopes appear here: an artifact that NAMES one persona is that persona's
-  // (omp's overlay), and one that resolves a persona at RUN time belongs to the
-  // session and is emitted once (omp's launcher, and claude's — which starts
-  // `claude --agent <persona>` so a persona has a command by its own name).
-  // Optional: an adapter with no launcher composes nothing here.
+  // WHAT THE ADAPTER COMPOSES FROM THE AGENTS THEMSELVES beyond their definitions
+  // (omp's dispatch isolation module), staged the same way `enforcingSurface`'s
+  // output is, by whatever scope the adapter named. Optional: an adapter that
+  // composes nothing from the agents emits nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(rendered)) {
@@ -921,37 +1031,39 @@ export async function projectPluginSet(
         s.scope ?? SESSION_SCOPE,
         s.filename,
       );
-      files.push({
-        path,
-        content: s.content,
-        ...(s.executable ? { executable: true } : {}),
-      });
-      log(`EMIT launch spec ${path}`);
+      files.push({ path, content: s.content });
+      log(`EMIT agent surface ${path}`);
     }
+  }
+
+  // THE CAPABILITY INTERFACE: what offers the runtime's capabilities as tools,
+  // staged by scope as the agent surface is — asked for only where some capability
+  // took the extension form, so a harness holding every one natively is given no
+  // lower-fidelity tool beside its own facility.
+  if (capabilities.some((c) => c.form === 'extension')) {
+    for (const s of opts.adapter.capabilitySurface?.() ?? []) {
+      const path = join(
+        ENFORCING_STAGE_DIR,
+        s.scope ?? SESSION_SCOPE,
+        s.filename,
+      );
+      files.push({ path, content: s.content });
+      log(`EMIT capability interface ${path}`);
+    }
+  }
+  for (const { capability, text } of prose) {
+    const path = join('capabilities', `${capability}.md`);
+    files.push({ path, content: text });
+    log(`EMIT capability prose ${path}`);
   }
 
   let skills = 0;
   let shims = 0;
-  let warnedTaplessHarness = false;
   for (const { name, skill: cell } of contributedSkills) {
     const resolved = resolvedSkillOf(cell);
     const cellOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
     files.push({ path: join(cellOut, filename), content });
-    if (
-      cell.runtime?.capability === 'eventTap' &&
-      !warnedTaplessHarness &&
-      !hasEventTapStrategy(opts.adapter.name)
-    ) {
-      // DEGRADE, and say so — once per projection, not once per skill. The runtime's
-      // tap has a strategy for Claude Code alone, so on this harness the skill
-      // ships as a declaration whose `eventTap install` REFUSES; shipping it
-      // without a word would read as a working tap.
-      warnedTaplessHarness = true;
-      warn(
-        `skill '${name}' declares the '${cell.runtime.capability}' capability, which has no tap strategy on '${opts.adapter.name}': only Claude Code has one today. The skill ships as a declaration, but no events are captured here and \`${CLI_BIN} ${cell.runtime.capability} install\` refuses on '${opts.adapter.name}'.`,
-      );
-    }
     if (cell.runtime) {
       files.push({
         path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
@@ -988,12 +1100,8 @@ export async function projectPluginSet(
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
 
-  // A CHOSEN SET REGISTERS ITS PLUMBING AND ITS GUARDS, and no other hook. A guard is
-  // a cell that binds a composition, and it travels with the agents that compose what
-  // it binds: registered only when a rendered agent does, since one registered for
-  // nobody would fire in every session and judge none. A plumbing hook naming no cell
-  // is refused for the reason an omission that matched nothing is: it would read as
-  // one that held.
+  // A CHOSEN SET REGISTERS ITS PLUMBING, and no other hook. A plumbing hook naming
+  // no cell is refused: it would read as installed while registering nothing.
   if (selection) {
     for (const id of selection.hooks) {
       if (!discoveredHooks.some((cell) => cell.id === id)) {
@@ -1004,31 +1112,8 @@ export async function projectPluginSet(
     }
   }
   const hookCells = selection
-    ? discoveredHooks.filter((cell) => {
-        if (selection.hooks.has(cell.id)) return true;
-        const { binds } = cell;
-        return (
-          binds !== undefined &&
-          composed.some((c) => composes(c.agent, binds, manifest, cell.id))
-        );
-      })
+    ? discoveredHooks.filter((cell) => selection.hooks.has(cell.id))
     : discoveredHooks;
-
-  // A GUARD NEEDS A SCOPE, AND A HARNESS THAT CANNOT NAME THE RUNNING AGENT HAS NONE.
-  // A cell that binds a composition is a guard, and a guard registered where no
-  // manifest can be found fires on every session and enrolls nobody — the defect
-  // this projection exists to rule out, and one that reads as coverage. A harness
-  // with no `scopedRel` therefore carries such a cell as a STEER only: its rule is
-  // already declared in the agent bodies that compose it, its mechanism is withheld,
-  // and the operator is told once per cell, here and again at install.
-  const unscopable = opts.adapter.scopedRel
-    ? []
-    : hookCells.filter((cell) => cell.binds);
-  for (const cell of unscopable) {
-    warn(
-      `guard '${cell.id}' cannot be scoped on '${opts.adapter.name}': this harness cannot name the running agent, so a hook registered for it would fire for every session and judge none. It is carried as a steer (the rule stays declared in the agents that compose it) and its mechanism is not deployed here.`,
-    );
-  }
 
   // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A cell bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
@@ -1045,9 +1130,7 @@ export async function projectPluginSet(
       );
     }
   }
-  const carried = hookCells.filter(
-    (cell) => !unscopable.includes(cell) && !unfired.has(cell.id),
-  );
+  const carried = hookCells.filter((cell) => !unfired.has(cell.id));
 
   let hooks = 0;
   if (carried.length > 0) {
@@ -1077,7 +1160,6 @@ export async function projectPluginSet(
       // placeholder throws rather than shipping `{{…}}` to a host.
       const sources = carried.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
-        ...(cell.binds ? { binds: cell.binds } : {}),
         workers: cell.workers.map((w) =>
           resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
@@ -1115,11 +1197,7 @@ export async function projectPluginSet(
             s.scope ?? SESSION_SCOPE,
             s.filename,
           );
-          files.push({
-            path,
-            content: s.content,
-            ...(s.executable ? { executable: true } : {}),
-          });
+          files.push({ path, content: s.content });
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {
@@ -1136,38 +1214,11 @@ export async function projectPluginSet(
       // code surface would have shipped registrations pointing at workers that were
       // never staged.
       if (registered) {
-        // ONE STANCE MANIFEST PER BOUND PERSONA, emitted once, for every harness that
-        // places a scoped artifact: each lists exactly the guards its composed agent
-        // includes, at the moments this adapter realizes. It sits past the branch that
-        // registered the cells because enrollment is not a property of HOW a harness
-        // registers — omp's module per scope and claude's one settings file both hand
-        // the workers the same manifest to find. The session scope gets none.
-        if (opts.adapter.scopedRel) {
-          for (const m of stanceManifests(
-            sources,
-            opts.adapter,
-            rendered,
-            manifest,
-          )) {
-            const path = join(ENFORCING_STAGE_DIR, m.scope, m.filename);
-            files.push({ path, content: m.content });
-            log(`EMIT stance manifest ${path}`);
-          }
-        }
         for (const src of sources) {
           const id = src.hook.id ?? 'unnamed';
           for (const worker of src.workers) {
-            // A SHARED ASSET LEAVES THE HARNESS TREE. Its bytes are the same on
-            // every projection, so it is staged under the neutral root's own
-            // staging dir and deploy places it beside the agents and skills that
-            // already live there — one address every harness can read, and none
-            // of them another harness's.
             files.push({
-              path: join(
-                worker.shared ? SHARED_STAGE_DIR : 'hooks',
-                id,
-                worker.filename,
-              ),
+              path: join('hooks', id, worker.filename),
               content: worker.content,
               ...(worker.executable ? { executable: true } : {}),
             });
@@ -1181,14 +1232,24 @@ export async function projectPluginSet(
     }
   }
 
-  const roleHolders: Record<string, string[]> = {};
-  rendered.forEach((a, i) => {
-    if (a.holds === undefined) return;
-    const held = roleHolders[a.holds] ?? [];
-    held.push(agentNames[i] as string);
-    roleHolders[a.holds] = held;
-  });
-  for (const held of Object.values(roleHolders)) held.sort();
+  const agentModels: Record<string, { tier: string; effort: string }> = {};
+  const routed = rendered.flatMap((a, i) =>
+    a.routing === undefined
+      ? []
+      : [[agentNames[i] as string, a.routing] as const],
+  );
+  for (const [name, { tier, effort }] of routed.sort(([a], [b]) =>
+    a < b ? -1 : a > b ? 1 : 0,
+  )) {
+    agentModels[name] = { tier, effort };
+  }
+  const personas = rendered.flatMap((a, i) =>
+    a.routing !== undefined &&
+    a.holds !== undefined &&
+    a.holds !== agentNames[i]
+      ? [agentNames[i] as string]
+      : [],
+  );
 
   return {
     files,
@@ -1196,14 +1257,15 @@ export async function projectPluginSet(
     skills,
     shims,
     hooks,
-    heldRoles: Object.keys(roleHolders).sort(),
-    roleHolders,
+    agentModels,
+    personas: [...personas].sort(),
     unisolated: [...unisolated].sort(),
     practices: offered.map((p) => ({
       name: p.name,
       description: p.description,
       preselected: p.preselected === true,
     })),
+    capabilities,
   };
 }
 

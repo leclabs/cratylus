@@ -1,0 +1,15 @@
+{
+  "id": "01M4RV1DSWMCPTD7KCCZW18KBD",
+  "at": "2026-10-12T19:57:07.260Z",
+  "kind": "decide",
+  "decisionId": "0142",
+  "context": "agents",
+  "title": "Agents are judged in real use; a constraint is enforced only where it earns it",
+  "situation": "The operator, 2026-10-12, reasoning from first principles: test only what we own and what is deterministic; agent behaviour depends on models and a harness we do not own and is judged in real use, not by live suites; most constraints added since 0068 fail the evidence and deadlock the work. The architect had conflated three domains: the workflow (product-agnostic practice), the agents (how an agent is composed, evaluated and enforced) and this repository's engineering conventions. Live behavioural suites, recorded-run proofs, guards judged by models and dispatch refusals cost most of each cut's effort, broke on harness upgrades, and on 2026-10-12 forced a one-test repair through a full cut and refused the architect's own commit.",
+  "decision": "(1) An agent's behaviour is evaluated in real use, by the operator working with it; no suite of live agent runs, no recorded-run proof and no model-judged guard evaluates or holds it, and its definition is revised on the evidence of use. (2) A value is enforced as firm or fixed only where the harm has been observed, is costly or irreversible, and whoever owns the decision can still get past it; every other value is advisory, its breach visible but never refused. (3) Under (2) the guards on the architect's behaviour, the refusals of who may dispatch whom and the refusal of a launch or dispatch whose assignment is incomplete become advisory: the harness shows the typed assignment and warns, and never refuses. This supersedes 0140, and with it the live-testing rules of 0088, 0092 and 0103, and the gate parts of 0081 and 0106.",
+  "consequences": "Realized by the simplification cut (0145). The agents' profiles state their evaluation as observed in use.",
+  "status": "accepted",
+  "supersedes": "0140",
+  "supersedesEntry": "01M4RGZFB03E70CNH8SQ17E396",
+  "decisionKind": "meaning"
+}

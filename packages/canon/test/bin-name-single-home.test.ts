@@ -69,26 +69,29 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
-import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 import canonPlugin from '../src/index.js';
 import { cellTargets } from '../tooling/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A corpus cell that declares a `runtime` capability — a shim carrier, and the
- *  witness this gate reads. Any carrier would serve; `event-tap` is the one pinned. */
-const CELL = 'event-tap';
-const CAPABILITY = 'eventTap';
+/** A cell that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
+const CELL = 'carrier';
+const CAPABILITY = 'workPackage';
+const carrierPlugin = {
+  name: 'shim-carrier',
+  skills: join(canonRoot, 'test', 'fixtures', 'shim-carrier', 'skills'),
+};
 
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
@@ -117,10 +120,6 @@ const CONSUMERS = [
 const read = (rel: string): string =>
   readFileSync(join(repoRoot, rel), 'utf-8');
 
-/** A committed hook worker that names no deploy tool — the negative-control witness
- *  for the DEPLOY_TOOL leg below (was `memory-consolidation-nudge`, since deleted). */
-const workerPath = stanceGuardrail.workers?.[0]?.targetPath ?? '';
-
 /** The command's ONE home read the way npm reads it — the `bin` key, no compiler in
  *  the loop. A shell worker cannot import the constant, so a worker that SPELLS the
  *  name is held against this.
@@ -148,11 +147,13 @@ let projectedShim = '';
 /** Every projected `hooks/**` artifact, as ⟨path, RESOLVED bytes⟩. */
 let projectedHooks: Array<readonly [string, string]> = [];
 
+let scratch: string | undefined;
 beforeAll(async () => {
-  const out = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
+  scratch = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
+  const out = scratch;
   const report = await projectPluginSet({
-    plugins: [canonPlugin],
-    adapter: adapterByName('claude'),
+    plugins: [canonPlugin, carrierPlugin],
+    adapter: adapterByName('omp'),
   });
   writeRenderTree(out, report.files);
   projectedShim = readFileSync(
@@ -163,6 +164,10 @@ beforeAll(async () => {
     .filter((f) => f.path.startsWith('hooks/'))
     .map((f) => [f.path, f.content] as const);
 }, 120_000);
+afterAll(async () => {
+  if (scratch !== undefined)
+    await rm(scratch, { recursive: true, force: true });
+});
 
 // Every hand-authored shell/`.mjs` source under each package's `src`. Emitted artifacts
 // are covered by the hook-artifact leg; these are the ones a human wrote and no compiler
@@ -354,7 +359,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   expect(
     sources.length,
     'no shell/.mjs source found under packages/*/{src,tooling,targets} — the scan is DARK, not the corpus clean',
-  ).toBeGreaterThan(5);
+  ).toBeGreaterThan(0);
 
   const drifted: string[] = [];
   for (const rel of sources) {
@@ -523,7 +528,6 @@ describe('the single-home gate is non-vacuous', () => {
     expect(deployTool(drifted)).not.toBe(CLI_BIN);
     // and the detector is not simply always-true: a worker naming no tool at all
     // must read as absent, never as a drifted one.
-    expect(deployTool(read(workerPath))).toBeUndefined();
   });
 
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {

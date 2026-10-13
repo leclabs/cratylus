@@ -1,0 +1,13 @@
+{
+  "id": "01M4KKYW0WX7GEK3VK9Z4C6767",
+  "at": "2026-10-10T19:17:11.324Z",
+  "kind": "define",
+  "context": "workflow",
+  "name": "never-assertion",
+  "wording": "an assertion that something must never happen in a behavioral example; it must hold in every run, where the example's other assertions need hold only in the threshold share of runs, because one occurrence of what must never happen is already a failure.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "The rule has been applied in every behavioral example since cut 2 but was never stated as a concept (0026).",
+  "supersedes": []
+}

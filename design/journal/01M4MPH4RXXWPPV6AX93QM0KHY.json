@@ -1,0 +1,11 @@
+{
+  "id": "01M4MPH4RXXWPPV6AX93QM0KHY",
+  "at": "2026-10-11T05:21:21.693Z",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "meaning-holder",
+  "reason": "0086. The operator's intent, 2026-10-10: the architect is designed to be the meaning-holder; it holds the semantic gap at conceptual elevation. A separate meaning-holder, borrowed from specification by example's business confirmer, does not fit a client to principal architect relationship: the client states intent and releases, the architect owns the meaning, and a persona carries a domain's authority. Brought into the reconstitution cut, whose examples exercise it, rather than waiting for cut 7.",
+  "supersedes": [
+    "01M4J5RA2P4TADWST1QVRKN5KK"
+  ]
+}

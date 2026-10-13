@@ -1,0 +1,18 @@
+{
+  "id": "01M4MBPBGMZC78SQ3HQCDE2XCA",
+  "at": "2026-10-11T02:11:58.100Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "cut",
+  "wording": "the concepts realized together as one change, closed over what they depend on and sized to one reviewable change; each concept's examples are written and judged within its own context, and intent that spans contexts becomes one cut per context joined by contracts, unless the contexts share their meaning-holder and the whole stays one reviewable change, when it is one cut with its examples kept per context; each cut carries the name of its own feature branch, which the architect names and checks out before dispatching the cut, and nothing else about branching is said to any agent, which infers the rest from the name.",
+  "builtFrom": [
+    "bounded context",
+    "contract",
+    "meaning-holder",
+    "proportionality"
+  ],
+  "reason": "0081, and the illustrator's boundary on the reconstitution cut: the cut spans workflow, agents and delivery, whose meaning-holder is the operator, and stays one reviewable change, so one per context would triple the ceremony (proportionality) without guarding any boundary the per-context examples do not already keep. The operator, 2026-10-10: the architect associates a branch name with a cut and checks that branch out before dispatching the cut; the lead sees the branch name in the cut's record and infers the rest, so nothing about branching is instructed, by omission rather than instruction, as held-out examples are withheld.",
+  "supersedes": [
+    "01M4MBA0TRZGYCM8AJC5ADQHEJ"
+  ]
+}

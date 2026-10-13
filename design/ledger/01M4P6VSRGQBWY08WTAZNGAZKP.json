@@ -1,0 +1,16 @@
+{
+  "id": "01M4P6VSRGQBWY08WTAZNGAZKP",
+  "at": "2026-10-11T19:26:02.512Z",
+  "kind": "cut",
+  "transition": "open:meaning-roles",
+  "cut": "meaning-roles",
+  "branch": "feature/meaning-roles",
+  "contexts": [
+    "agents",
+    "workflow"
+  ],
+  "architects": {
+    "workflow": "architect",
+    "agents": "architect"
+  }
+}

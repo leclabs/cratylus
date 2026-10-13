@@ -1,0 +1,14 @@
+{
+  "id": "01M4JHAGXY0GEGQR7CTXQ1XGK0",
+  "at": "2026-10-10T09:11:53.022Z",
+  "kind": "decide",
+  "decisionId": "0039",
+  "context": "delivery",
+  "title": "The runtime reaches a host as the cratylus package",
+  "situation": "The cratylus runtime is published to the npm registry as the unscoped cratylus package, which provides the cratylus command and depends on the scoped canon, forge and runtime packages; a release on main publishes it, and any ref can be published as a prerelease. Decision 0038 named linking globally as the development route; pnpm removed pnpm link --global in v11 and documents pnpm add -g . from the package's directory instead (pnpm.io/cli/link, pnpm.io/global-packages).",
+  "decision": "The runtime reaches a host as the cratylus package, installed by the host's package manager, which puts the cratylus command on the host. cratylus install then projects the corpus and the harness adapters, and every adapter calls that installed command. Nothing else places the runtime on a host.",
+  "consequences": "Cut 6 builds no other way of placing the runtime, and proves its examples against the package as installed, not against the source workspace. Inside this workspace the command is reached as pnpm cratylus, through the root's workspace dependency on the package. A development machine tries an unreleased build anywhere by installing the package globally from its directory (pnpm add -g .), or by installing a prerelease.",
+  "status": "accepted",
+  "supersedes": "0038",
+  "supersedesEntry": "01M4JGK937MR61HAYA5YVWJ590"
+}

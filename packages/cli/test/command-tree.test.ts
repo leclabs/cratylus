@@ -154,7 +154,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
   it.each([
     [['frobnicate'], ['frobnicate']],
     [
-      ['install', '--harnes', 'claude'],
+      ['install', '--harnes', 'omp'],
       ['--harnes', '--harness'],
     ],
     [['install', '--plugin', 'x'], ['--plugin']],
@@ -170,7 +170,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
     ],
     [
       ['deploy', '--harness', 'nope'],
-      ['nope', 'claude', 'omp'],
+      ['nope', 'omp'],
     ],
     [['optimize', 'x'], ['--plan']],
     [['optimize', '--plan', 'p'], ['source']],
@@ -272,6 +272,32 @@ describe('a deploy flag that would take no effect is refused, never accepted and
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatch(/^cratylus deploy: /);
     for (const name of names) expect(lines[0], name).toContain(name);
+  });
+});
+
+describe('the README restates nothing the concept journal explains of itself', () => {
+  it('holds no purpose, when or parameter description of the journal or a verb', async () => {
+    const { code, out } = await run('concepts', '--explain');
+    expect(code).toBe(0);
+    const explanation = JSON.parse(out) as {
+      purpose: string;
+      when: string;
+      verbs: {
+        purpose: string;
+        when: string;
+        parameters: { description: string }[];
+      }[];
+    };
+    const said = [
+      explanation.purpose,
+      explanation.when,
+      ...explanation.verbs.flatMap((v) => [
+        v.purpose,
+        v.when,
+        ...v.parameters.map((p) => p.description),
+      ]),
+    ];
+    expect(said.filter((text) => readme.includes(text))).toEqual([]);
   });
 });
 
@@ -450,7 +476,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       'Install the bundled corpus',
       'Options:',
       '  --harness <name>            The harness to install into',
-      '  --no-link-persona-commands  Link no persona commands',
+      '  --model-roles <roles>       The model each role routes to',
       '  -y, --yes                   Take the default of every decision',
       '  -h, --help                  display help for command',
       '',
@@ -476,7 +502,7 @@ describe('the README reference names exactly what the help lists, each once', ()
         flagsInEntry(entries(reference).get('install') ?? ''),
       ),
     ).toEqual({
-      missing: ['--no-link-persona-commands', '-y', '--yes'],
+      missing: ['--model-roles', '-y', '--yes'],
       unlisted: ['--frob'],
     });
   });

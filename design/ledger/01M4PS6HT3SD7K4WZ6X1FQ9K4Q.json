@@ -1,0 +1,15 @@
+{
+  "id": "01M4PS6HT3SD7K4WZ6X1FQ9K4Q",
+  "at": "2026-10-12T00:46:29.187Z",
+  "kind": "update",
+  "transition": "update:meaning-roles:01M4PS6HT1Y4308NEG2FNTTPFC",
+  "cut": "meaning-roles",
+  "workPackage": "architect-text",
+  "changes": {
+    "concepts": [
+      "drift",
+      "profile",
+      "enforcement-level"
+    ]
+  }
+}

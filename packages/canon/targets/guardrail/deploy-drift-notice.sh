@@ -60,8 +60,8 @@ DEPLOY_TOOL=cratylus
 # and guessed claude, which made an omp session report on a sibling deployment.
 # These two are the adapter's own `name` and `hooksFile`, substituted at
 # projection: the omp render of this cell carries omp's.
-HARNESS=claude
-HARNESS_HOOKS_FILE=settings.json
+HARNESS=omp
+HARNESS_HOOKS_FILE=extensions/cratylus-session.ts
 
 # The status the comparator returns when it FOUND drift. `0` means success to
 # POSIX and needs no telling; this one is the tool's own choice, so it is told.

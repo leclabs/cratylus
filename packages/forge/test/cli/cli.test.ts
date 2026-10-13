@@ -1,9 +1,12 @@
 import { spawnSync } from 'node:child_process';
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
+  readlinkSync,
   rmSync,
   symlinkSync,
   writeFileSync,
@@ -14,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runAdd } from '../../src/cli/commands/add.js';
 import { runInit } from '../../src/cli/commands/init.js';
+import { runInstall } from '../../src/cli/commands/install.js';
 import { runOptimize } from '../../src/cli/commands/optimize.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import {
@@ -22,13 +26,10 @@ import {
   resolveConfig,
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
+import { CANON_DIMENSIONS, canonDirManifest } from '../canon-corpus.js';
+import { answers, fixturePractices } from '../deploy/helpers.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import { capture } from './streams.js';
-
-/** The real canon corpus dimensions dir — the default plugin's fragment source. */
-const CANON_DIMENSIONS = fileURLToPath(
-  new URL('../../../canon/src/dimensions', import.meta.url),
-);
 
 describe('CLI commands (integration)', () => {
   let cwd: string;
@@ -69,7 +70,7 @@ describe('CLI commands (integration)', () => {
     // dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      manifest: FIXTURE_MANIFEST,
+      manifest: canonDirManifest(),
       fragments: CANON_DIMENSIONS,
     };
     const resolved = await resolveConfig({
@@ -80,7 +81,7 @@ describe('CLI commands (integration)', () => {
     const byId = new Map(
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
-    expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
+    expect(byId.get('canon:objective/parsimony')).toMatch(/^parsimony ≜ /);
   });
 
   it('init is idempotent: an existing cratylus.config.ts is left untouched', async () => {
@@ -177,11 +178,11 @@ describe('project writes the tree deploy reads, and says little', () => {
     const { rc, out, err } = await capture(() => runProject({ cwd }));
     expect(rc).toBe(0);
     expect(err).toEqual([]);
-    expect(existsSync(join(cwd, '.cratylus', 'claude', 'agents'))).toBe(true);
+    expect(existsSync(join(cwd, '.cratylus', 'omp', 'agents'))).toBe(true);
     expect(existsSync(join(cwd, '.render'))).toBe(false);
     expect(out).toHaveLength(2);
     expect(out[0]).toMatch(/^projected 1 agent\(s\) \+ 1 skill\(s\)/);
-    expect(out[0]).toContain(join(cwd, '.cratylus', 'claude'));
+    expect(out[0]).toContain(join(cwd, '.cratylus', 'omp'));
     expect(out[1]).toBe('ship it with: cratylus deploy');
   });
 
@@ -340,5 +341,81 @@ describe('the built command, in a project directory', () => {
     expect(
       after.stdout.split('\n').filter((l) => l !== '').length,
     ).toBeGreaterThan(100);
+  });
+});
+
+describe('guided install confirmation', () => {
+  let home: string;
+  let cwd: string;
+
+  beforeEach(() => {
+    const root = mkdtempSync(join(tmpdir(), 'forge-install-confirm-'));
+    home = join(root, 'home');
+    cwd = join(root, 'cwd');
+    mkdirSync(home, { recursive: true });
+    mkdirSync(cwd, { recursive: true });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(join(home, '..'), { recursive: true, force: true });
+  });
+
+  const snapshot = (dir: string, at = ''): Record<string, string> => {
+    const out: Record<string, string> = {};
+    for (const entry of readdirSync(join(dir, at)).sort()) {
+      const rel = at === '' ? entry : `${at}/${entry}`;
+      const path = join(dir, rel);
+      const stat = lstatSync(path);
+      if (stat.isSymbolicLink()) out[rel] = `-> ${readlinkSync(path)}`;
+      else if (stat.isDirectory()) Object.assign(out, snapshot(dir, rel));
+      else out[rel] = readFileSync(path, 'utf8');
+    }
+    return out;
+  };
+
+  it('writes nothing before confirmation, shows what it would place, and writes nothing on a decline', async () => {
+    const fixtures = fileURLToPath(
+      new URL('../project/fixtures', import.meta.url),
+    );
+    const corpus = {
+      name: 'fixture',
+      manifest: FIXTURE_MANIFEST,
+      agents: join(fixtures, 'agents'),
+      skills: join(fixtures, 'skills'),
+      practices: fixturePractices(['probe']),
+    };
+    const before = snapshot(home);
+    let seenBefore: string[] | undefined;
+    let out = '';
+    vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      out += String(chunk);
+      return true;
+    });
+    vi.spyOn(console, 'log').mockImplementation((...args) => {
+      out += `${args.join(' ')}\n`;
+    });
+    expect(
+      await runInstall({
+        corpus: corpus as never,
+        home,
+        cwd,
+        harness: 'omp',
+        practices: undefined,
+        interactive: true,
+        prompts: answers({
+          practices: async () => ['fixture'],
+          confirm: async () => {
+            seenBefore = Object.keys(snapshot(home));
+            expect(out).toContain('cratylus would install');
+            expect(out).toContain('practices: fixture');
+            return false;
+          },
+        }),
+      }),
+    ).toBe(0);
+    expect(seenBefore).toEqual(Object.keys(before));
+    expect(snapshot(home)).toEqual(before);
+    expect(out).toContain('Nothing was written.');
   });
 });

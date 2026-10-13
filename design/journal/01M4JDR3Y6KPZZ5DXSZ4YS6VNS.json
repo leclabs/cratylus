@@ -1,0 +1,17 @@
+{
+  "id": "01M4JDR3Y6KPZZ5DXSZ4YS6VNS",
+  "at": "2026-10-10T08:09:24.166Z",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "judgment",
+  "wording": "once per cut, when the build is green: the held-out examples run, and two assayers on models of different families each judge independently what cannot execute, whether the work keeps to the accepted decisions that constrain its realization, and whether the examples still express their concepts, any disagreement between them going to the architect as a meaning question; a finding about the work returns to the builders as a failing case and is confirmed by re-running that case or by an assayer re-judging that finding alone, while a finding that an example no longer expresses its concept goes to the architect as a meaning question, so acceptance is independent and the whole cut is judged once; a check is adequate when it rejects the plausible failure modes its example and its negative recordings name, and a contrived way around it is a hardening note, never a finding against the work.",
+  "builtFrom": [
+    "held-out example",
+    "example",
+    "decision"
+  ],
+  "reason": "0031: the assayers judge the work against the accepted decisions that constrain it.",
+  "supersedes": [
+    "01M4J5RA9S8AY3CYNERKW74RPS"
+  ]
+}

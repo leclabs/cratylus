@@ -1,5 +1,5 @@
 // A minimal harness-substrate hook cell + one worker byte-anchor, so the fixture
-// covers the settings.json + `hooks/<id>/<worker>` legs of the artifact tree.
+// covers OMP's session module + shared `hooks/<id>/<worker>` artifact legs.
 
 import type { HookCell } from '@cratylus/schema';
 

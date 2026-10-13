@@ -2,10 +2,12 @@
 // THE IMMUTABILITY GATE — the one enforced law of the substrate: a change that
 // modifies or deletes an existing record is refused, at commit and in CI.
 //
-// A change under the records root (`RECORDS_ROOT`) whose git status is not an
-// addition — modified, deleted, renamed, type-changed — is refused, and the
-// refusal names every offending path. Additions pass; paths outside the root are
-// ignored. A branch merge adds records only, so it passes.
+// A change under a protected root (`PROTECTED_ROOTS`: the records root
+// `RECORDS_ROOT`, the concept journal `JOURNAL_DIR` and the ledger `LEDGER_DIR`)
+// whose git status is not
+// an addition — modified, deleted, renamed, type-changed — is refused, and the
+// refusal names every offending path. Additions pass; paths outside the roots
+// are ignored. A branch merge adds records only, so it passes.
 //
 // Changes are read with rename detection off, so a rename reaches the gate as
 // what it does to the records root: the deletion of its source and the addition
@@ -35,7 +37,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { execFileSync } from 'node:child_process';
+import { JOURNAL_DIR } from '../capabilities/concepts/journal.js';
+import { LEDGER_DIR } from '../capabilities/work-package/ledger.js';
 import { RECORDS_ROOT } from './store.js';
+
+/** The roots whose files are only ever added: the record store's records, the
+ *  concept journal's entries and the ledger's entries. */
+export const PROTECTED_ROOTS = [RECORDS_ROOT, JOURNAL_DIR, LEDGER_DIR] as const;
 
 /** One path's change, as `git diff --name-status` reports it: its status letter
  *  and its path relative to the repository root. */
@@ -45,15 +53,17 @@ export interface Change {
 }
 
 /**
- * The paths the gate refuses, each once: every change under the records root that
- * is not an addition. Empty means the changes pass.
+ * The paths the gate refuses, each once: every change under a protected root
+ * that is not an addition. Empty means the changes pass.
  */
 export function immutabilityGate(changes: readonly Change[]): string[] {
   const refused = changes
     .filter(
       ({ status, path }) =>
         status !== 'A' &&
-        (path === RECORDS_ROOT || path.startsWith(`${RECORDS_ROOT}/`)),
+        PROTECTED_ROOTS.some(
+          (root) => path === root || path.startsWith(`${root}/`),
+        ),
     )
     .map(({ path }) => path);
   return [...new Set(refused)];
@@ -138,9 +148,11 @@ export function main(args: readonly string[]): number {
   const refused = immutabilityGate(read);
   if (refused.length === 0) return 0;
   process.stderr.write(
-    `immutability gate: a record is never modified, moved or deleted once written; refused:\n${refused
+    `immutability gate: a record is never modified, moved or deleted once written, since changing one rewrites the append-only record others read as history; refused:\n${refused
       .map((path) => `  ${path}\n`)
-      .join('')}`,
+      .join(
+        '',
+      )}To change what a record says, append a new entry that supersedes it and restore these paths. To make the change anyway: at commit, commit with --no-verify; in CI, the failed gate stands beside the change for its review, and the repository's owner may still merge it.\n`,
   );
   return 1;
 }

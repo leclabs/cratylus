@@ -1,0 +1,9 @@
+{
+  "id": "01M4QEWTHF4P4RVZRMQ4QNETDN",
+  "at": "2026-10-12T07:05:39.119Z",
+  "kind": "returned",
+  "transition": "toolu_017G63f5sc1nwRKKiJWWxSFv/DefineRouteCheck/returned",
+  "cut": "meaning-roles",
+  "role": "check-writer",
+  "run": "toolu_017G63f5sc1nwRKKiJWWxSFv/DefineRouteCheck"
+}

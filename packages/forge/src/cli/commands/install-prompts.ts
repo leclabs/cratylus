@@ -13,16 +13,17 @@
 import * as clack from '@clack/prompts';
 import type { OfferedPractice } from '../../project/index.js';
 
-/** One held role whose model the operator may route, and what is offered for it. */
+/** One model role the host binds no model to, which the operator may bind: a tier the
+ *  installed agents fall back to, or a persona's own role (decision 0112). */
 export interface RoleQuestion {
+  /** The model role, as the host's settings name it. */
   readonly role: string;
-  /** The agents holding the role, for the operator to recognise it by. */
-  readonly holders: readonly string[];
-  /** The models offered for it, besides a typed one. */
+  /** A tier, or the role named for a persona, which otherwise runs on its tier. */
+  readonly roleOf: 'tier' | 'persona';
+  /** The agents that run on it. */
+  readonly agents: readonly string[];
+  /** The models offered for it, besides a typed one: those the host already binds. */
   readonly options: readonly string[];
-  /** Preselected: cratylus's own routing for the role, or `undefined` where it routes
-   *  none (the session's model). Answering it is leaving the role at its default. */
-  readonly initial: string | undefined;
 }
 
 export interface InstallPrompts {
@@ -39,13 +40,14 @@ export interface InstallPrompts {
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
-  /** Whether to link the launch commands; `question` says what a yes does. */
-  linkCommands(question: string): Promise<boolean | undefined>;
-  /** The model per role: the answer of every role asked, a role left at its default
-   *  answering its `initial` (or absent, where it has none). */
+  /** The model per role asked: the answer of each role bound, a role left unbound
+   *  absent. */
   routes(
     questions: readonly RoleQuestion[],
   ): Promise<Record<string, string> | undefined>;
+  /** Whether the status line, which the host hides, should show the session's agent:
+   *  true to show it, false to keep it hidden. */
+  agentStatus(): Promise<boolean | undefined>;
   /** The one confirmation before anything is written. */
   confirm(question: string): Promise<boolean | undefined>;
 }
@@ -62,28 +64,31 @@ function answer<T>(value: T): Exclude<T, symbol> | undefined {
 
 // Sentinels among the model names offered: no model name holds a space.
 const OTHER = 'another model';
-const DEFAULT = "the session's model";
+const UNBOUND = 'leave unbound';
 
 async function askRoute(q: RoleQuestion): Promise<string | undefined> {
-  const holders = q.holders.join(', ');
   const picked = answer(
     await clack.select<string>({
-      message: `Model for the ${q.role} role (${holders})`,
+      message:
+        q.roleOf === 'tier'
+          ? `Model for the ${q.role} tier (${q.agents.join(', ')} fall back to it)`
+          : `Model for the ${q.role} persona`,
       options: [
-        ...(q.initial === undefined
-          ? [{ value: DEFAULT, label: DEFAULT }]
-          : []),
-        ...q.options.map((o) => ({
-          value: o,
-          label: o === q.initial ? `${o} (default)` : o,
-        })),
+        ...q.options.map((o) => ({ value: o, label: o })),
         { value: OTHER, label: 'another model…' },
+        {
+          value: UNBOUND,
+          label:
+            q.roleOf === 'tier'
+              ? 'none now (bind it in your settings later)'
+              : 'none (it runs on its tier)',
+        },
       ],
-      initialValue: q.initial ?? DEFAULT,
+      initialValue: q.roleOf === 'persona' ? UNBOUND : (q.options[0] ?? OTHER),
     }),
   );
   if (picked === undefined) return undefined;
-  if (picked === DEFAULT) return '';
+  if (picked === UNBOUND) return '';
   if (picked !== OTHER) return picked;
   const typed = answer(
     await clack.text({
@@ -123,28 +128,24 @@ export const terminalPrompts: InstallPrompts = {
     );
   },
 
-  async linkCommands(question) {
-    return answer(
-      await clack.confirm({ message: question, initialValue: false }),
-    );
-  },
-
   async routes(questions) {
-    const customize = answer(
-      await clack.confirm({
-        message: `Choose the model for each of ${questions.length} role${questions.length === 1 ? '' : 's'}? (No keeps the default routing.)`,
-        initialValue: false,
-      }),
-    );
-    if (customize === undefined) return undefined;
     const picked: Record<string, string> = {};
-    if (!customize) return picked;
     for (const q of questions) {
       const model = await askRoute(q);
       if (model === undefined) return undefined;
       if (model !== '') picked[q.role] = model;
     }
     return picked;
+  },
+
+  async agentStatus() {
+    return answer(
+      await clack.confirm({
+        message:
+          "Your status line hides an extension's status. Show the agent each session was started as there?",
+        initialValue: true,
+      }),
+    );
   },
 
   async confirm(question) {

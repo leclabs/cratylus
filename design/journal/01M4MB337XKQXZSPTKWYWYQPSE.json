@@ -1,0 +1,15 @@
+{
+  "id": "01M4MB337XKQXZSPTKWYWYQPSE",
+  "at": "2026-10-11T02:01:27.037Z",
+  "kind": "define",
+  "context": "agents",
+  "name": "drift",
+  "wording": "an agent's acts departing, over a session, from the stance and communication-style its profile states, recognised by its tells: asking what it could answer itself, handing back a decision it owns, offering a menu where it should recommend, transcribing where it should design, descending into work its stance keeps it above, and following procedure past its objective; an agent checks its own acts against its tells every turn, its behavioral examples assert their absence, and a value those examples show drifting is held by a guard that checks the act.",
+  "builtFrom": [
+    "agent",
+    "profile",
+    "enforcement-level"
+  ],
+  "reason": "Reconstitution cut (0076), part 7 (0070): the original architect named these tells and checked them every turn; the re-cut dropped them, and the drift 0050 set as the trigger for a guard was observed on 2026-10-10.",
+  "supersedes": []
+}

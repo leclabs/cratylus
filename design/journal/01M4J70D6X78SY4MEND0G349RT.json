@@ -1,0 +1,13 @@
+{
+  "id": "01M4J70D6X78SY4MEND0G349RT",
+  "at": "2026-10-10T06:11:35.773Z",
+  "kind": "decide",
+  "decisionId": "0028",
+  "context": "workflow",
+  "title": "Cut 7: meaning roles",
+  "situation": "Cuts of the workflow's plan, open when the design files were seeded into the journal (design/workflow.md, Cuts, at 24543f22); recorded open so that reconstitution reads back what remains, by the architect's ruling of 2026-10-10.",
+  "decision": "Realize the meaning roles: architect, illustrator, meaning-holder, operator, illustration, context map, decision rights, and the freeze of concepts.",
+  "consequences": "The freeze of concepts during a build, deferred by cut 3, is realized here.",
+  "status": "open",
+  "supersedes": null
+}

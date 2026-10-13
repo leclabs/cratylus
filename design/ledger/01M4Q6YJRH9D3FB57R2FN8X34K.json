@@ -1,0 +1,9 @@
+{
+  "id": "01M4Q6YJRH9D3FB57R2FN8X34K",
+  "at": "2026-10-12T04:46:48.081Z",
+  "kind": "returned",
+  "transition": "toolu_01TSMv91bTSk32nKjVthEL2e/RecordChecks/returned",
+  "cut": "meaning-roles",
+  "role": "check-writer",
+  "run": "toolu_01TSMv91bTSk32nKjVthEL2e/RecordChecks"
+}

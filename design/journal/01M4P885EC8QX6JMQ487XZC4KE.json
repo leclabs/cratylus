@@ -1,0 +1,14 @@
+{
+  "id": "01M4P885EC8QX6JMQ487XZC4KE",
+  "at": "2026-10-11T19:50:16.268Z",
+  "kind": "decide",
+  "decisionId": "0121",
+  "context": "workflow",
+  "title": "Check-ruling: a freeze refusal line may open with the command's name",
+  "situation": "The meaning-roles freeze checks (workflow 24-38, held-out workflow 1-2 where they share the helper) require a refusal's one line to begin with 'concepts <verb>:'. The command prints every capability refusal as '<command> <message>', so the line reads 'cratylus concepts supersede: …'. The examples fix that the change is refused before anything is appended, not the form of the line; the lead's contract wording ('one line, concepts <verb>: …') was read as the line's start. The checks are frozen; changing them is the architect's check-ruling.",
+  "decision": "Rule the freeze checks' refusal-form assertion to accept the command's name before 'concepts <verb>:', the rest of the check unchanged; the command's refusal convention stays.",
+  "consequences": "Until ruled, the journal-refusal assertion of the freeze checks fails on the line's form alone; the lead reports which examples fail only for that reason.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

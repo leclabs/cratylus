@@ -7,8 +7,8 @@
 // its SKILL.md, a `scripts/<capability>.mjs` THIN SHIM. The shim is minimal: it
 // forwards its argv to the host-installed `<CLI_BIN> <capability>` CLI and
 // mirrors its exit code — NOTHING more. It is NOT a bundle of the capability impl:
-// the impl lives host-side behind the runtime port (@cratylus/runtime → event-tap
-// host / design / plan / note), installed once per host, addressed by the CLI and NEVER
+// the impl lives host-side in the runtime (@cratylus/runtime → concepts /
+// workPackage), installed once per host, addressed by the CLI and NEVER
 // imported here. This REVERSES the superseded design in which forge composed a
 // standalone, dependency-free `.mjs` at build time: forge now projects a thin shim
 // against the runtime contract instead.
@@ -29,8 +29,7 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 /**
  * The line every generated shim carries, naming the capability it forwards to:
  * `// <CLI_BIN>-shim: <capability>`. It is what identifies a script as a
- * forge-generated forwarder rather than one a skill author wrote, and the omp
- * launcher reads it back to say which CLI command a shim's route runs as.
+ * forge-generated forwarder rather than one a skill author wrote.
  */
 export const SHIM_SIGNATURE = `// ${CLI_BIN}-shim: `;
 

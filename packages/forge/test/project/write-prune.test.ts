@@ -2,12 +2,12 @@
 //
 // The bug: `writeRenderTree` only ever wrote, so a deleted or renamed cell's
 // artifact outlived it, `deploy` shipped the ghost, and a retired agent kept
-// reaching the host. Reproduced originally as `touch .cratylus/claude/agents/ZOMBIE.md
-// && pnpm canon:project` → ZOMBIE.md survives.
+// reaching the host. Reproduced by projecting over a populated `.cratylus/` tree:
+// a stale artifact survives.
 //
-// This control is LOAD-BEARING, not ceremonial. `.cratylus/claude*` are gitignored, so
-// CI always projects onto a cold tree and the render oracle NEVER exercises the
-// prune path — a regression here would be caught by nothing else in the suite.
+// The render tree is harness-scoped, so CI always projects onto a cold tree and the
+// render oracle NEVER exercises the prune path — a regression here would be caught
+// by nothing else in the suite.
 // Hence the shape of every case below: write a tree, write a DIFFERENT tree over
 // it, and assert on what is no longer there.
 //
@@ -16,21 +16,33 @@
 // data-loss hazard pointed at a consumer's `--out .`. So the refusals are pinned
 // too — the bootstrap bound, the un-recorded bystander, and the escape guard.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ProjectedFile } from '../../src/project/index.js';
 import {
   RENDER_MANIFEST_REL,
   writeRenderTree,
 } from '../../src/project/write.js';
 
+// `out` sits one level inside the temp dir: the escape-guard case writes a file
+// beside `out`, and that file must land inside what afterEach removes.
+let root: string;
 let out: string;
 beforeEach(() => {
-  out = mkdtempSync(join(tmpdir(), 'render-prune-'));
+  root = mkdtempSync(join(tmpdir(), 'render-prune-'));
+  out = join(root, 'out');
+  mkdirSync(out);
 });
+afterEach(() => rmSync(root, { recursive: true, force: true }));
 
 const f = (path: string, content = `// ${path}\n`): ProjectedFile => ({
   path,
