@@ -1,0 +1,14 @@
+{
+  "id": "01M4VKWX4JJ6NN406MZTBDTX75",
+  "at": "2026-10-13T21:50:02.386Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision",
+  "wording": "a recorded choice about the conceptual design or about how it is realized, of the kind meaning or realization: its context, the decision and its consequences, recorded as open or as accepted, and later superseded; a decision about realization records a technical choice the lead made, or a requirement or recommendation of the operator's for the lead; a decision is never edited: an open one is settled by recording its acceptance, its kind by recording its classification, each an entry of its own, and an accepted one changes only by a later decision that supersedes it by name, so how a choice was reached stays readable.",
+  "builtFrom": [],
+  "reason": "0160: realization decisions are the lead's and the operator's, never the architect's.",
+  "supersedes": [
+    "01M4M51XHD3BRC0X4RP07ZMYGS"
+  ]
+}
