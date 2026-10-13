@@ -37,7 +37,7 @@
     "prepare": "husky",
     "dev": "turbo run dev --parallel",
     "project": "pnpm canon:project:omp",
-    "verify": "pnpm build && pnpm lint && pnpm project && pnpm test",
+    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test",
     "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"
   },
   "devDependencies": {

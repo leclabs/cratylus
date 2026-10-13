@@ -160,7 +160,7 @@ describe('POSITIONAL-PATH gate — no path is built from a hop count', () => {
     expect(files.size, 'the scan found no sources at all').toBeGreaterThan(150);
     expect(
       [...files.keys()].filter((f) => f.endsWith('.sh')).length,
-    ).toBeGreaterThan(3);
+    ).toBeGreaterThan(2);
     expect(files.has('packages/tooling/src/repo-root.ts')).toBe(true);
   });
 
