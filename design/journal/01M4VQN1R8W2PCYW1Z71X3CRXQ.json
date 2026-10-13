@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN1R8W2PCYW1Z71X3CRXQ",
+  "at": "2026-10-13T22:55:39.272Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0186",
+  "context": "agents",
+  "title": "The workflow roles and personas",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0053 no longer matches the current design.",
+  "decision": "Generic holders: lead (owns a cut's realization), builder (one work package), assayer (judges a cut; never builds or repairs it), illustrator (examples cold from concepts only), check-writer (the checks that bind examples before the build). The illustrator, check-writer and assayers run on another model family than the builders where one is available (0146). Personas over the architect, each named for its expertise: kino (film production), nico (the corpus's concept space and the cold-decode oracle), mav (any software repository). Which persona or architect holds a context is recorded with each cut; for cratylus's own contexts it is the architect.",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0053",
+  "supersedesEntry": "01M4KK1VCMK84SJSTK0BREP4GF",
+  "decisionKind": "meaning"
+}

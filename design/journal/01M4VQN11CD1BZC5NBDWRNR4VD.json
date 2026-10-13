@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN11CD1BZC5NBDWRNR4VD",
+  "at": "2026-10-13T22:55:38.540Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0174",
+  "context": "workflow",
+  "title": "Which work comes next is priority: the architect recommends it",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0102 no longer matches the current design.",
+  "decision": "What comes next is priority, which the operator decides and the architect recommends: applying a priority the operator stated, the architect leads with one recommendation and its reasons, which is neither a hand-back nor an unrecorded decision. The hand-back and holding-open tells concern only meaning, the architect's one class of decision (0160).",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0102",
+  "supersedesEntry": "01M4NHX7PDW7TGSK8T8F1S1VRS",
+  "decisionKind": "meaning"
+}
