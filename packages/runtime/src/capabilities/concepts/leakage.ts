@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// IMPLEMENTATION LEAKAGE: realization showing through text that should state
-// meaning. A concept's wording, a decision or a visible example that names
-// code, files, commands, flags, identifiers, tools or libraries instead of what
-// must hold.
+// LEAKAGE, a reading of the concept journal: realization showing through text
+// that should state meaning. A concept's wording, a decision or a visible
+// example that names code, files, commands, flags, identifiers, tools or
+// libraries instead of what must hold.
 //
 // Detection is lexical, in the manner of requirements smells: each rule below
 // finds the narrowest span that leaks (a tool's name, a command and its

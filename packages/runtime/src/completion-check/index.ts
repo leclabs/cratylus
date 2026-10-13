@@ -5,8 +5,8 @@
 //
 // It reads HEAD's message in the working directory's repository and watches
 // only the one enumerated form fixed by decision 0081: a subject opening
-// `feat(cut:<id>): `. For such a commit, when the ledger does not show cut
-// `<id>` complete, it writes a warning to the commit's output (stderr) naming
+// `feat(cut:<id>): `. For such a commit, when the ledger shows cut `<id>`
+// neither complete nor integrated, it writes a warning to the commit's output (stderr) naming
 // the cut, the phase the ledger computes, every work package not approved (and
 // none that is) and each kind of entry it read past, written by a newer
 // runtime, telling the agent that made the commit to report the gap as a
@@ -44,7 +44,8 @@ export function completionCheck(from: string): string | undefined {
   ].join('\n');
   try {
     const { state, readPast } = cutView(from, cut);
-    if (state.phase === 'complete') return undefined;
+    if (state.phase === 'complete' || state.phase === 'integrated')
+      return undefined;
     const unapproved = [...state.packages.values()].filter(
       (p) => p.status !== 'approved',
     );

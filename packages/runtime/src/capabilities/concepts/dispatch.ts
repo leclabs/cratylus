@@ -9,7 +9,8 @@
 //   design     the current design of each context
 //   history    every version of one concept, or of a context's description
 //   decisions  the decisions with their status
-//   leakage    the implementation leakage in the design, decisions and examples
+//   leakage    where realization shows through the journal's design, decisions
+//              and examples: a reading of the concept journal
 //   context    record a bounded context, or, with a reason, change one
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
@@ -194,7 +195,7 @@ export const VERBS = {
     },
   },
   leakage: {
-    concept: 'implementation leakage',
+    concept: 'concept journal',
     effect: 'reads',
     purpose:
       'Show where realization shows through text that should state meaning: each live concept, decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',

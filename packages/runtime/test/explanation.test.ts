@@ -217,7 +217,7 @@ describe('concepts --explain', () => {
       design: 'conceptual design',
       history: 'concept',
       decisions: 'decision',
-      leakage: 'implementation leakage',
+      leakage: 'concept journal',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
