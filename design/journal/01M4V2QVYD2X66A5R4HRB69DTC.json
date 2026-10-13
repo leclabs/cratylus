@@ -1,0 +1,15 @@
+{
+  "id": "01M4V2QVYD2X66A5R4HRB69DTC",
+  "at": "2026-10-13T16:50:11.533Z",
+  "by": "Lance Caraccioli",
+  "kind": "decide",
+  "decisionId": "0149",
+  "context": "workflow",
+  "title": "Integration is terminal; follow-ups are future work",
+  "situation": "The ledger shows every integrated cut as open or in flight, because its phase is computed from the last statuses of its work packages, which for cuts accepted with known limits, built before capture existed, or whose assayer verdicts were not captured, never reached approved. The operator, 2026-10-13: if a cut is integrated, it is integrated; follow-ups move into future work, and integration is always successful.",
+  "decision": "Integration is the terminal fact of a cut: once its integrated event is recorded, its phase is integrated, whatever its work packages' last statuses, which stay readable as history and are never backfilled. Anything unfinished at integration, a known limit or a deferred fix, is recorded as future work, a decision or a cut of its own, never as an open state of the integrated cut. Capturing assayers' verdicts as pass or fail is such future work: it serves only a cut still in flight.",
+  "consequences": "The ledger's reading is repaired to make integration terminal; no record is added or changed. Every cut integrated so far reads integrated.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
