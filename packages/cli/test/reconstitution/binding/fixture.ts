@@ -7,11 +7,10 @@ import {
   readdirSync,
   writeFileSync,
 } from 'node:fs';
-import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
+import { Ajv, type AnySchema } from 'ajv';
 import { expect } from 'vitest';
 import { type Fixture, fixture } from '../../agent-launch/fixture.js';
-import { repositoryRoot } from '../../concept-journal/fixture.js';
 import { parseYaml } from '../../yaml.js';
 import { omp } from './omp-mocks.js';
 
@@ -183,12 +182,8 @@ export function ledger(f: Fixture): Record<string, unknown>[] {
         .map((p) => JSON.parse(readFileSync(join(path, p), 'utf8')))
     : [];
 }
-// Use the workspace's pinned validator, with mutation disabled. This checks the actual output
-// JSON Schema published to omp, never a second test-authored deliverable schema.
-const require = createRequire(
-  join(repositoryRoot, 'node_modules/.pnpm/node_modules/package.json'),
-);
-const Ajv = require('ajv');
+// The pinned validator, with mutation disabled. This checks the actual output JSON Schema
+// published to omp, never a second test-authored deliverable schema.
 export function outputValidator(f: Fixture, role: string) {
   const schema = declaration(f, role).frontmatter.output;
   expect(
@@ -201,7 +196,7 @@ export function outputValidator(f: Fixture, role: string) {
     useDefaults: false,
     removeAdditional: false,
     strict: false,
-  }).compile(schema);
+  }).compile(schema as AnySchema);
 }
 export interface RegisteredTool {
   name: string;
