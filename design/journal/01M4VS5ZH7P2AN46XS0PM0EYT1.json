@@ -1,0 +1,16 @@
+{
+  "id": "01M4VS5ZH7P2AN46XS0PM0EYT1",
+  "at": "2026-10-13T23:22:22.631Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "factor",
+  "wording": "one independent lever of an agent, which no other factor's value determines: identity (role, objective, expertise, procedure, stance, communication-style), authority (decision-rights, autonomy), reach (perception-scope, action-scope), cognition (model, memory), interface (assignment, deliverable), and governance (guardrails, evaluation); enforcement-level is no factor of its own but an attribute every value carries; deployment choices such as the harness or how a session starts are not factors.",
+  "builtFrom": [
+    "agent"
+  ],
+  "reason": "Record corrections, third cold read, 2026-10-13: enforcement-level was listed as a factor while its own concept, and the corpus, treat it as an attribute of every value.",
+  "supersedes": [
+    "01M4VRGFA36PQMK2HMBTDDDRNB"
+  ]
+}

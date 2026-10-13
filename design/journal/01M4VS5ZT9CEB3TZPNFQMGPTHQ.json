@@ -1,0 +1,15 @@
+{
+  "id": "01M4VS5ZT9CEB3TZPNFQMGPTHQ",
+  "at": "2026-10-13T23:22:22.921Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "extension",
+  "wording": "cratylus's own addition to a harness, loaded by it in every session: it offers each capability as a tool that calls the runtime, and reports version skew at start; it adds no behaviour of its own.",
+  "builtFrom": [
+    "runtime",
+    "harness"
+  ],
+  "reason": "Record corrections, third cold read, 2026-10-13: extension and adapter were used for the same thing without a definition.",
+  "supersedes": []
+}
