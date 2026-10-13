@@ -1,6 +1,6 @@
 ---
-'@cratylus/forge': major
-'cratylus': major
+'@cratylus/forge': minor
+'cratylus': minor
 '@cratylus/canon': patch
 ---
 
