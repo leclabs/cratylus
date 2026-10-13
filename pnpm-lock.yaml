@@ -171,6 +171,9 @@ catalogs:
     '@dagrejs/graphlib':
       specifier: ^4.0.5
       version: 4.0.5
+    '@types/js-yaml':
+      specifier: ^4.0.9
+      version: 4.0.9
     '@types/node':
       specifier: ^22.0.0
       version: 22.19.21
@@ -180,6 +183,9 @@ catalogs:
     commander:
       specifier: ^14.0.3
       version: 14.0.3
+    js-yaml:
+      specifier: ^4.1.0
+      version: 4.2.0
     tsup:
       specifier: ^8.3.0
       version: 8.5.1
@@ -274,9 +280,15 @@ importers:
       '@cratylus/tooling':
         specifier: workspace:*
         version: link:../tooling
+      '@types/js-yaml':
+        specifier: 'catalog:'
+        version: 4.0.9
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
+      js-yaml:
+        specifier: 'catalog:'
+        version: 4.2.0
       tsup:
         specifier: 'catalog:'
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.15)(tsx@4.22.4)(typescript@5.9.3)
@@ -1248,6 +1260,9 @@ packages:
 
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
+
+  '@types/js-yaml@4.0.9':
+    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
@@ -2906,6 +2921,8 @@ snapshots:
       '@types/node': 25.9.3
 
   '@types/estree@1.0.9': {}
+
+  '@types/js-yaml@4.0.9': {}
 
   '@types/node@12.20.55': {}
 
