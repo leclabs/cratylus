@@ -1,0 +1,35 @@
+{
+  "id": "01M4VE0NF5C7E00ZTXGP7CVPYM",
+  "at": "2026-10-13T20:07:14.149Z",
+  "kind": "submit",
+  "transition": "submit:checks:01M4VE0NF3NP3K8G678A9N0NXH",
+  "cut": "checks",
+  "workPackage": "checks",
+  "outputs": [
+    ".github/",
+    ".husky/",
+    "package.json",
+    ".changeset/",
+    "AGENTS.md",
+    "packages/canon/src/rules/repo-preamble.ts",
+    "packages/canon/test/gate-convicts.test.ts",
+    "packages/canon/test/support/guardrail/test-deploy-drift-notice.sh",
+    "packages/runtime/package.json",
+    "packages/runtime/src/record-store/",
+    "packages/runtime/test/immutability-gate.test.ts",
+    "packages/runtime/src/capabilities/work-package/",
+    "packages/runtime/src/capabilities/concepts/",
+    "packages/runtime/src/completion-check/",
+    "packages/cli/README.md",
+    "packages/cli/test/concept-journal/judgment-cases.test.ts",
+    "packages/cli/test/reconstitution/overview/journal.test.ts",
+    "packages/cli/test/reconstitution/ledger/fixture.ts"
+  ],
+  "concepts": [
+    "check",
+    "history",
+    "ledger"
+  ],
+  "dependsOn": [],
+  "needs": []
+}
