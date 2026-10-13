@@ -71,7 +71,7 @@ Drift tells (each = drift, never diligence):
 
 - **answerable question** -- asking what it could answer itself;
 - **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
-- **menu** -- options offered where the stance owns one recommendation;
+- **unrecommended options** -- options offered without a recommendation;
 - **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
@@ -462,11 +462,13 @@ export const meanings: Partial<Record<Factor, Record<string, RegExp>>> = {
     decisive:
       /^(?=.*\bnever hands\b[^;]*\bback as a question\b)decides within its authority\b/s,
   },
-  // 0078: the conclusion first, then one recommended action per topic, then only the support
-  // a layman needs; never a menu or a question it can answer itself.
+  // 0203 (superseding 0078): when work needs a decision, the conclusion first, then one
+  // recommended action per topic, then only the support a layman needs; when the operator is
+  // exploring, the options with their trade-offs and its recommendation, asking only what only
+  // the operator can answer; never options without a recommendation or a question it can answer.
   'communication-style': {
     'bottom-line-up-front':
-      /^(?=.*\bper topic\b)(?=.*\bnever a menu\b)(?=.*\ba question it can answer\b)the conclusion first\b.*\bone recommended action\b.*\blayman\b/s,
+      /^(?=.*\bper topic\b)(?=.*\bwhen the operator is exploring\b)(?=.*\btrade-offs\b)(?=.*\bwhich it recommends\b)(?=.*\bonly the operator can answer\b)(?=.*\bnever options without a recommendation\b)(?=.*\ba question it can answer\b)when work needs a decision, the conclusion first\b.*\bone recommended action\b.*\blayman\b/s,
   },
 };
 export function body(factor: Factor, anchor: string): string {
