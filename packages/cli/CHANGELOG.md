@@ -1,5 +1,31 @@
 # @cratylus/invoke
 
+## 0.13.0
+
+### Minor Changes
+
+- e7367b6: The architect decides meaning only, and realization is the lead's (decision 0160).
+
+  The architect agent no longer holds decisions on realization or check rulings: both are now "has no part". It still names a cut's scope and feature branch, but the lead checks the branch out. The architect accepts that a cut realized its meaning, and the lead merges it.
+
+  The lead agent now decides realization, decisions on realization and check rulings. It checks out the cut's branch, owns the checks that bind the examples, makes and records every technical decision, settles the operator's open recommendations, and merges the cut once the architect has accepted it. It can also add entries to the concept journal, which is where it records its decisions.
+
+  The `workPackage` capability's `frozen`, `open` and `freeze` verbs now explain the freeze this way: the illustrator writes a cut's examples before they are approved; from then until the cut is integrated, only the architect changes its examples and concepts, and only the lead and its check-writer write and change its checks.
+
+- 881db80: A cut's phase reads `integrated` once its integration is recorded, whatever its work packages' statuses, which stay as recorded. Before, an integrated cut read `open`, `in flight` or `complete` from its packages alone. `workPackage state` answers `phase: 'integrated'`, `concepts overview` no longer lists an integrated cut among the cuts in flight, and the post-commit completion check stays silent for a `feat(cut:<name>): ` commit whose cut is integrated. No ledger entry is added or changed: every integration already recorded reads integrated.
+
+  The concepts capability's `leakage` verb now serves the concept `concept journal` (decision 0158), and its explanation names that concept.
+
+### Patch Changes
+
+- 409c06f: The record gate is gone (decision 0153). `@cratylus/runtime` no longer has the `immutability-gate` script or module, and no hook or CI step refuses a change to existing records under `records/`, `design/journal/` or `design/ledger/`; history is controlled by pull-request review. The concept journal and the ledger stay append-only because their verbs only append.
+- Updated dependencies [e7367b6]
+- Updated dependencies [881db80]
+- Updated dependencies [409c06f]
+  - @cratylus/canon@0.16.0
+  - @cratylus/runtime@0.12.0
+  - @cratylus/forge@0.15.1
+
 ## 0.12.0
 
 ### Minor Changes
