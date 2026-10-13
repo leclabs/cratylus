@@ -1,0 +1,9 @@
+{
+  "id": "01M4VF9DVHPCEMJVQ9DV40KG19",
+  "at": "2026-10-13T20:29:29.841Z",
+  "kind": "returned",
+  "transition": "toolu_01NuiVXDoyUhknfM5Xd68tKi/ChecksAssayer/returned",
+  "cut": "checks",
+  "role": "assayer",
+  "run": "toolu_01NuiVXDoyUhknfM5Xd68tKi/ChecksAssayer"
+}

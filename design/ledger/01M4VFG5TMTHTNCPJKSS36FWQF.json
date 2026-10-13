@@ -1,0 +1,17 @@
+{
+  "id": "01M4VFG5TMTHTNCPJKSS36FWQF",
+  "at": "2026-10-13T20:33:10.996Z",
+  "kind": "commit",
+  "transition": "commit:checks:ff4945aca2a78659febdb8f53982e5b85b348e6c",
+  "cut": "checks",
+  "workPackage": "checks",
+  "commit": {
+    "sha": "ff4945aca2a78659febdb8f53982e5b85b348e6c",
+    "message": "test(cli): declare ajv as a devDependency and import it ordinarily (0154)",
+    "paths": [
+      "packages/cli/package.json",
+      "packages/cli/test/reconstitution/binding/fixture.ts",
+      "pnpm-lock.yaml"
+    ]
+  }
+}
