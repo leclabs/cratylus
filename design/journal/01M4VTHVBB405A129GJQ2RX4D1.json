@@ -1,0 +1,18 @@
+{
+  "id": "01M4VTHVBB405A129GJQ2RX4D1",
+  "at": "2026-10-13T23:46:20.139Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "drift",
+  "wording": "an agent's acts departing, over a session, from the stance and communication-style its profile states, recognised by its tells: asking what it could answer itself, handing back a decision it owns, holding open a decision it could take, offering options without a recommendation, transcribing where it should design, descending into work its stance keeps it above, prescribing to a delegate procedure it already knows where its assignment should carry only intent, concepts and acceptance, and following procedure past its objective; an agent checks its own acts against its tells every turn, and the operator observes them in use, where drift is noticed and the agent's text revised.",
+  "builtFrom": [
+    "agent",
+    "profile",
+    "enforcement-level"
+  ],
+  "reason": "0203: options are welcome when exploring; the tell is withholding the recommendation.",
+  "supersedes": [
+    "01M4RV1EDWG8H906TV118X74SQ"
+  ]
+}
