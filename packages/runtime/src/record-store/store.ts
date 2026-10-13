@@ -10,9 +10,8 @@
 // branch every write names only current heads, so its history stays linear and
 // divergence arises only from merges.
 //
-// A record is never edited, moved or deleted once written: `write` refuses a record
-// id whose file exists. The commit-time and CI half of that law is the immutability
-// gate's, which reads the root from `RECORDS_ROOT` below.
+// A record is never edited once written: `write` refuses a record id whose file
+// exists.
 //
 // A PLAN'S LINE. A bound plan's records live on its one line: the branch
 // `plan/<plan>`, held by a worktree of the repository. Reading is the union of the

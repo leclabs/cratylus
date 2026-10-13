@@ -291,12 +291,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // it calls required is refused without. A verb whose concept the design retired,
   // in a scratch journal, convicts it.
   'runtime/explanation.test.ts': 'GATE',
-  // stages and commits changes in temp repositories it builds itself; its refusals (a
-  // modified, deleted, renamed, retyped record) ARE its fixtures.
-  'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
   // runs the leakage detector over text it supplies and the journal verbs in scratch git
   // repositories it builds itself; its leaking and plain passages ARE its fixtures.
   'runtime/leakage.test.ts': 'BEHAVIORAL',
+  // reads cuts' phases over ledgers it builds itself and over the repository's own
+  // ledger, which it reads and never writes: integration settles a cut's phase.
+  'runtime/ledger/checks.test.ts': 'BEHAVIORAL',
   // runs the pure ledger fold over entries it builds itself: statuses, approval by two
   // distinct assayers, failing and disputed packages, phase, ready, figures, report.
   'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
