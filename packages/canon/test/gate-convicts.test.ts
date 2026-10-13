@@ -172,7 +172,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/reader-density.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
-  'canon/pack-smoke.test.ts': 'GATE',
   'canon/version-single-home.test.ts': 'GATE',
   // BEHAVIORAL, not GATE: it exercises a helper's four resolution cases. It polices no
   // property of the corpus — the law that no path is built from a hop COUNT is a gate

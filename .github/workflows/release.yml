@@ -6,9 +6,8 @@
 # holding `id-token: write`, and it cannot start until `check` is green, so the credential is
 # never held while the repository's own test code runs.
 #
-# The publish path is `scripts/release.sh`, called by the changesets action: pnpm packs,
-# pack-smoke audits those exact tarballs, and pnpm uploads them with provenance. The audit
-# belongs to publishing the bytes, not to the check.
+# The publish path is `scripts/release.sh`, called by the changesets action: pnpm packs
+# every publishable package and uploads those exact tarballs with provenance.
 #
 # CANCEL-IN-PROGRESS IS FALSE, and that is not a default. A cancelled publish is a
 # half-published release: some of five on the registry, irrevocably, at versions whose

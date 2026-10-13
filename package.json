@@ -37,8 +37,7 @@
     "prepare": "husky",
     "dev": "turbo run dev --parallel",
     "project": "pnpm canon:project:omp",
-    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test",
-    "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"
+    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

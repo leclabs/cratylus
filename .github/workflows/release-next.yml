@@ -71,9 +71,9 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       # THE GUARD'S SET IS THE PUBLISH SET: every package a snapshot would publish. It is
-      # spelled here rather than derived because `pack-smoke --list` needs a build, and this
-      # refusal runs before any build: refusing early is the point. A drift between the two
-      # is caught by the release itself, which uploads what the audit listed.
+      # spelled here rather than derived so the refusal runs before anything else. A drift
+      # between the two is caught by the release itself, which uploads the set
+      # `scripts/release.sh` computes (not private, not changeset-ignored).
       - name: refuse before the first stable release
         run: |
           set -eu
