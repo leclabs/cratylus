@@ -1,5 +1,24 @@
 # @cratylus/schema
 
+## 0.10.0
+
+### Minor Changes
+
+- 20b730f: The dimension meta-model is re-cut for the agent catalog (decisions 0044, 0046). `DimensionMeta` is now `{ group, repertoire, arity, level, projection, slots?, required? }`: a free-text `group` replaces the `axis` and its `Genus` type, which are removed; `Repertoire` gains `'fixed'` (a closed list the design fixes); `Arity` gains `'slots'` (one value per named `Slot`) and `'attribute'` (no field on an agent; its values are attributes of other values); `level` is the default `EnforcementLevel` (`'advisory' | 'firm' | 'fixed'`, or `null`) and `projection` says whether the dimension is rendered as `'text'` or compiled to harness settings (`'binding'`); `required` is `true` or absent. `DimensionFieldsOf`/`AgentOf` give every non-attribute dimension a `readonly Entry<D>[]` field, where an `Entry` is `{ value, level, slot?, note? }`, with no `null` (an explicitly empty dimension is `[]`). The `Agent` identity face is `name`, `description`, `mark: Mark | null`, a reserved `key: null`, and optionally `holds`, `dispatches`, `routing: { tier, effort }`, `readOnly`, `skills` and `isolation`; `archetype`, `preamble` and `provenance` are removed.
+- ebe2aa5: Typed handoffs. `@cratylus/schema` adds `JsonSchema`, `AgentContract` and `ContractCheck`, and the one assignment check every handoff runs: `assignmentIn(text)` reads the JSON of a dispatch text's fenced `assignment` block, and `checkAssignment(agent, schema, value)` names each missing and ill-typed field (`lead assignment is missing: examples`). Both reference nothing outside their own bodies, so a harness module may carry their source. `Agent` gains `contract` (the assignment and deliverable schemas) and `persistence` (the per-turn persistence protocol). Canon's assignment and deliverable values carry their schemas (`ASSIGNMENT_CONTRACTS`, `DELIVERABLE_CONTRACTS`), and composition copies them onto the lead, builder, assayer, check-writer and illustrator. The architect's free-text intent has none.
+
+  Reach: the read-only derivation is gone. `Agent.readOnly` is removed and no composed agent is narrowed, the assayer included; only handoffs stay a permission.
+
+  The architect is restored as the client's principal architect, owning the conceptual design and delivery of the product. `communication-style` gains the optional slot `ordering` (`Slot.optional`), and the architect holds `bottom-line-up-front` there, fixed. Its reconstitution procedure reads each touched context's overview first, then the detail it needs from the concept journal and the ledger, then reads the design, open decisions and cuts in flight back before acting. The persona genus moves from `genus/persona.md` to `genus/persona.ts` (`personaProtocol`), now names all seven drift tells, and is carried on every composed agent.
+
+  Guards. `@cratylus/schema` adds `GuardCell` and `GuardJudge`, a hook cell that judges an act through a judge prompt and a JSON verdict instead of a worker, and `Layout.guards`. `guarded(value, guard)` makes a value enforce itself through a guard, so the guard binds exactly the agents composing that value.
+
+- 77709cf: Agents are judged in real use, and nothing refuses their acts for how they behave (decisions 0142, 0145).
+
+  - Canon: the `descend` and `past-objective` guards, `guarded()` and the plugin's `guards` dir are removed; the architect's elevation and stopping rule are plain values held by its own text. The `handoffs` factor is removed, so no agent is limited in whom it dispatches. Every role's evaluation is the one value `in-use` (its behaviour is evaluated in real use, by the operator working with it); `behavioral-examples`, `held-out`, `never-assertions` and `rubric` are removed. A persona that widens its reach is composed silently; one that weakens or removes a guardrail, or takes from a set other than its reach, is composed with a `CompositionWarning`. Malformed personas are still refused.
+  - Forge (omp): declarations carry `spawns: "*"` and the extension refuses no spawn. A dispatch or launch whose assignment misfits is shown the agent's form and warned, and goes ahead; the lead's and builder's cut-state checks and a dispatch from `eval` code are warnings. The readback gate, the guards and their in-process model judge (`completeSimple`) are removed, as is the forced `schemaMode: "strict"`; a session hook's worker is fired once and its stdout read as its verdict. Projection no longer closes a practice over dispatch, and the tree no longer reports `guards`. `HarnessAdapter.nativeAgents`, `ComposedGuard` and the live omp scenario runner (`createOmpAgentScenarioRunner`) are removed.
+  - Schema: `GuardCell`, `GuardJudge`, `Layout.guards` and `Agent.dispatches` are removed; `checkAssignment` reports its finding as `problem` (was `reason`).
+
 ## 0.9.1
 
 ### Patch Changes
