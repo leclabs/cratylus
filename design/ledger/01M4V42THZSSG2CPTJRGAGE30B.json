@@ -1,0 +1,15 @@
+{
+  "id": "01M4V42THZSSG2CPTJRGAGE30B",
+  "at": "2026-10-13T17:13:39.135Z",
+  "kind": "commit",
+  "transition": "commit:ci-suite:bd98a76917cc2d52f4011ea11d85fe1ab1aaad6a",
+  "cut": "ci-suite",
+  "workPackage": "self-contained-suite",
+  "commit": {
+    "sha": "bd98a76917cc2d52f4011ea11d85fe1ab1aaad6a",
+    "message": "test(canon): run the drift-notice worker in the leg's cwd\n\nWithout jq the worker resolves the corpus from $PWD, not the payload; the test\nspawned it from vitest's directory, so every leg went silent on a jq-less host.\nThe worker now starts in the leg's cwd (PWD pinned, CLAUDE_PROJECT_DIR scrubbed).",
+    "paths": [
+      "packages/canon/test/deploy-drift-notice.test.ts"
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "id": "01M4V3X5XF21W4FQGJMKSPKZN1",
+  "at": "2026-10-13T17:10:34.159Z",
+  "kind": "commit",
+  "transition": "commit:ci-suite:8e1b366d907e7b7c1d976bb4d266e270a592d30e",
+  "cut": "ci-suite",
+  "workPackage": "self-contained-suite",
+  "commit": {
+    "sha": "8e1b366d907e7b7c1d976bb4d266e270a592d30e",
+    "message": "test(cli): parse YAML in-process with js-yaml instead of spawning bun\n\nThe CI runner has node and pnpm only; fixtures that spawned `bun -e Bun.YAML…`\nfailed with ENOENT. js-yaml (catalog) is now a devDependency of packages/cli.",
+    "paths": [
+      "packages/cli/test/yaml.ts",
+      "packages/cli/test/catalog-recut/fixture.ts",
+      "packages/cli/test/delivery/fixture.ts",
+      "packages/cli/test/delivery/structural.test.ts",
+      "packages/cli/test/reconstitution/binding/fixture.ts",
+      "packages/cli/package.json",
+      "pnpm-lock.yaml"
+    ]
+  }
+}
