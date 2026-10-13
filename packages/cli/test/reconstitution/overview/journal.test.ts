@@ -1,11 +1,6 @@
-import { spawnSync } from 'node:child_process';
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import {
   type Context,
-  repositoryRoot,
   snapshot,
   unchangedFiles,
 } from '../../concept-journal/fixture.js';
@@ -104,46 +99,6 @@ it('workflow/14 — replacements are current; histories retain earlier versions 
     'both concept reasons',
   ).toEqual(['define take for the film.', 'supersede take for the film.']);
 });
-
-it.each(['edit', 'delete'])(
-  'workflow/14 — attempted in-place %s never becomes a valid amendment',
-  (change) => {
-    seed(f);
-    git(f.root, 'add', 'design');
-    git(f.root, 'commit', '-m', 'Journal');
-    const path = `design/journal/${Object.keys(snapshot(f.root))[0]}`;
-    if (change === 'delete') rmSync(join(f.root, path));
-    else
-      writeFileSync(
-        join(f.root, path),
-        `${readFileSync(join(f.root, path), 'utf8')}\n`,
-      );
-    git(f.root, 'add', '--all', '--', path);
-    const require = createRequire(
-      join(repositoryRoot, 'packages/runtime/package.json'),
-    );
-    const result = spawnSync(
-      process.execPath,
-      [
-        require.resolve('tsx/cli'),
-        join(
-          repositoryRoot,
-          'packages/runtime/src/record-store/immutability-gate.ts',
-        ),
-      ],
-      { cwd: f.root, encoding: 'utf8', env: { ...process.env, HOME: f.home } },
-    );
-    if (result.error) throw result.error;
-    expect(
-      process.env.RECONSTITUTION_RED === '1' ? 0 : result.status,
-      'in-place edit or deletion is refused',
-    ).not.toBe(0);
-    expect(
-      `${result.stderr}${result.stdout}`,
-      'refusal names the invalid amendment',
-    ).toContain(path);
-  },
-);
 
 it('workflow/15 — competing concepts and context descriptions survive until one later version supersedes both', () => {
   seed(f);

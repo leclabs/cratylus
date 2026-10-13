@@ -1,0 +1,12 @@
+{
+  "id": "01M4V930Y2V13PCHM7FD7057JV",
+  "at": "2026-10-13T18:41:08.546Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "development",
+  "name": "history",
+  "wording": "the repository's record of every change to cratylus, its design records included; it changes by pull request, and the review of that pull request is the only control on it: a change that rewrites, snapshots or corrects the history is a developer's or the operator's decision, reviewed like any other, and nothing mechanical refuses it.",
+  "builtFrom": [],
+  "reason": "0153. The operator, 2026-10-13: the record gate, the ledger's misreading and the CI's special checks are grey-field patches; the conceptual model conflated the bounded context of the product's users with the context of developing and releasing the product, which dogfoods the workflow but is a context of its own.",
+  "supersedes": []
+}

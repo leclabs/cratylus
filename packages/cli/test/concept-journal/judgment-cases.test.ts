@@ -1,7 +1,5 @@
-// Architect-authorized judgment cases: journal immutability, merged identities and retirement.
+// Architect-authorized judgment cases: merged identities and retirement.
 import { spawnSync } from 'node:child_process';
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
@@ -39,10 +37,6 @@ afterEach(() => {
   fixture.dispose();
 });
 
-// The source gate is run exactly as pre-commit does: tsx, no range argument, target repo cwd.
-const runtimeRequire = createRequire(
-  join(repositoryRoot, 'packages/runtime/package.json'),
-);
 function runNode(cwd: string, ...args: string[]) {
   const result = spawnSync(process.execPath, args, {
     cwd,
@@ -60,55 +54,6 @@ function runNode(cwd: string, ...args: string[]) {
 }
 
 describe('concept journal judgment regressions', () => {
-  it.each(['edit', 'delete'] as const)(
-    'W1 — staged %s of a committed journal entry is refused, while additions pass',
-    (change) => {
-      const { root } = fixture;
-      context(root);
-      const originalPath = `design/journal/${Object.keys(snapshot(root))[0]!}`;
-      git(root, 'add', 'design/journal');
-      git(root, 'commit', '-m', 'Committed journal context');
-      define(root);
-      git(root, 'add', 'design/journal');
-      const gate = [
-        runtimeRequire.resolve('tsx/cli'),
-        join(
-          repositoryRoot,
-          'packages/runtime/src/record-store/immutability-gate.ts',
-        ),
-      ];
-      const added = runNode(root, ...gate);
-      expect(added.status, added.stderr).toBe(0);
-      git(root, 'commit', '-m', 'Committed new concept entry');
-      const path = join(root, originalPath);
-      if (change === 'edit')
-        writeFileSync(
-          path,
-          Buffer.concat([readFileSync(path), Buffer.from('\n')]),
-        );
-      else rmSync(path);
-      git(root, 'add', '--all', '--', originalPath);
-      const staged = git(
-        root,
-        'diff',
-        '--cached',
-        '--name-status',
-        '--',
-        originalPath,
-      );
-      expect(staged).toContain(
-        `${change === 'edit' ? 'M' : 'D'}\t${originalPath}`,
-      );
-      const before = snapshot(root);
-      const refused = runNode(root, ...gate);
-      expect
-        .soft(refused.status, `${refused.stdout}${refused.stderr}`)
-        .not.toBe(0);
-      expect.soft(`${refused.stdout}${refused.stderr}`).toContain(originalPath);
-      expect(snapshot(root)).toEqual(before);
-    },
-  );
-
   it('D1 decisions — merged same-name decisions keep distinct entries and accept only an unambiguous reference', () => {
     const { root } = fixture;
     context(root);

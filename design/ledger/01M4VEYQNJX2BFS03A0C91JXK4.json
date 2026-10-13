@@ -1,0 +1,16 @@
+{
+  "id": "01M4VEYQNJX2BFS03A0C91JXK4",
+  "at": "2026-10-13T20:23:39.442Z",
+  "kind": "commit",
+  "transition": "commit:checks:89042464223a2e23e9b69085f9edf972f4faf8dc",
+  "cut": "checks",
+  "workPackage": "checks",
+  "commit": {
+    "sha": "89042464223a2e23e9b69085f9edf972f4faf8dc",
+    "message": "test(concept-journal): remove the one-time seeding migration and its history-reading test\n\nThe check no longer reads the repository's own git history: the seeding script,\nseeding.test.ts (pinned commits, byte-identity of seeded records) and the seed\nfixture helpers only it used are deleted.",
+    "paths": [
+      "scripts/",
+      "packages/cli/test/concept-journal/"
+    ]
+  }
+}

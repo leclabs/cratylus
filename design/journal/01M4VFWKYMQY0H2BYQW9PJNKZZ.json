@@ -1,0 +1,15 @@
+{
+  "id": "01M4VFWKYMQY0H2BYQW9PJNKZZ",
+  "at": "2026-10-13T20:39:58.676Z",
+  "by": "Lance Caraccioli",
+  "kind": "decide",
+  "decisionId": "0159",
+  "context": "development",
+  "title": "The checks cut is accepted",
+  "situation": "All 15 visible examples pass; the assayer rejected once on two findings (a package audit only CI ran, an undeclared dependency), both fixed, then accepted; CI ran the one check green. The ledger now reads all six integrated cuts as integrated, with no record changed.",
+  "decision": "Accepted. Rulings on the lead's hardening notes: (1) an integrated cut has no ready work packages; integration is terminal (0149), and the reading that still lists them is a defect, future work. (2) The leftover comments describing a live judging lane behind a switch, and the guard's exemption of that switch, go: no switch may let a model-calling test into the check (0154); future work, first. (3) The ledger check that needs a recorded integration in the repository's own ledger, and the delivery-journal test that uses a design example as its fixture, should carry their own fixtures; future work. (4) A judgment file of an integrated cut that no longer runs is history, left as it is.",
+  "consequences": "Integrated into dev. Future work in order: the live-lane leftovers, the integrated cut's ready packages, self-contained fixtures; then the workflow-delivery cut.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

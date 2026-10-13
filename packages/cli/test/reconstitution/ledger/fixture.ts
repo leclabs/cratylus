@@ -18,7 +18,7 @@ export interface State {
   branch: string;
   contexts: string[];
   architects: Record<string, string>;
-  phase: 'open' | 'in flight' | 'complete';
+  phase: 'open' | 'in flight' | 'complete' | 'integrated';
   workPackages: { name: string; status: string; dependsOn: string[] }[];
   ready: string[];
   report: unknown;

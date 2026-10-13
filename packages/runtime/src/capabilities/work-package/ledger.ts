@@ -4,8 +4,8 @@
 // the branch, so a branch's entries arrive elsewhere only with its merge.
 //
 // An entry's file is named by its id, a ULID, and holds the entry as JSON. It
-// is created exclusively and never overwritten, modified or deleted (the
-// pre-commit immutability gate holds the same law), so two branches that both
+// is created exclusively and never overwritten, modified or deleted: the
+// ledger's verbs only append, so two branches that both
 // appended merge in git as the union of their files. Entries are read only from
 // this directory of the working tree and are ordered by their id, like the
 // concept journal's, and like it the ledger reads past an entry of a kind this

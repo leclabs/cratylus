@@ -1,0 +1,22 @@
+{
+  "id": "01M4VFFST452V9JM2ET7FR4FX3",
+  "at": "2026-10-13T20:32:58.692Z",
+  "kind": "commit",
+  "transition": "commit:checks:96d898c0d44552130fa40bb843442a97d22e800c",
+  "cut": "checks",
+  "workPackage": "checks",
+  "commit": {
+    "sha": "96d898c0d44552130fa40bb843442a97d22e800c",
+    "message": "ci: remove the pack-smoke audit; release computes the publishable set itself (0154)",
+    "paths": [
+      "packages/canon/test/gate-convicts.test.ts",
+      "packages/canon/package.json",
+      "package.json",
+      "scripts/release.sh",
+      ".github/workflows/release.yml",
+      ".github/workflows/release-next.yml",
+      ".changeset/README.md",
+      ".gitignore"
+    ]
+  }
+}

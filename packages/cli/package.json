@@ -29,6 +29,7 @@
     "@cratylus/tooling": "workspace:*",
     "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
+    "ajv": "^8.20.0",
     "js-yaml": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

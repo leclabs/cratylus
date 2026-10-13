@@ -286,6 +286,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
       js-yaml:
         specifier: 'catalog:'
         version: 4.2.0

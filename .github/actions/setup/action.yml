@@ -3,8 +3,8 @@
 #
 # A COMPOSITE ACTION rather than a reusable workflow, deliberately: this is a step sequence
 # with no permissions, no concurrency and no job of its own, and it must run INSIDE whatever
-# job needs it. The GATE sequence is the opposite shape and is a reusable workflow for
-# exactly that reason — see `gates.yml`.
+# job needs it. The check is the opposite shape and is a reusable workflow for exactly
+# that reason — see `check.yml`.
 # ─────────────────────────────────────────────────────────────────────────────
 name: setup
 description: Install pnpm, the pinned Node, and the frozen workspace.

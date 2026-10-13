@@ -1,0 +1,9 @@
+{
+  "id": "01M4VE02V5T06BVQSV24K31N6Y",
+  "at": "2026-10-13T20:06:55.077Z",
+  "kind": "returned",
+  "transition": "toolu_01QCxzQWYWeQQEQk6oDT6MwP/LedgerCheckWriter/returned",
+  "cut": "checks",
+  "role": "check-writer",
+  "run": "toolu_01QCxzQWYWeQQEQk6oDT6MwP/LedgerCheckWriter"
+}

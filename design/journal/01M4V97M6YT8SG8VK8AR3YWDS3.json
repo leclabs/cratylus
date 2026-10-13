@@ -1,0 +1,19 @@
+{
+  "id": "01M4V97M6YT8SG8VK8AR3YWDS3",
+  "at": "2026-10-13T18:43:39.358Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "ledger",
+  "wording": "the record of a context's cuts and their work packages, kept as an append-only sequence of events, each one transition of one cut or work package carrying an id of its own, so a transition recorded once is refused when repeated; its events are taken from the harness's own account of its agents as it happens, never from an agent remembering to record them: a work package is dispatched when its builder is dispatched, returned when its builder returns, and approved when both of its cut's assayers' verdicts return passing it; a verdict with a finding against it returns it to build, and while the assayers disagree it stays unapproved until the architect settles the meaning question; a cut is in flight from its first dispatch, complete once every one of its work packages is approved, and integrated once its integration is recorded, which settles its phase whatever its work packages' last statuses, those staying readable as history; each cut's phase, its work packages' status and the work packages ready to dispatch next are computed from it on request; it is versioned with its cut's feature branch, so it shows the state of the branch being read and lands with the cut's merge.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "judgment"
+  ],
+  "reason": "0149, 0155: the checks cut's illustrator found the concept did not say integration settles a cut's phase.",
+  "supersedes": [
+    "01M4MBPBJASZD8QVCBTRP6FEJW"
+  ]
+}
