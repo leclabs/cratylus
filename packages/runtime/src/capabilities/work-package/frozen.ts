@@ -11,8 +11,9 @@
 // its own context. It freezes the checks its `freeze` acts name, a held-out
 // check among them only once a freeze act names it: its judgment folder is
 // never frozen by implication (decision 0125). Only the architect the cut
-// records for a context changes what the cut freezes there: a rule held by
-// review and by the record, never refused (decision 0143).
+// records for a context changes the examples and concepts the cut freezes
+// there, and only the cut's lead and its check-writer its checks (decision
+// 0160): a rule held by review and by the record, never refused (decision 0143).
 //
 // Beside what it freezes, the view says which of the cut's visible examples no
 // frozen check binds (`unchecked`).
@@ -29,7 +30,8 @@ import type { Files } from './recorded.js';
 export const JUDGMENT_DIR = 'design/judgment';
 
 /** One frozen cut: what it freezes, and the architect who alone may change
- *  it, for each of its contexts. Paths are from the top of the repository; a
+ *  its examples and concepts, for each of its contexts (its checks are the
+ *  lead's and the check-writer's). Paths are from the top of the repository; a
  *  path ending in `/` is a folder, everything under which is frozen. */
 export interface FrozenCut {
   readonly cut: string;

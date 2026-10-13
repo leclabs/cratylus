@@ -300,7 +300,7 @@ function glossary(text: string): Record<string, string> {
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
 architect | the client's principal architect: owns the conceptual design of the contexts it is given and the delivery of the product, turns intent into concepts, confirms examples and answers meaning questions
-lead | owns a cut's realization and settles every question of realization the accepted decisions leave open
+lead | owns a cut's realization: checks out the cut's branch, owns the checks that bind its examples, makes every technical decision and records it as a realization decision, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason, and merges the cut into the project once the architect has accepted it; it brings the architect only a meaning question or the cut's outcome, and never changes a concept or an example
 builder | owns one work package and changes only its outputs until their examples pass
 assayer | judges a cut once against fixed criteria and the held-out results, and never builds
 illustrator | writes a cut's examples cold from its concepts alone
@@ -546,8 +546,8 @@ const columns: Record<string, string[]> = {
   ],
   // Builder's unspecified classes are –; confirmed by the architect.
   'decision-rights': [
-    'I,R,D,D,–,D,–,R',
-    'I,I,I,I,D,I,I,I',
+    'I,R,D,–,–,–,–,R',
+    'I,I,I,D,D,D,I,I',
     '–,–,–,–,P,–,–,–',
     'I,I,I,I,I,I,D,I',
     'I,I,R,I,I,I,I,I',
@@ -571,7 +571,7 @@ const columns: Record<string, string[]> = {
   ],
   'action-scope': [
     'append-journal,write-examples',
-    'integrate,commit-own-paths,run-checks',
+    'integrate,commit-own-paths,run-checks,append-journal',
     'edit-own-outputs,run-checks,commit-own-paths',
     'none',
     'write-examples',

@@ -1,6 +1,7 @@
 // The lead role: master design §3, the lead column ("others I" expanded).
 
 import type { RoleCell } from '../compose.js';
+import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
 import { integrate } from '../dimensions/action-scope/integrate.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
@@ -62,9 +63,9 @@ export const leadRole: RoleCell = {
       { value: input, slot: 'intent' },
       { value: input, slot: 'priority' },
       { value: input, slot: 'meaning' },
-      { value: input, slot: 'constraint' },
+      { value: decides, slot: 'constraint' },
       { value: decides, slot: 'realization' },
-      { value: input, slot: 'check-ruling' },
+      { value: decides, slot: 'check-ruling' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
@@ -75,7 +76,7 @@ export const leadRole: RoleCell = {
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, work],
-    actionScope: [integrate, commitOwnPaths, runChecks],
+    actionScope: [integrate, commitOwnPaths, runChecks, appendJournal],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },

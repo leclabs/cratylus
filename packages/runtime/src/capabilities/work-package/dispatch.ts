@@ -162,7 +162,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'reads',
     purpose:
-      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples and its held-out example text, frozen from its opening; the checks its freeze acts name, a held-out check only once one names it; and each concept its examples name, in its own context; with the architect who alone changes them, and its visible examples no frozen check names (unchecked)',
+      'Show every cut opened and not yet integrated, and what each freezes: for each of its contexts its examples and its held-out example text, frozen from its opening; the checks its freeze acts name, a held-out check only once one names it; and each concept its examples name, in its own context; with the architect who alone changes its examples and concepts (its checks only its lead and its check-writer change), and its visible examples no frozen check names (unchecked)',
     when: 'Before changing an example, a judgment, a check or a concept, to see whether a cut freezes it and whose change it is; the one account of what is frozen',
     positional: null,
     flags: {},
@@ -171,7 +171,7 @@ export const VERBS = {
     concept: 'cut',
     effect: 'appends',
     purpose:
-      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen, its examples, its held-out example text and the concepts its examples name changed only by its architect until it is integrated, a rule held by review and the record, each check, held-out checks included, left open to its check-writer until a freeze act names it; when its contexts are held by different architects, which calls for one cut per context joined by contracts, it is recorded with a warning; refused when a context has no architect',
+      'Record the cut: the branch its change is built on and, for each of its contexts, the architect who holds it, who approves that context’s examples and settles its meaning questions; from then the cut is frozen until it is integrated, a rule held by review and the record: its examples, its held-out example text and the concepts its examples name changed only by its architect, and its checks, held-out checks included, only by its lead and its check-writer; when its contexts are held by different architects, which calls for one cut per context joined by contracts, it is recorded with a warning; refused when a context has no architect',
     when: 'Once, when the cut’s examples are approved and before its work is sliced or any agent is set to work on it',
     positional: null,
     flags: {
@@ -189,7 +189,7 @@ export const VERBS = {
     concept: 'freeze',
     effect: 'appends',
     purpose:
-      'Freeze checks with the cut: checks that bind its examples, visible or held out, each seen failing before the work it checks was built, so that from then only the cut’s architect changes them until the cut is integrated; the judgment folder is never frozen by implication; refused for a cut not opened or already integrated, and for a check that does not exist',
+      'Freeze checks with the cut: checks that bind its examples, visible or held out, each seen failing before the work it checks was built, so that from then only the cut’s lead and its check-writer change them until the cut is integrated, never its builders; the judgment folder is never frozen by implication; refused for a cut not opened or already integrated, and for a check that does not exist',
     when: 'Once a check that binds the cut’s examples has been seen failing, before any builder is set to work on what it checks',
     positional: null,
     flags: {
