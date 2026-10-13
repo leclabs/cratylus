@@ -74,26 +74,36 @@ const event = (transition: string) => ({
   run: transition,
 });
 
+/** Open the cut `film` of a one-context repository, as its architect does
+ *  before any dispatch: the ledger records lifecycle events only for an
+ *  opened cut. */
+const opened = (repo: string) =>
+  wp(repo, 'open', '--branch', 'feature/film', '--architect', 'workflow=lex');
+
 describe('the ledger store', () => {
   it('writes one file per entry, named by its ULID, in append order', () => {
     const repo = repository();
+    opened(repo);
     for (const t of ['a', 'b', 'c']) appendLifecycle(repo, event(t));
     const names = files(repo);
-    expect(names).toHaveLength(3);
+    expect(names).toHaveLength(4);
     expect(names.every((n) => /^[0-9A-HJKMNP-TV-Z]{26}\.json$/.test(n))).toBe(
       true,
     );
     expect(
-      names.map(
-        (n) =>
-          JSON.parse(readFileSync(join(repo, LEDGER_DIR, n), 'utf8'))
-            .transition,
-      ),
+      names
+        .map(
+          (n) =>
+            JSON.parse(readFileSync(join(repo, LEDGER_DIR, n), 'utf8'))
+              .transition,
+        )
+        .slice(1),
     ).toEqual(['a', 'b', 'c']);
   });
 
   it('REFUSES a repeated transition, naming it, writing nothing', () => {
     const repo = repository();
+    opened(repo);
     appendLifecycle(repo, event('once'));
     const before = files(repo);
     expect(refusal(() => appendLifecycle(repo, event('once')))).toContain(
@@ -104,6 +114,7 @@ describe('the ledger store', () => {
 
   it('records the same transition once when two processes deliver it at once', async () => {
     const repo = repository();
+    opened(repo);
     const module = fileURLToPath(
       new URL('../../src/lifecycle/index.ts', import.meta.url),
     );
@@ -132,8 +143,35 @@ catch { process.exit(1); }`;
       ),
     );
     expect(codes.filter((c) => c === 0)).toHaveLength(1);
-    expect(files(repo)).toHaveLength(1);
+    expect(files(repo)).toHaveLength(2);
   }, 30_000);
+});
+
+describe('the lifecycle capture (decision 0201(5))', () => {
+  it('records the events of a dispatch naming an opened cut', () => {
+    const repo = repository();
+    opened(repo);
+    expect(appendLifecycle(repo, event('lead'))).toMatchObject({
+      kind: 'dispatched',
+      cut: 'film',
+    });
+    expect(wp(repo, 'state')).toMatchObject({ phase: 'in flight' });
+    expect(files(repo)).toHaveLength(2);
+  });
+
+  it('records nothing for a dispatch naming no opened cut, and does not refuse it', () => {
+    const repo = repository();
+    const outside = {
+      ...event('builder'),
+      cut: 'none: ordinary engineering under decision 0202',
+    };
+    expect(appendLifecycle(repo, outside)).toBeUndefined();
+    expect(appendLifecycle(repo, event('unopened'))).toBeUndefined();
+    expect(files(repo)).toEqual([]);
+    opened(repo);
+    expect(appendLifecycle(repo, outside)).toBeUndefined();
+    expect(files(repo)).toHaveLength(1);
+  });
 });
 
 describe('the lifecycle command’s event', () => {

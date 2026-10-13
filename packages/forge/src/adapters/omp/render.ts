@@ -983,7 +983,10 @@ const SESSION_PLACEMENT: readonly string[] = [
  * task call id, the item, the kind), so one event delivered twice is refused:
  * `dispatched` for each item whose assignment names a cut, `returned` when it
  * returns (with its tokens when reported), `verdict` from an assayer's returned
- * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`).
+ * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`). The ledger
+ * keeps an event only for a cut opened in it: work dispatched outside any cut,
+ * whatever its assignment's `cut` says, is not recorded, and goes ahead
+ * (decision 0201(5)).
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
