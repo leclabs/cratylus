@@ -983,7 +983,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * task call id, the item, the kind), so one event delivered twice is refused:
  * `dispatched` for each item whose assignment names a cut, `returned` when it
  * returns (with its tokens when reported), `verdict` from an assayer's returned
- * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`). The ledger
+ * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`). A deliverable
+ * is read from the structured output, else from the text returned, whole or as its
+ * last fenced JSON block, so a verdict returned after prose is recorded. The ledger
  * keeps an event only for a cut opened in it: work dispatched outside any cut,
  * whatever its assignment's `cut` says, is not recorded, and goes ahead
  * (decision 0201(5)).
@@ -1537,14 +1539,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return undefined;',
         '}',
         '',
-        "// A returned text's JSON, when it is JSON.",
+        "// A returned text's JSON: the whole text, else its last fenced block that parses, as an",
+        '// agent returning its deliverable after prose writes it.',
         'function jsonIn(text: unknown): unknown {',
         '  if (typeof text !== "string") return undefined;',
-        '  try {',
-        '    return JSON.parse(text);',
-        '  } catch {',
-        '    return undefined;',
-        '  }',
+        '  const fenced = [...text.matchAll(/```[a-z]*\\n([\\s\\S]*?)\\n```/g)].map((m) => m[1] ?? "");',
+        '  for (const candidate of [text, ...fenced.reverse()])',
+        '    try {',
+        '      return JSON.parse(candidate);',
+        '    } catch {',
+        '      // not JSON: the next candidate',
+        '    }',
+        '  return undefined;',
         '}',
         '',
         "// omp's own sections that prescribe an identity, a stance or a procedure, by heading: a session",
@@ -2150,15 +2156,16 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    return undefined;',
         '  });',
         "  // A background item settles outside its call: omp's own lifecycle event says so, and its",
-        '  // structured deliverable sits beside its session file.',
+        '  // deliverable sits beside its session file: structured, else as the text it returned.',
         '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
         '  bus?.on?.("task:subagent:lifecycle", (data) => {',
         '    const e = (data ?? {}) as Record<string, unknown>;',
         '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
         '    const at = dispatches.get(`${String(e.parentToolCallId)}#${String(e.index)}`);',
         '    if (at === undefined) return;',
-        '    const file = typeof e.sessionFile === "string" ? e.sessionFile.replace(/\\.jsonl$/, ".json") : undefined;',
-        '    const deliverable = file !== undefined && existsSync(file) ? jsonIn(readFileSync(file, "utf8")) : undefined;',
+        '    const base = typeof e.sessionFile === "string" ? e.sessionFile.replace(/\\.jsonl$/, "") : undefined;',
+        '    const file = base === undefined ? undefined : [`${base}.json`, `${base}.md`].find((f) => existsSync(f));',
+        '    const deliverable = file === undefined ? undefined : jsonIn(readFileSync(file, "utf8"));',
         '    void returned(at, typeof e.id === "string" ? e.id : at.run, deliverable, undefined);',
         '  });',
         '',

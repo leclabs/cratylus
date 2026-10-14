@@ -369,13 +369,15 @@ cratylus workPackage levels --cut delivery
 
 ### `cratylus concepts`
 
-The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` and `classify`.
+The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` and `deprecate`.
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, `state`, `decisions` and `leakage`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
 
-`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the decisions not superseded and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` and `state` report each decision's governing `kind` (`null` where none is recorded) and its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+**What stands.** A decision stands while it is open or accepted, neither superseded nor deprecated. `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement; a decision recorded with `decide --cut <name>` is deprecated, with no entry, once the ledger records that cut integrated. A cut's example files (`design/examples/<context>/<cut>.md`) are history once the cut is integrated, unless a standing decision keeps them (`decide --keeps <context>/<cut>`). `decisions` lists only standing decisions, `state` lists them by `entry`, `id`, `title` and `kind` (their whole text is `decisions`'), `overview` tells only standing open ones and `leakage` reads only standing decisions and examples; `--history` on `decisions`, `state` and `leakage` adds the history: every superseded decision with its `supersededBy`, and every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or the integrated `cut`).
+
+`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the standing numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
 What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `classify` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
@@ -402,6 +404,7 @@ cratylus concepts state [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
+| `--history`         |
 
 #### `cratylus concepts design`
 
@@ -433,6 +436,7 @@ cratylus concepts decisions [options]
 | ------------------- |
 | `--context <value>` |
 | `--open`            |
+| `--history`         |
 
 #### `cratylus concepts leakage`
 
@@ -443,6 +447,7 @@ cratylus concepts leakage [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
+| `--history`         |
 
 #### `cratylus concepts context`
 
@@ -509,6 +514,8 @@ cratylus concepts decide [options] <id>
 | `--status <value>`       |
 | `--supersedes <value>`   |
 | `--kind <value>`         |
+| `--cut <value>`          |
+| `--keeps <value>`        |
 
 #### `cratylus concepts accept`
 
@@ -529,6 +536,16 @@ cratylus concepts classify [options] <id>
 | Flag               |
 | ------------------ |
 | `--kind <value>`   |
+| `--reason <value>` |
+
+#### `cratylus concepts deprecate`
+
+```sh
+cratylus concepts deprecate [options] <id>
+```
+
+| Flag               |
+| ------------------ |
 | `--reason <value>` |
 
 ### `cratylus workPackage`
@@ -712,6 +729,8 @@ cratylus workPackage record [options]
 ### `cratylus versionSkew`
 
 Version skew. Its one verb is `report`, which prints `{ "artifacts", "command", "installation" }` as JSON: the version of cratylus that projected the installation (its owned root's `package.json`), the version of this `cratylus` command, and the root. The installation is the one `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else the one root under `~/.cratylus/`. It chooses between nothing; where the two differ, install again with the cratylus in use. In omp it is the read-only tool `version_skew`, and every session start warns when the two differ.
+
+A build that is no release says which commit it is from: a `cratylus` run from the source tree it was built in, never installed as a package, reports its version with the commit as build metadata, `0.13.0+62c7b190` (`.modified` added where it was built from uncommitted changes), in `cratylus --version` and so in `versionSkew report` and in what `install` records; a release installed from the registry reports its version alone. A development build is never mistaken for the release.
 
 #### `cratylus versionSkew report`
 

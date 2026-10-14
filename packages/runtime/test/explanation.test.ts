@@ -66,16 +66,17 @@ const VERBS = [
   'decide',
   'accept',
   'classify',
+  'deprecate',
 ];
 
 /** Each verb's parameters, as the realization contract names them. */
 const PARAMETERS: Record<string, string[]> = {
   overview: ['context'],
-  state: ['context'],
+  state: ['context', 'history'],
   design: ['context'],
   history: ['concept', 'context'],
-  decisions: ['context', 'open'],
-  leakage: ['context'],
+  decisions: ['context', 'open', 'history'],
+  leakage: ['context', 'history'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
@@ -90,9 +91,12 @@ const PARAMETERS: Record<string, string[]> = {
     'status',
     'supersedes',
     'kind',
+    'cut',
+    'keeps',
   ],
   accept: ['id', 'reason'],
   classify: ['id', 'kind', 'reason'],
+  deprecate: ['id', 'reason'],
 };
 
 describe('concepts --explain', () => {
@@ -225,6 +229,7 @@ describe('concepts --explain', () => {
       decide: 'decision',
       accept: 'decision',
       classify: 'decision',
+      deprecate: 'decision',
     });
     expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
       [],
@@ -380,11 +385,11 @@ describe('what the explanation calls required is what the verb refuses without',
 
   /** A full call of each single-use verb, by parameter. */
   const FULL: Record<string, Record<string, string>> = {
-    state: { context: 'booking' },
+    state: { context: 'booking', history: '' },
     design: { context: 'booking' },
     history: { concept: 'slot', context: 'booking' },
-    decisions: { context: 'booking', open: '' },
-    leakage: { context: 'booking' },
+    decisions: { context: 'booking', open: '', history: '' },
+    leakage: { context: 'booking', history: '' },
     define: {
       concept: 'window',
       context: 'booking',
@@ -410,9 +415,12 @@ describe('what the explanation calls required is what the verb refuses without',
       status: 'open',
       supersedes: 'd1',
       kind: 'meaning',
+      cut: 'slots',
+      keeps: 'booking/slots',
     },
     accept: { id: 'd1', reason: 'Agreed.' },
     classify: { id: 'd1', kind: 'realization', reason: 'It constrains.' },
+    deprecate: { id: 'd1', reason: 'Finished.' },
   };
 
   /** The argv of `verb` giving `given`. */
