@@ -1,0 +1,19 @@
+{
+  "id": "01M4W14K3V1TFRDZDH5KF091V6",
+  "at": "2026-10-14T01:41:25.755Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "ledger",
+  "wording": "the record of a project's cuts and work packages, each change of state taken as it happens from what the harness saw its agents do, never from an agent remembering. A work package is dispatched and returned with its builder and approved once every assayer judging it passes it, a finding sending it back to build and a disagreement holding it until the architect settles it; a cut is in flight from its first dispatch, complete when all its work packages are approved, and integrated once that is recorded, whatever their last states; every state and what is ready next are computed from it, on the cut's own branch.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "judgment"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VRGF3MQJVW2NGCN79P20GF"
+  ]
+}

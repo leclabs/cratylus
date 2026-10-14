@@ -1,0 +1,24 @@
+{
+  "id": "01M4W14K8AMJRRRPH2SRPWJJYZ",
+  "at": "2026-10-14T01:41:25.898Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "the agent that owns a cut's realization: it divides the work into work packages and schedules them, has the check-writer bind the examples and owns those checks, dispatches the builders, runs judgment and the whole check, and integrates the cut once the architect accepts it. It makes and records every technical decision within the operator's requirements, settling the operator's recommendations, and brings the architect only a meaning question or the cut's outcome, never changing a concept or an example.",
+  "builtFrom": [
+    "cut",
+    "work package",
+    "dependency graph",
+    "build",
+    "judgment",
+    "whole check",
+    "decision",
+    "check-writer",
+    "integration"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VQN28APXPQH6GB4EDXTA79"
+  ]
+}

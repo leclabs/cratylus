@@ -1,0 +1,19 @@
+{
+  "id": "01M4W14M39SQ3NFYZJRTCKBW0S",
+  "at": "2026-10-14T01:41:26.761Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "install",
+  "wording": "placing cratylus on one harness for one user, across every project: the corpus's agents and skills and cratylus's extension are projected under the owned root and the projecting version recorded; it asks only what it has not been told, and installing again with the same version changes nothing. An operator's choice, such as which model each tier of agents runs on, is asked for and kept as the host's own setting; where it can be neither told nor asked, install names each tier left unbound as the operator's next step.",
+  "builtFrom": [
+    "owned root",
+    "projection",
+    "extension",
+    "host"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VS5ZWEHQF5HRMF3SYJKBQY"
+  ]
+}

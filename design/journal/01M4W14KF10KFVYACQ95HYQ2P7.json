@@ -1,0 +1,16 @@
+{
+  "id": "01M4W14KF10KFVYACQ95HYQ2P7",
+  "at": "2026-10-14T01:41:26.113Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "held-out example",
+  "wording": "an example kept from builders and used only in judgment, so passing the visible examples while missing the concept is caught; it is kept back by omission alone, never named to a builder or mentioned, since a prohibition would announce it. When one fails, builders learn the concept and the shortfall but not the case, and a case revealed to fix it becomes visible and is replaced by a new held-out one.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4J5RARYP0W82PRRVRB7ABHQ"
+  ]
+}
