@@ -1,0 +1,8 @@
+{
+  "id": "01M4VZ1TYRSJK4RQNV3G7BZ4XP",
+  "at": "2026-10-14T01:04:58.328Z",
+  "kind": "integrate",
+  "transition": "integrate:workflow-delivery",
+  "cut": "workflow-delivery",
+  "agent": "architect"
+}
