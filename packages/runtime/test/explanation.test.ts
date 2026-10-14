@@ -74,7 +74,7 @@ const VERBS = [
 const PARAMETERS: Record<string, string[]> = {
   overview: ['context'],
   state: ['context', 'history'],
-  design: ['context'],
+  design: ['context', 'history'],
   history: ['concept', 'context'],
   decisions: ['context', 'open', 'history'],
   leakage: ['context', 'history'],
@@ -195,7 +195,7 @@ describe('concepts --explain', () => {
   /** The live concepts of the journal of the repository at `from`, and the
    *  concepts it has retired. */
   function designAt(from: string) {
-    const design = dispatchConcepts(['design'], { from }) as {
+    const design = dispatchConcepts(['design', '--history'], { from }) as {
       contexts: {
         concepts: { name: string }[];
         retired: { name: string }[];

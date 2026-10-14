@@ -34,6 +34,11 @@
 // it has none until one is recorded.
 //
 // A cut's EFFICIENCY figures are its context's latest efficiency entry for it.
+//
+// WHAT STANDS of a design or a decision is what a view shows unless history is
+// asked for: a design without its retired concepts or the reason each live
+// concept's current version was written, a decision without the decisions it
+// replaced or the kinds recorded for it before the governing one.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
@@ -139,6 +144,52 @@ export interface DecisionView {
  *  deprecated. */
 export const stands = (decision: DecisionView): boolean =>
   decision.status === 'open' || decision.status === 'accepted';
+
+/** `decision` as it stands: its own text, status and governing kind, without
+ *  what it superseded, what superseded it, or every kind recorded for it. */
+export const standingDecision = ({
+  entry,
+  id,
+  context,
+  title,
+  situation,
+  decision,
+  consequences,
+  status,
+  kind,
+  cut,
+  keeps,
+}: DecisionView) => ({
+  entry,
+  id,
+  context,
+  title,
+  situation,
+  decision,
+  consequences,
+  status,
+  kind,
+  ...(cut === undefined ? {} : { cut }),
+  ...(keeps === undefined ? {} : { keeps }),
+});
+
+/** `design` as it stands: its live concepts by their meaning alone, without
+ *  the reasons their versions were written, and no retired concepts. */
+export function standingDesign<
+  D extends {
+    readonly concepts: readonly Meaning[];
+    readonly retired: readonly unknown[];
+  },
+>({ concepts, retired: _, ...rest }: D) {
+  return {
+    ...rest,
+    concepts: concepts.map(({ name, wording, builtFrom }) => ({
+      name,
+      wording,
+      builtFrom,
+    })),
+  };
+}
 
 export interface HistoryView {
   readonly context: string;

@@ -74,6 +74,7 @@ function decisionViews(): Decision[] {
   const decisions = query<{ decisions: Decision[] }>(
     fixture.root,
     'decisions',
+    '--history',
     '--context',
     'workflow',
   );
