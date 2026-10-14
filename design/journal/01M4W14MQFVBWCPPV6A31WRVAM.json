@@ -1,0 +1,17 @@
+{
+  "id": "01M4W14MQFVBWCPPV6A31WRVAM",
+  "at": "2026-10-14T01:41:27.407Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "development",
+  "name": "release",
+  "wording": "publishing a new version of cratylus, decided by the operator: dev is merged into main by reviewed pull request, every version stays in major version 0, and CI runs the check and publishes the packages.",
+  "builtFrom": [
+    "check",
+    "history"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VS604Z3R5YFT1H306MCSNG"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "01M4W14MGVDRY41J1K5KVF9D8Q",
+  "at": "2026-10-14T01:41:27.195Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "identity",
+  "wording": "who an agent is, the same however it is started: its role, objective, expertise, procedure, stance and communication-style, its name and any mark identifying it to the operator, and, for an ipseic agent alone, a key that signs its acts. Its text states identity only, in plain words that explain why, never its reach or how it was started, and launch and dispatch keep its model and effort too.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VS600HNF932AZWNWB5D1DG"
+  ]
+}

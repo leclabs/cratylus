@@ -1,0 +1,14 @@
+{
+  "id": "01M4W14KWFZ00NK29A5ZPKS7FK",
+  "at": "2026-10-14T01:41:26.543Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "owned root",
+  "wording": "everything cratylus places on a host lives under one root it alone owns, which the harness's own surfaces only refer into, so what cratylus placed is known, never guessed; upgrade and uninstall keep nothing changed inside the root and everything the host placed or changed outside it, removing only cratylus's references into the root.",
+  "builtFrom": [],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4NTG0GWC6K2RAT5NCHMHXCZ"
+  ]
+}

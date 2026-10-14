@@ -3,9 +3,10 @@
 // about it, computed from the concept journal and the ledger on every request
 // and never stored.
 //
-// It gives the context's subject and its relation in the context map, then its
-// live concepts WHOLE BEFORE PARTS, then its open decisions, then the cuts in
-// flight whose contexts include it, and the same as plain prose (`account`).
+// It gives the context's subject and its relation in the context map, its
+// cycles, open decisions and the cuts in flight whose contexts include it, and
+// the whole as plain prose (`account`): the one place each live concept is told,
+// WHOLE BEFORE PARTS, so the overview gives each concept once.
 //
 // ORDER: first the concepts no other live concept is built from, in recorded
 // order; then breadth-first, each remaining concept right after the first
@@ -17,19 +18,11 @@
 import type { CutPhase } from '../work-package/index.js';
 import type { ContextView, DecisionView, Meaning } from './views.js';
 
-/** A concept as the overview gives it: its name, current meaning and parts. */
-export interface OverviewConcept {
-  readonly name: string;
-  readonly meaning: string;
-  readonly builtFrom: readonly string[];
-}
-
 /** One context's overview. */
 export interface ContextOverview {
   readonly context: string;
   readonly subject: string | null;
   readonly relation: string | null;
-  readonly concepts: readonly OverviewConcept[];
   readonly cycles: readonly (readonly string[])[];
   readonly openDecisions: readonly { id: string; title: string }[];
   readonly cutsInFlight: readonly {
@@ -202,11 +195,6 @@ export function overviewOf(
     context,
     subject: design.subject,
     relation: design.relation,
-    concepts: ordered.map((c) => ({
-      name: c.name,
-      meaning: c.wording,
-      builtFrom: [...c.builtFrom],
-    })),
     cycles,
     openDecisions: open,
     cutsInFlight: inFlight,

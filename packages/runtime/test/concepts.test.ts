@@ -535,7 +535,11 @@ describe('the concept journal as a library', () => {
     );
     const overview = () =>
       concepts('overview', '--context', 'booking') as {
-        contexts: { context: string; cutsInFlight: unknown[] }[];
+        contexts: {
+          context: string;
+          cutsInFlight: unknown[];
+          account: string;
+        }[];
       };
     expect(overview().contexts[0]?.cutsInFlight).toEqual([]);
     appendLifecycle(from, {
@@ -551,15 +555,15 @@ describe('the concept journal as a library', () => {
         {
           context: 'booking',
           subject: 'Booking.',
-          concepts: [
-            { name: 'hold', meaning: 'A seat kept aside.', builtFrom: [] },
-          ],
           cutsInFlight: [
             { cut: 'seats', phase: 'in flight', branch: 'feature/seats' },
           ],
         },
       ],
     });
+    expect(overview().contexts[0]?.account).toContain(
+      'Hold means: A seat kept aside.',
+    );
     expect(journal()).toEqual(before);
     expect(concepts('overview')).toMatchObject({
       contexts: [{ context: 'booking' }, { context: 'other' }],

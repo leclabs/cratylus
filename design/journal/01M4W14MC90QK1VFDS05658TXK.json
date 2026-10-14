@@ -1,0 +1,16 @@
+{
+  "id": "01M4W14MC90QK1VFDS05658TXK",
+  "at": "2026-10-14T01:41:27.049Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "persona",
+  "wording": "an individually named agent over one role, chosen by the operator for the expertise a project needs, the generic role serving where none fits; its residue is above all that expertise, the contexts it holds and their industry knowledge. It overrides its role's single values and extends its sets, may narrow but never widen its reach, and never overrides a fixed value or removes a guardrail.",
+  "builtFrom": [
+    "role"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VS602S1P7TE0F2NDD2RDA9"
+  ]
+}

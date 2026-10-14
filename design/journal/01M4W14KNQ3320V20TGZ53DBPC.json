@@ -1,0 +1,16 @@
+{
+  "id": "01M4W14KNQ3320V20TGZ53DBPC",
+  "at": "2026-10-14T01:41:26.327Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability interface",
+  "wording": "a capability is offered to agents the way the harness offers its own tools: its name and verbs are the names of the concepts it serves, in their context's words, each saying its purpose and when to reach for it, so an agent knows from the interface alone what it does; that description is stated once, by the capability itself, and only put into each harness's form, never restated where it could drift.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4JG7QVY2P8ANNJ103W5A84M"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "01M4W14KYQQDAGE9P95F70HTGA",
+  "at": "2026-10-14T01:41:26.615Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability port",
+  "wording": "each capability has one implementation, the runtime on every host; agents reach it through a harness tool that only calls it and the operator through the cratylus command, so both reach the same version, any difference is reported as version skew, and no harness reimplements a capability.",
+  "builtFrom": [],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4NTDBS2VDQ8HRVQPDKSR0ZZ"
+  ]
+}

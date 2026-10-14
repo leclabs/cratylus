@@ -19,12 +19,8 @@ export interface ContextView {
   context?: string;
   subject: string;
   relation: string;
-  concepts: {
-    name: string;
-    wording?: string;
-    meaning?: string;
-    builtFrom: string[];
-  }[];
+  /** Absent from an overview, which tells each concept only in its account. */
+  concepts?: { name: string; wording: string; builtFrom: string[] }[];
   delivered?: Pick<Delivered, 'origin' | 'version' | 'context' | 'identity'>;
   readOnly?: boolean;
   account?: string;
@@ -97,24 +93,34 @@ export function assertDelivered(
     subject: value.subject,
     relation: value.relation,
   });
-  expect(
-    context!.concepts
-      .map((c) => ({
-        name: c.name,
-        wording: c.wording ?? c.meaning,
-        builtFrom: c.builtFrom,
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-  ).toEqual([...value.concepts].sort((a, b) => a.name.localeCompare(b.name)));
   if (verb === 'overview') {
+    for (const c of value.concepts)
+      expect(context!.account).toContain(
+        `${c.name[0]!.toUpperCase()}${c.name.slice(1)} means: ${c.wording}`,
+      );
     expect(context!.account).toMatch(/delivered/i);
     expect(context!.account).toMatch(/read.only/i);
-  }
+  } else
+    expect(
+      context!
+        .concepts!.map(({ name, wording, builtFrom }) => ({
+          name,
+          wording,
+          builtFrom,
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    ).toEqual([...value.concepts].sort((a, b) => a.name.localeCompare(b.name)));
   if (verb === 'state') {
     expect(context!.decisions).toEqual({ accepted: [], open: [] });
     expect(context!.efficiency).toEqual([]);
     expect(context!.retired).toEqual([]);
   }
+}
+/** Expects `view` to give `wording` as its first concept's meaning: in its
+ *  concepts, or in its account for an overview, which has no concepts. */
+export function expectMeaning(view: ContextView, wording: string): void {
+  if (view.concepts === undefined) expect(view.account).toContain(wording);
+  else expect(view.concepts[0]!.wording).toBe(wording);
 }
 export function ownSource(h: Host, name = 'workflow'): void {
   // Same identity, a different branch's current meaning; names do not decide ownership.
@@ -152,7 +158,5 @@ export function assertSourceView(
     subject: 'The local source subject.',
   });
   expect(answer[0]).not.toHaveProperty('delivered');
-  expect(
-    answer[0]!.concepts[0]!.wording ?? answer[0]!.concepts[0]!.meaning,
-  ).toBe('The branch practice.');
+  expectMeaning(answer[0]!, 'The branch practice.');
 }

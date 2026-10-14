@@ -1,0 +1,19 @@
+{
+  "id": "01M4W0M2S5X85BF6DFRCZ90DA8",
+  "at": "2026-10-14T01:32:24.741Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "concept journal",
+  "wording": "the conceptual design and its decisions kept as an append-only journal: each concept version belongs to one bounded context and carries the reason it was written, the latest version of a concept or of a context's description is its current one, two versions that supersede the same one are reported as competing until a later version supersedes both, and nothing is edited or deleted; the current conceptual design of each context, the history of each concept and each context's description, and the open decisions are computed from it, and nothing outside it is an account of the design, and it is amended only by appending through named commands, so supersession holds by construction; it is versioned with the project and starts empty in a new one, where the architect records the project's first bounded contexts; and the entries about a cut, its concepts, its decisions and their acceptance, are appended on the cut's feature branch and land with its merge, so no branch's journal claims what that branch does not hold; a reader that meets an entry of a kind it does not know reads past it and reports that its views may be incomplete, never refusing the whole journal; it flags, as a warning the architect reads and never as a refusal, wording that names code, files, commands, flags, identifiers, tools or libraries where a concept, a meaning decision or an example should state what must hold; its views also show the contexts the product delivers, read-only, marked as delivered and named by their origin, beside the project's own, unless the project's journal holds the same context by identity, when its own is read; with the ledger it makes up the project's event-sourced record, the design stream beside the work stream, all contexts in one stream, every view a projection of them, and the examples documents kept beside it (0211).",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "supersession",
+    "decision"
+  ],
+  "reason": "0211.",
+  "supersedes": [
+    "01M4VW1PEAE9VH7GYKSGRGBE11"
+  ]
+}
