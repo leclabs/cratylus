@@ -369,11 +369,13 @@ cratylus workPackage levels --cut delivery
 
 ### `cratylus concepts`
 
-The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` and `deprecate`.
+The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` and `deprecate`.
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, `state`, `decisions` and `leakage`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, `state`, `decisions` and `leakage`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
+
+**The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `overview` and `state` show it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
 
 **What stands.** A decision stands while it is open or accepted, neither superseded nor deprecated. `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement; a decision recorded with `decide --cut <name>` is deprecated, with no entry, once the ledger records that cut integrated. A cut's example files (`design/examples/<context>/<cut>.md`) are history once the cut is integrated, unless a standing decision keeps them (`decide --keeps <context>/<cut>`). `decisions` lists only standing decisions, `state` lists them by `entry`, `id`, `title` and `kind` (their whole text is `decisions`'), `overview` tells only standing open ones and `leakage` reads only standing decisions and examples; `--history` on `decisions`, `state` and `leakage` adds the history: every superseded decision with its `supersededBy`, and every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or the integrated `cut`).
 
@@ -448,6 +450,17 @@ cratylus concepts leakage [options]
 | ------------------- |
 | `--context <value>` |
 | `--history`         |
+
+#### `cratylus concepts purpose`
+
+```sh
+cratylus concepts purpose [options]
+```
+
+| Flag                  |
+| --------------------- |
+| `--statement <value>` |
+| `--reason <value>`    |
 
 #### `cratylus concepts context`
 

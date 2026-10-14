@@ -4,9 +4,10 @@
 //
 // Every entry carries its `id`, a ULID that names its file and orders it, `at`,
 // the moment its id was minted, and, when known, `by`, who appended it: the
-// acting agent, else git's user. A context's description (`context`)
-// changes like a concept does: a later description with its reason supersedes
-// the current ones, the earlier kept in the context's history. A concept
+// acting agent, else git's user. The project's purpose (`purpose`), what the
+// project is for, and a context's description (`context`) change like a
+// concept does: a later one with its reason supersedes the current ones, the
+// earlier kept in the journal. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id, and its acceptance (`accept`), each classification of its kind
@@ -42,6 +43,17 @@ export interface ContextEntry extends Stamped {
   readonly relation: string;
   readonly reason?: string;
   readonly supersedes?: readonly string[];
+}
+
+/** The project's purpose: what the project is for, in plain words. The first
+ *  records it, with no reason; a later one changes it, with the `reason` it was
+ *  written, naming the current entries it supersedes (one when settled, all
+ *  when competing). */
+export interface PurposeEntry extends Stamped {
+  readonly kind: 'purpose';
+  readonly statement: string;
+  readonly reason?: string;
+  readonly supersedes: readonly string[];
 }
 
 /** A version of a concept that states it: its first (`define`) or one that
@@ -144,6 +156,7 @@ export interface EfficiencyEntry extends Stamped {
 }
 
 export type Entry =
+  | PurposeEntry
   | ContextEntry
   | VersionEntry
   | DecideEntry
@@ -185,6 +198,12 @@ const worded = {
 /** Every kind of entry the journal holds, and the fields an entry of it must
  *  carry to be read. */
 export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
+  purpose: {
+    at: text,
+    statement: text,
+    reason: optional(text),
+    supersedes: texts,
+  },
   context: {
     at: text,
     name: text,
