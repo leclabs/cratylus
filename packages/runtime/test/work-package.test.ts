@@ -58,6 +58,18 @@ const refused = (repo: string, verb: string, ...args: string[]): string => {
   throw new Error(`workPackage ${verb} was not refused`);
 };
 
+/** Open the cut `delivery`, as its architect does before any dispatch: the
+ *  ledger records lifecycle events only for an opened cut. */
+const opened = (repo: string) =>
+  wp(
+    repo,
+    'open',
+    '--branch',
+    'feature/delivery',
+    '--architect',
+    'booking=lex',
+  );
+
 /** The harness reports `name`'s builder dispatched, as the binding does. */
 const dispatched = (repo: string, name: string) =>
   appendLifecycle(repo, {
@@ -180,6 +192,7 @@ describe('workPackage refusals', () => {
   it('REFUSES a commit git refuses, leaving the index as it was', () => {
     const repo = repository('delivery');
     wp(repo, 'submit', 'a', '--concept', 'delivery', '--output', 'a/');
+    opened(repo);
     dispatched(repo, 'a');
     writeFileSync(join(repo, 'staged.txt'), 'staged\n');
     git(repo, 'add', 'staged.txt');
@@ -245,6 +258,7 @@ describe('workPackage refusals', () => {
       '--depends-on',
       'a',
     );
+    opened(repo);
     dispatched(repo, 'a');
     writeFileSync(join(repo, 'a[b].ts'), 'mine\n');
     writeFileSync(join(repo, 'ab.ts'), 'theirs\n');
@@ -278,6 +292,7 @@ describe('workPackage refusals', () => {
 describe('the whole check', () => {
   it('closes a round per run and flags one that resolves nothing', () => {
     const repo = repository('delivery');
+    opened(repo);
     wp(repo, 'check', '--failure', 'a');
     wp(repo, 'check', '--failure', 'a', '--failure', 'b');
     appendLifecycle(repo, {
