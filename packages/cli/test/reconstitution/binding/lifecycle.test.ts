@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 for (const toolName of ['task', 'dispatch_agents']) {
-  it(`workflow/4, workflow/5 — ${toolName} captures harness dispatch, return and verdict without agent recording calls`, async () => {
+  it(`workflow/4, workflow/5 — ${toolName} captures harness dispatch, return and verdict without agent recording calls, a verdict returned after prose included`, async () => {
     f = bindingFixture();
     open(f);
     // 0128/0129: the builder's example is bound by a frozen check first.
@@ -58,7 +58,8 @@ for (const toolName of ['task', 'dispatch_agents']) {
       ).not.toBe(true);
       return event;
     };
-    const returned = async (id: string, data: unknown) =>
+    // A deliverable comes structured, or as the text returned: prose, then its JSON fenced.
+    const returned = async (id: string, data: unknown, asText = false) =>
       extension!.fire('tool_result', {
         toolName,
         toolCallId: id,
@@ -67,7 +68,11 @@ for (const toolName of ['task', 'dispatch_agents']) {
             {
               index: 0,
               id: `${id}/one`,
-              structuredOutput: { data },
+              ...(asText
+                ? {
+                    output: `I accept the cut.\n\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\`\n`,
+                  }
+                : { structuredOutput: { data } }),
               tokens: { input: 12, output: 7 },
             },
           ],
@@ -116,7 +121,11 @@ for (const toolName of ['task', 'dispatch_agents']) {
         },
         id,
       );
-      await returned(id, { cut: 'film', verdicts, hardeningNotes: [] });
+      await returned(
+        id,
+        { cut: 'film', verdicts, hardeningNotes: [] },
+        id === 'assayer-b',
+      );
     }
     expect(
       state().workPackages[0].status,

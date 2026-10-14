@@ -306,7 +306,7 @@ describe('the concept journal as a library', () => {
     });
     legacy('01Z00000000000000000000003', decision('b', null));
     legacy('01Z00000000000000000000004', decision('c', 'b'));
-    expect(concepts('decisions')).toMatchObject({
+    expect(concepts('decisions', '--history')).toMatchObject({
       decisions: [
         { entry: '01Z00000000000000000000001', id: 'a', status: 'accepted' },
         {
@@ -572,6 +572,181 @@ describe('the concept journal as a library', () => {
       ['overview', '--context', 'absent'],
       /^concepts overview: the journal has no bounded context 'absent'/,
     );
+  });
+
+  it('shows only standing decisions and examples, history when asked', () => {
+    const decide = (id: string, ...more: string[]) =>
+      concepts(
+        'decide',
+        id,
+        '--context',
+        'booking',
+        '--title',
+        `${id} title`,
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'accepted',
+        ...more,
+      ) as { id: string };
+    const listed = (...flags: string[]) =>
+      (
+        concepts('decisions', ...flags) as {
+          decisions: { id: string; status: string; deprecation?: unknown }[];
+        }
+      ).decisions.map(({ id, status, deprecation }) => ({
+        id,
+        status,
+        ...(deprecation === undefined ? {} : { deprecation }),
+      }));
+    decide('rule');
+    decide('old');
+    decide('new', '--supersedes', 'old');
+    const about = decide('about', '--cut', 'seats');
+    expect(about).toMatchObject({ cut: 'seats' });
+    decide('keeper', '--keeps', 'booking/seats');
+    refused(
+      ['deprecate', 'rule'],
+      /^concepts deprecate: give why it no longer applies with --reason/,
+    );
+    refused(
+      ['deprecate', 'old', '--reason', 'Done.'],
+      /^concepts deprecate: the decision 'old' is superseded; only a standing decision is deprecated/,
+    );
+    refused(
+      [
+        'decide',
+        'bad',
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+        '--keeps',
+        'seats',
+      ],
+      /^concepts decide: the kept example file 'seats' is not one/,
+    );
+    const deprecated = concepts('deprecate', 'rule', '--reason', 'Done.') as {
+      id: string;
+    };
+    expect(deprecated).toMatchObject({
+      kind: 'deprecate',
+      decisionId: 'rule',
+      reason: 'Done.',
+    });
+    refused(
+      ['deprecate', 'rule', '--reason', 'Again.'],
+      /^concepts deprecate: the decision 'rule' is deprecated/,
+    );
+    expect(listed()).toEqual([
+      { id: 'new', status: 'accepted' },
+      { id: 'about', status: 'accepted' },
+      { id: 'keeper', status: 'accepted' },
+    ]);
+    expect(listed('--history')).toEqual([
+      {
+        id: 'rule',
+        status: 'deprecated',
+        deprecation: { entry: deprecated.id, reason: 'Done.' },
+      },
+      { id: 'old', status: 'superseded' },
+      { id: 'new', status: 'accepted' },
+      { id: 'about', status: 'accepted' },
+      { id: 'keeper', status: 'accepted' },
+    ]);
+
+    // The cut a decision was about, integrated, deprecates it; its examples
+    // are history unless a standing decision keeps them.
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/seats.md'),
+      '1. (hold) Given a seat, when held, then `holdSeat()` runs.\n',
+    );
+    writeFileSync(
+      join(repo, 'design/examples/booking/rows.md'),
+      '1. (hold) Given a row, when held, then `holdRow()` runs.\n',
+    );
+    const git = (...args: string[]) =>
+      execFileSync(
+        'git',
+        ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args],
+        { cwd: repo },
+      );
+    git('add', '-A');
+    git('commit', '-qm', 'examples');
+    const from = join(repo, 'nested');
+    for (const cut of ['seats', 'rows']) {
+      dispatchWorkPackage(
+        [
+          'open',
+          '--cut',
+          cut,
+          '--branch',
+          `feature/${cut}`,
+          '--architect',
+          'booking=desk',
+        ],
+        { from },
+      );
+      dispatchWorkPackage(['integrate', '--cut', cut], { from });
+    }
+    expect(listed()).toEqual([
+      { id: 'new', status: 'accepted' },
+      { id: 'keeper', status: 'accepted' },
+    ]);
+    expect(listed('--history')).toContainEqual({
+      id: 'about',
+      status: 'deprecated',
+      deprecation: { cut: 'seats' },
+    });
+    expect(concepts('state')).toMatchObject({
+      contexts: [
+        {
+          decisions: {
+            accepted: [
+              { id: 'new', title: 'new title', kind: null },
+              { id: 'keeper', title: 'keeper title', keeps: ['booking/seats'] },
+            ],
+            open: [],
+          },
+        },
+      ],
+    });
+    const state = concepts('state', '--history') as {
+      contexts: { decisions: Record<string, { id: string }[]> }[];
+    };
+    expect(state.contexts[0]?.decisions.deprecated?.map((d) => d.id)).toEqual([
+      'rule',
+      'about',
+    ]);
+    expect(state.contexts[0]?.decisions.superseded?.map((d) => d.id)).toEqual([
+      'old',
+    ]);
+    const files = (...flags: string[]) =>
+      (
+        concepts('leakage', ...flags) as {
+          warnings: { passage: { kind: string; file?: string } }[];
+        }
+      ).warnings
+        .filter((w) => w.passage.kind === 'example')
+        .map((w) => w.passage.file);
+    expect(files()).toEqual(['design/examples/booking/seats.md']);
+    expect(files('--history')).toEqual([
+      'design/examples/booking/rows.md',
+      'design/examples/booking/seats.md',
+    ]);
   });
 });
 

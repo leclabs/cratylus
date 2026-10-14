@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { deliverContext } from '@cratylus/runtime';
@@ -14,6 +15,11 @@ import { defineConfig } from 'tsup';
 // as its concept journal records it now, into `dist/delivered/cratylus/workflow.json`,
 // with this package's version: the release carries that projection, and `install`
 // places it read-only in the owned root. It is never authored apart from the journal.
+//
+// THE BUILD'S COMMIT. Each build built in a git work tree records the commit it was
+// built from, and whether the work tree had changes then, in `dist/build.json`. A
+// command run from its source tree, never installed as a package, says it beside its
+// version, so a development build is never mistaken for the release.
 export default defineConfig({
   entry: {
     cratylus: 'src/cratylus.ts',
@@ -38,5 +44,24 @@ export default defineConfig({
       join(dir, `${delivered.context}.json`),
       `${JSON.stringify(delivered, null, 2)}\n`,
     );
+    writeFileSync(join('dist', 'build.json'), `${JSON.stringify(built())}\n`);
   },
 });
+
+/** The commit the work tree is at and whether it has changes; nothing outside
+ *  a git work tree. */
+function built(): { commit?: string; modified?: boolean } {
+  const git = (...args: string[]) =>
+    execFileSync('git', args, {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  try {
+    return {
+      commit: git('rev-parse', '--short', 'HEAD'),
+      modified: git('status', '--porcelain') !== '',
+    };
+  } catch {
+    return {};
+  }
+}

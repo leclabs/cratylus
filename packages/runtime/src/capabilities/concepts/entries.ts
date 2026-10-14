@@ -9,10 +9,11 @@
 // the current ones, the earlier kept in the context's history. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
-// id, and its acceptance (`accept`) and each classification of its kind
-// (`classify`) are entries of their own, so the decision's record never
-// changes. A cut's efficiency figures (`efficiency`) are recorded by the work
-// package capability; the latest for a cut are its figures.
+// id, and its acceptance (`accept`), each classification of its kind
+// (`classify`) and its deprecation (`deprecate`) are entries of their own, so
+// the decision's record never changes. A cut's efficiency figures
+// (`efficiency`) are recorded by the work package capability; the latest for a
+// cut are its figures.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -78,7 +79,9 @@ export type DecisionKind = (typeof DECISION_KINDS)[number];
  *  decision's name and `supersedesEntry` its entry (absent on entries written
  *  before names could be shared, which are read by their name alone).
  *  `decisionKind` is present only where the decision was recorded with its
- *  kind. */
+ *  kind; `cut` only where it names the cut it was about, and `keeps` only where
+ *  it keeps example files standing past their cut's integration, each as
+ *  `<context>/<cut>`. */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;
@@ -91,6 +94,8 @@ export interface DecideEntry extends Stamped {
   readonly supersedes: string | null;
   readonly supersedesEntry?: string;
   readonly decisionKind?: DecisionKind;
+  readonly cut?: string;
+  readonly keeps?: readonly string[];
 }
 
 /** The acceptance of an open decision: its name, and its entry (absent on
@@ -110,6 +115,15 @@ export interface ClassifyEntry extends Stamped {
   readonly entry: string;
   readonly decisionKind: DecisionKind;
   readonly reason?: string;
+}
+
+/** The deprecation of a standing decision: its name, its entry, and why it no
+ *  longer applies. It has no replacement, and is kept as history. */
+export interface DeprecateEntry extends Stamped {
+  readonly kind: 'deprecate';
+  readonly decisionId: string;
+  readonly entry: string;
+  readonly reason: string;
 }
 
 /** A cut's efficiency figures as recorded at one moment: the agent runs it took,
@@ -135,6 +149,7 @@ export type Entry =
   | DecideEntry
   | AcceptEntry
   | ClassifyEntry
+  | DeprecateEntry
   | EfficiencyEntry;
 
 /** Whether a field's value fits its place in an entry. */
@@ -199,6 +214,8 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     supersedes: (value) => value === null || text(value),
     supersedesEntry: optional(text),
     decisionKind: optional(text),
+    cut: optional(text),
+    keeps: optional(texts),
   },
   accept: {
     at: text,
@@ -212,6 +229,12 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     entry: text,
     decisionKind: text,
     reason: optional(text),
+  },
+  deprecate: {
+    at: text,
+    decisionId: text,
+    entry: text,
+    reason: text,
   },
   efficiency: {
     at: text,

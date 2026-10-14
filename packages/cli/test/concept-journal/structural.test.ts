@@ -281,7 +281,13 @@ describe('concept journal structural examples', () => {
     ).toEqual([]);
     append(root, ...decisionArgs('deposit-revised', 'accepted', 'deposit'));
     unchangedFiles(original, snapshot(root));
+    // Superseded, the decision is history: listed only when history is asked for.
     expect(query<{ decisions: Decision[] }>(root, 'decisions')).toMatchObject({
+      decisions: [expectedDecision('deposit-revised', 'accepted', 'deposit')],
+    });
+    expect(
+      query<{ decisions: Decision[] }>(root, 'decisions', '--history'),
+    ).toMatchObject({
       decisions: [
         expectedDecision('deposit', 'superseded', null, ['deposit-revised']),
         expectedDecision('deposit-revised', 'accepted', 'deposit'),
@@ -371,11 +377,12 @@ describe('concept journal structural examples', () => {
       contexts: [
         {
           ...design.contexts[0],
+          // The state names each standing decision; its text is the decisions reading's.
           decisions: {
             accepted: [
-              expectedDecision('deposit-revised', 'accepted', 'deposit'),
+              { id: 'deposit-revised', title: 'Choice deposit-revised' },
             ],
-            open: [expectedDecision('refund')],
+            open: [{ id: 'refund', title: 'Choice refund' }],
           },
         },
       ],

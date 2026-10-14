@@ -20,7 +20,10 @@
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
 // has it. A decision is SUPERSEDED once any decision supersedes it, else
-// ACCEPTED once recorded accepted or its acceptance is recorded, else OPEN.
+// DEPRECATED once its deprecation is recorded or the cut it names is
+// integrated, else ACCEPTED once recorded accepted or its acceptance is
+// recorded, else OPEN. An open or accepted decision STANDS; a superseded or
+// deprecated one is history.
 // Its KIND, stating meaning or constraining realization, is the latest one
 // recorded for it, on the decision itself or by a classification after it;
 // it has none until one is recorded.
@@ -32,6 +35,7 @@ import type {
   ContextEntry,
   DecideEntry,
   DecisionKind,
+  DeprecateEntry,
   EfficiencyEntry,
   Entry,
   RetireEntry,
@@ -89,6 +93,12 @@ export interface KindRecord {
   readonly reason?: string;
 }
 
+/** Why a decision no longer stands without a replacement: the entry that
+ *  deprecated it, with its reason, or the cut it was about, integrated. */
+export type Deprecation =
+  | { readonly entry: string; readonly reason: string }
+  | { readonly cut: string };
+
 export interface DecisionView {
   readonly entry: string;
   readonly id: string;
@@ -97,14 +107,25 @@ export interface DecisionView {
   readonly situation: string;
   readonly decision: string;
   readonly consequences: string;
-  readonly status: 'open' | 'accepted' | 'superseded';
+  readonly status: 'open' | 'accepted' | 'superseded' | 'deprecated';
   readonly supersedes: string | null;
   readonly supersededBy: readonly string[];
   /** The governing kind: the latest recorded, `null` where none is. */
   readonly kind: DecisionKind | null;
   /** Every kind recorded for the decision, in the order recorded. */
   readonly kinds: readonly KindRecord[];
+  /** The cut it was about, where it names one. */
+  readonly cut?: string;
+  /** The example files it keeps standing, each as `<context>/<cut>`. */
+  readonly keeps?: readonly string[];
+  /** Why it is deprecated, where it is. */
+  readonly deprecation?: Deprecation;
 }
+
+/** Whether `decision` stands: open or accepted, neither superseded nor
+ *  deprecated. */
+export const stands = (decision: DecisionView): boolean =>
+  decision.status === 'open' || decision.status === 'accepted';
 
 export interface HistoryView {
   readonly context: string;
@@ -159,6 +180,8 @@ export class Folded {
   readonly supersededBy = new Map<string, string[]>();
   /** The kinds recorded for each decision's entry, in append order. */
   readonly kinds = new Map<string, KindRecord[]>();
+  /** The deprecation recorded for each decision's entry, the first kept. */
+  readonly deprecations = new Map<string, DeprecateEntry>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
 
@@ -219,6 +242,10 @@ export class Folded {
           cuts.set(entry.cut, entry);
           break;
         }
+        case 'deprecate':
+          if (!this.deprecations.has(entry.entry))
+            this.deprecations.set(entry.entry, entry);
+          break;
         case 'classify':
           this.kinds.set(entry.entry, [
             ...(this.kinds.get(entry.entry) ?? []),
@@ -372,31 +399,60 @@ export class Folded {
     };
   }
 
-  /** The status the decision recorded by `entry` holds now. */
-  status(entry: string): DecisionView['status'] {
+  /** Why the decision recorded by `entry` is deprecated, given the cuts
+   *  `integrated`; `undefined` while it is not. */
+  deprecation(
+    entry: string,
+    integrated: ReadonlySet<string>,
+  ): Deprecation | undefined {
+    const recorded = this.deprecations.get(entry);
+    if (recorded !== undefined)
+      return { entry: recorded.id, reason: recorded.reason };
+    const cut = this.decisions.get(entry)?.cut;
+    return cut !== undefined && integrated.has(cut) ? { cut } : undefined;
+  }
+
+  /** The status the decision recorded by `entry` holds now, given the cuts
+   *  `integrated`. */
+  status(
+    entry: string,
+    integrated: ReadonlySet<string> = new Set(),
+  ): DecisionView['status'] {
     if ((this.supersededBy.get(entry) ?? []).length > 0) return 'superseded';
+    if (this.deprecation(entry, integrated) !== undefined) return 'deprecated';
     const recorded = this.decisions.get(entry) as DecideEntry;
     return recorded.status === 'accepted' || this.acceptances.has(entry)
       ? 'accepted'
       : 'open';
   }
 
-  /** Every decision, in the order recorded, as `decisions` gives it. */
-  decisionViews(): DecisionView[] {
-    return [...this.decisions.values()].map((d) => ({
-      entry: d.id,
-      id: d.decisionId,
-      context: d.context,
-      title: d.title,
-      situation: d.situation,
-      decision: d.decision,
-      consequences: d.consequences,
-      status: this.status(d.id),
-      supersedes: d.supersedes,
-      supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
-      kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
-      kinds: [...(this.kinds.get(d.id) ?? [])],
-    }));
+  /** Every decision, in the order recorded, as `decisions` gives it, given
+   *  the cuts `integrated`. */
+  decisionViews(integrated: ReadonlySet<string> = new Set()): DecisionView[] {
+    return [...this.decisions.values()].map((d) => {
+      const status = this.status(d.id, integrated);
+      const deprecation =
+        status === 'deprecated'
+          ? this.deprecation(d.id, integrated)
+          : undefined;
+      return {
+        entry: d.id,
+        id: d.decisionId,
+        context: d.context,
+        title: d.title,
+        situation: d.situation,
+        decision: d.decision,
+        consequences: d.consequences,
+        status,
+        supersedes: d.supersedes,
+        supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
+        kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
+        kinds: [...(this.kinds.get(d.id) ?? [])],
+        ...(d.cut === undefined ? {} : { cut: d.cut }),
+        ...(d.keeps === undefined ? {} : { keeps: [...d.keeps] }),
+        ...(deprecation === undefined ? {} : { deprecation }),
+      };
+    });
   }
 }
 

@@ -6,6 +6,7 @@
 // held to, so a command or verb added without its README entry, documented twice, or
 // documented after it was removed is red here.
 
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -138,6 +139,19 @@ describe('the top-level help lists every command and capability', () => {
       expect(err).toBe('');
       expect(out).toBe(`${manifest.version}\n`);
     }
+  });
+
+  it('says, for a build run from where it was built, the commit it was built from', () => {
+    const dist = join(packageRoot, 'dist');
+    const { commit, modified } = JSON.parse(
+      readFileSync(join(dist, 'build.json'), 'utf8'),
+    ) as { commit: string; modified: boolean };
+    expect(commit).toMatch(/^[0-9a-f]{7,}$/);
+    expect(
+      execFileSync(process.execPath, [join(dist, 'cratylus.js'), '--version'], {
+        encoding: 'utf8',
+      }),
+    ).toBe(`${manifest.version}+${commit}${modified ? '.modified' : ''}\n`);
   });
 });
 

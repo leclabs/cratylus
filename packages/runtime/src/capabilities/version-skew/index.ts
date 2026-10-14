@@ -3,9 +3,11 @@
 // against the version of the cratylus command its capabilities reach.
 //
 // The installation records the version that projected it, as its `package.json`'s
-// `version`; the command's version is its own `cratylus` package's declared version,
-// handed in by the program that holds this command. The capability reports both and
-// chooses nothing: neither build is preferred, and no call is redirected to another.
+// `version`; the command's version is its build's, handed in by the program that
+// holds this command: its `cratylus` package's declared version, with the commit it
+// was built from as build metadata where the build is no release, so a development
+// build never reads as the release. The capability reports both and chooses nothing:
+// neither build is preferred, and no call is redirected to another.
 // The remedy for a difference is to install again with the cratylus in use, which the
 // harness's adapter says at every start of the harness.
 // ─────────────────────────────────────────────────────────────────────────────
