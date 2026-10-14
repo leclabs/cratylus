@@ -8,6 +8,7 @@ import {
   assertSourceView,
   deliveredPath,
   document,
+  expectMeaning,
   git,
   installed,
   ownSource,
@@ -57,9 +58,7 @@ it.each(['design', 'state', 'overview'])(
     );
     const local = answer.find((c) => (c.name ?? c.context) === 'workflow')!;
     expect(local).not.toHaveProperty('delivered');
-    expect(local.concepts[0]!.wording ?? local.concepts[0]!.meaning).toBe(
-      'A project-only practice.',
-    );
+    expectMeaning(local, 'A project-only practice.');
     expect(
       answer.find((c) => (c.name ?? c.context) === 'booking'),
     ).not.toHaveProperty('delivered');
@@ -97,7 +96,11 @@ it.each(['workflow', 'branch-practice'])(
       ).toThrow();
       expect(() =>
         assertSourceView(
-          [{ ...answer[0]!, concepts: document.concepts }],
+          [
+            verb === 'overview'
+              ? { ...answer[0]!, account: document.concepts[0]!.wording }
+              : { ...answer[0]!, concepts: document.concepts },
+          ],
           verb,
           name,
         ),

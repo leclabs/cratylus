@@ -161,10 +161,11 @@ describe('the overview of one context', () => {
       context: 'film',
       subject: 'Making a film.',
       relation: 'It asks scheduling for dates.',
-      concepts: [
-        { name: 'production', meaning: 'The production.', builtFrom: ['take'] },
-        { name: 'take', meaning: 'The take.', builtFrom: [] },
-      ],
+    });
+    expect(answer, 'each concept told once, in the account').not.toHaveProperty(
+      'concepts',
+    );
+    expect(answer).toMatchObject({
       cycles: [],
       openDecisions: [{ id: 'colour', title: 'Decide colour' }],
       cutsInFlight: [
@@ -175,13 +176,17 @@ describe('the overview of one context', () => {
     const order = [
       'Making a film.',
       'It asks scheduling for dates.',
-      'The production.',
-      'The take.',
+      'Production means: The production. It is built from take.',
+      'Take means: The take.',
       'Decide colour',
       'feature/film',
     ].map(at);
     expect(order.every((i) => i >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(
+      answer.account.split('The production.'),
+      'each meaning given once',
+    ).toHaveLength(2);
     for (const absent of [
       'agreed',
       'replaced',
