@@ -1,0 +1,14 @@
+{
+  "id": "01M4W1SZCN7VY8SFQBJ4YG7CT0",
+  "at": "2026-10-14T01:53:06.453Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision",
+  "wording": "a recorded choice, of meaning or of realization, with its context and its consequences; a realization decision is the lead's technical choice or the operator's requirement or recommendation for the lead. It is never edited: it is open until accepted, and it stands until a later decision supersedes it by name or it is deprecated, by a later entry or because the cut it was about is integrated; only standing decisions are shown unless history is asked for, so how each choice was reached stays readable without being mistaken for what holds now.",
+  "builtFrom": [],
+  "reason": "A decision can be deprecated; the views show only what stands.",
+  "supersedes": [
+    "01M4W14KCS7CTZSE2Q27K6QAVA"
+  ]
+}

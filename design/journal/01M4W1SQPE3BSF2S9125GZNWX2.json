@@ -1,0 +1,15 @@
+{
+  "id": "01M4W1SQPE3BSF2S9125GZNWX2",
+  "at": "2026-10-14T01:52:58.574Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0212",
+  "context": "workflow",
+  "title": "A decision can be deprecated; the views show only what stands",
+  "situation": "A fresh session reading the decisions or the state met about a hundred and thirty settled decisions, most of them about finished pieces of work or now stated by the concepts, and had to sort them by hand.",
+  "decision": "A decision stands until it is superseded or deprecated. Deprecated is the established status of an architecture decision that no longer applies and has no replacement: a later entry names it and says why, and it is kept as history. A decision may name the cut it was about; once that cut is integrated, the decision is deprecated without any entry. The journal's views show only standing decisions, and show history only when asked. The same holds for examples: a cut's examples are history once the cut is integrated, unless a standing decision keeps them.",
+  "consequences": "The record's settled decisions about finished work are deprecated now; the views read small enough for a fresh session.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
