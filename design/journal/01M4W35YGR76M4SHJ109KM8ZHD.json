@@ -1,0 +1,16 @@
+{
+  "id": "01M4W35YGR76M4SHJ109KM8ZHD",
+  "at": "2026-10-14T02:17:07.352Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0214",
+  "context": "workflow",
+  "title": "Future work on the record's tools",
+  "situation": "Most of the earlier list of future work is now done: the views separate history, verdicts are captured, and work outside a cut is not recorded as a cut.",
+  "decision": "Remaining: one decision may supersede several by name; every cut's effort includes tokens.",
+  "consequences": "Taken up as ordinary engineering when needed.",
+  "status": "accepted",
+  "supersedes": "0201",
+  "supersedesEntry": "01M4VS6091AFAFFV6B73JSRC18",
+  "decisionKind": "meaning"
+}
