@@ -1,0 +1,9 @@
+{
+  "id": "01M4VXYM1XBN1227JF17QYEYJH",
+  "at": "2026-10-14T00:45:44.381Z",
+  "kind": "dispatched",
+  "transition": "toolu_01EVufFvZuxQmNYuTKuh3sq3/WorkflowDeliveryAssayerA/dispatched",
+  "cut": "workflow-delivery",
+  "role": "assayer",
+  "run": "toolu_01EVufFvZuxQmNYuTKuh3sq3/WorkflowDeliveryAssayerA"
+}
