@@ -1,5 +1,26 @@
 # @cratylus/canon
 
+## 0.17.0
+
+### Minor Changes
+
+- af1e269: The architect explores, then converges (decision 0203).
+
+  The architect's bottom-line-up-front ordering now applies when work needs a decision: the conclusion first, then at most one recommended action per topic, then only the support a layman needs. When the operator is exploring, the architect explores too: it lays out the options with their trade-offs and still says which it recommends, and it asks the operator what only the operator can answer. It never offers options without a recommendation.
+
+  Every agent's drift tells change to match: the "menu" tell (options offered where the stance owns one recommendation) is now "unrecommended options", options offered without a recommendation.
+
+- 747e8bc: A project's record states its purpose, read first, and the architect writes for the operator in plain words (decisions 0215, 0216).
+
+  - **The project's purpose.** `cratylus concepts purpose --statement '…'` records what the project is for, in plain words; `--reason '…'` with a new statement changes it, superseding the current one, the way a context's description changes. `concepts overview` and `concepts state` show it first, as `purpose`, before any context (`null` until one is recorded); purposes recorded differently on two branches are listed under `competingPurposes` until a later one with a reason settles them.
+  - **Plain words for the operator.** The architect's register is now `layman`: everything it writes for the operator, replies and documents alike, is in plain words for a layman, at the level of meaning. It explains in its own words rather than quoting the record, names a decision or concept by what it says and never by its number in the record, and leaves out history and mechanics unless asked.
+
+### Patch Changes
+
+- 159b278: Reconstitution reads the delivered workflow overview alongside each touched context's overview (decision 0207).
+
+  The `reconstitution` procedure now reads the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then reads the current design, open decisions and cuts in flight back before acting. The omp session-start note says the same: it names the delivered workflow (`cratylus:workflow`, or the project's own workflow context where its journal holds it) as the practice to read whole, never only recalled from tool descriptions or memory.
+
 ## 0.16.0
 
 ### Minor Changes
