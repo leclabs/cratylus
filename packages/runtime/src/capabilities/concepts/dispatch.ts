@@ -12,7 +12,8 @@
 //   history    every version of one concept, or of a context's description
 //   decisions  the decisions with their status
 //   leakage    where realization shows through the journal's design, decisions
-//              and examples: a reading of the concept journal
+//              and examples, and where a wording tells what is not its current
+//              meaning: a reading of the concept journal
 //   purpose    record the project's purpose, or, with a reason, change it
 //   context    record a bounded context, or, with a reason, change one
 //   define     record a concept's first version
@@ -40,8 +41,10 @@
 // `leakage`, the ledger, its answer also carries `uninterpreted`, saying what it
 // read past and how it was read.
 // An appending verb appends exactly one entry, stamped with who appended it, and
-// prints it as JSON; when what it recorded leaks implementation, the answer also
-// carries the `warnings`, and nothing is refused for leakage. A decision
+// prints it as JSON; when what it recorded leaks implementation, or a concept's
+// or context's wording cites a decision by its number, recounts its history or
+// only extends the version it replaces, the answer also carries the
+// `warnings`, and nothing is refused for any of them. A decision
 // constraining realization is never warned, and a context's own words include
 // each plain word its current subject names, though never a command, a
 // quotation in code type or a flag that holds it. Every refusal is one line
@@ -94,10 +97,13 @@ import {
 import { type Journal, type ReadPast, journalAt } from './journal.js';
 import {
   EXAMPLES_DIR,
+  type Leak,
   type Passage,
   type Vocabulary,
   type Warning,
+  extending,
   leaks,
+  recounts,
   visibleExamples,
   vocabulary,
 } from './leakage.js';
@@ -239,7 +245,7 @@ export const VERBS = {
     concept: 'concept journal',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept, standing decision and standing visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it; a cut’s examples are history once the cut is integrated, unless a standing decision keeps them',
+      'Show where realization shows through text that should state meaning: each live concept, standing decision and standing visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s wording and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it; a cut’s examples are history once the cut is integrated, unless a standing decision keeps them',
     when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak, and a decision of no recorded kind is inspected as stating meaning',
     positional: null,
     flags: {
@@ -303,7 +309,7 @@ export const VERBS = {
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'What the concept means, in its bounded context’s own words, naming no implementation',
+        'What the concept means, in its bounded context’s own words, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why the concept is defined', { required: true }),
@@ -322,7 +328,7 @@ export const VERBS = {
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'What the concept now means, in its bounded context’s own words, naming no implementation',
+        'What the concept now means, restated whole in its bounded context’s own words, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why its meaning changes', { required: true }),
@@ -716,15 +722,9 @@ function answerOf(
       [...folded.design(where).concepts.map((c) => c.name), ...also],
       folded.descriptions(where).map((d) => d.subject),
     );
-  /** The warnings on `passage`, one per distinct leak in `texts`, read
-   *  against `words`, its context's own. */
-  const warnings = (
-    passage: Passage,
-    texts: readonly string[],
-    words: Vocabulary,
-  ): Warning[] => {
-    const found = texts.flatMap((text) => leaks(text, words));
-    return found
+  /** The warnings on `passage`, one per distinct leak in `found`. */
+  const distinct = (passage: Passage, found: readonly Leak[]): Warning[] =>
+    found
       .filter(
         (leak, i) =>
           found.findIndex(
@@ -732,7 +732,56 @@ function answerOf(
           ) === i,
       )
       .map((leak) => ({ passage, ...leak }));
+  /** The warnings on `passage`, one per distinct leak in `texts`, read
+   *  against `words`, its context's own. */
+  const warnings = (
+    passage: Passage,
+    texts: readonly string[],
+    words: Vocabulary,
+  ): Warning[] =>
+    distinct(
+      passage,
+      texts.flatMap((text) => leaks(text, words)),
+    );
+  /** The warnings on `passage`, a wording, where it cites a decision by its
+   *  number, recounts its history, or only extends one of `replaced`, the
+   *  wordings it supersedes. */
+  const restating = (
+    passage: Passage,
+    wording: string,
+    replaced: readonly string[],
+  ): Warning[] =>
+    distinct(passage, [...recounts(wording), ...extending(wording, replaced)]);
+  /** The warnings on the description `entry` of `where` gives, for each of
+   *  `fields`, against the descriptions it supersedes. */
+  const described = (
+    where: string,
+    entry: Pick<ContextEntry, 'subject' | 'relation' | 'supersedes'>,
+    fields: readonly ('subject' | 'relation')[],
+  ): Warning[] => {
+    const replaced = (folded.contexts.get(where) ?? []).filter((c) =>
+      (entry.supersedes ?? []).includes(c.id),
+    );
+    return fields.flatMap((field) =>
+      restating(
+        { kind: 'context', context: where, field },
+        entry[field],
+        replaced.map((c) => c[field]),
+      ),
+    );
   };
+  /** The wordings of the versions of `name` in `where` that `supersedes`
+   *  names; a retirement has none. */
+  const replacedWordings = (
+    where: string,
+    name: string,
+    supersedes: readonly string[],
+  ): string[] =>
+    folded
+      .versions(where, name)
+      .flatMap((v) =>
+        v.kind !== 'retire' && supersedes.includes(v.id) ? [v.wording] : [],
+      );
 
   switch (verb) {
     case 'overview': {
@@ -776,14 +825,28 @@ function answerOf(
         const words = own(where);
         return [
           ...folded
-            .design(where)
-            .concepts.flatMap((c) =>
-              warnings(
-                { kind: 'concept', context: where, name: c.name },
-                [c.wording],
-                words,
-              ),
+            .currentDescriptions(where)
+            .flatMap((entry) =>
+              described(where, entry, ['subject', 'relation']),
             ),
+          ...folded.design(where).concepts.flatMap((c) => {
+            const passage: Passage = {
+              kind: 'concept',
+              context: where,
+              name: c.name,
+            };
+            const current = folded.standing(where, c.name)?.current as
+              | WordedEntry
+              | undefined;
+            return [
+              ...warnings(passage, [c.wording], words),
+              ...restating(
+                passage,
+                c.wording,
+                replacedWordings(where, c.name, current?.supersedes ?? []),
+              ),
+            ];
+          }),
           ...decisions
             .filter(
               (d) =>
@@ -924,12 +987,15 @@ function answerOf(
           throw refuse(
             `the bounded context '${name}' is already recorded; give --reason to change it`,
           );
-        return journal.append({
+        const draft: Omit<ContextEntry, 'id' | 'at'> = {
           kind: 'context',
           name,
           subject: read.required('subject', 'the subject'),
           relation: relation ?? '',
-        });
+        };
+        const found = described(name, draft, ['subject', 'relation']);
+        const entry = journal.append(draft);
+        return found.length === 0 ? entry : { ...entry, warnings: found };
       }
       if (!recorded)
         throw refuse(
@@ -966,7 +1032,12 @@ function answerOf(
         reason,
         supersedes: folded.currentDescriptions(name).map((c) => c.id),
       };
-      return journal.append(draft);
+      const found = described(name, draft, [
+        ...(subject === undefined ? [] : (['subject'] as const)),
+        ...(relation === undefined ? [] : (['relation'] as const)),
+      ]);
+      const entry = journal.append(draft);
+      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'define':
     case 'supersede': {
@@ -990,12 +1061,14 @@ function answerOf(
         reason,
         supersedes,
       };
+      const passage: Passage = { kind: 'concept', context: where, name };
       const found = [
         ...frozenWarnings(where, name),
-        ...warnings(
-          { kind: 'concept', context: where, name },
-          [wording],
-          own(where, name),
+        ...warnings(passage, [wording], own(where, name)),
+        ...restating(
+          passage,
+          wording,
+          replacedWordings(where, name, supersedes),
         ),
       ];
       const entry = journal.append(draft);

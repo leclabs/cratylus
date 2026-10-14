@@ -19,6 +19,12 @@
 // as constraining realization names what it constrains on purpose, and is
 // never inspected; one stating meaning, or of no recorded kind, is.
 //
+// A wording, a concept's or a context's description, states only what holds
+// now: it is also warned where it cites a decision by its number, recounts its
+// history (what changed, or what something used to be or no longer is), or
+// only extends the version it replaces, keeping the old wording whole and
+// adding to it. Its reason and its version chain carry why and what it was.
+//
 // A leak is a WARNING, never a refusal: a word list cannot tell every
 // legitimate use from a leak, so the architect reads the warnings and judges.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,8 +35,9 @@ import { join, relative, sep } from 'node:path';
 /** Where the visible examples are, relative to the top of the repository. */
 export const EXAMPLES_DIR = 'design/examples';
 
-/** The passage a warning names: a live concept, a decision, or a visible
- *  example by its file (relative to the repository) and number. */
+/** The passage a warning names: a live concept, a decision, a visible example
+ *  by its file (relative to the repository) and number, or one field of a
+ *  context's current description. */
 export type Passage =
   | {
       readonly kind: 'concept';
@@ -42,6 +49,11 @@ export type Passage =
       readonly kind: 'example';
       readonly file: string;
       readonly number: number;
+    }
+  | {
+      readonly kind: 'context';
+      readonly context: string;
+      readonly field: 'subject' | 'relation';
     };
 
 /** One leak: the words that leak, as they appear, and the rule they break. */
@@ -324,6 +336,78 @@ export function leaks(
     )
     .sort((a, b) => a.start - b.start)
     .map(({ start, end, rule }) => ({ words: text.slice(start, end), rule }));
+}
+
+/** What a wording must not tell besides realization: the decision it rests on,
+ *  by number, and its own history. Each phrase of history says that something
+ *  changed or what it was before; a word such as “now” or “earlier” alone is
+ *  current meaning (“as it now means”, “the earlier kept in its history”). */
+const RECOUNTING: readonly { rule: string; pattern: RegExp }[] = [
+  {
+    rule: 'cites a decision',
+    pattern:
+      /\b(?:decisions?|ADRs?)[ \t]+(?:no\.[ \t]*|#[ \t]*)?\d+(?:(?:[ \t]*,[ \t]*|[ \t]+(?:and|or)[ \t]+)#?\d+)*/gi,
+  },
+  {
+    rule: 'recounts history',
+    pattern: new RegExp(
+      [
+        String.raw`\bno longer\b`,
+        String.raw`\bnot any(?:more| longer)\b`,
+        String.raw`\banymore\b`,
+        String.raw`\bused to (?:be|mean|name|say|hold|have|do|carry|cover|include)\b`,
+        String.raw`\b(?:formerly|previously|originally|hitherto|henceforth)\b`,
+        String.raw`\b(?:until|up to|from) now\b`,
+        String.raw`\b(?:as|than) before\b`,
+        String.raw`\b(?:is|are) now\b`,
+        String.raw`\bnow (?:also|instead)\b`,
+        String.raw`\b(?:was|were|has been|have been|had been|got) (?:renamed|replaced|removed|dropped|changed|reworded|moved|split|merged|introduced|added|extended|narrowed|widened)\b`,
+        String.raw`\b(?:renamed|reworded) (?:from|to)\b`,
+      ].join('|'),
+      'gi',
+    ),
+  },
+];
+
+/** The places in a wording, a concept's or a context's description, where it
+ *  cites a decision by its number or recounts its history, in order. */
+export function recounts(text: string): Leak[] {
+  return RECOUNTING.flatMap(({ rule, pattern }) =>
+    [...text.matchAll(pattern)].map((match) => ({
+      at: match.index,
+      leak: { words: match[0], rule },
+    })),
+  )
+    .sort((a, b) => a.at - b.at)
+    .map(({ leak }) => leak);
+}
+
+/** Text as it is said: spacing collapsed and the closing punctuation dropped. */
+const said = (text: string): string =>
+  text
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/[.;:,!?]+$/, '');
+
+/** Where `wording` only extends one of `replaced`, the wordings of the versions
+ *  it supersedes: it keeps one of them whole, case aside, and adds to it. The
+ *  words that leak are what it adds, as it says them. */
+export function extending(
+  wording: string,
+  replaced: readonly string[],
+): Leak[] {
+  const now = said(wording);
+  for (const before of replaced.map(said)) {
+    if (before === '' || before.length >= now.length) continue;
+    const at = now.toLowerCase().indexOf(before.toLowerCase());
+    if (at === -1) continue;
+    const words = [now.slice(0, at), now.slice(at + before.length)]
+      .map((part) => part.replace(/^[\s.;:,]+|\s+$/g, ''))
+      .filter((part) => part !== '')
+      .join(' … ');
+    return [{ words, rule: 'only extends the version it replaces' }];
+  }
+  return [];
 }
 
 /** A visible example: its file relative to the repository, its number, the

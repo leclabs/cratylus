@@ -48,7 +48,11 @@ ends the freeze for good.
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
 warns; a context's own words, its concept names and each plain word its current subject names,
 are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
-`realization` is never inspected (decision 0058). Its views show what stands: a decision stands
+`realization` is never inspected (decision 0058). The same warnings, from `leakage` and from
+`context`, `define` and `supersede`, also name a concept's wording or a context's subject or
+relation that cites a decision by its number, recounts its history (what changed, what something
+used to be or no longer is), or only extends the version it replaces, keeping its wording whole
+and adding to it. Its views show what stands: a decision stands
 until it is superseded or deprecated, by a `deprecate` entry or because the cut it names is
 integrated, and a cut's examples stand until the cut is integrated unless a standing decision
 keeps them; no retired concept, reason a concept's version was written, decision a decision

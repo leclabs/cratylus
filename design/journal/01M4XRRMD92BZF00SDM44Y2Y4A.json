@@ -1,0 +1,14 @@
+{
+  "id": "01M4XRRMD92BZF00SDM44Y2Y4A",
+  "at": "2026-10-14T17:53:34.121Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "supersession",
+  "wording": "a concept, or a bounded context's description, changes only by a new version that restates it whole as it now means, never in place and never by extending the old wording; why it changed is the version's reason and what it was stays in the version chain. While a cut realizing a concept is frozen, only the architect supersedes it.",
+  "builtFrom": [],
+  "reason": "A version that only extended its predecessor grew concepts into rulebooks; a concept states what holds now, and the why and the history belong to the entry's reason and the version chain.",
+  "supersedes": [
+    "01M4PVAGWP80DCVJXZSRWRFVBV"
+  ]
+}
