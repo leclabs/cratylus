@@ -334,7 +334,7 @@ freeze | fix examples, their checks and their concepts while a build realizes th
 build | change the work until its visible examples pass
 judgment | judge the finished work once, when its build is green, against fixed criteria and held-out examples
 whole check | run every check of everything affected in one run, fixing everything it revealed in one round
-reconstitution | at every start, read the overview of each context it touches first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
+reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work

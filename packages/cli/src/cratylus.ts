@@ -9,7 +9,10 @@
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
 // commands are handed this package's declared version: `install` records it in what it
-// places, and `versionSkew` reports it as the command's.
+// places, and `versionSkew` reports it as the command's. The projector's are also
+// handed the documents this release delivers, which its build wrote beside the bin
+// (`delivered/<origin>/<context>.json`): `install` and `deploy` place them read-only in
+// the owned root as given.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -27,13 +30,20 @@
 // --verbose | head -1` has taken all it wants, which is not a failure: the handler is
 // installed once, before any command runs.
 
-import { realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import canon from '@cratylus/canon';
-import { fail, projectorCommands, usageExitCode } from '@cratylus/forge/cli';
+import {
+  type DeliveredDocument,
+  fail,
+  projectorCommands,
+  usageExitCode,
+} from '@cratylus/forge/cli';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { capabilityCommands, harnessCommands } from '@cratylus/runtime/main';
+import { DELIVERED_DIR } from '@cratylus/runtime/runtime-config';
 import { Command, type CommanderError } from 'commander';
 
 /**
@@ -48,6 +58,23 @@ import { Command, type CommanderError } from 'commander';
 const VERSION: string = createRequire(import.meta.url)(
   'cratylus/package.json',
 ).version;
+
+/** The documents this release delivers, as its build wrote them beside the bin, each
+ *  by its path under the delivered directory; none where no build wrote any, as in a
+ *  source tree. */
+function deliveredDocuments(): DeliveredDocument[] {
+  const dir = fileURLToPath(new URL(`./${DELIVERED_DIR}/`, import.meta.url));
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((origin) => origin.isDirectory())
+    .flatMap((origin) =>
+      readdirSync(join(dir, origin.name))
+        .filter((name) => name.endsWith('.json'))
+        .map((name) => join(origin.name, name)),
+    )
+    .sort()
+    .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
+}
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
@@ -109,6 +136,7 @@ export function commandLine(): Command {
   const { consumer, author } = projectorCommands({
     defaultCorpus: canon,
     version: VERSION,
+    delivered: deliveredDocuments(),
   });
   for (const command of consumer)
     program.addCommand(command.helpGroup('Commands:'));

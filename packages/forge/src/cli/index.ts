@@ -30,6 +30,7 @@ import { DEFAULT_PLUGIN_PACKAGE } from '../config/index.js';
 import { CONFIG_FILE } from '../config/scaffold.js';
 import {
   DEPLOY_CHECK_EXIT,
+  type DeliveredDocument,
   type DeployKind,
   type SkillCompanions,
 } from '../deploy/index.js';
@@ -52,6 +53,7 @@ import { runUninstall } from './commands/uninstall.js';
 import { fail } from './style.js';
 
 export { fail } from './style.js';
+export type { DeliveredDocument } from '../deploy/index.js';
 
 /** What the commands are built with. */
 export interface ProjectorOptions {
@@ -67,6 +69,10 @@ export interface ProjectorOptions {
   /** The declared version of the build the commands are held in: what `install` and
    *  `deploy` record in the owned root as the version that projected it. */
   readonly version?: string;
+  /** The documents the release delivers (`<origin>/<context>.json` and its bytes),
+   *  handed in by the command that holds the release: `install` and `deploy` place
+   *  them read-only in the owned root as given and compute nothing about them. */
+  readonly delivered?: readonly DeliveredDocument[];
 }
 
 /** The scopes `deploy` places into. */
@@ -361,6 +367,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           harness: opts.harness,
           corpus: options.defaultCorpus,
           version: options.version,
+          delivered: options.delivered,
           practices: opts.practices,
           all: opts.all,
           modelRoles: opts.modelRoles,
@@ -576,6 +583,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           home: opts.home ?? null,
           project: opts.project ?? null,
           version: options.version,
+          delivered: options.delivered,
           config: opts.config ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,

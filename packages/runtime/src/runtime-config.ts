@@ -4,8 +4,9 @@
 // Everything cratylus places for a user on a harness lives under one root it owns,
 // `~/.cratylus/<harness>/` (the owned root): the corpus's agents and skills, the
 // harness's adapters, the version of cratylus that projected them (`package.json`'s
-// `version`) and, where the corpus declares any, each capability's configuration
-// (`runtime.json`). The runtime reads both from there.
+// `version`), where the corpus declares any, each capability's configuration
+// (`runtime.json`), and the contexts the release delivers (`delivered/<origin>/
+// <context>.json`, read-only). The runtime reads them from there.
 //
 // WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
 // call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
@@ -24,6 +25,10 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
+import {
+  type DeliveredContext,
+  deliveredFrom,
+} from './capabilities/concepts/delivered.js';
 
 /** The variable a harness's adapter names its installation's root in. Derived from
  *  the bin, never a second literal. */
@@ -35,6 +40,10 @@ export const INSTALLATIONS_DIR = `.${CLI_BIN}`;
 
 /** The runtime config's file in an installation's root. */
 export const RUNTIME_CONFIG_FILE = 'runtime.json';
+
+/** The directory in an installation's root holding the contexts its release
+ *  delivers, one document per context: `<origin>/<context>.json`. */
+export const DELIVERED_DIR = 'delivered';
 
 /** Where the config is read from instead, when set. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
@@ -97,6 +106,33 @@ export function runtimeConfigPath(): string | null {
     if (e instanceof NoInstallationError) return null;
     throw e;
   }
+}
+
+/** The contexts the installation reached delivers, by origin then context; none
+ *  where there is no installation to read them from, or it delivers none. */
+export function deliveredContexts(): DeliveredContext[] {
+  let root: string;
+  try {
+    root = installationRoot();
+  } catch (e) {
+    if (e instanceof NoInstallationError) return [];
+    throw e;
+  }
+  const dir = join(root, DELIVERED_DIR);
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((origin) => origin.isDirectory())
+    .map((origin) => origin.name)
+    .sort()
+    .flatMap((origin) =>
+      readdirSync(join(dir, origin))
+        .filter((name) => name.endsWith('.json'))
+        .sort()
+        .map((name) => {
+          const file = join(dir, origin, name);
+          return deliveredFrom(JSON.parse(readFileSync(file, 'utf8')), file);
+        }),
+    );
 }
 
 /**

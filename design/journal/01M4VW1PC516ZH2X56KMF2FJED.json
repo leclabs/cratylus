@@ -1,0 +1,15 @@
+{
+  "id": "01M4VW1PC516ZH2X56KMF2FJED",
+  "at": "2026-10-14T00:12:27.909Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "delivered context",
+  "wording": "a bounded context cratylus ships as part of the product: the current design of one of its own contexts, projected from its journal at release and placed read-only under the owned root, carrying its origin, its version and the identity of the context it was projected from; every project's views show it beside the project's own contexts under a name qualified by its origin, and never write it into the project's journal, while a project whose journal already holds that same context, by identity, reads its own instead.",
+  "builtFrom": [
+    "projection",
+    "owned root"
+  ],
+  "reason": "0205.",
+  "supersedes": []
+}

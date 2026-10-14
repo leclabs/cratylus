@@ -47,6 +47,10 @@ export interface ConceptView {
   readonly reason: string;
 }
 
+/** What a concept means: its name, its current wording and its parts — a live
+ *  concept as a delivered context carries it, without the reason it was recorded. */
+export type Meaning = Pick<ConceptView, 'name' | 'wording' | 'builtFrom'>;
+
 /** One of a concept's competing versions; a retirement among them carries
  *  `retired` and no wording. */
 export type CompetingVersion =

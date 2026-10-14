@@ -15,7 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { CutPhase } from '../work-package/index.js';
-import type { ConceptView, ContextView, DecisionView } from './views.js';
+import type { ContextView, DecisionView, Meaning } from './views.js';
 
 /** A concept as the overview gives it: its name, current meaning and parts. */
 export interface OverviewConcept {
@@ -50,13 +50,15 @@ export interface LedgerCut {
 
 /** `concepts`, in recorded order, whole before parts, and the cycles among
  *  those no root reaches, each in recorded order. */
-export function wholeBeforeParts(concepts: readonly ConceptView[]): {
-  ordered: ConceptView[];
+export function wholeBeforeParts<C extends Meaning>(
+  concepts: readonly C[],
+): {
+  ordered: C[];
   cycles: string[][];
 } {
   const byName = new Map(concepts.map((c) => [c.name, c]));
   const rank = new Map(concepts.map((c, i) => [c.name, i]));
-  const parts = (c: ConceptView) =>
+  const parts = (c: Meaning) =>
     [...new Set(c.builtFrom)]
       .filter((name) => byName.has(name))
       .sort((a, b) => (rank.get(a) as number) - (rank.get(b) as number));
@@ -64,10 +66,10 @@ export function wholeBeforeParts(concepts: readonly ConceptView[]): {
   const ordered = concepts.filter((c) => !wholes.has(c.name));
   const shown = new Set(ordered.map((c) => c.name));
   for (let i = 0; i < ordered.length; i++)
-    for (const name of parts(ordered[i] as ConceptView))
+    for (const name of parts(ordered[i] as C))
       if (!shown.has(name)) {
         shown.add(name);
-        ordered.push(byName.get(name) as ConceptView);
+        ordered.push(byName.get(name) as C);
       }
   const unreached = concepts.filter((c) => !shown.has(c.name));
   ordered.push(...unreached);
@@ -77,12 +79,12 @@ export function wholeBeforeParts(concepts: readonly ConceptView[]): {
 /** The cycles among `concepts` by the parts each is built from: each strongly
  *  connected set of two or more, or one built from itself, in recorded order. */
 function cyclesAmong(
-  concepts: readonly ConceptView[],
-  parts: (c: ConceptView) => string[],
+  concepts: readonly Meaning[],
+  parts: (c: Meaning) => string[],
 ): string[][] {
   const among = new Map(concepts.map((c) => [c.name, c]));
   const next = (name: string) =>
-    parts(among.get(name) as ConceptView).filter((p) => among.has(p));
+    parts(among.get(name) as Meaning).filter((p) => among.has(p));
   const reach = (from: string): Set<string> => {
     const seen = new Set<string>();
     const queue = next(from);
@@ -126,7 +128,9 @@ const sentence = (text: string): string => {
 /** The overview of `design`'s context, given every decision and every cut the
  *  ledger records. */
 export function overviewOf(
-  design: ContextView,
+  design: Omit<ContextView, 'concepts'> & {
+    readonly concepts: readonly Meaning[];
+  },
   decisions: readonly DecisionView[],
   cuts: readonly LedgerCut[],
 ): ContextOverview {

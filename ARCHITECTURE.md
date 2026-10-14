@@ -110,7 +110,13 @@ package.
 
 **Where it places is one root it owns.** Everything forge places for a user on a harness lives under
 `~/.cratylus/<harness>/` (the owned root, decision 0108): the corpus's agents and skills, the
-harness's adapters, and the version of cratylus that projected them. The harness's own surfaces only
+harness's adapters, the version of cratylus that projected them, and, read-only under `delivered/`,
+the contexts the release delivers (decision 0207): cratylus's own `workflow` context, projected from
+its concept journal at the `cratylus` package's build and handed to forge by the command, which
+places it as given and computes nothing about it. The concept journal's views show it in every
+project beside the project's own contexts, as `cratylus:workflow`, marked delivered and read-only,
+unless the project's journal holds that context itself; nothing is written into a project's journal
+for it. The harness's own surfaces only
 refer into it (for omp, the root linked into its plugin directory as an extension package), and the
 root records every reference and host-file edit it made. So what cratylus placed is known by
 construction, never inferred from names, contents or digests: install replaces the root whole

@@ -1,10 +1,26 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect } from 'vitest';
-import { type Host, success } from '../capability-port/fixture.js';
+import {
+  type Host,
+  host as installedHost,
+  success,
+} from '../capability-port/fixture.js';
 import { snapshot } from '../concept-journal/fixture.js';
 
-export { host, type Host } from '../capability-port/fixture.js';
+export type { Host } from '../capability-port/fixture.js';
+
+/** An installed host whose views hold the project's own journal alone: these
+ *  checks are about how an older reader reads a project's entries, so the
+ *  delivered contexts the installation also shows are taken out of its root. */
+export function host(): Host {
+  const h = installedHost();
+  rmSync(join(h.home, '.cratylus/omp/delivered'), {
+    recursive: true,
+    force: true,
+  });
+  return h;
+}
 export {
   temporaryRepository,
   snapshot,
