@@ -1,0 +1,11 @@
+{
+  "id": "01M4VX1N9KXZT7ZS2XF1R2MSBP",
+  "at": "2026-10-14T00:29:55.379Z",
+  "kind": "freeze",
+  "transition": "freeze:workflow-delivery:01M4VX1N9HPAB41AKM7ZVM5V2W",
+  "cut": "workflow-delivery",
+  "checks": [
+    "packages/cli/test/workflow-delivery/",
+    "packages/runtime/test/delivered-context.test.ts"
+  ]
+}

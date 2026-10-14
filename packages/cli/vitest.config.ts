@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 // No command in this suite may discover the operator's installation.
 const home = mkdtempSync(join(tmpdir(), 'cratylus-cli-suite-'));
-delete process.env.CRATYLUS_INSTALLATION;
+Reflect.deleteProperty(process.env, 'CRATYLUS_INSTALLATION');
 process.env.HOME = home;
 process.once('exit', () => rmSync(home, { recursive: true, force: true }));
 
