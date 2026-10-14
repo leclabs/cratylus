@@ -1,5 +1,36 @@
 # @cratylus/forge
 
+## 0.16.0
+
+### Minor Changes
+
+- c1eb6c8: cratylus delivers its own workflow context to every project (decision 0207).
+
+  The `cratylus` package's build projects the repository's `workflow` context from its concept journal — the current subject and relation and every live concept at its current meaning, with no history, decisions or retired concepts — with origin `cratylus` and the package's version. `install` and `deploy` place it read-only in the owned root as `delivered/cratylus/workflow.json`; upgrading replaces it and uninstalling removes it with the root.
+
+  `@cratylus/runtime` exports `deliverContext({ from, context, origin, version })`, the projection. `cratylus concepts overview`, `state` and `design` show each delivered context of the installation the command reaches beside the project's own, as `cratylus:workflow`, carrying `delivered: { origin, version, context, identity }` and `readOnly: true`, unless the project's journal holds a context entry with that identity. Its history has no versions, only its current meaning; it has no decisions. Recording into it is refused as read-only and nothing is written; reading never creates the journal. `dispatchConcepts` called as a library sees delivered contexts only when handed them.
+
+### Patch Changes
+
+- 1c7c41d: The record's views show what stands, assayers' verdicts are recorded, and a development build says its commit (decision 0212).
+
+  - **Deprecation.** `concepts deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. `concepts decide --cut <name>` names the cut a decision is about; once the ledger records that cut integrated, the decision reads as deprecated with no entry. `decide --keeps <context>/<cut>` keeps that cut's example file standing past its integration.
+  - **Views show what stands.** `concepts decisions` lists only standing decisions (open or accepted); `concepts state` lists them by entry, id, title and kind, their whole text being the decisions reading's; `concepts overview` tells only standing open ones; `concepts leakage` reads only standing decisions and the examples of cuts not integrated, or kept. `--history` on `decisions`, `state` and `leakage` adds every superseded and deprecated decision, each with what replaced it or why it no longer applies, and the examples that are history.
+  - **Verdicts.** The omp extension now records an assayer's verdict, and a lead's report, when the deliverable comes back as text: whole JSON, or the last fenced JSON block after prose, and for a background item from its `.md` output when no `.json` one exists. Judged work shows approved or failing, not only returned.
+  - **Build identity.** A `cratylus` run from the source tree it was built in reports its version with the commit it was built from as build metadata (`0.13.0+62c7b190`, `.modified` when built from uncommitted changes), in `cratylus --version` and so in `versionSkew report`; a release installed as a package reports its version alone.
+
+- 159b278: Reconstitution reads the delivered workflow overview alongside each touched context's overview (decision 0207).
+
+  The `reconstitution` procedure now reads the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then reads the current design, open decisions and cuts in flight back before acting. The omp session-start note says the same: it names the delivered workflow (`cratylus:workflow`, or the project's own workflow context where its journal holds it) as the practice to read whole, never only recalled from tool descriptions or memory.
+
+- Updated dependencies [1c7c41d]
+- Updated dependencies [889c765]
+- Updated dependencies [6a8425c]
+- Updated dependencies [747e8bc]
+- Updated dependencies [17266c3]
+- Updated dependencies [c1eb6c8]
+  - @cratylus/runtime@0.13.0
+
 ## 0.15.1
 
 ### Patch Changes
