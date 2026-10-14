@@ -1,0 +1,15 @@
+{
+  "id": "01M4W0M2PX2XHP8SH0D4SVWP6G",
+  "at": "2026-10-14T01:32:24.669Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0211",
+  "context": "workflow",
+  "title": "The project's record: one event store of two streams, with example documents beside it",
+  "situation": "The operator and architect, 2026-10-14, after a fresh session failed to reconstitute: the record's own shape was never stated, so the session rebuilt it from code. The operator's hypothesis, one directory as one event store separated by bounded context, was rectified: the folders separate two streams of different kinds, not contexts.",
+  "decision": "A project's record is event sourced. Its event store holds two streams: the concept journal, the design (what every context means and every decision, all contexts together, each entry naming its context, owned by the architect), and the ledger, the work (cuts and work packages moving through their states, taken from the harness). Entries are only appended; every view (state, design, overview, decisions, a cut's state) is a projection computed from the streams. The examples and their checks are documents kept beside the store, changed by commit and frozen while their cut is built, not events. Bounded contexts are a field of the journal's entries, never separate stores, so the context map can be read whole.",
+  "consequences": "The concept journal concept states this; reconstitution reads projections, never the store's files.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
