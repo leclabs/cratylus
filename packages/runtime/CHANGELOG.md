@@ -1,5 +1,44 @@
 # @cratylus/runtime
 
+## 0.13.0
+
+### Minor Changes
+
+- 1c7c41d: The record's views show what stands, assayers' verdicts are recorded, and a development build says its commit (decision 0212).
+
+  - **Deprecation.** `concepts deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. `concepts decide --cut <name>` names the cut a decision is about; once the ledger records that cut integrated, the decision reads as deprecated with no entry. `decide --keeps <context>/<cut>` keeps that cut's example file standing past its integration.
+  - **Views show what stands.** `concepts decisions` lists only standing decisions (open or accepted); `concepts state` lists them by entry, id, title and kind, their whole text being the decisions reading's; `concepts overview` tells only standing open ones; `concepts leakage` reads only standing decisions and the examples of cuts not integrated, or kept. `--history` on `decisions`, `state` and `leakage` adds every superseded and deprecated decision, each with what replaced it or why it no longer applies, and the examples that are history.
+  - **Verdicts.** The omp extension now records an assayer's verdict, and a lead's report, when the deliverable comes back as text: whole JSON, or the last fenced JSON block after prose, and for a background item from its `.md` output when no `.json` one exists. Judged work shows approved or failing, not only returned.
+  - **Build identity.** A `cratylus` run from the source tree it was built in reports its version with the commit it was built from as build metadata (`0.13.0+62c7b190`, `.modified` when built from uncommitted changes), in `cratylus --version` and so in `versionSkew report`; a release installed as a package reports its version alone.
+
+- 747e8bc: A project's record states its purpose, read first, and the architect writes for the operator in plain words (decisions 0215, 0216).
+
+  - **The project's purpose.** `cratylus concepts purpose --statement '…'` records what the project is for, in plain words; `--reason '…'` with a new statement changes it, superseding the current one, the way a context's description changes. `concepts overview` and `concepts state` show it first, as `purpose`, before any context (`null` until one is recorded); purposes recorded differently on two branches are listed under `competingPurposes` until a later one with a reason settles them.
+  - **Plain words for the operator.** The architect's register is now `layman`: everything it writes for the operator, replies and documents alike, is in plain words for a layman, at the level of meaning. It explains in its own words rather than quoting the record, names a decision or concept by what it says and never by its number in the record, and leaves out history and mechanics unless asked.
+
+- 17266c3: The record's default views show only what stands; history only with `--history` (decision "The record shows only what holds").
+
+  - **`concepts state`** no longer lists retired concepts, the reason each live concept's version was written, or the effort of finished cuts (work complete or integrated) or of cuts the ledger does not record; its `efficiency` gives only the cuts the ledger records not yet finished. `--history` adds them all back.
+  - **`concepts design`** no longer lists retired concepts or each live concept's `reason`, and takes `--history` to add them.
+  - **`concepts decisions`** gives each standing decision with its governing `kind` only: `supersedes`, `supersededBy` and `kinds` (every kind recorded) are history, given with `--history`.
+  - `overview`, `leakage`, `history` and the ledger's views are unchanged: `overview` already tells only live concepts, open decisions and cuts in flight, `leakage` already reads only what stands, `history` is history asked for, and every ledger view but `frozen` (cuts not integrated) answers about the one cut it is asked for.
+
+- c1eb6c8: cratylus delivers its own workflow context to every project (decision 0207).
+
+  The `cratylus` package's build projects the repository's `workflow` context from its concept journal — the current subject and relation and every live concept at its current meaning, with no history, decisions or retired concepts — with origin `cratylus` and the package's version. `install` and `deploy` place it read-only in the owned root as `delivered/cratylus/workflow.json`; upgrading replaces it and uninstalling removes it with the root.
+
+  `@cratylus/runtime` exports `deliverContext({ from, context, origin, version })`, the projection. `cratylus concepts overview`, `state` and `design` show each delivered context of the installation the command reaches beside the project's own, as `cratylus:workflow`, carrying `delivered: { origin, version, context, identity }` and `readOnly: true`, unless the project's journal holds a context entry with that identity. Its history has no versions, only its current meaning; it has no decisions. Recording into it is refused as read-only and nothing is written; reading never creates the journal. `dispatchConcepts` called as a library sees delivered contexts only when handed them.
+
+### Patch Changes
+
+- 889c765: Work dispatched outside any cut is no longer recorded in the ledger as a cut (decision 0201, item 5).
+
+  The ledger now records a harness lifecycle event (`dispatched`, `returned`, `verdict`, `reported`) only for a cut opened in it. A dispatch whose assignment names no opened cut, such as ordinary engineering under decision 0202, records nothing, and the dispatch goes ahead as before.
+
+- 6a8425c: `cratylus concepts overview` gives each concept once, in its prose account.
+
+  The overview no longer repeats every concept as a structured `concepts` list beside the account, which doubled its size: the overview of all of a project's contexts now fits in one read. Each context's overview keeps its `subject`, `relation`, `cycles`, `openDecisions` and `cutsInFlight`, and its `account` still tells each live concept, whole before its parts, with its current meaning and the concepts it is built from.
+
 ## 0.12.0
 
 ### Minor Changes
