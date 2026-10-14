@@ -24,6 +24,7 @@ import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { keepsHostModel } from '../../deploy/deploy.js';
 import {
   DEPLOY_CHECK_EXIT,
+  type DeliveredDocument,
   type DeployKind,
   type RenderTree,
   type Scope,
@@ -77,6 +78,9 @@ export interface DeployCmdOpts {
   /** The declared version of the build deploying, recorded in the owned root as the
    *  version that projected it (user scope). */
   version?: string;
+  /** The documents the release delivers, handed in by the command that holds the
+   *  release and placed read-only in the owned root as given (user scope). */
+  delivered?: readonly DeliveredDocument[];
   dryRun?: boolean;
   /** REPORT ONLY: compare the deployed tree against the render tree and print
    *  every divergence. Places nothing, prunes nothing, repairs nothing. */
@@ -353,6 +357,7 @@ async function deployOwned(
     root,
     files,
     ...(opts.version === undefined ? {} : { version: opts.version }),
+    ...(opts.delivered === undefined ? {} : { delivered: opts.delivered }),
     configuration:
       plugins === undefined
         ? {}

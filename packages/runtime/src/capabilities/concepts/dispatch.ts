@@ -60,6 +60,13 @@ import {
   frozenCuts,
 } from '../work-package/index.js';
 import {
+  type DeliveredContext,
+  deliveredDesign,
+  deliveredOverview,
+  marksOf,
+  qualifiedName,
+} from './delivered.js';
+import {
   type ClassifyEntry,
   type ContextEntry,
   DECISION_KINDS,
@@ -127,7 +134,7 @@ export const VERBS = {
     effect: 'reads',
     purpose:
       'Tell each bounded context whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions, then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
-    when: 'First, at the start of a session or after it was compacted, for each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight',
+    when: 'First, at the start of a session or after it was compacted, for the delivered workflow context and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight; every context includes those the installation delivers, each named by its origin and context, marked delivered and read-only, unless this journal holds that context itself',
     positional: null,
     flags: {
       context: valueFlag(
@@ -140,7 +147,7 @@ export const VERBS = {
     effect: 'reads',
     purpose:
       'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, accepted decisions (settled), open decisions (not settled) and, for each of its cuts (a change to the design built and judged as a whole), how much work it took as last recorded',
-    when: 'At the start of a session, or after it was compacted, once each touched context’s overview is read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting',
+    when: 'At the start of a session, or after it was compacted, once the overviews of the delivered workflow context and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; every context includes those the installation delivers, which carry no decisions, retired concepts or recorded effort of their own',
     positional: null,
     flags: {
       context: valueFlag(
@@ -153,7 +160,7 @@ export const VERBS = {
     effect: 'reads',
     purpose:
       'Show the current conceptual design of each bounded context: its live concepts, each at its current version, competing versions and retired concepts',
-    when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands',
+    when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands; every context includes those the installation delivers, marked delivered and read-only',
     positional: null,
     flags: {
       context: valueFlag(
@@ -365,7 +372,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the delivered workflow context’s overview and each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Its views of the current design, state and overview include the contexts the installation delivers, named by origin and context, marked delivered and read-only, beside the project’s own; nothing is ever recorded into one',
   verbs: VERBS,
 };
 
@@ -386,18 +393,33 @@ const READING = {
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
- *  `from`; returns what the verb prints as JSON, a reading with what it read
- *  past of the journal and of any other ledger it read. */
+ *  `from`, beside the contexts `delivered` holds, which the command reads from
+ *  the installation it reaches and a library caller hands in or leaves out;
+ *  returns what the verb prints as JSON, a reading with what it read past of the
+ *  journal and of any other ledger it read. */
 export function dispatchConcepts(
   argv: readonly string[],
-  opts: { readonly from?: string } = {},
+  opts: {
+    readonly from?: string;
+    readonly delivered?: readonly DeliveredContext[];
+  } = {},
 ): unknown {
   const verb = verbOf(argv, 'concepts', VERBS);
   const args = readArgv(argv.slice(1), 'concepts', verb, VERBS[verb]);
   const refuse = (message: string) => new Error(`concepts ${verb}: ${message}`);
+  const delivered = opts.delivered ?? [];
+  if (VERBS[verb].effect === 'appends') {
+    const target =
+      verb === 'context' ? args.positionals[0] : args.flags.get('context')?.[0];
+    const named = delivered.find((d) => qualifiedName(d) === target);
+    if (named !== undefined)
+      throw refuse(
+        `the bounded context '${target}' is delivered by ${named.origin} at version ${named.version} and is read-only; nothing is recorded into it, and a project changes only its own contexts`,
+      );
+  }
   const journal = journalAt(opts.from ?? process.cwd(), refuse);
   const ledgers: ReadPast[] = [];
-  const answer = answerOf(verb, args, journal, refuse, ledgers);
+  const answer = answerOf(verb, args, journal, delivered, refuse, ledgers);
   const report =
     VERBS[verb].effect === 'reads'
       ? ledgers.reduce((all, one) => all.with(one), journal.readPast()).report()
@@ -407,17 +429,30 @@ export function dispatchConcepts(
     : { ...(answer as object), uninterpreted: report };
 }
 
-/** What `verb`, given `args`, answers from `journal`; each other ledger it
- *  reads adds what it read past to `ledgers`. */
+/** What `verb`, given `args`, answers from `journal` and the contexts
+ *  `delivered` holds; each other ledger it reads adds what it read past to
+ *  `ledgers`. */
 function answerOf(
   verb: keyof typeof VERBS,
   args: Argv,
   journal: Journal,
+  delivered: readonly DeliveredContext[],
   refuse: (message: string) => Error,
   ledgers: ReadPast[],
 ): unknown {
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
+  /** The delivered contexts shown: each this journal does not hold itself, by
+   *  the identity of the entry that first recorded it. */
+  const held = new Set(
+    [...folded.contexts.values()].flat().map((entry) => entry.id),
+  );
+  const shown = delivered.filter((d) => !held.has(d.identity));
+  /** The shown delivered context `--context` names, if it names one. */
+  const deliveredNamed = (): DeliveredContext | undefined => {
+    const name = args.flags.get('context')?.[0];
+    return shown.find((d) => qualifiedName(d) === name);
+  };
 
   /** The recorded context `--context` names, given once. */
   const context = (): string => {
@@ -428,9 +463,19 @@ function answerOf(
       );
     return name;
   };
-  /** The contexts a query covers: the one `--context` names, else all. */
-  const contexts = (): string[] =>
-    args.flags.has('context') ? [context()] : [...folded.contexts.keys()];
+  /** The contexts a query covers: the one `--context` names, else all; the
+   *  journal's own, and the delivered ones shown. */
+  const covering = (): {
+    own: string[];
+    delivered: readonly DeliveredContext[];
+  } => {
+    if (!args.flags.has('context'))
+      return { own: [...folded.contexts.keys()], delivered: shown };
+    const named = deliveredNamed();
+    return named === undefined
+      ? { own: [context()], delivered: [] }
+      : { own: [], delivered: [named] };
+  };
   /** The current versions a new version of `name` in `where` supersedes;
    *  refuses a concept the context does not have, or, unless `revive`, a
    *  retired one. */
@@ -535,25 +580,37 @@ function answerOf(
 
   switch (verb) {
     case 'overview': {
-      const covered = contexts();
+      const covered = covering();
       const decisions = folded.decisionViews();
       const { cuts, readPast } = cutsInLedger(journal.root, refuse);
       ledgers.push(readPast);
       return {
-        contexts: covered.map((where) =>
-          overviewOf(folded.design(where), decisions, cuts),
-        ),
+        contexts: [
+          ...covered.own.map((where) =>
+            overviewOf(folded.design(where), decisions, cuts),
+          ),
+          ...covered.delivered.map(deliveredOverview),
+        ],
       };
     }
     case 'state': {
       const decisions = folded.decisionViews();
+      const covered = covering();
       return {
         reading: READING,
-        contexts: contexts().map((where) => state(decisions, where)),
+        contexts: [
+          ...covered.own.map((where) => state(decisions, where)),
+          ...covered.delivered.map((d) => ({
+            ...deliveredDesign(d),
+            decisions: { accepted: [], open: [] },
+            efficiency: [],
+          })),
+        ],
       };
     }
     case 'leakage': {
-      const covered = contexts();
+      // Only the journal's own contexts: a delivered one is read, never recorded here.
+      const covered = covering().own;
       const decisions = folded.decisionViews();
       const recorded = covered.flatMap((where) => {
         const words = own(where);
@@ -597,6 +654,30 @@ function answerOf(
       return { warnings: [...recorded, ...examples] };
     }
     case 'history': {
+      const named = deliveredNamed();
+      if (named !== undefined) {
+        const { subject, relation, concepts } = named;
+        if (args.positionals.length === 0)
+          return {
+            context: qualifiedName(named),
+            versions: [],
+            current: { subject, relation, concepts },
+            ...marksOf(named),
+          };
+        const name = read.named('concept');
+        const meaning = concepts.find((c) => c.name === name);
+        if (meaning === undefined)
+          throw refuse(
+            `the delivered context '${qualifiedName(named)}' has no concept '${name}'`,
+          );
+        return {
+          context: qualifiedName(named),
+          name,
+          versions: [],
+          current: { wording: meaning.wording, builtFrom: meaning.builtFrom },
+          ...marksOf(named),
+        };
+      }
       const where = context();
       if (args.positionals.length === 0) return folded.contextHistory(where);
       const name = read.named('concept');
@@ -604,9 +685,18 @@ function answerOf(
         throw refuse(`the bounded context '${where}' has no concept '${name}'`);
       return folded.history(where, name);
     }
-    case 'design':
-      return { contexts: contexts().map((where) => folded.design(where)) };
+    case 'design': {
+      const covered = covering();
+      return {
+        contexts: [
+          ...covered.own.map((where) => folded.design(where)),
+          ...covered.delivered.map(deliveredDesign),
+        ],
+      };
+    }
     case 'decisions': {
+      // A delivered context carries no decisions of its own.
+      if (deliveredNamed() !== undefined) return { decisions: [] };
       const only = args.flags.has('context') ? context() : undefined;
       const open = args.flags.has('open');
       return {

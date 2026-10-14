@@ -15,6 +15,9 @@
 //   package.json            the package: its name, the VERSION of cratylus that
 //                           projected it, and the modules omp loads (`omp.extensions`)
 //   runtime.json            each capability's configuration, where the corpus has any
+//   delivered/<origin>/<context>.json
+//                           each context the release delivers, read-only: handed in
+//                           by the command that holds the release and placed as given
 //   installation.json       what install did outside the root: the references it
 //                           placed; the practices it installed; and which of the
 //                           operator's choices it has been answered, never their
@@ -47,6 +50,7 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
+  DELIVERED_DIR,
   INSTALLATIONS_DIR,
   RUNTIME_CONFIG_FILE,
 } from '@cratylus/runtime/runtime-config';
@@ -67,6 +71,16 @@ export interface RenderedFile {
   /** Set on a scoped artifact that is a module the harness loads: the package names
    *  it among its extensions. */
   readonly module?: true;
+  /** Set on a file placed read-only: no one's write bit. */
+  readonly readOnly?: true;
+}
+
+/** A document the release delivers, handed in by the command that holds the release:
+ *  its path under the root's delivered directory (`<origin>/<context>.json`) and its
+ *  bytes, placed as given, read-only. */
+export interface DeliveredDocument {
+  readonly path: string;
+  readonly content: string;
 }
 
 /** The record of what install did outside the root, kept inside it. */
@@ -219,7 +233,8 @@ export interface PlaceRootResult {
 /**
  * Place `files` (already in the root's layout) as the WHOLE of `root`, with the
  * package manifest (the `version` that projected it, and the extension modules the
- * harness loads), the capability configuration where there is any, and the record.
+ * harness loads), the capability configuration where there is any, each document the
+ * release delivers, read-only, and the record.
  * Whatever the root held before is gone, edits and additions alike: the new root is
  * built beside it and moved into its place. Under `dry`, nothing is written.
  */
@@ -228,6 +243,7 @@ export function placeOwnedRoot(opts: {
   readonly root: string;
   readonly files: readonly RenderedFile[];
   readonly version?: string;
+  readonly delivered?: readonly DeliveredDocument[];
   readonly configuration: Readonly<Record<string, unknown>>;
   readonly record: InstallationRecord;
   readonly dry: boolean;
@@ -258,6 +274,11 @@ export function placeOwnedRoot(opts: {
           },
         ]
       : []),
+    ...(opts.delivered ?? []).map((d) => ({
+      path: join(DELIVERED_DIR, d.path),
+      content: d.content,
+      readOnly: true as const,
+    })),
     {
       path: INSTALLATION_RECORD,
       // The record names the version that projected this root too, beside what it did.
@@ -272,7 +293,12 @@ export function placeOwnedRoot(opts: {
     const abs = join(next, file.path);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, file.content, {
-      mode: file.executable === true ? 0o755 : 0o644,
+      mode:
+        file.readOnly === true
+          ? 0o444
+          : file.executable === true
+            ? 0o755
+            : 0o644,
     });
   }
   rmSync(root, { recursive: true, force: true });
