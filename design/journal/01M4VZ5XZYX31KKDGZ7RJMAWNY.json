@@ -1,0 +1,15 @@
+{
+  "id": "01M4VZ5XZYX31KKDGZ7RJMAWNY",
+  "at": "2026-10-14T01:07:12.510Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0209",
+  "context": "workflow",
+  "title": "Cut: the record computes what currently holds",
+  "situation": "The operator found, 2026-10-13, that the concept journal resolves current state correctly for concepts but not for decisions or examples: its settled list mixes standing rules with history (decisions about integrated cuts, decisions replaced only in prose because one decision supersedes only one), examples of integrated cuts stand beside current concepts, and the ledger shows judged work as returned because assayer verdicts are not captured. Every cold read had to sort this by hand, which defeats reconstitution.",
+  "decision": "Proposed, to be read back to the operator before any build: a decision stands until it is superseded, by one or more later decisions, or until the cut it was about is integrated (0161); an example stands until its cut is integrated unless a decision keeps it (0199); the journal's views show only what stands, with history readable apart; the ledger captures each assayer's verdict, so a work package's approval and a cut's completion are true (0201, items 1 to 3 and 5).",
+  "consequences": "Next in 0194's order after workflow delivery; built as its own cut, never added to another in flight.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
