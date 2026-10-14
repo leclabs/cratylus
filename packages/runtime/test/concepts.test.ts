@@ -157,7 +157,6 @@ describe('the concept journal as a library', () => {
       contexts: [
         {
           concepts: [],
-          retired: [],
           competing: [
             {
               name: 'hold',
@@ -205,6 +204,13 @@ describe('the concept journal as a library', () => {
       ['retire', 'hold', '--context', 'booking', '--reason', 'Again.'],
       /^concepts retire: .*retired/,
     );
+    const standing = concepts('design') as { contexts: object[] };
+    expect(standing.contexts[0]).not.toHaveProperty('retired');
+    expect(concepts('design', '--history')).toMatchObject({
+      contexts: [
+        { concepts: [], retired: [{ name: 'hold', reason: 'Gone.' }] },
+      ],
+    });
     const back = concepts(
       'supersede',
       'hold',
@@ -215,7 +221,7 @@ describe('the concept journal as a library', () => {
       '--reason',
       'R.',
     );
-    expect(concepts('design')).toMatchObject({
+    expect(concepts('design', '--history')).toMatchObject({
       contexts: [
         { concepts: [{ name: 'hold', wording: 'Back.' }], retired: [] },
       ],
@@ -445,7 +451,7 @@ describe('the concept journal as a library', () => {
       '--reason',
       'It constrains.',
     ) as { id: string };
-    expect(concepts('decisions')).toMatchObject({
+    expect(concepts('decisions', '--history')).toMatchObject({
       decisions: [
         {
           id: 'told',
@@ -462,6 +468,9 @@ describe('the concept journal as a library', () => {
         },
       ],
     });
+    for (const decision of (concepts('decisions') as { decisions: object[] })
+      .decisions)
+      expect(Object.keys(decision)).not.toContain('kinds');
   });
 
   it('changes a context none of whose descriptions is current only by giving every field', () => {

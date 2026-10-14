@@ -113,7 +113,7 @@ export function assertDelivered(
   if (verb === 'state') {
     expect(context!.decisions).toEqual({ accepted: [], open: [] });
     expect(context!.efficiency).toEqual([]);
-    expect(context!.retired).toEqual([]);
+    expect(context).not.toHaveProperty('retired');
   }
 }
 /** Expects `view` to give `wording` as its first concept's meaning: in its

@@ -99,8 +99,12 @@ describe('concept journal judgment regressions', () => {
     ].sort((a, b) => a.entry.localeCompare(b.entry));
     for (const flags of [[], ['--open']]) {
       expect(
-        query<{ decisions: IdentifiedDecision[] }>(root, 'decisions', ...flags)
-          .decisions,
+        query<{ decisions: IdentifiedDecision[] }>(
+          root,
+          'decisions',
+          '--history',
+          ...flags,
+        ).decisions,
       ).toMatchObject(expected);
     }
     // The state names each decision by its entry, id and title.
@@ -136,14 +140,19 @@ describe('concept journal judgment regressions', () => {
       status: decision.entry === leftEntry ? 'accepted' : 'open',
     }));
     expect(
-      query<{ decisions: IdentifiedDecision[] }>(root, 'decisions').decisions,
+      query<{ decisions: IdentifiedDecision[] }>(root, 'decisions', '--history')
+        .decisions,
     ).toMatchObject(accepted);
     const stillOpen = accepted.filter(
       (decision) => decision.entry === rightEntry,
     );
     expect(
-      query<{ decisions: IdentifiedDecision[] }>(root, 'decisions', '--open')
-        .decisions,
+      query<{ decisions: IdentifiedDecision[] }>(
+        root,
+        'decisions',
+        '--history',
+        '--open',
+      ).decisions,
     ).toMatchObject(stillOpen);
     expect(query(root, 'state').contexts).toMatchObject([
       {
@@ -211,7 +220,11 @@ describe('concept journal judgment regressions', () => {
       git(root, 'merge', '--no-edit', 'right');
       expect(git(root, 'ls-files', '--unmerged')).toBe('');
       expect(snapshot(root)).toEqual({ ...left, ...right });
-      const current = query<{ contexts: DescribedContext[] }>(root, 'design');
+      const current = query<{ contexts: DescribedContext[] }>(
+        root,
+        'design',
+        '--history',
+      );
       const common = {
         name: 'workflow',
         concepts: [],
@@ -253,7 +266,8 @@ describe('concept journal judgment regressions', () => {
           'Keep both branches in one settled description.',
         );
         expect(
-          query<{ contexts: DescribedContext[] }>(root, 'design').contexts,
+          query<{ contexts: DescribedContext[] }>(root, 'design', '--history')
+            .contexts,
         ).toMatchObject([
           {
             ...common,
@@ -329,7 +343,7 @@ describe('concept journal judgment regressions', () => {
       '--built-from',
       'time',
     );
-    expect(query(root, 'design').contexts[0]).toMatchObject({
+    expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
       concepts: [
         {
           name: 'reservation',
@@ -371,7 +385,7 @@ describe('concept journal judgment regressions', () => {
       'define',
       'retire',
     ]);
-    expect(query(root, 'design').contexts[0]).toMatchObject({
+    expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
       concepts: [],
       competing: [],
       retired: [{ name: 'reservation', reason: 'Stop taking reservations.' }],
@@ -389,7 +403,7 @@ describe('concept journal judgment regressions', () => {
       '--built-from',
       'time',
     );
-    expect(query(root, 'design').contexts[0]).toMatchObject({
+    expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
       concepts: [
         {
           name: 'reservation',
@@ -433,7 +447,7 @@ describe('concept journal judgment regressions', () => {
     expect(snapshot(root)).toEqual(before);
     context(root);
     define(root);
-    expect(query(root, 'design').contexts).toMatchObject([
+    expect(query(root, 'design', '--history').contexts).toMatchObject([
       {
         name: 'workflow',
         concepts: [

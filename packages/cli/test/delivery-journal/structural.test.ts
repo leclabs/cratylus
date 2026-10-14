@@ -51,10 +51,10 @@ afterEach(() => {
 });
 
 const knownViews = [
-  ['design'],
+  ['design', '--history'],
   ['history', 'reservation', '--context', 'workflow'],
   ['history', '--context', 'workflow'],
-  ['decisions'],
+  ['decisions', '--history'],
 ];
 
 describe('delivery: older concept journal readers', () => {
@@ -67,7 +67,9 @@ describe('delivery: older concept journal readers', () => {
         installed,
         journal.root,
         view,
-        ...(view === 'history' ? ['reservation', '--context', 'workflow'] : []),
+        ...(view === 'history'
+          ? ['reservation', '--context', 'workflow']
+          : ['--history']),
       );
       if (view === 'design') {
         expect(value).toMatchObject({
@@ -325,7 +327,7 @@ describe('delivery: older concept journal readers', () => {
     expect(Object.keys(after).filter((name) => !(name in before))).toHaveLength(
       1,
     );
-    const value = query(installed, journal.root, 'design');
+    const value = query(installed, journal.root, 'design', '--history');
     expect(value).toMatchObject({
       contexts: [
         {

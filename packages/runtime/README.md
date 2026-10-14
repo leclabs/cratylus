@@ -51,7 +51,9 @@ are never leakage, though a command, code span or flag holding a subject's word 
 `realization` is never inspected (decision 0058). Its views show what stands: a decision stands
 until it is superseded or deprecated, by a `deprecate` entry or because the cut it names is
 integrated, and a cut's examples stand until the cut is integrated unless a standing decision
-keeps them; `decisions`, `state` and `leakage` add the history only with `--history`. It also
+keeps them; no retired concept, reason a concept's version was written, decision a decision
+superseded or kind recorded before the governing one, and no finished cut's effort, shows until
+`design`, `state`, `decisions` or `leakage` is asked with `--history`. It also
 holds the project's purpose, what the project is for: `purpose` records it and, with a reason,
 changes it, and `overview` and `state` show it first, before any context.
 

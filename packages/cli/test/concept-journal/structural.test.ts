@@ -86,7 +86,7 @@ describe('concept journal structural examples', () => {
       '--built-from',
       'expiry',
     );
-    expect(query(root, 'design')).toMatchObject({
+    expect(query(root, 'design', '--history')).toMatchObject({
       contexts: [
         {
           name: 'workflow',
@@ -114,7 +114,7 @@ describe('concept journal structural examples', () => {
       ],
     });
     expect(
-      query(root, 'design', '--context', 'workflow').contexts,
+      query(root, 'design', '--history', '--context', 'workflow').contexts,
     ).toHaveLength(1);
     const invalid = [
       [
@@ -163,7 +163,7 @@ describe('concept journal structural examples', () => {
   it('2 — supersedes by appending, preserves both reasons and refuses unreasoned or unknown replacements', () => {
     const { root } = fixture;
     const first = twoVersions(root);
-    expect(query(root, 'design').contexts[0]).toMatchObject({
+    expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
       concepts: [
         {
           name: 'reservation',
@@ -228,7 +228,7 @@ describe('concept journal structural examples', () => {
       '--reason',
       reason,
     );
-    expect(query(root, 'design').contexts[0]).toMatchObject({
+    expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
       concepts: [],
       competing: [],
       retired: [{ name: 'reservation', reason }],
@@ -250,7 +250,12 @@ describe('concept journal structural examples', () => {
     context(root);
     append(root, ...decisionArgs('deposit'));
     expect(
-      query<{ decisions: Decision[] }>(root, 'decisions', '--open'),
+      query<{ decisions: Decision[] }>(
+        root,
+        'decisions',
+        '--history',
+        '--open',
+      ),
     ).toMatchObject({ decisions: [expectedDecision('deposit')] });
     for (const missing of ['--situation', '--decision', '--consequences']) {
       const args = decisionArgs(`missing-${missing.slice(2)}`);
@@ -273,18 +278,24 @@ describe('concept journal structural examples', () => {
       'The architect approved the deposit.',
     );
     unchangedFiles(original, snapshot(root));
-    expect(query<{ decisions: Decision[] }>(root, 'decisions')).toMatchObject({
+    expect(
+      query<{ decisions: Decision[] }>(root, 'decisions', '--history'),
+    ).toMatchObject({
       decisions: [expectedDecision('deposit', 'accepted')],
     });
     expect(
-      query<{ decisions: Decision[] }>(root, 'decisions', '--open').decisions,
+      query<{ decisions: Decision[] }>(root, 'decisions', '--history', '--open')
+        .decisions,
     ).toEqual([]);
     append(root, ...decisionArgs('deposit-revised', 'accepted', 'deposit'));
     unchangedFiles(original, snapshot(root));
-    // Superseded, the decision is history: listed only when history is asked for.
-    expect(query<{ decisions: Decision[] }>(root, 'decisions')).toMatchObject({
-      decisions: [expectedDecision('deposit-revised', 'accepted', 'deposit')],
+    // Superseded, the decision is history: listed only when history is asked
+    // for, as is what the standing one superseded.
+    const standing = query<{ decisions: Decision[] }>(root, 'decisions');
+    expect(standing).toMatchObject({
+      decisions: [{ id: 'deposit-revised', status: 'accepted' }],
     });
+    expect(standing.decisions[0]).not.toHaveProperty('supersedes');
     expect(
       query<{ decisions: Decision[] }>(root, 'decisions', '--history'),
     ).toMatchObject({
@@ -310,10 +321,10 @@ describe('concept journal structural examples', () => {
     append(root, ...decisionArgs('refund', 'open'));
     const before = snapshot(root);
     const questions = [
-      ['design', '--context', 'workflow'],
+      ['design', '--history', '--context', 'workflow'],
       ['history', 'reservation', '--context', 'workflow'],
-      ['decisions', '--context', 'workflow', '--open'],
-      ['state', '--context', 'workflow'],
+      ['decisions', '--history', '--context', 'workflow', '--open'],
+      ['state', '--history', '--context', 'workflow'],
     ];
     const answers = questions.map((args) => {
       const first = runConcepts(root, ...args);
@@ -439,7 +450,7 @@ describe('concept journal structural examples', () => {
     plant(root, '01K70000000000000000000003', 'working-tree-only');
     context(root);
     define(root);
-    expect(query(root, 'design')).toMatchObject({
+    expect(query(root, 'design', '--history')).toMatchObject({
       contexts: [
         {
           name: 'workflow',
@@ -522,7 +533,7 @@ describe('concept journal structural examples', () => {
     const versions = [leftVersion, rightVersion].sort((a, b) =>
       a.id.localeCompare(b.id),
     );
-    const current = query(root, 'design').contexts[0]!;
+    const current = query(root, 'design', '--history').contexts[0]!;
     expect(current.concepts.map((c) => c.name)).toEqual([
       'left-only',
       'right-only',
@@ -569,7 +580,7 @@ describe('concept journal structural examples', () => {
       reason,
     );
     unchangedFiles(union, snapshot(root));
-    const resolved = query(root, 'design').contexts[0]!;
+    const resolved = query(root, 'design', '--history').contexts[0]!;
     expect(resolved.competing).toEqual([]);
     expect(resolved.concepts.map((c) => c.name)).toEqual([
       'reservation',

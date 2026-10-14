@@ -27,9 +27,13 @@
 // WHAT STANDS. A decision stands while it is open or accepted, neither
 // superseded nor deprecated; one about a cut the ledger records integrated is
 // deprecated without any entry. A cut's example files are history once the cut
-// is integrated, unless a standing decision keeps them. `decisions`, `state`,
-// `overview` and `leakage` read only what stands, and history too only when
-// asked with `--history`.
+// is integrated, unless a standing decision keeps them. A cut is finished once
+// its work is complete or it is integrated. Every query but `history` reads
+// only what stands: no retired concept, no reason a concept's version was
+// written, no superseded or deprecated decision, nor what a decision superseded
+// or the kinds recorded before its governing one, no example that is history
+// and no finished cut's effort; `state`, `design`, `decisions` and `leakage`
+// add the history only when asked with `--history`.
 //
 // A query appends nothing and prints JSON; when it read past entries written by
 // a newer runtime, in the journal or, for `overview`, `state`, `decisions` and
@@ -98,7 +102,14 @@ import {
   vocabulary,
 } from './leakage.js';
 import { type LedgerCut, overviewOf } from './overview.js';
-import { type DecisionView, Folded, stands } from './views.js';
+import {
+  type DecisionView,
+  Folded,
+  type Meaning,
+  standingDecision,
+  standingDesign,
+  stands,
+} from './views.js';
 
 /** A change to a concept a frozen cut names, made by someone other than its
  *  architect: the cuts that freeze it, and what the warning says. */
@@ -160,7 +171,7 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the project’s purpose first, what the project is for, and then the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, its standing decisions, accepted (settled) and open (not settled), each by its id, title and kind, whose whole text the decisions reading gives, and, for each of its cuts (a change to the design built and judged as a whole), how much work it took as last recorded; superseded and deprecated decisions are history, shown only when asked',
+      'Read the project’s purpose first, what the project is for, and then the whole state of each bounded context in one answer: its live concepts (the current meaning of each), competing versions none has chosen, its standing decisions, accepted (settled) and open (not settled), each by its id, title and kind, whose whole text the decisions reading gives, and, for each of its cuts not yet finished (a change to the design built and judged as a whole), how much work it took as last recorded; retired concepts, why each concept’s version was written, superseded and deprecated decisions and the effort of finished cuts are history, shown only when asked',
     when: 'At the start of a session, or after it was compacted, once the overviews of the delivered workflow context and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; every context includes those the installation delivers, which carry no decisions, retired concepts or recorded effort of their own',
     positional: null,
     flags: {
@@ -168,7 +179,7 @@ export const VERBS = {
         'Only this bounded context; every context when left out',
       ),
       history: switchFlag(
-        'Also its history: the decisions superseded or deprecated, each with what replaced it or why it no longer applies',
+        'Also its history: retired concepts with why each was retired, why each live concept’s version was written, the decisions superseded or deprecated, each with what replaced it or why it no longer applies, and every cut’s effort, finished ones included',
       ),
     },
   },
@@ -176,12 +187,15 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Show the current conceptual design of each bounded context: its live concepts, each at its current version, competing versions and retired concepts',
+      'Show the current conceptual design of each bounded context: its live concepts, each by its current meaning, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
     when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands; every context includes those the installation delivers, marked delivered and read-only',
     positional: null,
     flags: {
       context: valueFlag(
         'Only this bounded context; every context when left out',
+      ),
+      history: switchFlag(
+        'Also its history: retired concepts with why each was retired, and why each live concept’s version was written',
       ),
     },
   },
@@ -208,7 +222,7 @@ export const VERBS = {
     concept: 'decision',
     effect: 'reads',
     purpose:
-      'List the standing decisions in the order recorded, each open or accepted; asked for history, every decision, each open, accepted, superseded or deprecated. A decision is deprecated by a later entry naming it with a reason, or once the cut it names as the one it was about is integrated',
+      'List the standing decisions in the order recorded, each open or accepted, with its governing kind; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it. A decision is deprecated by a later entry naming it with a reason, or once the cut it names as the one it was about is integrated',
     when: 'To see what has been decided and what still awaits acceptance, before acting on a choice or after recording or accepting a decision; with history, to see how a choice was reached or why one no longer applies',
     positional: null,
     flags: {
@@ -217,7 +231,7 @@ export const VERBS = {
       ),
       open: switchFlag('Only the decisions still awaiting acceptance'),
       history: switchFlag(
-        'Also the decisions superseded or deprecated: the history of how each choice was reached',
+        'Also the decisions superseded or deprecated, and for every decision what it superseded, what superseded it and every kind recorded for it: the history of how each choice was reached',
       ),
     },
   },
@@ -446,10 +460,12 @@ const READING = {
     'what the project is for, read before its parts; null while none is recorded, and while purposes recorded differently on merged branches compete, each then listed under competingPurposes until a later concepts purpose with a reason settles them',
   competingDescriptions:
     'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context with a reason settles them',
-  concepts: 'the live concepts of the context, each its current version',
+  concepts:
+    'the live concepts of the context, each by its current meaning; given history, also the reason its current version was written',
   competing:
     'concepts with two or more versions superseding the same one; none is chosen until a later version supersedes them all',
-  retired: 'concepts retired from the design, each with its reason',
+  retired:
+    'given only when history is asked for: concepts retired from the design, each with its reason',
   'decisions.accepted':
     'standing decisions accepted, neither superseded nor deprecated: settled; each by its entry, id, title and kind, its whole text read with concepts decisions',
   'decisions.open':
@@ -461,7 +477,7 @@ const READING = {
   'decisions.entry':
     'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
   efficiency:
-    'each cut of the context with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
+    'each cut of the context the ledger records not yet finished (neither its work complete nor it integrated), and given history every cut, with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
@@ -636,9 +652,18 @@ function answerOf(
     );
   /** Every decision, its status worked out from the cuts integrated. */
   const decisionViews = () => folded.decisionViews(integratedCuts());
+  /** `design` as shown: whole when history is asked for, else as it stands. */
+  const shownDesign = <
+    D extends {
+      readonly concepts: readonly Meaning[];
+      readonly retired: readonly unknown[];
+    },
+  >(
+    design: D,
+  ) => (history ? design : standingDesign(design));
   /** The state of `where`: its design, its standing decisions each by its
-   *  summary (its whole text is the decisions reading's), history too when
-   *  asked, and its cuts' figures. */
+   *  summary (its whole text is the decisions reading's), and the figures of
+   *  its cuts the ledger records not yet finished; history too when asked. */
   const state = (decisions: readonly DecisionView[], where: string) => {
     const of = (status: DecisionView['status']) =>
       decisions
@@ -664,8 +689,13 @@ function answerOf(
             ...(deprecation === undefined ? {} : { deprecation }),
           }),
         );
+    const unfinished = new Set(
+      ledgerCuts()
+        .filter((c) => c.phase === 'open' || c.phase === 'in flight')
+        .map((c) => c.cut),
+    );
     return {
-      ...folded.design(where),
+      ...shownDesign(folded.design(where)),
       decisions: {
         accepted: of('accepted'),
         open: of('open'),
@@ -673,7 +703,9 @@ function answerOf(
           ? { superseded: of('superseded'), deprecated: of('deprecated') }
           : {}),
       },
-      efficiency: folded.efficiency(where),
+      efficiency: folded
+        .efficiency(where)
+        .filter((e) => history || unfinished.has(e.cut)),
     };
   };
   /** The words of `where`: the names of its live concepts and of `also`, and
@@ -725,7 +757,7 @@ function answerOf(
         contexts: [
           ...covered.own.map((where) => state(decisions, where)),
           ...covered.delivered.map((d) => ({
-            ...deliveredDesign(d),
+            ...shownDesign(deliveredDesign(d)),
             decisions: {
               accepted: [],
               open: [],
@@ -836,8 +868,8 @@ function answerOf(
       const covered = covering();
       return {
         contexts: [
-          ...covered.own.map((where) => folded.design(where)),
-          ...covered.delivered.map(deliveredDesign),
+          ...covered.own.map((where) => shownDesign(folded.design(where))),
+          ...covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
         ],
       };
     }
@@ -847,12 +879,14 @@ function answerOf(
       const only = args.flags.has('context') ? context() : undefined;
       const open = args.flags.has('open');
       return {
-        decisions: decisionViews().filter(
-          (d) =>
-            (only === undefined || d.context === only) &&
-            (!open || d.status === 'open') &&
-            (history || stands(d)),
-        ),
+        decisions: decisionViews()
+          .filter(
+            (d) =>
+              (only === undefined || d.context === only) &&
+              (!open || d.status === 'open') &&
+              (history || stands(d)),
+          )
+          .map((d) => (history ? d : standingDecision(d))),
       };
     }
     case 'purpose': {
