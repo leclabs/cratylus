@@ -59,6 +59,7 @@ const VERBS = [
   'history',
   'decisions',
   'leakage',
+  'purpose',
   'context',
   'define',
   'supersede',
@@ -77,6 +78,7 @@ const PARAMETERS: Record<string, string[]> = {
   history: ['concept', 'context'],
   decisions: ['context', 'open', 'history'],
   leakage: ['context', 'history'],
+  purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
@@ -222,6 +224,7 @@ describe('concepts --explain', () => {
       history: 'concept',
       decisions: 'decision',
       leakage: 'concept journal',
+      purpose: 'concept journal',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
@@ -438,7 +441,7 @@ describe('what the explanation calls required is what the verb refuses without',
   }
 
   const cases = explain(JOURNAL)
-    .verbs.filter((verb) => verb.name !== 'context')
+    .verbs.filter((verb) => !['context', 'purpose'].includes(verb.name))
     .flatMap((verb) => [
       [verb.name, undefined] as const,
       ...verb.parameters.map((p) => [verb.name, p.name] as const),
@@ -467,54 +470,77 @@ describe('what the explanation calls required is what the verb refuses without',
     }
   });
 
-  it('context declares a parameter required only when both recording and changing refuse its omission', () => {
-    const verb = explain(JOURNAL).verbs.find(
-      (v) => v.name === 'context',
-    ) as VerbExplanation;
-    const fullCalls: Record<string, string>[] = [
-      { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' },
+  /** The full calls of each verb that records or, given a reason, changes:
+   *  a recording, and a change after what `before` records. */
+  const RECORD_OR_CHANGE: Record<
+    string,
+    { given: Record<string, string>; before?: string[] }[]
+  > = {
+    context: [
+      { given: { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' } },
       {
-        context: 'booking',
-        subject: 'Expanded booking.',
-        relation: 'Alongside fleet.',
-        reason: 'Include the expanded subject.',
+        given: {
+          context: 'booking',
+          subject: 'Expanded booking.',
+          relation: 'Alongside fleet.',
+          reason: 'Include the expanded subject.',
+        },
       },
-    ];
-    for (const left of [undefined, ...PARAMETERS.context!]) {
-      const refused = fullCalls.map((full) => {
-        const given = { ...full };
-        if (left !== undefined) delete given[left];
-        const concepts = journal();
-        const directory = join(repo as string, 'design/journal');
-        const before = readdirSync(directory);
-        try {
-          let error: unknown;
+    ],
+    purpose: [
+      { given: { statement: 'Book seats.' } },
+      {
+        given: { statement: 'Book and pay.', reason: 'Payment too.' },
+        before: ['purpose', '--statement', 'Book seats.'],
+      },
+    ],
+  };
+
+  it.each(Object.keys(RECORD_OR_CHANGE))(
+    '%s declares a parameter required only when both recording and changing refuse its omission',
+    (name) => {
+      const verb = explain(JOURNAL).verbs.find(
+        (v) => v.name === name,
+      ) as VerbExplanation;
+      for (const left of [undefined, ...PARAMETERS[name]!]) {
+        const refused = RECORD_OR_CHANGE[name]!.map((full) => {
+          const given = { ...full.given };
+          if (left !== undefined) delete given[left];
+          const concepts = journal();
+          if (full.before !== undefined) concepts(...full.before);
+          const directory = join(repo as string, 'design/journal');
+          const before = readdirSync(directory);
           try {
-            concepts(...argv(verb, given));
-          } catch (caught) {
-            error = caught;
+            let error: unknown;
+            try {
+              concepts(...argv(verb, given));
+            } catch (caught) {
+              error = caught;
+            }
+            if (error !== undefined) {
+              expect(error).toBeInstanceOf(Error);
+              expect((error as Error).message).toMatch(
+                new RegExp(`^concepts ${name}: `),
+              );
+              expect(readdirSync(directory)).toEqual(before);
+              return true;
+            }
+            expect(readdirSync(directory)).toHaveLength(before.length + 1);
+            return false;
+          } finally {
+            rmSync(repo as string, { recursive: true, force: true });
+            repo = undefined;
           }
-          if (error !== undefined) {
-            expect(error).toBeInstanceOf(Error);
-            expect((error as Error).message).toMatch(/^concepts context: /);
-            expect(readdirSync(directory)).toEqual(before);
-            return true;
-          }
-          expect(readdirSync(directory)).toHaveLength(before.length + 1);
-          return false;
-        } finally {
-          rmSync(repo as string, { recursive: true, force: true });
-          repo = undefined;
-        }
-      });
-      if (left === undefined)
-        expect(refused, 'both full calls').toEqual([false, false]);
-      else
-        expect(
-          verb.parameters.find((parameter) => parameter.name === left)
-            ?.required,
-          `context without ${left}`,
-        ).toBe(refused.every(Boolean));
-    }
-  });
+        });
+        if (left === undefined)
+          expect(refused, 'both full calls').toEqual([false, false]);
+        else
+          expect(
+            verb.parameters.find((parameter) => parameter.name === left)
+              ?.required,
+            `${name} without ${left}`,
+          ).toBe(refused.every(Boolean));
+      }
+    },
+  );
 });

@@ -1,16 +1,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The concepts capability's VERB SURFACE — `concepts <verb> [args]`.
 //
-//   overview   each context told whole for a reader of it: subject and
-//              relation, concepts whole before parts, open decisions and the
-//              cuts in flight; what a session reads first to reconstitute
-//   state      the whole state of each context in one answer: the query a
-//              session reconstitutes its detail from
+//   overview   the project's purpose first, then each context told whole for a
+//              reader of it: subject and relation, concepts whole before
+//              parts, open decisions and the cuts in flight; what a session
+//              reads first to reconstitute
+//   state      the project's purpose first, then the whole state of each
+//              context in one answer: the query a session reconstitutes its
+//              detail from
 //   design     the current design of each context
 //   history    every version of one concept, or of a context's description
 //   decisions  the decisions with their status
 //   leakage    where realization shows through the journal's design, decisions
 //              and examples: a reading of the concept journal
+//   purpose    record the project's purpose, or, with a reason, change it
 //   context    record a bounded context, or, with a reason, change one
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
@@ -144,7 +147,7 @@ export const VERBS = {
     concept: 'context overview',
     effect: 'reads',
     purpose:
-      'Tell each bounded context whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
+      'Tell the project’s purpose first, what the project is for, and then each bounded context whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
     when: 'First, at the start of a session or after it was compacted, for the delivered workflow context and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight; every context includes those the installation delivers, each named by its origin and context, marked delivered and read-only, unless this journal holds that context itself',
     positional: null,
     flags: {
@@ -157,7 +160,7 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, its standing decisions, accepted (settled) and open (not settled), each by its id, title and kind, whose whole text the decisions reading gives, and, for each of its cuts (a change to the design built and judged as a whole), how much work it took as last recorded; superseded and deprecated decisions are history, shown only when asked',
+      'Read the project’s purpose first, what the project is for, and then the whole state of each bounded context in one answer: its live concepts (the current version of each), competing versions none has chosen, retired concepts, its standing decisions, accepted (settled) and open (not settled), each by its id, title and kind, whose whole text the decisions reading gives, and, for each of its cuts (a change to the design built and judged as a whole), how much work it took as last recorded; superseded and deprecated decisions are history, shown only when asked',
     when: 'At the start of a session, or after it was compacted, once the overviews of the delivered workflow context and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; every context includes those the installation delivers, which carry no decisions, retired concepts or recorded effort of their own',
     positional: null,
     flags: {
@@ -231,6 +234,23 @@ export const VERBS = {
       ),
       history: switchFlag(
         'Also the history: decisions superseded or deprecated, and the examples of integrated cuts no standing decision keeps',
+      ),
+    },
+  },
+  purpose: {
+    concept: 'concept journal',
+    effect: 'appends',
+    purpose:
+      'Record the project’s purpose: what the project is for, in plain words, which every overview and state reading shows first; or, given a reason, change it by a new statement that supersedes the current one, which stays in the journal',
+    when: 'A reason marks a change. Without a reason, once, when the project’s purpose is first stated; with a reason, when what the project is for changes, or to settle purposes recorded differently in separate lines of work that were later joined',
+    positional: null,
+    flags: {
+      statement: valueFlag(
+        'What the project is for, in plain words a newcomer understands',
+        { required: true },
+      ),
+      reason: valueFlag(
+        'Why the purpose changes; needed to change a recorded one, and giving it marks the call as a change, never a first recording',
       ),
     },
   },
@@ -416,12 +436,14 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the delivered workflow context’s overview and each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Its views of the current design, state and overview include the contexts the installation delivers, named by origin and context, marked delivered and read-only, beside the project’s own; nothing is ever recorded into one',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the project’s purpose and the delivered workflow context’s overview and each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record the project’s purpose and each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Its views of the current design, state and overview include the contexts the installation delivers, named by origin and context, marked delivered and read-only, beside the project’s own; nothing is ever recorded into one',
   verbs: VERBS,
 };
 
 /** What `state` says each part of its answer is. */
 const READING = {
+  purpose:
+    'what the project is for, read before its parts; null while none is recorded, and while purposes recorded differently on merged branches compete, each then listed under competingPurposes until a later concepts purpose with a reason settles them',
   competingDescriptions:
     'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context with a reason settles them',
   concepts: 'the live concepts of the context, each its current version',
@@ -685,6 +707,7 @@ function answerOf(
       const covered = covering();
       const decisions = decisionViews();
       return {
+        ...folded.purpose(),
         contexts: [
           ...covered.own.map((where) =>
             overviewOf(folded.design(where), decisions, ledgerCuts()),
@@ -697,6 +720,7 @@ function answerOf(
       const decisions = decisionViews();
       const covered = covering();
       return {
+        ...folded.purpose(),
         reading: READING,
         contexts: [
           ...covered.own.map((where) => state(decisions, where)),
@@ -830,6 +854,30 @@ function answerOf(
             (history || stands(d)),
         ),
       };
+    }
+    case 'purpose': {
+      const statement = read.required('statement', 'the purpose');
+      const reason = read.optional('reason');
+      const current = folded.currentPurposes();
+      if (reason === undefined) {
+        if (current.length > 0)
+          throw refuse(
+            'the project’s purpose is already recorded; give --reason to change it',
+          );
+        return journal.append({ kind: 'purpose', statement, supersedes: [] });
+      }
+      if (current.length === 0)
+        throw refuse(
+          'the project has no purpose recorded; record it without --reason first',
+        );
+      if (reason.trim() === '')
+        throw refuse('the reason is empty; give why the purpose changes');
+      return journal.append({
+        kind: 'purpose',
+        statement,
+        reason,
+        supersedes: current.map((p) => p.id),
+      });
     }
     case 'context': {
       const name = read.named('context');

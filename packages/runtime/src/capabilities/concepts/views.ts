@@ -11,6 +11,11 @@
 // superseded the same one), reported in append order, none chosen, until a
 // later version supersedes them all.
 //
+// The project's PURPOSE is folded the same way: its current statements are the
+// purpose entries no later one supersedes; alike they are one purpose,
+// different they are COMPETING, none chosen, until a later one supersedes
+// them all.
+//
 // A context is its NAME. Its current descriptions are the entries of that name
 // no later one supersedes; recorded alike on two branches they are one
 // description, recorded differently they are COMPETING, none chosen, until a
@@ -38,6 +43,7 @@ import type {
   DeprecateEntry,
   EfficiencyEntry,
   Entry,
+  PurposeEntry,
   RetireEntry,
   VersionEntry,
   WordedEntry,
@@ -60,6 +66,13 @@ export type Meaning = Pick<ConceptView, 'name' | 'wording' | 'builtFrom'>;
 export type CompetingVersion =
   | Omit<ConceptView, 'name'>
   | { readonly retired: true; readonly reason: string };
+
+/** The project's purpose, what it is for: `null` while none is recorded, and
+ *  while competing, each competing statement then listed in append order. */
+export interface PurposeView {
+  readonly purpose: string | null;
+  readonly competingPurposes?: readonly string[];
+}
 
 /** A context's description: its subject and its place in the context map. */
 export interface Description {
@@ -166,6 +179,8 @@ export type Standing =
 /** The journal folded: its contexts, concepts and decisions, each in the order
  *  first recorded. */
 export class Folded {
+  /** The project's purpose entries, in append order. */
+  readonly purposes: PurposeEntry[] = [];
   /** Each context's entries by name, in append order. */
   readonly contexts = new Map<string, ContextEntry[]>();
   /** Each context's concepts by name, each with its versions in append order. */
@@ -188,6 +203,9 @@ export class Folded {
   constructor(entries: readonly Entry[]) {
     for (const entry of entries)
       switch (entry.kind) {
+        case 'purpose':
+          this.purposes.push(entry);
+          break;
         case 'context':
           this.contexts.set(entry.name, [
             ...(this.contexts.get(entry.name) ?? []),
@@ -286,6 +304,23 @@ export class Folded {
         at,
       }),
     );
+  }
+
+  /** The project's current purpose entries: those no later one supersedes. */
+  currentPurposes(): readonly PurposeEntry[] {
+    const superseded = new Set(this.purposes.flatMap((p) => p.supersedes));
+    return this.purposes.filter((p) => !superseded.has(p.id));
+  }
+
+  /** The project's purpose: one statement when settled, `null` with each
+   *  distinct statement listed when competing, `null` when none is recorded. */
+  purpose(): PurposeView {
+    const statements = [
+      ...new Set(this.currentPurposes().map((p) => p.statement)),
+    ];
+    return statements.length > 1
+      ? { purpose: null, competingPurposes: statements }
+      : { purpose: statements[0] ?? null };
   }
 
   /** The current entries of `context`, a context the journal has: those no

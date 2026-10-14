@@ -574,6 +574,57 @@ describe('the concept journal as a library', () => {
     );
   });
 
+  it('records the project’s purpose, changes it only with a reason, and shows it first', () => {
+    expect(Object.keys(concepts('overview') as object)[0]).toBe('purpose');
+    expect(concepts('state')).toMatchObject({ purpose: null });
+    refused(
+      ['purpose', '--statement', 'Seats.', '--reason', 'Why.'],
+      /^concepts purpose: the project has no purpose recorded/,
+    );
+    const first = concepts('purpose', '--statement', 'Book seats.') as {
+      id: string;
+    };
+    expect(first).toMatchObject({ kind: 'purpose', supersedes: [] });
+    refused(
+      ['purpose', '--statement', 'Again.'],
+      /^concepts purpose: the project’s purpose is already recorded/,
+    );
+    expect(
+      concepts('purpose', '--statement', 'Book and pay.', '--reason', 'Pay.'),
+    ).toMatchObject({ kind: 'purpose', supersedes: [first.id] });
+    for (const view of ['overview', 'state']) {
+      const answer = concepts(view) as Record<string, unknown>;
+      expect(Object.keys(answer)[0]).toBe('purpose');
+      expect(answer.purpose).toBe('Book and pay.');
+    }
+  });
+
+  it('reports purposes recorded differently on merged branches as competing until one settles them', () => {
+    for (const [n, statement] of [
+      [1, 'Book seats.'],
+      [2, 'Sell seats.'],
+    ] as const) {
+      const id = `01J0000000000000000000000${n}`;
+      writeFileSync(
+        join(repo, 'design/journal', `${id}.json`),
+        JSON.stringify({
+          id,
+          at: '2026-01-01T00:00:00.000Z',
+          kind: 'purpose',
+          statement,
+          supersedes: [],
+        }),
+      );
+    }
+    expect(concepts('overview')).toMatchObject({
+      purpose: null,
+      competingPurposes: ['Book seats.', 'Sell seats.'],
+    });
+    concepts('purpose', '--statement', 'Book seats.', '--reason', 'Settle.');
+    expect(concepts('overview')).toMatchObject({ purpose: 'Book seats.' });
+    expect(concepts('overview')).not.toHaveProperty('competingPurposes');
+  });
+
   it('shows only standing decisions and examples, history when asked', () => {
     const decide = (id: string, ...more: string[]) =>
       concepts(
