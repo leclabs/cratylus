@@ -1,0 +1,15 @@
+{
+  "id": "01M4VQN2XJN4GSCJVAAT78NRE2",
+  "at": "2026-10-13T22:55:40.466Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0193",
+  "context": "delivery",
+  "title": "Deliver the workflow's own design to every project",
+  "situation": "An architect starting cold in a new project has only the workflow's moves (role procedure lines, tool explanations), not the practice as a whole, which only cratylus's own journal holds; the record names a workflow-delivery cut but never defines it.",
+  "decision": "Proposed: the workflow context's current design (its subject, relation and live concepts) is projected from cratylus's own journal at release, placed read-only under the owned root with the agents, and shown by the concept journal's views in every project beside the user's own contexts, marked as delivered and versioned; it is never written into a user's journal. History and decisions are not delivered. Checked deterministically: in an empty project the overview shows the delivered workflow context, equal to its source.",
+  "consequences": "Accepted, it becomes a cut of the delivery context, followed by the consumer trial as its test in use.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

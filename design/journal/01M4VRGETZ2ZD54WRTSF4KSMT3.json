@@ -1,0 +1,13 @@
+{
+  "id": "01M4VRGETZ2ZD54WRTSF4KSMT3",
+  "at": "2026-10-13T23:10:37.407Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "workflow",
+  "subject": "the practice cratylus ships for building against a design",
+  "relation": "practised on a user's own bounded contexts, which it never models; its agent roles are composed in the agents context, and the operator is a person; its capabilities, the concept journal and the work package ledger, reach a harness through delivery; cratylus's development practises it on cratylus itself, as any user would.",
+  "reason": "Record corrections, second cold read, 2026-10-13: its roles are the operator, a person, and agents; only the agents are composed in the agents context.",
+  "supersedes": [
+    "01M4VD23QK7M3Q5GQ777JAGFWJ"
+  ]
+}

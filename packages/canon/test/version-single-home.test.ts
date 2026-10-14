@@ -68,9 +68,13 @@ describe('a version has one home — the manifest', () => {
     const reported = execFileSync('node', [bin, '--version'], {
       encoding: 'utf8',
     }).trim();
-    // The bare version, which is all `--version` prints: the version the ARTIFACT
-    // reports must be the version its MANIFEST declares.
-    expect(reported).toBe(manifestVersion('cli'));
+    // The version the ARTIFACT reports must be the version its MANIFEST declares; a
+    // build run from its source tree adds the commit it was built from as build
+    // metadata, so it is never mistaken for the release.
+    const [declared, built] = reported.split('+');
+    expect(declared).toBe(manifestVersion('cli'));
+    if (built !== undefined)
+      expect(built).toMatch(/^[0-9a-f]{7,}(\.modified)?$/);
   });
 
   it('is non-vacuous — CONVICTS a hardcoded version and SPARES a derived one', () => {

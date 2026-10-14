@@ -1,0 +1,13 @@
+{
+  "id": "01M4W14RNYD4Q7D6R5PD780J4Y",
+  "at": "2026-10-14T01:41:31.454Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "delivery",
+  "subject": "getting the corpus onto a harness: projection to omp, install, uninstall, owned root, upgrade",
+  "relation": "projects the corpus's cells and the agents' profiles onto a harness, and offers the workflow's capabilities, the concept journal and the ledger, to its agents as tools and to the operator as a command; how well delivered agents work in the harness is judged in use, never checked.",
+  "reason": "Restated as current meaning only: plain words, with what its concepts already state and how it is built left out; its subject and place in the context map are unchanged.",
+  "supersedes": [
+    "01M4VD23SC3HCSDN6N2E19FPGF"
+  ]
+}

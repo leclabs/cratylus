@@ -1,0 +1,15 @@
+{
+  "id": "01M4VYFVHZ1C6GKW8EB0CMMF3D",
+  "at": "2026-10-14T00:55:09.119Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0208",
+  "context": "delivery",
+  "title": "The workflow-delivery cut is accepted",
+  "situation": "Both assayers accept; all 15 visible and 3 held-out examples hold; the whole check is green after one round. The ledger shows the work packages returned, not approved, because assayer verdicts are not yet captured (0201).",
+  "decision": "Accepted: the workflow's current design is delivered read-only in every project, origin-qualified, and a journal holding the source context by identity reads its own. Future work from the lead's notes: a delivered document that cannot be read is read past with a report, as an unknown journal entry is (0109); recording a project context under a delivered context's qualified name is refused; the session note's fallback names identity, not the plain name workflow; a refusal of the hidden delivered context says the journal holds it under its own name.",
+  "consequences": "The lead integrates into dev by pull request once the operator says to push.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

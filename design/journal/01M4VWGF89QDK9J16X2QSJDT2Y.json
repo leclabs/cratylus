@@ -1,0 +1,15 @@
+{
+  "id": "01M4VWGF89QDK9J16X2QSJDT2Y",
+  "at": "2026-10-14T00:20:32.137Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0207",
+  "context": "delivery",
+  "title": "Workflow delivery realized: projected at the package's build, read by the command from the installation it reaches",
+  "situation": "The workflow-delivery cut (0205) needs a realization the check-writer and the builders share: where the projection is made, where it is placed, how a project's reading reaches it, how it is named and marked in the views, and how the check suites stay independent of whatever the developer's machine has installed.",
+  "decision": "(1) The `cratylus` package's build projects the workflow context from the repository's journal into one document carried in its own build output: origin `cratylus`, the package's version, the context's plain name, its identity (the id of the entry that first recorded it), its current subject and relation, and each live concept's current wording and built-from; nothing else, and nothing time-dependent, so the same journal and version give the same bytes. The projection is a function of the runtime's concept journal, exported for the build and the checks. (2) Install, and deploy, place it under the owned root as `delivered/cratylus/workflow.json`, file mode read-only; forge carries it as data handed in by the command, never computing it. (3) The command reads the delivered documents of the installation it reaches (the same resolution as the capability configuration: CRATYLUS_INSTALLATION, else the single installation under the home), and hands them to the concept journal's dispatch; the journal library reads nothing outside the project, so a call without them sees none. (4) In every read view a delivered context is named `<origin>:<context>` (`cratylus:workflow`) and carries `delivered: {origin, version, context, identity}` and `readOnly: true`; overview's account says it is delivered and read-only; state gives it no decisions and no efficiency; decisions lists none of it; history of it or of its concepts gives no versions and its current meaning as `current`. It is shown unless the project's journal holds a context entry with the same id as its identity. (5) Every append whose context is a delivered context's qualified name (context, define, supersede, retire, decide) is refused as delivered and read-only, writing nothing. (6) The command-level check suites run with a home of their own and no CRATYLUS_INSTALLATION, so an installation on the developer's machine never reaches them.",
+  "consequences": "Two work packages: delivered-context (runtime concept journal, the command's build and install placement) and reconstitution-practice (the reconstitution procedure and the session-start note name the delivered workflow overview). Checks are black-box through an installed host where they can be, and through the exported projection where the source must be a fixture journal.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

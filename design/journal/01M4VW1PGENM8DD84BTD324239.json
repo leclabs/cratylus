@@ -1,0 +1,18 @@
+{
+  "id": "01M4VW1PGENM8DD84BTD324239",
+  "at": "2026-10-14T00:12:28.046Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "a session, new or compacted, recovers the conceptual design, its decisions, what is open and what is in flight by querying the concept journal and the ledger rather than remembering: it reads the context overview of each context the work touches first, the delivered workflow context included, then whatever detail the work needs, and, before acting, reads back to the operator the current design of those contexts, their open decisions and the cuts in flight; it reads the branch it is on, so it sees that branch's state, and continuity never depends on a conversation.",
+  "builtFrom": [
+    "concept journal",
+    "context overview",
+    "ledger"
+  ],
+  "reason": "0205.",
+  "supersedes": [
+    "01M4MBA0S3X1MABG6KCE1B1SYB"
+  ]
+}

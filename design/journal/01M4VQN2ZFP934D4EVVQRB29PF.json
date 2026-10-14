@@ -1,0 +1,15 @@
+{
+  "id": "01M4VQN2ZFP934D4EVVQRB29PF",
+  "at": "2026-10-13T22:55:40.527Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0194",
+  "context": "workflow",
+  "title": "Order of the remaining work",
+  "situation": "0118's order is out of date: cut 7, the checks cut and the record corrections are done, merging is now the lead's (0160), and two changes agreed in conversation are not yet recorded.",
+  "decision": "Recommended: (1) record the line between meaning and mechanics, a change that adds or alters no meaning being ordinary engineering and not a cut, and loosen the architect's stance for exploration; (2) deliver the workflow's own design to every project; (3) the consumer trial, kino on a film-production project, which waits for the operator; (4) the contracts cut (0138); (5) the ipseic round (0048). Priority is the operator's.",
+  "consequences": "Accepted, it supersedes 0118.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

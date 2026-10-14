@@ -1,0 +1,15 @@
+{
+  "id": "01M4VS5ZAQQE7NH51HS5HP55HM",
+  "at": "2026-10-13T23:22:22.423Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0198",
+  "context": "development",
+  "title": "The form of a commit that declares a cut complete",
+  "situation": "Record corrections, third cold read, 2026-10-13: the completion check watches commits 'in forms enumerated by decision', and the only list was in 0081, a decision about the reconstitution cut, now history (0161).",
+  "decision": "The completion check watches one form: a conventional commit scoped to its cut, `feat(cut:<cut>): <message>`.",
+  "consequences": "The completion check concept points here.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

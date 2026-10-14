@@ -11,6 +11,11 @@
 // superseded the same one), reported in append order, none chosen, until a
 // later version supersedes them all.
 //
+// The project's PURPOSE is folded the same way: its current statements are the
+// purpose entries no later one supersedes; alike they are one purpose,
+// different they are COMPETING, none chosen, until a later one supersedes
+// them all.
+//
 // A context is its NAME. Its current descriptions are the entries of that name
 // no later one supersedes; recorded alike on two branches they are one
 // description, recorded differently they are COMPETING, none chosen, until a
@@ -20,20 +25,30 @@
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
 // has it. A decision is SUPERSEDED once any decision supersedes it, else
-// ACCEPTED once recorded accepted or its acceptance is recorded, else OPEN.
+// DEPRECATED once its deprecation is recorded or the cut it names is
+// integrated, else ACCEPTED once recorded accepted or its acceptance is
+// recorded, else OPEN. An open or accepted decision STANDS; a superseded or
+// deprecated one is history.
 // Its KIND, stating meaning or constraining realization, is the latest one
 // recorded for it, on the decision itself or by a classification after it;
 // it has none until one is recorded.
 //
 // A cut's EFFICIENCY figures are its context's latest efficiency entry for it.
+//
+// WHAT STANDS of a design or a decision is what a view shows unless history is
+// asked for: a design without its retired concepts or the reason each live
+// concept's current version was written, a decision without the decisions it
+// replaced or the kinds recorded for it before the governing one.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
   ContextEntry,
   DecideEntry,
   DecisionKind,
+  DeprecateEntry,
   EfficiencyEntry,
   Entry,
+  PurposeEntry,
   RetireEntry,
   VersionEntry,
   WordedEntry,
@@ -47,11 +62,22 @@ export interface ConceptView {
   readonly reason: string;
 }
 
+/** What a concept means: its name, its current wording and its parts — a live
+ *  concept as a delivered context carries it, without the reason it was recorded. */
+export type Meaning = Pick<ConceptView, 'name' | 'wording' | 'builtFrom'>;
+
 /** One of a concept's competing versions; a retirement among them carries
  *  `retired` and no wording. */
 export type CompetingVersion =
   | Omit<ConceptView, 'name'>
   | { readonly retired: true; readonly reason: string };
+
+/** The project's purpose, what it is for: `null` while none is recorded, and
+ *  while competing, each competing statement then listed in append order. */
+export interface PurposeView {
+  readonly purpose: string | null;
+  readonly competingPurposes?: readonly string[];
+}
 
 /** A context's description: its subject and its place in the context map. */
 export interface Description {
@@ -85,6 +111,12 @@ export interface KindRecord {
   readonly reason?: string;
 }
 
+/** Why a decision no longer stands without a replacement: the entry that
+ *  deprecated it, with its reason, or the cut it was about, integrated. */
+export type Deprecation =
+  | { readonly entry: string; readonly reason: string }
+  | { readonly cut: string };
+
 export interface DecisionView {
   readonly entry: string;
   readonly id: string;
@@ -93,13 +125,70 @@ export interface DecisionView {
   readonly situation: string;
   readonly decision: string;
   readonly consequences: string;
-  readonly status: 'open' | 'accepted' | 'superseded';
+  readonly status: 'open' | 'accepted' | 'superseded' | 'deprecated';
   readonly supersedes: string | null;
   readonly supersededBy: readonly string[];
   /** The governing kind: the latest recorded, `null` where none is. */
   readonly kind: DecisionKind | null;
   /** Every kind recorded for the decision, in the order recorded. */
   readonly kinds: readonly KindRecord[];
+  /** The cut it was about, where it names one. */
+  readonly cut?: string;
+  /** The example files it keeps standing, each as `<context>/<cut>`. */
+  readonly keeps?: readonly string[];
+  /** Why it is deprecated, where it is. */
+  readonly deprecation?: Deprecation;
+}
+
+/** Whether `decision` stands: open or accepted, neither superseded nor
+ *  deprecated. */
+export const stands = (decision: DecisionView): boolean =>
+  decision.status === 'open' || decision.status === 'accepted';
+
+/** `decision` as it stands: its own text, status and governing kind, without
+ *  what it superseded, what superseded it, or every kind recorded for it. */
+export const standingDecision = ({
+  entry,
+  id,
+  context,
+  title,
+  situation,
+  decision,
+  consequences,
+  status,
+  kind,
+  cut,
+  keeps,
+}: DecisionView) => ({
+  entry,
+  id,
+  context,
+  title,
+  situation,
+  decision,
+  consequences,
+  status,
+  kind,
+  ...(cut === undefined ? {} : { cut }),
+  ...(keeps === undefined ? {} : { keeps }),
+});
+
+/** `design` as it stands: its live concepts by their meaning alone, without
+ *  the reasons their versions were written, and no retired concepts. */
+export function standingDesign<
+  D extends {
+    readonly concepts: readonly Meaning[];
+    readonly retired: readonly unknown[];
+  },
+>({ concepts, retired: _, ...rest }: D) {
+  return {
+    ...rest,
+    concepts: concepts.map(({ name, wording, builtFrom }) => ({
+      name,
+      wording,
+      builtFrom,
+    })),
+  };
 }
 
 export interface HistoryView {
@@ -141,6 +230,8 @@ export type Standing =
 /** The journal folded: its contexts, concepts and decisions, each in the order
  *  first recorded. */
 export class Folded {
+  /** The project's purpose entries, in append order. */
+  readonly purposes: PurposeEntry[] = [];
   /** Each context's entries by name, in append order. */
   readonly contexts = new Map<string, ContextEntry[]>();
   /** Each context's concepts by name, each with its versions in append order. */
@@ -155,12 +246,17 @@ export class Folded {
   readonly supersededBy = new Map<string, string[]>();
   /** The kinds recorded for each decision's entry, in append order. */
   readonly kinds = new Map<string, KindRecord[]>();
+  /** The deprecation recorded for each decision's entry, the first kept. */
+  readonly deprecations = new Map<string, DeprecateEntry>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
 
   constructor(entries: readonly Entry[]) {
     for (const entry of entries)
       switch (entry.kind) {
+        case 'purpose':
+          this.purposes.push(entry);
+          break;
         case 'context':
           this.contexts.set(entry.name, [
             ...(this.contexts.get(entry.name) ?? []),
@@ -215,6 +311,10 @@ export class Folded {
           cuts.set(entry.cut, entry);
           break;
         }
+        case 'deprecate':
+          if (!this.deprecations.has(entry.entry))
+            this.deprecations.set(entry.entry, entry);
+          break;
         case 'classify':
           this.kinds.set(entry.entry, [
             ...(this.kinds.get(entry.entry) ?? []),
@@ -255,6 +355,23 @@ export class Folded {
         at,
       }),
     );
+  }
+
+  /** The project's current purpose entries: those no later one supersedes. */
+  currentPurposes(): readonly PurposeEntry[] {
+    const superseded = new Set(this.purposes.flatMap((p) => p.supersedes));
+    return this.purposes.filter((p) => !superseded.has(p.id));
+  }
+
+  /** The project's purpose: one statement when settled, `null` with each
+   *  distinct statement listed when competing, `null` when none is recorded. */
+  purpose(): PurposeView {
+    const statements = [
+      ...new Set(this.currentPurposes().map((p) => p.statement)),
+    ];
+    return statements.length > 1
+      ? { purpose: null, competingPurposes: statements }
+      : { purpose: statements[0] ?? null };
   }
 
   /** The current entries of `context`, a context the journal has: those no
@@ -368,31 +485,60 @@ export class Folded {
     };
   }
 
-  /** The status the decision recorded by `entry` holds now. */
-  status(entry: string): DecisionView['status'] {
+  /** Why the decision recorded by `entry` is deprecated, given the cuts
+   *  `integrated`; `undefined` while it is not. */
+  deprecation(
+    entry: string,
+    integrated: ReadonlySet<string>,
+  ): Deprecation | undefined {
+    const recorded = this.deprecations.get(entry);
+    if (recorded !== undefined)
+      return { entry: recorded.id, reason: recorded.reason };
+    const cut = this.decisions.get(entry)?.cut;
+    return cut !== undefined && integrated.has(cut) ? { cut } : undefined;
+  }
+
+  /** The status the decision recorded by `entry` holds now, given the cuts
+   *  `integrated`. */
+  status(
+    entry: string,
+    integrated: ReadonlySet<string> = new Set(),
+  ): DecisionView['status'] {
     if ((this.supersededBy.get(entry) ?? []).length > 0) return 'superseded';
+    if (this.deprecation(entry, integrated) !== undefined) return 'deprecated';
     const recorded = this.decisions.get(entry) as DecideEntry;
     return recorded.status === 'accepted' || this.acceptances.has(entry)
       ? 'accepted'
       : 'open';
   }
 
-  /** Every decision, in the order recorded, as `decisions` gives it. */
-  decisionViews(): DecisionView[] {
-    return [...this.decisions.values()].map((d) => ({
-      entry: d.id,
-      id: d.decisionId,
-      context: d.context,
-      title: d.title,
-      situation: d.situation,
-      decision: d.decision,
-      consequences: d.consequences,
-      status: this.status(d.id),
-      supersedes: d.supersedes,
-      supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
-      kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
-      kinds: [...(this.kinds.get(d.id) ?? [])],
-    }));
+  /** Every decision, in the order recorded, as `decisions` gives it, given
+   *  the cuts `integrated`. */
+  decisionViews(integrated: ReadonlySet<string> = new Set()): DecisionView[] {
+    return [...this.decisions.values()].map((d) => {
+      const status = this.status(d.id, integrated);
+      const deprecation =
+        status === 'deprecated'
+          ? this.deprecation(d.id, integrated)
+          : undefined;
+      return {
+        entry: d.id,
+        id: d.decisionId,
+        context: d.context,
+        title: d.title,
+        situation: d.situation,
+        decision: d.decision,
+        consequences: d.consequences,
+        status,
+        supersedes: d.supersedes,
+        supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
+        kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
+        kinds: [...(this.kinds.get(d.id) ?? [])],
+        ...(d.cut === undefined ? {} : { cut: d.cut }),
+        ...(d.keeps === undefined ? {} : { keeps: [...d.keeps] }),
+        ...(deprecation === undefined ? {} : { deprecation }),
+      };
+    });
   }
 }
 

@@ -74,6 +74,7 @@ function decisionViews(): Decision[] {
   const decisions = query<{ decisions: Decision[] }>(
     fixture.root,
     'decisions',
+    '--history',
     '--context',
     'workflow',
   );
@@ -129,11 +130,8 @@ describe('leakage precision', () => {
         decision: wording,
         kind: 'meaning',
       }),
-      expect.objectContaining({
-        id: 'checking',
-        decision: wording,
-        kind: 'meaning',
-      }),
+      // The state lists the decision by its summary; its text is the decisions reading's.
+      expect.objectContaining({ id: 'checking', kind: 'meaning' }),
     ]);
     // Binds “it is warned” when recorded.
     expect(recorded.warnings).toEqual(
@@ -192,7 +190,7 @@ describe('leakage precision', () => {
     // Binds “recorded without saying which kind it is”: the contract represents unsaid kind as null.
     expect(decisionViews()).toEqual([
       expect.objectContaining({ id: 'checking', kind: null, kinds: [] }),
-      expect.objectContaining({ id: 'checking', kind: null, kinds: [] }),
+      expect.objectContaining({ id: 'checking', kind: null }),
     ]);
   });
 

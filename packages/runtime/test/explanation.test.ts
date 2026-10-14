@@ -59,6 +59,7 @@ const VERBS = [
   'history',
   'decisions',
   'leakage',
+  'purpose',
   'context',
   'define',
   'supersede',
@@ -66,16 +67,18 @@ const VERBS = [
   'decide',
   'accept',
   'classify',
+  'deprecate',
 ];
 
 /** Each verb's parameters, as the realization contract names them. */
 const PARAMETERS: Record<string, string[]> = {
   overview: ['context'],
-  state: ['context'],
-  design: ['context'],
+  state: ['context', 'history'],
+  design: ['context', 'history'],
   history: ['concept', 'context'],
-  decisions: ['context', 'open'],
-  leakage: ['context'],
+  decisions: ['context', 'open', 'history'],
+  leakage: ['context', 'history'],
+  purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
@@ -90,9 +93,12 @@ const PARAMETERS: Record<string, string[]> = {
     'status',
     'supersedes',
     'kind',
+    'cut',
+    'keeps',
   ],
   accept: ['id', 'reason'],
   classify: ['id', 'kind', 'reason'],
+  deprecate: ['id', 'reason'],
 };
 
 describe('concepts --explain', () => {
@@ -189,7 +195,7 @@ describe('concepts --explain', () => {
   /** The live concepts of the journal of the repository at `from`, and the
    *  concepts it has retired. */
   function designAt(from: string) {
-    const design = dispatchConcepts(['design'], { from }) as {
+    const design = dispatchConcepts(['design', '--history'], { from }) as {
       contexts: {
         concepts: { name: string }[];
         retired: { name: string }[];
@@ -218,6 +224,7 @@ describe('concepts --explain', () => {
       history: 'concept',
       decisions: 'decision',
       leakage: 'concept journal',
+      purpose: 'concept journal',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
@@ -225,6 +232,7 @@ describe('concepts --explain', () => {
       decide: 'decision',
       accept: 'decision',
       classify: 'decision',
+      deprecate: 'decision',
     });
     expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
       [],
@@ -380,11 +388,11 @@ describe('what the explanation calls required is what the verb refuses without',
 
   /** A full call of each single-use verb, by parameter. */
   const FULL: Record<string, Record<string, string>> = {
-    state: { context: 'booking' },
+    state: { context: 'booking', history: '' },
     design: { context: 'booking' },
     history: { concept: 'slot', context: 'booking' },
-    decisions: { context: 'booking', open: '' },
-    leakage: { context: 'booking' },
+    decisions: { context: 'booking', open: '', history: '' },
+    leakage: { context: 'booking', history: '' },
     define: {
       concept: 'window',
       context: 'booking',
@@ -410,9 +418,12 @@ describe('what the explanation calls required is what the verb refuses without',
       status: 'open',
       supersedes: 'd1',
       kind: 'meaning',
+      cut: 'slots',
+      keeps: 'booking/slots',
     },
     accept: { id: 'd1', reason: 'Agreed.' },
     classify: { id: 'd1', kind: 'realization', reason: 'It constrains.' },
+    deprecate: { id: 'd1', reason: 'Finished.' },
   };
 
   /** The argv of `verb` giving `given`. */
@@ -430,7 +441,7 @@ describe('what the explanation calls required is what the verb refuses without',
   }
 
   const cases = explain(JOURNAL)
-    .verbs.filter((verb) => verb.name !== 'context')
+    .verbs.filter((verb) => !['context', 'purpose'].includes(verb.name))
     .flatMap((verb) => [
       [verb.name, undefined] as const,
       ...verb.parameters.map((p) => [verb.name, p.name] as const),
@@ -459,54 +470,77 @@ describe('what the explanation calls required is what the verb refuses without',
     }
   });
 
-  it('context declares a parameter required only when both recording and changing refuse its omission', () => {
-    const verb = explain(JOURNAL).verbs.find(
-      (v) => v.name === 'context',
-    ) as VerbExplanation;
-    const fullCalls: Record<string, string>[] = [
-      { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' },
+  /** The full calls of each verb that records or, given a reason, changes:
+   *  a recording, and a change after what `before` records. */
+  const RECORD_OR_CHANGE: Record<
+    string,
+    { given: Record<string, string>; before?: string[] }[]
+  > = {
+    context: [
+      { given: { context: 'fleet', subject: 'Fleet.', relation: 'Beside.' } },
       {
-        context: 'booking',
-        subject: 'Expanded booking.',
-        relation: 'Alongside fleet.',
-        reason: 'Include the expanded subject.',
+        given: {
+          context: 'booking',
+          subject: 'Expanded booking.',
+          relation: 'Alongside fleet.',
+          reason: 'Include the expanded subject.',
+        },
       },
-    ];
-    for (const left of [undefined, ...PARAMETERS.context!]) {
-      const refused = fullCalls.map((full) => {
-        const given = { ...full };
-        if (left !== undefined) delete given[left];
-        const concepts = journal();
-        const directory = join(repo as string, 'design/journal');
-        const before = readdirSync(directory);
-        try {
-          let error: unknown;
+    ],
+    purpose: [
+      { given: { statement: 'Book seats.' } },
+      {
+        given: { statement: 'Book and pay.', reason: 'Payment too.' },
+        before: ['purpose', '--statement', 'Book seats.'],
+      },
+    ],
+  };
+
+  it.each(Object.keys(RECORD_OR_CHANGE))(
+    '%s declares a parameter required only when both recording and changing refuse its omission',
+    (name) => {
+      const verb = explain(JOURNAL).verbs.find(
+        (v) => v.name === name,
+      ) as VerbExplanation;
+      for (const left of [undefined, ...PARAMETERS[name]!]) {
+        const refused = RECORD_OR_CHANGE[name]!.map((full) => {
+          const given = { ...full.given };
+          if (left !== undefined) delete given[left];
+          const concepts = journal();
+          if (full.before !== undefined) concepts(...full.before);
+          const directory = join(repo as string, 'design/journal');
+          const before = readdirSync(directory);
           try {
-            concepts(...argv(verb, given));
-          } catch (caught) {
-            error = caught;
+            let error: unknown;
+            try {
+              concepts(...argv(verb, given));
+            } catch (caught) {
+              error = caught;
+            }
+            if (error !== undefined) {
+              expect(error).toBeInstanceOf(Error);
+              expect((error as Error).message).toMatch(
+                new RegExp(`^concepts ${name}: `),
+              );
+              expect(readdirSync(directory)).toEqual(before);
+              return true;
+            }
+            expect(readdirSync(directory)).toHaveLength(before.length + 1);
+            return false;
+          } finally {
+            rmSync(repo as string, { recursive: true, force: true });
+            repo = undefined;
           }
-          if (error !== undefined) {
-            expect(error).toBeInstanceOf(Error);
-            expect((error as Error).message).toMatch(/^concepts context: /);
-            expect(readdirSync(directory)).toEqual(before);
-            return true;
-          }
-          expect(readdirSync(directory)).toHaveLength(before.length + 1);
-          return false;
-        } finally {
-          rmSync(repo as string, { recursive: true, force: true });
-          repo = undefined;
-        }
-      });
-      if (left === undefined)
-        expect(refused, 'both full calls').toEqual([false, false]);
-      else
-        expect(
-          verb.parameters.find((parameter) => parameter.name === left)
-            ?.required,
-          `context without ${left}`,
-        ).toBe(refused.every(Boolean));
-    }
-  });
+        });
+        if (left === undefined)
+          expect(refused, 'both full calls').toEqual([false, false]);
+        else
+          expect(
+            verb.parameters.find((parameter) => parameter.name === left)
+              ?.required,
+            `${name} without ${left}`,
+          ).toBe(refused.every(Boolean));
+      }
+    },
+  );
 });

@@ -31,11 +31,21 @@ it('workflow/2 — subject and relation first, whole before parts, then open dec
     subject,
     relation,
   });
-  expect(answer.concepts, 'production, shoot and take in that order').toEqual([
-    { name: 'production', meaning: meanings.production, builtFrom: ['shoot'] },
-    { name: 'shoot', meaning: meanings.shoot, builtFrom: ['take'] },
-    { name: 'take', meaning: meanings.take, builtFrom: [] },
-  ]);
+  expect(answer, 'each concept told once, in the account').not.toHaveProperty(
+    'concepts',
+  );
+  ordered(
+    answer.account,
+    [
+      'production means',
+      meanings.production,
+      'shoot means',
+      meanings.shoot,
+      'take means',
+      meanings.take,
+    ],
+    'production, shoot and take in that order',
+  );
   expect(answer.openDecisions, 'then its open decisions').toEqual([
     { id: 'colour', title: 'Choose the colour treatment' },
   ]);
@@ -75,10 +85,9 @@ it('workflow/3 — next overview reflects supersession, acceptance and newly dis
   dispatch(f);
   const journal = snapshot(f.root);
   const after = overview(f);
-  expect(
-    after.concepts.find((c) => c.name === 'take')?.meaning,
-    'reflects the new meaning',
-  ).toBe('One continuous performance, including its sound.');
+  expect(after.account, 'reflects the new meaning').toContain(
+    'One continuous performance, including its sound.',
+  );
   expect(
     after.account,
     'never repeats superseded meaning as current',
@@ -143,9 +152,7 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
     integration.openDecisions.map((d) => d.id),
     'integration does not claim acceptance',
   ).toEqual(['colour']);
-  expect(integration.concepts.find((c) => c.name === 'take')?.meaning).toBe(
-    meanings.take,
-  );
+  expect(integration.account).toContain(meanings.take);
   git(f.root, 'merge', '--no-edit', 'feature/film');
   expect(overview(f), 'entries land with the work').toEqual(feature);
 });
@@ -216,10 +223,14 @@ it('workflow/24 — roots retain recorded order and shared review appears only o
   concept(f, 'production', 'Making the film.', ['review']);
   concept(f, 'review', 'Assessing the film.');
   const answer = overview(f);
-  expect(
-    answer.concepts.map((c) => c.name),
-    'publication and production first in recorded order, then review, once',
-  ).toEqual(['publication', 'production', 'review']);
+  ordered(
+    answer.account,
+    ['publication means', 'production means', 'review means'],
+    'publication and production first in recorded order, then review',
+  );
+  expect(answer.account.split('Review means').length, 'review told once').toBe(
+    2,
+  );
   ordered(
     answer.account,
     ['publication', 'production', 'review'],

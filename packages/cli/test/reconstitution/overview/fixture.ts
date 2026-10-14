@@ -20,7 +20,6 @@ export interface Overview {
   context: string;
   subject: string;
   relation: string;
-  concepts: { name: string; meaning: string; builtFrom: string[] }[];
   cycles: string[][];
   openDecisions: { id: string; title: string }[];
   cutsInFlight: { cut: string; phase: string; branch: string }[];

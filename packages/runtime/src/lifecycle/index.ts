@@ -14,8 +14,11 @@
 //               evidence, finding?}], hardeningNotes []
 //   reported    run, report (the lead's deliverable, an object)
 // It is appended to the ledger of the repository holding the working
-// directory. An event of another shape, or a transition already recorded, is
-// refused with nothing written and a non-zero exit.
+// directory, and only for a cut opened in that ledger (a `cut` entry of its
+// name): an event naming no opened cut, the dispatch of work outside any cut
+// (decision 0201(5)), writes nothing and is no failure, so the dispatch goes
+// ahead unrecorded. An event of another shape, or a transition already
+// recorded, is refused with nothing written and a non-zero exit.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Command } from 'commander';
@@ -104,19 +107,25 @@ export function lifecycleEvent(event: unknown): LifecycleEvent {
   return e as unknown as LifecycleEvent;
 }
 
-/** Append lifecycle `event` to the ledger of the repository holding `from`;
- *  refused, writing nothing, for another shape or a repeated transition. */
+/** Append lifecycle `event` to the ledger of the repository holding `from`,
+ *  answering the entry written; `undefined`, writing nothing, when the event
+ *  names no cut opened in that ledger. Refused, writing nothing, for another
+ *  shape or a repeated transition. */
 export function appendLifecycle(
   from: string,
   event: unknown,
-): LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'> {
+): (LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'>) | undefined {
   const draft = lifecycleEvent(event);
   const top = topOf(from);
   if (top === undefined)
     throw refuse(
       `${from} is not inside a git repository; the ledger is kept in one`,
     );
-  return ledgerAt(top, refuse).append(draft);
+  const ledger = ledgerAt(top, refuse);
+  const opened = ledger
+    .entries()
+    .some((e) => e.kind === 'cut' && e.cut === draft.cut);
+  return opened ? ledger.append(draft) : undefined;
 }
 
 /** `lifecycle '<event-json>'`: harness-facing, hidden from help, never a tool. */
@@ -134,8 +143,17 @@ export function lifecycleCommand(): Command {
         } catch {
           throw refuse('the event is not JSON');
         }
+        const entry = appendLifecycle(process.cwd(), event);
         process.stdout.write(
-          `${JSON.stringify(appendLifecycle(process.cwd(), event), null, 2)}\n`,
+          `${JSON.stringify(
+            entry ?? {
+              recorded: false,
+              reason:
+                'the event names no cut opened in the ledger; work outside a cut is not recorded',
+            },
+            null,
+            2,
+          )}\n`,
         );
         process.exitCode = 0;
       } catch (error) {

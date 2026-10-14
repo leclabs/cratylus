@@ -1,0 +1,15 @@
+{
+  "id": "01M4VXMGFKGVCZ54THKCJPAQC3",
+  "at": "2026-10-14T00:40:13.043Z",
+  "kind": "commit",
+  "transition": "commit:workflow-delivery:5e799d3d022a61fbdf44c62f88125e8ceb932a62",
+  "cut": "workflow-delivery",
+  "workPackage": "reconstitution-practice",
+  "commit": {
+    "sha": "5e799d3d022a61fbdf44c62f88125e8ceb932a62",
+    "message": "fix(forge): compose the delivered workflow name in the session-start note from the bin name",
+    "paths": [
+      "packages/forge/src/adapters/omp/render.ts"
+    ]
+  }
+}

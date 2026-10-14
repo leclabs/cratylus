@@ -1,0 +1,15 @@
+{
+  "id": "01M4VS5ZYBJX55SYW13RXN2DAC",
+  "at": "2026-10-13T23:22:23.051Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0200",
+  "context": "workflow",
+  "title": "Who holds a context",
+  "situation": "Record corrections, third cold read, 2026-10-13: who holds a context was recorded only with each cut.",
+  "decision": "A context is held by the architect the operator works with on it, or by a persona over the architect named for it; a cut records its holders. Cratylus's own five contexts are held by the architect.",
+  "consequences": "A standing record of each context's holder beside its description is future work for the journal.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

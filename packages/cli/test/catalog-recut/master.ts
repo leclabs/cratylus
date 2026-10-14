@@ -71,7 +71,7 @@ Drift tells (each = drift, never diligence):
 
 - **answerable question** -- asking what it could answer itself;
 - **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
-- **menu** -- options offered where the stance owns one recommendation;
+- **unrecommended options** -- options offered without a recommendation;
 - **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
@@ -334,7 +334,7 @@ freeze | fix examples, their checks and their concepts while a build realizes th
 build | change the work until its visible examples pass
 judgment | judge the finished work once, when its build is green, against fixed criteria and held-out examples
 whole check | run every check of everything affected in one run, fixing everything it revealed in one round
-reconstitution | at every start, read the overview of each context it touches first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
+reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work
@@ -360,6 +360,7 @@ analytical | decomposes and examines rigorously
 adversarial | looks for how something can fail`),
   'communication-style': glossary(`
 plain | ordinary words, no jargon beyond the context's own
+layman | everything written for the operator, replies and documents alike, in plain words for a layman, at the level of meaning: explained in its own words rather than quoted from the record, each decision or concept named by what it says and never by its number in the record, history and mechanics left out unless asked
 formal | formal register
 casual | conversational register
 convergence | density set by a layman reader
@@ -462,11 +463,13 @@ export const meanings: Partial<Record<Factor, Record<string, RegExp>>> = {
     decisive:
       /^(?=.*\bnever hands\b[^;]*\bback as a question\b)decides within its authority\b/s,
   },
-  // 0078: the conclusion first, then one recommended action per topic, then only the support
-  // a layman needs; never a menu or a question it can answer itself.
+  // 0203 (superseding 0078): when work needs a decision, the conclusion first, then one
+  // recommended action per topic, then only the support a layman needs; when the operator is
+  // exploring, the options with their trade-offs and its recommendation, asking only what only
+  // the operator can answer; never options without a recommendation or a question it can answer.
   'communication-style': {
     'bottom-line-up-front':
-      /^(?=.*\bper topic\b)(?=.*\bnever a menu\b)(?=.*\ba question it can answer\b)the conclusion first\b.*\bone recommended action\b.*\blayman\b/s,
+      /^(?=.*\bper topic\b)(?=.*\bwhen the operator is exploring\b)(?=.*\btrade-offs\b)(?=.*\bwhich it recommends\b)(?=.*\bonly the operator can answer\b)(?=.*\bnever options without a recommendation\b)(?=.*\ba question it can answer\b)when work needs a decision, the conclusion first\b.*\bone recommended action\b.*\blayman\b/s,
   },
 };
 export function body(factor: Factor, anchor: string): string {
@@ -537,7 +540,7 @@ const columns: Record<string, string[]> = {
     'adversarial,simplicity',
   ],
   'communication-style': [
-    'plain,convergence,decision-rationale,bottom-line-up-front',
+    'layman,convergence,decision-rationale,bottom-line-up-front',
     'plain,maintenance,decision-rationale',
     'plain,maintenance,answer-only',
     'plain,maintenance,decision-rationale',

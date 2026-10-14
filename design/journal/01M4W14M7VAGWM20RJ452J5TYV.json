@@ -1,0 +1,17 @@
+{
+  "id": "01M4W14M7VAGWM20RJ452J5TYV",
+  "at": "2026-10-14T01:41:26.907Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "corpus",
+  "name": "cratylism",
+  "wording": "the corpus's first principle: a name is natural, not conventional. Each core term, the agents context's factor names and values, takes its optimal sign, found by the cold-decode oracle and never coined; every other term takes the industry's own word in its own context, with no consumer held to the oracle; and where a kept sign falls short of the optimal one, the shortfall is recorded as real, never explained away.",
+  "builtFrom": [
+    "sign",
+    "cold-decode oracle"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4KK696PDXVCDA5VFGHJ91RM"
+  ]
+}

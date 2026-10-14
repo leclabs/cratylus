@@ -1,0 +1,9 @@
+{
+  "id": "01M4VXXWN76CVBD1P5A30ZMNZC",
+  "at": "2026-10-14T00:45:20.423Z",
+  "kind": "returned",
+  "transition": "toolu_01EdQ2XuuCFBzRMLaxHgJ2A4/WorkflowDeliveryHeldOut/returned",
+  "cut": "workflow-delivery",
+  "role": "check-writer",
+  "run": "toolu_01EdQ2XuuCFBzRMLaxHgJ2A4/WorkflowDeliveryHeldOut"
+}

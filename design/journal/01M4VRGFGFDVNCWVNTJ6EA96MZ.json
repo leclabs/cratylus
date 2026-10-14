@@ -1,0 +1,12 @@
+{
+  "id": "01M4VRGFGFDVNCWVNTJ6EA96MZ",
+  "at": "2026-10-13T23:10:38.095Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "agents",
+  "name": "model role",
+  "wording": "the name under which a harness binds an agent to a model and effort: each agent has its own, falling back to a tier, a model role shared by agents of like strength; which model a tier runs on is the operator's choice, kept as the operator's own setting (0112).",
+  "builtFrom": [],
+  "reason": "Record corrections, second cold read, 2026-10-13: model role and tier were used by binding and install without definitions.",
+  "supersedes": []
+}

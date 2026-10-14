@@ -236,10 +236,11 @@ it('records a cut’s figures into a journal holding an unknown kind', () => {
   ]);
   for (const [name, bytes] of Object.entries(before))
     expect(after[name]).toBe(bytes);
-  expect(concepts('state')).toMatchObject({
+  expect(concepts('state', '--history')).toMatchObject({
     contexts: [{ efficiency: [{ cut: 'delivery' }] }],
     uninterpreted: { kinds: { annotation: 1 }, mayBeIncomplete: true },
   });
+  expect(concepts('state')).toMatchObject({ contexts: [{ efficiency: [] }] });
 });
 
 it('reads the ledger past a kind it does not know, in every reading, and appends past it', () => {

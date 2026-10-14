@@ -1,0 +1,16 @@
+{
+  "id": "01M4VW1P9ZX0ZJB45R3ZQ7RKNC",
+  "at": "2026-10-14T00:12:27.839Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0205",
+  "context": "delivery",
+  "title": "Cut: workflow delivery, on feature/workflow-delivery",
+  "situation": "The operator, 2026-10-13, confirmed 0193's concept with one addition: cratylus dogfoods its own workflow, so the delivered context must never conflict with cratylus's own concept journal, nor with a user's own context of the same name. An architect starting cold in a new project has only the workflow's moves, not the practice as a whole, which only cratylus's own journal holds.",
+  "decision": "One cut on feature branch feature/workflow-delivery, across delivery and workflow, held by the architect. (1) The workflow context's current design (its subject, relation and live concepts, not its history or decisions) is projected from cratylus's own journal at release, as a delivered context, placed read-only under the owned root with the agents. (2) A delivered context carries its identity: its origin, cratylus and the release version, and the identity of the context in cratylus's own journal. (3) In every project the concept journal's views show it beside the project's own contexts, under a name qualified by its origin, marked delivered and read-only; a project's own context of the same plain name stays a separate context. (4) Where the project's journal already holds that same context, by identity and not by name, as cratylus's own repository does, the project's journal wins and the delivered context is not shown. (5) It is never written into a project's journal. Checked deterministically: an empty project shows the delivered context equal to its source; a project with its own unrelated workflow context shows both, apart; cratylus's own journal shows only its own.",
+  "consequences": "Then the consumer trial, an architect starting cold on the operator's film project, tests it in use.",
+  "status": "accepted",
+  "supersedes": "0193",
+  "supersedesEntry": "01M4VQN2XJN4GSCJVAAT78NRE2",
+  "decisionKind": "meaning"
+}

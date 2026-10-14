@@ -1,0 +1,15 @@
+{
+  "id": "01M4VQN08W3BN0YXA47V088DS8",
+  "at": "2026-10-13T22:55:37.756Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0161",
+  "context": "workflow",
+  "title": "A decision about one cut is history once that cut is integrated",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Most settled decisions are about one cut: its scope, its examples' approval, check rulings, judgment rulings, its acceptance. Read as standing rules after the cut ended, they misstate the design (for example live-run batches, freeze gates and assayer counts).",
+  "decision": "A decision recorded about one cut, its scope, the approval of its examples, a ruling on its checks or its judgment, or its acceptance, is history once that cut is integrated: it records how that cut went and no longer stands as a rule. A rule meant to outlast a cut is stated in a concept or in a decision about the design itself. Earlier planned cuts with no recorded outcome (cuts 5, 6 and 9, agent launch, execution) were realized or overtaken by later cuts and are history on the same ground.",
+  "consequences": "The record's views should show standing decisions apart from history; until they do, a decision about an integrated cut is read as history. Future work, for the lead: that view, and letting one decision supersede several by name.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

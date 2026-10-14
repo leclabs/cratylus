@@ -1,7 +1,8 @@
 // The architect role: master design §3, the architect column, with the client's
-// principal architect restored (0070) and its communication ordered bottom line up
-// front (0078, 0117). Its values are held by its own text, and its behaviour is
-// evaluated in real use (0142).
+// principal architect restored (0070), its communication ordered bottom line up
+// front (0078, 0117) and written for the operator in plain words for a layman
+// (0216). Its values are held by its own text, and its behaviour is evaluated in
+// real use (0142).
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -13,7 +14,7 @@ import { principal } from '../dimensions/autonomy/principal.js';
 import { bottomLineUpFront } from '../dimensions/communication-style/bottom-line-up-front.js';
 import { convergence } from '../dimensions/communication-style/convergence.js';
 import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
-import { plain } from '../dimensions/communication-style/plain.js';
+import { layman } from '../dimensions/communication-style/layman.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { none } from '../dimensions/decision-rights/none.js';
@@ -88,7 +89,7 @@ export const architectRole: RoleCell = {
       systemsThinking,
     ],
     communicationStyle: [
-      { value: plain, slot: 'register' },
+      { value: layman, slot: 'register' },
       { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
       { value: bottomLineUpFront, slot: 'ordering', level: 'fixed' },

@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN0ASRTDK25MAAKCT9FJ7",
+  "at": "2026-10-13T22:55:37.817Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0162",
+  "context": "workflow",
+  "title": "The whole check: every check, once per round",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0011 no longer matches the current design.",
+  "decision": "The whole check runs every stage of the project's one deterministic check without stopping at the first failure; each failing run is followed by one round that fixes everything it revealed, then one more run. No stage evaluates agent behaviour or calls a model (0142, 0154).",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0011",
+  "supersedesEntry": "01M4J5R8ZCNJERTAK1QCSC4WC7",
+  "decisionKind": "realization"
+}

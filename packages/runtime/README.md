@@ -21,10 +21,10 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `workPackage`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                                           |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`                    |
-| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`, `record` |
+| capability    | verbs                                                                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate` |
+| `workPackage` | `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`, `record`      |
 
 A cut is frozen from its `open` until its `integrate`: from its `open`, its examples, its held-out
 example text `design/judgment/<context>/<cut>.md` and the concepts its examples name, each in its
@@ -48,7 +48,14 @@ ends the freeze for good.
 code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
 warns; a context's own words, its concept names and each plain word its current subject names,
 are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
-`realization` is never inspected (decision 0058).
+`realization` is never inspected (decision 0058). Its views show what stands: a decision stands
+until it is superseded or deprecated, by a `deprecate` entry or because the cut it names is
+integrated, and a cut's examples stand until the cut is integrated unless a standing decision
+keeps them; no retired concept, reason a concept's version was written, decision a decision
+superseded or kind recorded before the governing one, and no finished cut's effort, shows until
+`design`, `state`, `decisions` or `leakage` is asked with `--history`. It also
+holds the project's purpose, what the project is for: `purpose` records it and, with a reason,
+changes it, and `overview` and `state` show it first, before any context.
 
 `workPackage` slices a cut into work packages: it records each package's outputs, concepts and
 dependencies in an append-only log per cut under the repository's git common directory, computes the

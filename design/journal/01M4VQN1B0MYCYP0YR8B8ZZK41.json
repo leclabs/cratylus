@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN1B0MYCYP0YR8B8ZZK41",
+  "at": "2026-10-13T22:55:38.848Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0179",
+  "context": "workflow",
+  "title": "What the freeze is read from",
+  "situation": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Decision 0132 no longer matches the current design.",
+  "decision": "The freeze is held by review (0143); what is frozen is read from the record, the cut's examples, checks and concepts as recorded.",
+  "consequences": "The record now states this as the standing rule.",
+  "status": "accepted",
+  "supersedes": "0132",
+  "supersedesEntry": "01M4Q6J6GJVSNMAA93R25F2648",
+  "decisionKind": "meaning"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "01M4W14MEJJYQ8VCK74RQ71T3N",
+  "at": "2026-10-14T01:41:27.122Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "role",
+  "wording": "a function an agent performs in a team, stated as a default profile; each agent has one, so whoever dispatches it knows what comes back. A role carries who the agent is, what it decides and what it answers for, never a workflow's steps; its procedure names the practices it applies, each carried by a skill the harness loads.",
+  "builtFrom": [
+    "factor",
+    "identity",
+    "authority",
+    "reach",
+    "skill"
+  ],
+  "reason": "Restated as current meaning only: plain words, with decision numbers, history and how it is built left out; its meaning is unchanged.",
+  "supersedes": [
+    "01M4VRGFEDEWH44GZ5WWZA9XF2"
+  ]
+}

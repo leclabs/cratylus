@@ -1,0 +1,16 @@
+{
+  "id": "01M4VQN244WD0K7YJV2F1BQZHF",
+  "at": "2026-10-13T22:55:39.652Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "integration",
+  "wording": "the act that ends a cut: once the architect has accepted that the cut realized its meaning, the lead joins its change to the project's shared line of work and records the integration in the ledger; it ends the cut's freeze, is final whatever its work packages' last statuses, and anything left unfinished becomes future work, never an open state of the cut.",
+  "builtFrom": [
+    "cut",
+    "ledger",
+    "freeze"
+  ],
+  "reason": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Integration was used throughout (freeze, ledger, 0149) but never defined, and merging read as the same act as release.",
+  "supersedes": []
+}

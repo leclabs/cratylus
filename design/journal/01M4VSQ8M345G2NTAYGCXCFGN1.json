@@ -1,0 +1,13 @@
+{
+  "id": "01M4VSQ8M345G2NTAYGCXCFGN1",
+  "at": "2026-10-13T23:31:48.995Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "agents",
+  "subject": "what an AI agent is and how one is composed: its factors, the values each takes, roles and personas built from them, and how firmly each value holds",
+  "relation": "workflow's roles are agents composed here; corpus expresses these factors and values as signs and cells; each composed agent's binding, defined here, is projected onto a harness by delivery",
+  "reason": "Record corrections, fourth cold read, 2026-10-13: binding is an agents concept; delivery projects it.",
+  "supersedes": [
+    "01M4JVAAGB8TRP70Q6K7JMAPJH"
+  ]
+}

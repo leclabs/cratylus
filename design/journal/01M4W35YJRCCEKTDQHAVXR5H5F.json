@@ -1,0 +1,15 @@
+{
+  "id": "01M4W35YJRCCEKTDQHAVXR5H5F",
+  "at": "2026-10-14T02:17:07.416Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0215",
+  "context": "workflow",
+  "title": "A project's record states its purpose, read first",
+  "situation": "A fresh architect documenting cratylus from its record could not say what cratylus is for: each context states its own subject, and the product's purpose lived only in a document outside the record.",
+  "decision": "A project's record holds the project's purpose: what the project is for, in plain words, recorded and changed like a context's description. Every overview shows it first, so a fresh session meets the purpose before the parts.",
+  "consequences": "Cratylus records its own purpose once the record can hold it.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

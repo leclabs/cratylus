@@ -122,6 +122,8 @@ Everything install places for you on a harness lives under one root it owns: `~/
   hooks/<id>/…              the workers the session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the corpus declares any
+  delivered/cratylus/workflow.json
+                            the workflow context this release delivers, read-only
   installation.json         what install did outside the root, and the practices installed
 ```
 
@@ -132,6 +134,8 @@ Where you have put something of your own at either of those places — `cratylus
 Install writes nothing else of yours, with two exceptions. The models you choose for tiers and roles go into your `~/.omp/agent/config.yml` as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where that file hides the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
 **Installing again is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
+
+**The delivered workflow.** Each release carries cratylus's own `workflow` context — the practice it ships — as its concept journal records it at that release's build: the current subject and relation and every live concept at its current meaning, with no history, decisions or retired concepts. Install places it read-only at `delivered/cratylus/workflow.json`, with cratylus as its origin, the release's version and the identity of the context in cratylus's journal; installing again replaces it with the new release's, and uninstall removes it with the root. It is never written into any project's journal (`cratylus concepts` below).
 
 **An earlier installation** — cratylus before the owned root placed its agents in `~/.omp/agent/agents`, its skills in `~/.agents/skills`, its extensions in `~/.omp/agent/extensions`, hook workers in `~/.omp/hooks`, `modelRoles` and a status line in `config.yml`, and `~/.cratylus.json` — is taken back by the next install, by its own record (`~/.omp/.forge/deploy-manifest.json`): each file it placed while it is still the bytes it wrote, each line it added while it stands as written, and the record last. A file or a part of `~/.cratylus.json` it placed before it recorded what it wrote is cratylus's by that record, and goes too, as does a status line layout in `config.yml` that is byte for byte the one it wrote; so no earlier agent outside the root takes the place of the root's. The `modelRoles` entries it seeded are the one exception: which model a role runs on is your setting, so they stay in your config as your own from then on, and the run names them. A file you changed since it recorded the bytes it wrote is yours, and is left and named; one it never recorded placing is never touched.
 
@@ -365,17 +369,23 @@ cratylus workPackage levels --cut delivery
 
 ### `cratylus concepts`
 
-The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` and `classify`.
+The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` and `deprecate`.
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, `state`, `decisions` and `leakage`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
 
-`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the decisions not superseded and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` and `state` report each decision's governing `kind` (`null` where none is recorded) and its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+**The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `overview` and `state` show it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
+
+**What stands.** A decision stands while it is open or accepted, neither superseded nor deprecated. `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement; a decision recorded with `decide --cut <name>` is deprecated, with no entry, once the ledger records that cut integrated. A cut's example files (`design/examples/<context>/<cut>.md`) are history once the cut is integrated, unless a standing decision keeps them (`decide --keeps <context>/<cut>`). A cut is finished once its work is complete or it is integrated. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `entry`, `id`, `title` and `kind` (their whole text is `decisions`'), and gives the `efficiency` only of the cuts the ledger records not yet finished; `overview` tells only standing open ones and the cuts in flight; and `leakage` reads only standing decisions and examples. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or the integrated `cut`), each decision's `supersedes` and `kinds`, and every cut's `efficiency`.
+
+`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the standing numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by context and id, an example by file and number), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and, with `--history`, its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. When what `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
 What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `classify` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
 Nothing under `design/journal` is edited, moved or deleted: the journal is append-only because its verbs only append, and none edits or deletes an earlier entry.
+
+**Delivered contexts.** `overview`, `state` and `design` show, beside the journal's own contexts, each context the installation `cratylus` reaches delivers (the one `$CRATYLUS_INSTALLATION` names, else the one installation under `~/.cratylus/`; none when there is none): the workflow as `cratylus:workflow`, its origin and context, carrying `"delivered": { "origin", "version", "context", "identity" }` and `"readOnly": true`, with no decisions, retired concepts or recorded effort; `--context cratylus:workflow` reads it alone. Its `history` has no versions, only its current meaning as `current`, and `decisions --context cratylus:workflow` lists none. Where the journal holds the context itself — a `context` entry whose id is the delivered identity, as cratylus's own journal does, on the branch you are on — only the journal's own is shown. Recording into a delivered context (`context`, `define`, `supersede`, `retire` or `decide` naming `cratylus:workflow`) is refused as read-only and appends nothing; a context of your own named `workflow` is yours, separate from it. Reading never creates the journal.
 
 #### `cratylus concepts overview`
 
@@ -396,6 +406,7 @@ cratylus concepts state [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
+| `--history`         |
 
 #### `cratylus concepts design`
 
@@ -406,6 +417,7 @@ cratylus concepts design [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
+| `--history`         |
 
 #### `cratylus concepts history`
 
@@ -427,6 +439,7 @@ cratylus concepts decisions [options]
 | ------------------- |
 | `--context <value>` |
 | `--open`            |
+| `--history`         |
 
 #### `cratylus concepts leakage`
 
@@ -437,6 +450,18 @@ cratylus concepts leakage [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
+| `--history`         |
+
+#### `cratylus concepts purpose`
+
+```sh
+cratylus concepts purpose [options]
+```
+
+| Flag                  |
+| --------------------- |
+| `--statement <value>` |
+| `--reason <value>`    |
 
 #### `cratylus concepts context`
 
@@ -503,6 +528,8 @@ cratylus concepts decide [options] <id>
 | `--status <value>`       |
 | `--supersedes <value>`   |
 | `--kind <value>`         |
+| `--cut <value>`          |
+| `--keeps <value>`        |
 
 #### `cratylus concepts accept`
 
@@ -523,6 +550,16 @@ cratylus concepts classify [options] <id>
 | Flag               |
 | ------------------ |
 | `--kind <value>`   |
+| `--reason <value>` |
+
+#### `cratylus concepts deprecate`
+
+```sh
+cratylus concepts deprecate [options] <id>
+```
+
+| Flag               |
+| ------------------ |
 | `--reason <value>` |
 
 ### `cratylus workPackage`
@@ -706,6 +743,8 @@ cratylus workPackage record [options]
 ### `cratylus versionSkew`
 
 Version skew. Its one verb is `report`, which prints `{ "artifacts", "command", "installation" }` as JSON: the version of cratylus that projected the installation (its owned root's `package.json`), the version of this `cratylus` command, and the root. The installation is the one `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else the one root under `~/.cratylus/`. It chooses between nothing; where the two differ, install again with the cratylus in use. In omp it is the read-only tool `version_skew`, and every session start warns when the two differ.
+
+A build that is no release says which commit it is from: a `cratylus` run from the source tree it was built in, never installed as a package, reports its version with the commit as build metadata, `0.13.0+62c7b190` (`.modified` added where it was built from uncommitted changes), in `cratylus --version` and so in `versionSkew report` and in what `install` records; a release installed from the registry reports its version alone. A development build is never mistaken for the release.
 
 #### `cratylus versionSkew report`
 

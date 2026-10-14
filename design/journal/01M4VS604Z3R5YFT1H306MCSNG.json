@@ -1,0 +1,15 @@
+{
+  "id": "01M4VS604Z3R5YFT1H306MCSNG",
+  "at": "2026-10-13T23:22:23.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "development",
+  "name": "release",
+  "wording": "publishing a new version of cratylus, decided by the operator: dev is merged into main by reviewed pull request, versions stay in major version 0 (0191), and CI runs the check and publishes the packages.",
+  "builtFrom": [
+    "check",
+    "history"
+  ],
+  "reason": "Record corrections, third cold read, 2026-10-13: development's subject names its releases but had no concept for them; the workflow's release is the operator's act in any project, this is how cratylus does it.",
+  "supersedes": []
+}

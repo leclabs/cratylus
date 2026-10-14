@@ -1,0 +1,14 @@
+{
+  "id": "01M4VRGFRYMDATSQD3J98KGK6F",
+  "at": "2026-10-13T23:10:38.366Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "runtime",
+  "wording": "the cratylus command as placed on a host: what every capability's port reaches.",
+  "builtFrom": [],
+  "reason": "Record corrections, second cold read, 2026-10-13: the one-implementation rule belongs to capability port alone.",
+  "supersedes": [
+    "01M4VQN2NJ71XWRR802NP5S3AX"
+  ]
+}

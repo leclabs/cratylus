@@ -1,0 +1,14 @@
+{
+  "id": "01M4VQN2NJ71XWRR802NP5S3AX",
+  "at": "2026-10-13T22:55:40.210Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "runtime",
+  "wording": "the one implementation of every capability, placed on a host as the cratylus command, which agents reach through thin harness tools and the operator directly.",
+  "builtFrom": [
+    "harness"
+  ],
+  "reason": "Record corrections, 2026-10-13: an independent architect read the design record cold and found settled decisions contradicting the current design, terms used but never defined, and concepts that disagree; the operator asked for the corrections to be applied. Runtime was used by capability port and others without a definition.",
+  "supersedes": []
+}

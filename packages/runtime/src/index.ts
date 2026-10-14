@@ -18,6 +18,11 @@
 export * from './example-substrate.js';
 // The concept journal as it explains itself: its verbs, each with its effect.
 export { JOURNAL } from './capabilities/concepts/dispatch.js';
+// A context's current design as a release delivers it, projected at the release's build.
+export {
+  type DeliveredContext,
+  deliverContext,
+} from './capabilities/concepts/delivered.js';
 // The version skew capability as it explains itself, which the omp extension carries in the
 // artifacts it projects, so the version tool is offered whatever command they reach.
 export { VERSION_SKEW } from './capabilities/version-skew/index.js';

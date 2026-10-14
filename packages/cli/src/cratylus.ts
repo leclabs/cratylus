@@ -8,8 +8,12 @@
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
-// commands are handed this package's declared version: `install` records it in what it
-// places, and `versionSkew` reports it as the command's.
+// commands are handed this build's version, the commit beside it for a build that is
+// no release: `install` records it in what it places, and `versionSkew` reports it as
+// the command's. The projector's are also
+// handed the documents this release delivers, which its build wrote beside the bin
+// (`delivered/<origin>/<context>.json`): `install` and `deploy` place them read-only in
+// the owned root as given.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -27,27 +31,70 @@
 // --verbose | head -1` has taken all it wants, which is not a failure: the handler is
 // installed once, before any command runs.
 
-import { realpathSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import canon from '@cratylus/canon';
-import { fail, projectorCommands, usageExitCode } from '@cratylus/forge/cli';
+import {
+  type DeliveredDocument,
+  fail,
+  projectorCommands,
+  usageExitCode,
+} from '@cratylus/forge/cli';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { capabilityCommands, harnessCommands } from '@cratylus/runtime/main';
+import { DELIVERED_DIR } from '@cratylus/runtime/runtime-config';
 import { Command, type CommanderError } from 'commander';
 
 /**
- * THIS package's version — the claim `--version` makes about THIS artifact.
+ * THIS build's version — the claim `--version` makes about THIS artifact.
  *
- * Read by package self-reference, the form `bin-name.ts` already uses: tsup inlines
- * this module into `dist/cratylus.js`, so a relative `../package.json` would resolve
- * from the wrong depth once bundled. It is the manifest's, never forge's or the
- * runtime's, because the version a command reports is a claim about the artifact the
- * operator installed.
+ * The declared version is read by package self-reference, the form `bin-name.ts`
+ * already uses: tsup inlines this module into `dist/cratylus.js`, so a relative
+ * `../package.json` would resolve from the wrong depth once bundled. It is the
+ * manifest's, never forge's or the runtime's, because the version a command reports
+ * is a claim about the artifact the operator installed.
+ *
+ * A build that is no release says which commit it is from, as the version's build
+ * metadata (`0.13.0+62c7b190`, `.modified` when built from uncommitted changes), so a
+ * development build is never mistaken for the release: a command run from where it
+ * was built, never installed as a package under `node_modules`, is such a build, and
+ * its build recorded the commit in `build.json` beside the bin.
  */
-const VERSION: string = createRequire(import.meta.url)(
-  'cratylus/package.json',
-).version;
+const VERSION: string = (() => {
+  const declared: string = createRequire(import.meta.url)(
+    'cratylus/package.json',
+  ).version;
+  const here = realpathSync(fileURLToPath(import.meta.url));
+  if (here.split(sep).includes('node_modules')) return declared;
+  const file = join(dirname(here), 'build.json');
+  if (!existsSync(file)) return declared;
+  const { commit, modified } = JSON.parse(readFileSync(file, 'utf8')) as {
+    commit?: string;
+    modified?: boolean;
+  };
+  return commit === undefined
+    ? declared
+    : `${declared}+${commit}${modified === true ? '.modified' : ''}`;
+})();
+
+/** The documents this release delivers, as its build wrote them beside the bin, each
+ *  by its path under the delivered directory; none where no build wrote any, as in a
+ *  source tree. */
+function deliveredDocuments(): DeliveredDocument[] {
+  const dir = fileURLToPath(new URL(`./${DELIVERED_DIR}/`, import.meta.url));
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir, { withFileTypes: true })
+    .filter((origin) => origin.isDirectory())
+    .flatMap((origin) =>
+      readdirSync(join(dir, origin.name))
+        .filter((name) => name.endsWith('.json'))
+        .map((name) => join(origin.name, name)),
+    )
+    .sort()
+    .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
+}
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
@@ -109,6 +156,7 @@ export function commandLine(): Command {
   const { consumer, author } = projectorCommands({
     defaultCorpus: canon,
     version: VERSION,
+    delivered: deliveredDocuments(),
   });
   for (const command of consumer)
     program.addCommand(command.helpGroup('Commands:'));
