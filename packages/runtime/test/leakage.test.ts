@@ -17,7 +17,9 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import {
+  extending,
   leaks,
+  recounts,
   visibleExamples,
   vocabulary,
 } from '../src/capabilities/concepts/leakage.js';
@@ -238,6 +240,64 @@ describe('visibleExamples', () => {
   });
 });
 
+describe('recounts', () => {
+  it.each([
+    ['A slot is held for ten minutes (decision 0042).', 'decision 0042'],
+    ['Per decisions 12 and 14, a slot is held.', 'decisions 12 and 14'],
+  ])('%s cites %s', (text, words) => {
+    expect(recounts(text)).toEqual([{ words, rule: 'cites a decision' }]);
+  });
+
+  it.each([
+    ['A slot is no longer held overnight.', 'no longer'],
+    ['A slot used to be a whole hour.', 'used to be'],
+    ['A slot, formerly a booking, is held.', 'formerly'],
+    ['A slot was renamed from booking.', 'was renamed'],
+    ['A slot is now held for ten minutes.', 'is now'],
+    ['A slot now also covers walk-ins.', 'now also'],
+  ])('%s recounts %s', (text, words) => {
+    expect(recounts(text)).toEqual([{ words, rule: 'recounts history' }]);
+  });
+
+  it.each([
+    'a concept changes only by a new version that restates it whole as it now means, never by extending the old wording.',
+    'its subject changes only by a new description carrying its reason, the earlier kept in its history.',
+    'a decision stands until a later decision supersedes it, or the cut it was about is integrated.',
+    'who an agent is, never how it was started.',
+    'judged against examples fixed before any build.',
+  ])('raises nothing in current meaning: %s', (text) => {
+    expect(recounts(text)).toEqual([]);
+  });
+});
+
+describe('extending', () => {
+  it('warns of a wording that keeps the old one whole and appends to it', () => {
+    expect(
+      extending('A slot is held.  It expires at noon.', ['a slot is held.']),
+    ).toEqual([
+      {
+        words: 'It expires at noon',
+        rule: 'only extends the version it replaces',
+      },
+    ]);
+    expect(
+      extending('Each morning, a slot is held', ['A slot is held.']),
+    ).toEqual([
+      { words: 'Each morning,', rule: 'only extends the version it replaces' },
+    ]);
+  });
+
+  it('raises nothing for a whole restatement, or the same wording', () => {
+    expect(
+      extending('A slot is a held time that expires at noon.', [
+        'A slot is held.',
+      ]),
+    ).toEqual([]);
+    expect(extending('A slot is held.', ['A slot is held'])).toEqual([]);
+    expect(extending('A slot is held.', [])).toEqual([]);
+  });
+});
+
 describe('concepts leakage, and the warnings of an append', () => {
   let top: string | undefined;
   afterEach(() => {
@@ -353,5 +413,85 @@ describe('concepts leakage, and the warnings of an append', () => {
     concepts('classify', 'unsaid', '--kind', 'realization');
     concepts('classify', 'built', '--kind', 'meaning', '--reason', 'It means.');
     expect(warned()).toEqual(['built', 'meant']);
+  });
+
+  it('warns of a wording that cites, recounts or only extends, on recording and inspection', () => {
+    top = mkdtempSync(join(tmpdir(), 'leakage-'));
+    execFileSync('git', ['init', '-q'], { cwd: top });
+    const from = top;
+    const concepts = (...argv: string[]) => dispatchConcepts(argv, { from });
+    const described = concepts(
+      'context',
+      'booking',
+      '--subject',
+      'Holding slots, no longer only by phone.',
+    ) as { warnings: unknown };
+    const subject = {
+      passage: { kind: 'context', context: 'booking', field: 'subject' },
+      words: 'no longer',
+      rule: 'recounts history',
+    };
+    expect(described.warnings).toEqual([subject]);
+    expect(
+      concepts(
+        'define',
+        'slot',
+        '--context',
+        'booking',
+        '--wording',
+        'A slot is held.',
+        '--reason',
+        'First.',
+      ),
+    ).not.toHaveProperty('warnings');
+    const extended = concepts(
+      'supersede',
+      'slot',
+      '--context',
+      'booking',
+      '--wording',
+      'A slot is held. It expires at noon.',
+      '--reason',
+      'Expiry.',
+    ) as { warnings: unknown };
+    const slot = {
+      passage: { kind: 'concept', context: 'booking', name: 'slot' },
+      words: 'It expires at noon',
+      rule: 'only extends the version it replaces',
+    };
+    expect(extended.warnings).toEqual([slot]);
+    const cited = concepts(
+      'define',
+      'hold',
+      '--context',
+      'booking',
+      '--wording',
+      'A hold lasts ten minutes (decision 0042).',
+      '--reason',
+      'First.',
+    ) as { warnings: unknown };
+    const hold = {
+      passage: { kind: 'concept', context: 'booking', name: 'hold' },
+      words: 'decision 0042',
+      rule: 'cites a decision',
+    };
+    expect(cited.warnings).toEqual([hold]);
+    const changed = concepts(
+      'context',
+      'booking',
+      '--relation',
+      'Fleet was renamed to booking.',
+      '--reason',
+      'Place it.',
+    ) as { warnings: unknown };
+    const relation = {
+      passage: { kind: 'context', context: 'booking', field: 'relation' },
+      words: 'was renamed',
+      rule: 'recounts history',
+    };
+    expect(changed.warnings).toEqual([relation]);
+    expect(concepts('leakage')).toEqual({
+      warnings: [subject, relation, slot, hold],
+    });
   });
 });
