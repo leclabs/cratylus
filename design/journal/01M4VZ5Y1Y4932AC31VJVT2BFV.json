@@ -1,0 +1,15 @@
+{
+  "id": "01M4VZ5Y1Y4932AC31VJVT2BFV",
+  "at": "2026-10-14T01:07:12.574Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0210",
+  "context": "workflow",
+  "title": "Who pushes a cut's branch, and when the lead integrates",
+  "situation": "0160 gives integration into dev to the lead, but the operator's rights and the working conventions gate every push; and a lead's run ends when it returns its outcome, before the architect's acceptance, so it cannot integrate afterwards. The workflow-delivery lead stopped short of merging for both reasons; the operator merged it.",
+  "decision": "Proposed: the operator's push right means publishing to main and releasing; pushing a cut's branch and merging it into dev by reviewed pull request is integration, the lead's. The lead integrates after acceptance by being brought back, or the architect accepts before the lead returns.",
+  "consequences": "Awaits the operator, since it reads the operator's own right.",
+  "status": "open",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
