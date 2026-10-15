@@ -1,0 +1,16 @@
+{
+  "id": "01M4YHKM5JY7GFW8SMMBSW0V80",
+  "at": "2026-10-15T01:07:44.434Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "proportionality",
+  "wording": "a cut's ceremony scales with its size and the risk to meaning it carries: a small cut is one work package, one builder and one assayer, a larger or riskier one has two assayers, so the method never costs more than the change. A change that preserves behaviour, such as a refactor or a chore, is not a cut but ordinary engineering, checked and reviewed by pull request; work that changes nothing, such as a review of existing work, is not a cut either.",
+  "builtFrom": [
+    "work package"
+  ],
+  "reason": "0218: a review of delivered work was forced through a cut.",
+  "supersedes": [
+    "01M4W14JM76C7R285655Y7F7N0"
+  ]
+}

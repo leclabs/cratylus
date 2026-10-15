@@ -102,7 +102,7 @@ const SURFACES: {
 } = {
   concepts: {
     verbs: CONCEPTS,
-    // The contexts the installation reached delivers, shown beside the project's own.
+    // The contexts the installation reached delivers, shown apart from the project's own.
     run: (argv) =>
       JSON.stringify(
         dispatchConcepts(argv, { delivered: deliveredContexts() }),

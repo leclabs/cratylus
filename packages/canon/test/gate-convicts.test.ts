@@ -287,6 +287,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/concepts.test.ts': 'BEHAVIORAL',
   // Projects fixture journals; the supplied versions and retired concepts are its fixtures.
   'runtime/delivered-context.test.ts': 'BEHAVIORAL',
+  // Reads journals it builds itself with a delivered context it hands in: the
+  // practice shown apart, and decisions led by their titles.
+  'runtime/delivered-practice-apart.test.ts': 'BEHAVIORAL',
   // asserts over the live concept journal declaration and cratylus's own live design:
   // each verb's concept is a live concept, its help says what it explains, and what
   // it calls required is refused without. A verb whose concept the design retired,

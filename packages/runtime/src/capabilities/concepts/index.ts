@@ -7,8 +7,9 @@
 // example-driven workflow keeps its own bounded contexts in its own journal,
 // `design/journal` at the top of its git repository: concept versions and
 // decisions appended through named verbs, the current design, each concept's
-// history and the decisions computed from them. Its views also show, beside them,
-// the contexts the installation delivers (`./delivered.ts`), read-only.
+// history and the decisions computed from them. Its views also show the contexts
+// the installation delivers (`./delivered.ts`), read-only, apart from them: the
+// practice the project's agents work by, never part of its design.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export { dispatchConcepts } from './dispatch.js';

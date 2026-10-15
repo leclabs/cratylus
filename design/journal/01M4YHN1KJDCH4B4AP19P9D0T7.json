@@ -1,0 +1,16 @@
+{
+  "id": "01M4YHN1KJDCH4B4AP19P9D0T7",
+  "at": "2026-10-15T01:08:30.962Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "proportionality",
+  "wording": "how much ceremony a change gets: work that changes nothing, such as a review of existing work, and a change that preserves behaviour, such as a refactor or a chore, get none of a cut's, only ordinary engineering checked and reviewed by pull request; a change of meaning gets a cut scaled to its size and risk, one work package, one builder and one assayer when small, two assayers when larger or riskier, so the method never costs more than the change.",
+  "builtFrom": [
+    "work package"
+  ],
+  "reason": "Restated whole; the previous version only extended its predecessor.",
+  "supersedes": [
+    "01M4YHKM5JY7GFW8SMMBSW0V80"
+  ]
+}
