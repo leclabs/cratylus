@@ -273,7 +273,7 @@ const textOf = (line: string): string => line.replace(/[\r\n]+$/, '');
  * matched line that differs, not a deleted one and an added one. Install only inserts and
  * replaces, so every hunk is one of two shapes: a pure insertion (`before` empty) or one
  * line replaced by one line. A gap that holds both — a flow list rewritten with a block
- * appended right under it — is cut into the replacement, then the insertion beneath it.
+ * appended right under it — is spliced into the replacement, then the insertion beneath it.
  * The middle between the common head and tail is aligned by longest common subsequence,
  * so two edits apart in a file stay two hunks and the host's lines between them are
  * never part of either.

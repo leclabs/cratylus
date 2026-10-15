@@ -531,7 +531,7 @@ export interface HarnessAdapter {
    * settings that make the flag exist and keep what the copy built out of the
    * dispatcher's checkout, which the extension holds as the session's own. It is the
    * floor under {@link startsInWorktree} `false`: the agent that declares a worktree
-   * still does not get one off the plan's line, but it no longer builds in the
+   * still does not get one off the branch its work belongs on, but it no longer builds in the
    * checkout that dispatches it.
    *
    * Absent ⇒ no such mechanism: an agent declaring a worktree on a harness that
@@ -544,7 +544,7 @@ export interface HarnessAdapter {
 export interface DispatchIsolation {
   /** The settings the isolation holds, by the harness's own dotted setting name. */
   readonly settings: Readonly<Record<string, string | number | boolean>>;
-  /** What the isolation still lacks against a worktree off the plan's line, in words
+  /** What the isolation still lacks against a worktree off the branch its work belongs on, in words
    *  that complete "an agent that declares isolation runs in an isolated copy of its
    *  dispatcher's checkout, …": said by projection and by install. */
   readonly lacks: string;

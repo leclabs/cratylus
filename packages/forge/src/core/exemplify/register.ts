@@ -2,7 +2,7 @@
  * The mechanical register classifier behind the gate's `conform` predicate
  * (`register(a) = ρ(a)`; ρ = LLM for every pipeline artifact).
  *
- * SEMANTIC SEAM: true register judgment is the reader's (an LLM pass). This
+ * SEMANTIC SEAM: true register assessment is the reader's (an LLM pass). This
  * classifier is the greppable invariant of the human register — the
  * politeness/narrative marker lexicon that R=LLM bodies carry at density 0 —
  * so the gate can refuse a human-register emission deterministically. It is

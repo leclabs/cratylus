@@ -2,7 +2,7 @@
  * The exemplify pipeline's mechanical frame — types.
  *
  * SEMANTIC SEAM (the load-bearing boundary of this module): the pipeline's
- * three stages — conceptualize (cut the source at meaning joints, fill
+ * three stages — conceptualize (split the source at meaning joints, fill
  * `gloss`), signify (assign each concept its canonical anchor σ*, fill
  * `anchor`), materialize (realize the artifacts, fill the routed bodies) —
  * are LLM passes. This code NEVER performs them. The operating agent authors
