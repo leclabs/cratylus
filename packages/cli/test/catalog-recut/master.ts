@@ -85,15 +85,12 @@ Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signi
 // Decision 0081's typed deliverables, rebound under 0085. These are independent
 // expected projections, not schemas read from canon or rendered by forge.
 export const deliverableSections: Record<string, string> = {
-  'read-back': `## Deliverable
-Return it as one JSON object with these fields:
-- \`whereThingsStand\` (string, required): Where things stand, in plain words, as the records state them.
-- \`recommendation\` (string, required): The one action recommended next.`,
+  'read-back': '',
   outcome: `## Deliverable
 The lead's outcome of the story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.
 Return it as one JSON object with these fields:
-- \`story\` (string, required): The story this outcome is for, by its name.
-- \`criteria\` (list of objects, at least 1, required): Each of the story's acceptance criteria, whether it holds, and its evidence.
+- \`story\` (string, required): The story, or for a task with no story the task, by name.
+- \`criteria\` (list of objects, at least 1, required): The acceptance criteria, or for a task with no story what done means, each with whether it holds and its evidence.
   - \`criterion\` (string, required): The acceptance criterion, as the story states it.
   - \`holds\` (boolean, required): Whether the criterion holds in merged work.
   - \`evidence\` (string, required): Why it holds or does not, in the design's own terms: what the review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.
@@ -406,7 +403,7 @@ reconstitution | recovers from the source of truth at every start, before acting
 personal | reserved for ipseic agents: the agent's own continuous memory of its experience; empty for now`),
   assignment: glossary(`
 intent | what the operator wants and why, in any words
-story | one thin slice of behaviour a user can rely on: the slice and why it is wanted, its acceptance criteria, what is out of scope, its path and the review it warrants, its rough cost, and examples where misunderstanding is likely
+story | one thin slice of behaviour a user can rely on: the slice and why it is wanted, its acceptance criteria, what is out of scope, its path and the review it warrants, its rough cost, and examples where misunderstanding is likely; or, for a change that alters no meaning, a task with no story
 task | one change: its goal in its story's terms, what it changes, the technical decisions that bind it, and what done means
 review-request | a pull request to review, with its story's acceptance criteria and examples, held-out ones included, where they apply
 concepts | a story's concepts only
@@ -561,7 +558,7 @@ const columns: Record<string, string[]> = {
     "own-task,examples~its story's visible ones,work",
     'concept-journal,examples,held-out-examples,work',
     "concept-journal~the story's concepts only",
-    'concept-journal,examples,held-out-examples,work',
+    'concept-journal,examples,work',
   ],
   'action-scope': [
     'append-journal,write-examples',
@@ -678,7 +675,7 @@ export const descriptions: Record<string, string> = {
   'check-writer':
     "Called in for a story's risk: writes the checks binding its examples, each seen failing before the build.",
   kino: "Architect of software that makes films: holds a film-production consumer's platform and production contexts and teaches the layman operator the industry's own practice, each recommendation traced to its source.",
-  nico: "Architect of cratylus's corpus and agents contexts: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space.",
+  nico: "Architect named for the corpus's concept space and the cold-decode oracle: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, and keeps the name a reader with no context decodes as meant.",
   mav: "Architect of the repository it is given: holds that project's contexts as a software engineer would.",
 };
 export function personaResidue(name: PersonaName) {

@@ -6,7 +6,7 @@
 // unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
-import { anchorOf, enforcing } from '@cratylus/schema';
+import { type JsonSchema, anchorOf, enforcing } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { builder } from '../src/agents/builder.js';
@@ -80,7 +80,20 @@ describe('typed handoffs', () => {
       deliverable: holders[name].contract?.deliverable?.required,
     });
     expect(required('lead')).toEqual({
-      assignment: [
+      assignment: undefined,
+      deliverable: [
+        'story',
+        'criteria',
+        'meaningQuestions',
+        'followUps',
+        'cost',
+      ],
+    });
+    expect(
+      lead.contract?.assignment?.anyOf?.map((form) => form.required),
+      'the lead takes a story, or a task with no story',
+    ).toEqual([
+      [
         'story',
         'slice',
         'why',
@@ -90,14 +103,8 @@ describe('typed handoffs', () => {
         'review',
         'cost',
       ],
-      deliverable: [
-        'story',
-        'criteria',
-        'meaningQuestions',
-        'followUps',
-        'cost',
-      ],
-    });
+      builder.contract?.assignment?.required,
+    ]);
     expect(required('builder')).toEqual({
       assignment: ['task', 'goal', 'changes', 'decisions', 'done'],
       deliverable: ['change', 'tests', 'verified'],
@@ -117,27 +124,23 @@ describe('typed handoffs', () => {
   });
 
   it("states each handover's optional parts as properties it does not require", () => {
-    const optional = (name: keyof typeof holders) => {
-      const schema = holders[name].contract?.assignment;
-      return Object.keys(schema?.properties ?? {}).filter(
+    const optional = (schema: JsonSchema | undefined) =>
+      Object.keys(schema?.properties ?? {}).filter(
         (field) => !schema?.required?.includes(field),
       );
-    };
-    expect(optional('lead')).toEqual(['examples', 'decisions', 'contexts']);
-    expect(optional('builder')).toEqual(['story']);
-    expect(optional('reviewer')).toEqual([
+    const [story, task] = lead.contract?.assignment?.anyOf ?? [];
+    expect(optional(story)).toEqual(['examples', 'decisions', 'contexts']);
+    expect(optional(task)).toEqual(['story']);
+    expect(optional(builder.contract?.assignment)).toEqual(['story']);
+    expect(optional(reviewer.contract?.assignment)).toEqual([
       'story',
       'acceptanceCriteria',
       'examples',
     ]);
   });
 
-  it('gives the architect, whose intent is free text, only its read-back to the operator', () => {
-    expect(architect.contract).not.toHaveProperty('assignment');
-    expect(architect.contract?.deliverable?.required).toEqual([
-      'whereThingsStand',
-      'recommendation',
-    ]);
+  it("gives the architect, whose handovers are a person's, no contract", () => {
+    expect(architect).not.toHaveProperty('contract');
   });
 });
 

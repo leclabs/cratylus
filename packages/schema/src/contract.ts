@@ -21,7 +21,8 @@
 /**
  * The JSON Schema subset a typed handoff is written in: an object's properties
  * and the ones it requires, an array's items and least length, a scalar's type
- * and allowed values. Plain JSON, so a harness reads it as its own output schema.
+ * and allowed values, and, at the top of an assignment, the alternative forms it
+ * may take. Plain JSON, so a harness reads it as its own output schema.
  */
 export interface JsonSchema {
   readonly type?:
@@ -40,6 +41,8 @@ export interface JsonSchema {
   readonly items?: JsonSchema;
   readonly minItems?: number;
   readonly enum?: readonly (string | number | boolean)[];
+  /** Alternative forms: a value fits when it fits any one of them. Read at the top level only. */
+  readonly anyOf?: readonly JsonSchema[];
 }
 
 /**
@@ -81,65 +84,82 @@ export function assignmentIn(text: string): unknown {
 /**
  * Check an assignment against an agent's assignment schema, naming each missing
  * and each ill-typed field. `undefined` (no assignment given) is missing every
- * required field. Nothing is coerced, defaulted or removed.
+ * required field. Nothing is coerced, defaulted or removed. A schema of
+ * alternatives (`anyOf`) is fitted when any one alternative fits; when none does,
+ * the problems reported are the closest alternative's, the one with the fewest
+ * (the first, for no assignment at all).
  */
 export function checkAssignment(
   agent: string,
   schema: JsonSchema,
   value: unknown,
 ): ContractCheck {
-  const missing: string[] = [];
-  const illTyped: string[] = [];
-  const visit = (s: JsonSchema, v: unknown, path: string): void => {
-    const at = path || 'assignment';
-    const actual =
-      v === null
-        ? 'null'
-        : Array.isArray(v)
-          ? 'array'
-          : Number.isInteger(v)
-            ? 'integer'
-            : typeof v;
-    if (
-      s.type !== undefined &&
-      actual !== s.type &&
-      !(s.type === 'number' && actual === 'integer')
-    ) {
-      illTyped.push(`${at} (expected ${s.type})`);
-      return;
-    }
-    if (s.enum !== undefined && !s.enum.some((allowed) => allowed === v)) {
-      illTyped.push(`${at} (expected one of ${s.enum.join(', ')})`);
-      return;
-    }
-    if (Array.isArray(v)) {
-      if (s.minItems !== undefined && v.length < s.minItems)
-        illTyped.push(
-          `${at} (expected at least ${s.minItems} item${s.minItems === 1 ? '' : 's'})`,
-        );
-      if (s.items !== undefined)
-        for (const [i, item] of v.entries())
-          visit(s.items, item, `${path}[${i}]`);
-      return;
-    }
-    if (typeof v !== 'object' || v === null) return;
-    const record = v as Record<string, unknown>;
-    const prefix = path ? `${path}.` : '';
-    for (const field of s.required ?? [])
-      if (record[field] === undefined) missing.push(`${prefix}${field}`);
-    for (const [field, item] of Object.entries(record)) {
-      if (item === undefined) continue;
-      const declared = s.properties?.[field];
-      if (declared !== undefined) visit(declared, item, `${prefix}${field}`);
-      else if (s.additionalProperties === false)
-        illTyped.push(`${prefix}${field} (not a field of this contract)`);
-      else if (typeof s.additionalProperties === 'object')
-        visit(s.additionalProperties, item, `${prefix}${field}`);
-    }
+  const fit = (form: JsonSchema): { missing: string[]; illTyped: string[] } => {
+    const missing: string[] = [];
+    const illTyped: string[] = [];
+    const visit = (s: JsonSchema, v: unknown, path: string): void => {
+      const at = path || 'assignment';
+      const actual =
+        v === null
+          ? 'null'
+          : Array.isArray(v)
+            ? 'array'
+            : Number.isInteger(v)
+              ? 'integer'
+              : typeof v;
+      if (
+        s.type !== undefined &&
+        actual !== s.type &&
+        !(s.type === 'number' && actual === 'integer')
+      ) {
+        illTyped.push(`${at} (expected ${s.type})`);
+        return;
+      }
+      if (s.enum !== undefined && !s.enum.some((allowed) => allowed === v)) {
+        illTyped.push(`${at} (expected one of ${s.enum.join(', ')})`);
+        return;
+      }
+      if (Array.isArray(v)) {
+        if (s.minItems !== undefined && v.length < s.minItems)
+          illTyped.push(
+            `${at} (expected at least ${s.minItems} item${s.minItems === 1 ? '' : 's'})`,
+          );
+        if (s.items !== undefined)
+          for (const [i, item] of v.entries())
+            visit(s.items, item, `${path}[${i}]`);
+        return;
+      }
+      if (typeof v !== 'object' || v === null) return;
+      const record = v as Record<string, unknown>;
+      const prefix = path ? `${path}.` : '';
+      for (const field of s.required ?? [])
+        if (record[field] === undefined) missing.push(`${prefix}${field}`);
+      for (const [field, item] of Object.entries(record)) {
+        if (item === undefined) continue;
+        const declared = s.properties?.[field];
+        if (declared !== undefined) visit(declared, item, `${prefix}${field}`);
+        else if (s.additionalProperties === false)
+          illTyped.push(`${prefix}${field} (not a field of this contract)`);
+        else if (typeof s.additionalProperties === 'object')
+          visit(s.additionalProperties, item, `${prefix}${field}`);
+      }
+    };
+    if (value === undefined)
+      for (const field of form.required ?? []) missing.push(field);
+    else visit(form, value, '');
+    return { missing, illTyped };
   };
-  if (value === undefined)
-    for (const field of schema.required ?? []) missing.push(field);
-  else visit(schema, value, '');
+  const forms = schema.anyOf?.length ? schema.anyOf : [schema];
+  let closest = fit(forms[0] as JsonSchema);
+  let problems = closest.missing.length + closest.illTyped.length;
+  if (value !== undefined)
+    for (const form of forms.slice(1)) {
+      if (problems === 0) break;
+      const found = fit(form);
+      const count = found.missing.length + found.illTyped.length;
+      if (count < problems) [closest, problems] = [found, count];
+    }
+  const { missing, illTyped } = closest;
   const parts = [
     ...(missing.length > 0 ? [`is missing: ${missing.join(', ')}`] : []),
     ...(illTyped.length > 0 ? [`is ill-typed: ${illTyped.join(', ')}`] : []),

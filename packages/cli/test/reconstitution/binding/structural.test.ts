@@ -219,6 +219,32 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     expect(result?.block, 'the handover is never refused').not.toBe(true);
     expect(warnings(running)).toBe('');
   });
+  it('agents/5 — a lead given a task with no story is not warned', async () => {
+    running = await load(f);
+    const { story: _none, ...noStory } = contracts[0]!.input;
+    const result = await running.fire('tool_call', task('lead', noStory));
+    expect(result?.block, 'the handover is never refused').not.toBe(true);
+    expect(warnings(running)).toBe('');
+  });
+  it("agents/5 — a lead's incomplete task is warned with the task's missing parts and both forms shown", async () => {
+    running = await load(f);
+    await running.fire(
+      'tool_call',
+      task('lead', { task: 'tidy-approval', goal: 'Tidy the approval code.' }),
+    );
+    const warning = warnings(running);
+    expect(warning).toContain(
+      'lead assignment is missing: changes, decisions, done',
+    );
+    expect(
+      warning.split('\n').find((line) => line.includes('is missing')),
+      'never the parts of the story it is not',
+    ).not.toContain('slice');
+    expect(warning).toMatch(/in any one of these forms:\n {2}1\. A story\./);
+    expect(warning).toContain('2. A task with no story');
+    expect(warning).toContain('`acceptanceCriteria` (list of strings');
+    expect(warning).toContain('`done` (string, required)');
+  });
 
   for (const role of roles) {
     it(`agents/7, workflow/30 — ${role} keeps default tools including shell and all journal appends`, async () => {

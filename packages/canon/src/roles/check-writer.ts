@@ -26,7 +26,6 @@ import { optimize } from '../dimensions/objective/optimize.js';
 import { testValidity } from '../dimensions/objective/test-validity.js';
 import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
-import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
 import { work } from '../dimensions/perception-scope/work.js';
 import { testFirst } from '../dimensions/procedure/test-first.js';
 import { checkWriter } from '../dimensions/role/check-writer.js';
@@ -62,7 +61,7 @@ export const checkWriterRole: RoleCell = {
       { value: input, slot: 'release' },
     ],
     autonomy: [handoff],
-    perceptionScope: [conceptJournal, examples, heldOutExamples, work],
+    perceptionScope: [conceptJournal, examples, work],
     actionScope: [writeChecks, runChecks, commitOwnPaths],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },

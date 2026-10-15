@@ -9,8 +9,10 @@
 //
 // Each handover states what it must contain, so one passed without a part shows
 // what is missing: its required fields are its contents. An array takes `[]` unless
-// it is marked `minItems: 1`. Free-text intent (the architect's assignment) carries
-// no contract.
+// it is marked `minItems: 1`. An assignment taking alternative forms states each
+// under `anyOf`, and fits when it fits any one. The architect's handovers are a
+// person's: free-text intent in, a read-back to the operator out, neither of them
+// JSON, so neither carries a contract.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type JsonSchema, anchorOf } from '@cratylus/schema';
@@ -23,7 +25,6 @@ import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
 import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
 import { outcome } from './dimensions/deliverable/outcome.js';
 import { pullRequest } from './dimensions/deliverable/pull-request.js';
-import { readBack } from './dimensions/deliverable/read-back.js';
 import { review } from './dimensions/deliverable/review.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
@@ -60,70 +61,79 @@ const meaningQuestions = said(
   'Each question whose answer would change a concept or an example, for the architect to settle; empty when there is none.',
 );
 
+// The story and the task, each a form of its own: the lead takes either, a builder a task.
+const storyForm = record(
+  {
+    story: storyField,
+    slice: said(
+      text,
+      "The thin slice of behaviour a user can rely on, in the design's own terms.",
+    ),
+    why: said(text, 'Why the slice is wanted.'),
+    acceptanceCriteria: said(
+      someTexts,
+      'What must hold in merged work for the story to be done, each criterion on its own.',
+    ),
+    outOfScope: said(
+      texts,
+      'What the story does not cover; empty when nothing needs saying.',
+    ),
+    path: said(
+      { type: 'string', enum: ['plain', 'scaled-up'] },
+      'The path the story takes: plain, broken into tasks each built by one builder and reviewed by one reviewer, or scaled up with specialists for its risk.',
+    ),
+    review: said(
+      text,
+      "The review the story warrants: one reviewer per pull request, or a second reviewer or the operator's review where its risk calls for one.",
+    ),
+    cost: said(
+      text,
+      'Roughly what the story will cost, which its effort is weighed against.',
+    ),
+    examples: exampleRefs(
+      texts,
+      "The story's visible examples, where misunderstanding is likely",
+    ),
+    decisions: said(
+      texts,
+      'The decisions in force for the story, by their ids (e.g. `0081`).',
+    ),
+    contexts: said(texts, 'The bounded contexts the story touches.'),
+  },
+  ['examples', 'decisions', 'contexts'],
+);
+const taskForm = record(
+  {
+    task: said(text, 'The task, by its name (a kebab-case id).'),
+    story: said(
+      text,
+      'The story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
+    ),
+    goal: said(text, "What the task is for, in its story's terms."),
+    changes: said(text, 'What the task changes.'),
+    decisions: said(
+      texts,
+      'The technical decisions that bind the task; empty when there are none.',
+    ),
+    done: said(text, 'What done means for the task.'),
+  },
+  ['story'],
+);
+
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
     story,
-    record(
-      {
-        story: storyField,
-        slice: said(
-          text,
-          "The thin slice of behaviour a user can rely on, in the design's own terms.",
+    {
+      anyOf: [
+        said(storyForm, 'A story.'),
+        said(
+          taskForm,
+          'A task with no story: a change that alters no meaning.',
         ),
-        why: said(text, 'Why the slice is wanted.'),
-        acceptanceCriteria: said(
-          someTexts,
-          'What must hold in merged work for the story to be done, each criterion on its own.',
-        ),
-        outOfScope: said(
-          texts,
-          'What the story does not cover; empty when nothing needs saying.',
-        ),
-        path: said(
-          { type: 'string', enum: ['plain', 'scaled-up'] },
-          'The path the story takes: plain, broken into tasks each built by one builder and reviewed by one reviewer, or scaled up with specialists for its risk.',
-        ),
-        review: said(
-          text,
-          "The review the story warrants: one reviewer per pull request, or a second reviewer or the operator's review where its risk calls for one.",
-        ),
-        cost: said(
-          text,
-          'Roughly what the story will cost, which its effort is weighed against.',
-        ),
-        examples: exampleRefs(
-          texts,
-          "The story's visible examples, where misunderstanding is likely",
-        ),
-        decisions: said(
-          texts,
-          'The decisions in force for the story, by their ids (e.g. `0081`).',
-        ),
-        contexts: said(texts, 'The bounded contexts the story touches.'),
-      },
-      ['examples', 'decisions', 'contexts'],
-    ),
+      ],
+    },
   ],
-  [
-    task,
-    record(
-      {
-        task: said(text, 'The task, by its name (a kebab-case id).'),
-        story: said(
-          text,
-          'The story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
-        ),
-        goal: said(text, "What the task is for, in its story's terms."),
-        changes: said(text, 'What the task changes.'),
-        decisions: said(
-          texts,
-          'The technical decisions that bind the task; empty when there are none.',
-        ),
-        done: said(text, 'What done means for the task.'),
-      },
-      ['story'],
-    ),
-  ],
+  [task, taskForm],
   [
     reviewRequest,
     record(
@@ -172,7 +182,10 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     outcome,
     said(
       record({
-        story: said(text, 'The story this outcome is for, by its name.'),
+        story: said(
+          text,
+          'The story, or for a task with no story the task, by name.',
+        ),
         criteria: said(
           {
             type: 'array',
@@ -189,7 +202,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               ),
             }),
           },
-          "Each of the story's acceptance criteria, whether it holds, and its evidence.",
+          'The acceptance criteria, or for a task with no story what done means, each with whether it holds and its evidence.',
         ),
         meaningQuestions,
         followUps: said(
@@ -240,16 +253,6 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
         'Each finding, naming what must change and why; empty when there is none.',
       ),
       meaningQuestions,
-    }),
-  ],
-  [
-    readBack,
-    record({
-      whereThingsStand: said(
-        text,
-        'Where things stand, in plain words, as the records state them.',
-      ),
-      recommendation: said(text, 'The one action recommended next.'),
     }),
   ],
   [
