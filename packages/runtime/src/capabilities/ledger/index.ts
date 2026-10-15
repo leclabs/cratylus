@@ -8,9 +8,10 @@
 // reach it through `cratylus lifecycle` (`../../lifecycle/`).
 //
 // What another reader needs of the ledger is exported here: the work in flight
-// and ended (`workIn`), which the context overview tells, and the cuts its
-// history records integrated, which keep a decision about an integrated cut
-// deprecated in the concept journal.
+// and ended (`workIn`), which the context overview tells and which makes a
+// done story's examples history, and the cuts its history records integrated,
+// which keep a decision recorded about such a cut deprecated, and that cut's
+// examples history, in the concept journal.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { ReadPast } from '../concepts/journal.js';
@@ -18,7 +19,7 @@ import { type Work, foldWork } from './fold.js';
 import { topOf } from './git.js';
 import { ledgerAt } from './store.js';
 
-export { LEDGER, VERBS, dispatchLedger, inFlightDrafts } from './dispatch.js';
+export { LEDGER, VERBS, dispatchLedger } from './dispatch.js';
 export {
   type Cost,
   type Ending,

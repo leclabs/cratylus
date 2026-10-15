@@ -135,7 +135,7 @@ describe('the overview of one context', () => {
         recorded: at,
         cost,
       },
-      { story: 'everywhere', tasks: [], recorded: at, cost },
+      { story: 'everywhere', tasks: ['tidy'], recorded: at, cost },
       {
         story: 'elsewhere',
         contexts: ['scheduling'],
@@ -154,6 +154,7 @@ describe('the overview of one context', () => {
     ],
     tasks: [
       { task: 'shoot', story: 'film', recorded: at, cost },
+      { task: 'tidy', story: 'everywhere', recorded: at, cost },
       { task: 'slotting', story: 'elsewhere', recorded: at, cost },
       { task: 'chore', recorded: at, cost },
       { task: 'merged-chore', recorded: at, ended, cost },
@@ -185,7 +186,10 @@ describe('the overview of one context', () => {
       openDecisions: [{ id: 'colour', title: 'Decide colour' }],
       workInFlight: {
         stories: [{ story: 'film' }, { story: 'everywhere' }],
-        tasks: [{ task: 'shoot', story: 'film' }, { task: 'chore' }],
+        tasks: [
+          { task: 'shoot', story: 'film' },
+          { task: 'tidy', story: 'everywhere' },
+        ],
       },
     });
     const where = (text: string) => answer.account.indexOf(text);
@@ -195,7 +199,7 @@ describe('the overview of one context', () => {
       'Production means: The production. It is built from take.',
       'Take means: The take.',
       'Decide colour',
-      'the story film; the story everywhere; the task shoot of the story film; the task chore.',
+      'the story film; the story everywhere; the task shoot of the story film; the task tidy of the story everywhere.',
     ].map(where);
     expect(order.every((i) => i >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
@@ -211,6 +215,7 @@ describe('the overview of one context', () => {
       'slotting',
       'finished',
       'merged-chore',
+      'chore',
     ])
       expect(answer.account).not.toContain(absent);
   });

@@ -262,7 +262,7 @@ describe('recounts', () => {
   it.each([
     'a concept changes only by a new version that restates it whole as it now means, never by extending the old wording.',
     'its subject changes only by a new description carrying its reason, the earlier kept in its history.',
-    'a decision stands until a later decision supersedes it, or the cut it was about is integrated.',
+    'a decision stands until a later decision supersedes it or a later entry deprecates it.',
     'who an agent is, never how it was started.',
     'judged against examples fixed before any build.',
   ])('raises nothing in current meaning: %s', (text) => {

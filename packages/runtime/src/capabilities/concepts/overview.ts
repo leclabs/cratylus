@@ -16,8 +16,8 @@
 //
 // WORK IN FLIGHT ON IT: each story in flight recorded with the context among
 // its contexts, or with none, which touches every context; and each task in
-// flight whose story touches it, or that has no story or one recorded with no
-// contexts, which touches every context.
+// flight of a story that touches it. A task with no story changes no meaning,
+// so it touches no context.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Work } from '../ledger/index.js';
@@ -142,9 +142,8 @@ export function overviewOf(
       .filter(
         (t) =>
           t.ended === undefined &&
-          touched(
-            t.story === undefined ? undefined : storyContexts.get(t.story),
-          ),
+          t.story !== undefined &&
+          touched(storyContexts.get(t.story)),
       )
       .map(({ task, story }) =>
         story === undefined ? { task } : { task, story },

@@ -217,7 +217,7 @@ it('refuses a known entry it cannot read by name, though an unknown kind is pres
   expect(files()).toEqual(before);
 });
 
-it('shows a cut’s recorded figures only as history, in a journal holding an unknown kind', () => {
+it('shows the effort recorded for past work only as history, in a journal holding an unknown kind', () => {
   known();
   entry(9, {
     kind: 'efficiency',
