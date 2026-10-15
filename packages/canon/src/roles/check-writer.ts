@@ -1,4 +1,5 @@
-// The check-writer role: master design §3, the check-writer column ("others I" expanded).
+// The check-writer role: a specialist called in for a story's risk, writing the checks
+// that bind its examples before the build (workflow: check-writer; agents 0243, 0244).
 
 import type { RoleCell } from '../compose.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
@@ -27,7 +28,7 @@ import { conceptJournal } from '../dimensions/perception-scope/concept-journal.j
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
 import { work } from '../dimensions/perception-scope/work.js';
-import { freeze } from '../dimensions/procedure/freeze.js';
+import { testFirst } from '../dimensions/procedure/test-first.js';
 import { checkWriter } from '../dimensions/role/check-writer.js';
 import { adversarial } from '../dimensions/stance/adversarial.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
@@ -35,7 +36,7 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 export const checkWriterRole: RoleCell = {
   name: 'check-writer',
   description:
-    "Writes and proves the checks that bind a cut's examples, before the build.",
+    "Called in for a story's risk: writes the checks binding its examples, each seen failing before the build.",
   mark: null,
   values: {
     role: [checkWriter],
@@ -44,7 +45,7 @@ export const checkWriterRole: RoleCell = {
       { value: optimize, slot: 'stopping-rule' },
     ],
     expertise: [testDesign, evaluationDesign],
-    procedure: [freeze],
+    procedure: [testFirst],
     stance: [adversarial, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -57,7 +58,6 @@ export const checkWriterRole: RoleCell = {
       { value: input, slot: 'meaning' },
       { value: input, slot: 'constraint' },
       { value: decides, slot: 'realization', note: 'its checks' },
-      { value: input, slot: 'check-ruling' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],

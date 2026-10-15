@@ -1,28 +1,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// TYPED HANDOFFS — the JSON Schema each assignment and deliverable value carries.
+// TYPED HANDOVERS — the JSON Schema each assignment and deliverable value carries.
 //
 // A role's assignment and deliverable are values of their factors; the contract a
-// handoff is checked against is DATA those values carry, paired here with the very
+// handover is checked against is DATA those values carry, paired here with the very
 // value it belongs to. Composition copies the pair onto the agent
 // (`Agent.contract`), and every harness reads it from there: the assignment checked
 // before the agent runs, the deliverable bound as the harness's output schema.
 //
-// Required fields are required, and an array takes `[]` unless it is marked
-// `minItems: 1`. Free-text intent (the architect's assignment) and the architect's
-// deliverable to the operator carry no contract.
+// Each handover states what it must contain, so one passed without a part shows
+// what is missing: its required fields are its contents. An array takes `[]` unless
+// it is marked `minItems: 1`. Free-text intent (the architect's assignment) carries
+// no contract.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type JsonSchema, anchorOf } from '@cratylus/schema';
 import { concepts } from './dimensions/assignment/concepts.js';
-import { cutBrief } from './dimensions/assignment/cut-brief.js';
 import { examples } from './dimensions/assignment/examples.js';
-import { judgmentBrief } from './dimensions/assignment/judgment-brief.js';
-import { workPackage } from './dimensions/assignment/work-package.js';
+import { reviewRequest } from './dimensions/assignment/review-request.js';
+import { story } from './dimensions/assignment/story.js';
+import { task } from './dimensions/assignment/task.js';
 import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
-import { doneOrFailingCase } from './dimensions/deliverable/done-or-failing-case.js';
 import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
-import { outcomeWithEfficiency } from './dimensions/deliverable/outcome-with-efficiency.js';
-import { verdictPerConcept } from './dimensions/deliverable/verdict-per-concept.js';
+import { outcome } from './dimensions/deliverable/outcome.js';
+import { pullRequest } from './dimensions/deliverable/pull-request.js';
+import { readBack } from './dimensions/deliverable/read-back.js';
+import { review } from './dimensions/deliverable/review.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
 const text: JsonSchema = { type: 'string' };
@@ -46,76 +48,117 @@ const said = (schema: JsonSchema, description: string): JsonSchema => ({
   description,
 });
 
-// What a field of an assignment names, said once for every assignment that holds it.
-const cutField = said(
-  text,
-  'The cut, by its name (its examples are design/examples/<context>/<cut>.md).',
-);
+// What a field of a handover names, said once for every handover that holds it.
+const storyField = said(text, 'The story, by its name (a kebab-case id).');
 const exampleRefs = (schema: JsonSchema, whose: string): JsonSchema =>
   said(
     schema,
     `${whose}, each as \`<context>/<number>\` (e.g. \`booking/1\`).`,
   );
+const meaningQuestions = said(
+  texts,
+  'Each question whose answer would change a concept or an example, for the architect to settle; empty when there is none.',
+);
 
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
-    cutBrief,
-    record({
-      cut: cutField,
-      concepts: said(
-        someTexts,
-        'The concepts the cut realizes, by their names in the design.',
-      ),
-      examples: exampleRefs(someTexts, "The cut's visible examples"),
-      decisions: said(
-        someTexts,
-        'The decisions in force for the cut, by their ids (e.g. `0081`).',
-      ),
-    }),
+    story,
+    record(
+      {
+        story: storyField,
+        slice: said(
+          text,
+          "The thin slice of behaviour a user can rely on, in the design's own terms.",
+        ),
+        why: said(text, 'Why the slice is wanted.'),
+        acceptanceCriteria: said(
+          someTexts,
+          'What must hold in merged work for the story to be done, each criterion on its own.',
+        ),
+        outOfScope: said(
+          texts,
+          'What the story does not cover; empty when nothing needs saying.',
+        ),
+        path: said(
+          { type: 'string', enum: ['plain', 'scaled-up'] },
+          'The path the story takes: plain, broken into tasks each built by one builder and reviewed by one reviewer, or scaled up with specialists for its risk.',
+        ),
+        review: said(
+          text,
+          "The review the story warrants: one reviewer per pull request, or a second reviewer or the operator's review where its risk calls for one.",
+        ),
+        cost: said(
+          text,
+          'Roughly what the story will cost, which its effort is weighed against.',
+        ),
+        examples: exampleRefs(
+          texts,
+          "The story's visible examples, where misunderstanding is likely",
+        ),
+        decisions: said(
+          texts,
+          'The decisions in force for the story, by their ids (e.g. `0081`).',
+        ),
+        contexts: said(texts, 'The bounded contexts the story touches.'),
+      },
+      ['examples', 'decisions', 'contexts'],
+    ),
   ],
   [
-    workPackage,
-    record({
-      cut: cutField,
-      workPackage: said(text, 'The work package, by its name in the ledger.'),
-      outputs: said(
-        someTexts,
-        'The paths the package owns, which no other builder changes.',
-      ),
-      concepts: said(someTexts, 'The concepts the package serves, by name.'),
-      // A shared-output package owns no example, which a work package may do.
-      examples: exampleRefs(
-        texts,
-        'The visible examples the package owns (none for a package sharing outputs)',
-      ),
-    }),
+    task,
+    record(
+      {
+        task: said(text, 'The task, by its name (a kebab-case id).'),
+        story: said(
+          text,
+          'The story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
+        ),
+        goal: said(text, "What the task is for, in its story's terms."),
+        changes: said(text, 'What the task changes.'),
+        decisions: said(
+          texts,
+          'The technical decisions that bind the task; empty when there are none.',
+        ),
+        done: said(text, 'What done means for the task.'),
+      },
+      ['story'],
+    ),
   ],
   [
-    judgmentBrief,
-    record({
-      cut: cutField,
-      workPackages: said(
-        someTexts,
-        'The work packages to judge, by their names in the ledger.',
-      ),
-      examples: exampleRefs(someTexts, 'The examples to judge against'),
-      decisions: said(
-        texts,
-        'The decisions in force, by their ids; empty when there are none.',
-      ),
-    }),
+    reviewRequest,
+    record(
+      {
+        pullRequest: said(
+          text,
+          'The pull request to review, by its reference.',
+        ),
+        story: said(
+          text,
+          'The story the pull request serves, by its name; absent for a task with no story.',
+        ),
+        acceptanceCriteria: said(
+          texts,
+          "The story's acceptance criteria the pull request is reviewed against, where they apply.",
+        ),
+        examples: exampleRefs(
+          texts,
+          'The examples the pull request is reviewed against, where they apply',
+        ),
+      },
+      ['story', 'acceptanceCriteria', 'examples'],
+    ),
   ],
   [
     examples,
     record({
-      cut: cutField,
+      story: storyField,
       examples: exampleRefs(someTexts, 'The examples to bind checks to'),
     }),
   ],
   [
     concepts,
     record({
-      cut: cutField,
+      story: storyField,
       concepts: said(
         someTexts,
         'The concepts to illustrate with examples, by name.',
@@ -126,109 +169,93 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
 
 const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
   [
-    outcomeWithEfficiency,
+    outcome,
     said(
       record({
-        cut: said(text, 'The cut this report is for, by its name.'),
-        outcomes: said(
+        story: said(text, 'The story this outcome is for, by its name.'),
+        criteria: said(
           {
             type: 'array',
             minItems: 1,
             items: record({
-              example: said(
+              criterion: said(
                 text,
-                'The visible example, as `<context>/<number>`.',
+                'The acceptance criterion, as the story states it.',
               ),
-              concept: said(
-                text,
-                'The concept the example shows, by its name in the design.',
-              ),
-              outcome: said(
-                { type: 'string', enum: ['pass', 'fail'] },
-                'Whether the example holds in the delivered work.',
-              ),
+              holds: said(flag, 'Whether the criterion holds in merged work.'),
               evidence: said(
                 text,
-                "Why the outcome holds, named by the example and by the check that binds it, in the design's concepts: what the check showed of the concept. Never a file, function, path or command, even where a verdict cites one: translate it into the concept it bears on.",
+                "Why it holds or does not, in the design's own terms: what the review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.",
               ),
             }),
           },
-          "One outcome per visible example of the cut, each in the design's concepts.",
+          "Each of the story's acceptance criteria, whether it holds, and its evidence.",
         ),
-        verdicts: said(
-          {
-            type: 'array',
-            items: record({
-              assayer: said(text, 'The assayer that judged, by its run.'),
-              verdict: said(
-                { type: 'string', enum: ['accept', 'reject'] },
-                "The assayer's verdict on the cut, as it returned it.",
-              ),
-              findings: said(
-                texts,
-                "The assayer's findings, each restated in the design's concepts; empty when it found none.",
-              ),
-            }),
-          },
-          "Each assayer's verdict, as it returned it.",
+        meaningQuestions,
+        followUps: said(
+          texts,
+          'What the story leaves unfinished, each as work to take up later; empty when there is none.',
         ),
-        efficiency: said(
+        cost: said(
           record({
             agentRuns: said(
               record({
-                total: said(count, 'Every agent run the cut took.'),
+                total: said(count, 'Every agent run the story took.'),
                 byRole: said(
                   { type: 'object', additionalProperties: count },
                   'The agent runs by role.',
                 ),
               }),
-              'The agent runs the harness reports for the cut.',
+              'The agent runs the harness reports for the story.',
             ),
-            rounds: said(count, 'The rounds of build and judgment.'),
-            wholeCheckRuns: said(count, 'The runs of the whole check.'),
             tokens: said(count, 'The tokens the runs reported, summed.'),
+            elapsed: said(
+              text,
+              'The time the story took, from its start to its end.',
+            ),
           }),
-          "The cut's figures, as the ledger computes them.",
-        ),
-        hardeningNotes: said(
-          texts,
-          "What would make the cut's examples or checks harder to pass by accident, each in the design's concepts; empty when there is none.",
+          'What the story cost, as the ledger records it.',
         ),
       }),
-      "The lead's report of the cut to whoever dispatched it, in the design's concepts: each example's outcome with its evidence, the assayers' verdicts, the figures and the hardening notes.",
+      "The lead's outcome of the story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.",
     ),
   ],
   [
-    doneOrFailingCase,
-    record({ cut: text, workPackage: text, done: flag, failingCase: text }, [
-      'failingCase',
-    ]),
+    pullRequest,
+    record({
+      change: said(text, 'What the change does and why, by area.'),
+      tests: said(text, 'The tests added, changed or deleted.'),
+      verified: said(text, 'What was verified, and how.'),
+    }),
   ],
   [
-    verdictPerConcept,
+    review,
     record({
-      cut: text,
-      verdicts: {
-        type: 'array',
-        minItems: 1,
-        items: record(
-          {
-            workPackage: text,
-            concept: text,
-            passes: flag,
-            evidence: text,
-            finding: text,
-          },
-          ['finding'],
-        ),
-      },
-      hardeningNotes: texts,
+      verdict: said(
+        { type: 'string', enum: ['approve', 'changes'] },
+        'Whether the review approves the pull request or asks for changes.',
+      ),
+      findings: said(
+        texts,
+        'Each finding, naming what must change and why; empty when there is none.',
+      ),
+      meaningQuestions,
+    }),
+  ],
+  [
+    readBack,
+    record({
+      whereThingsStand: said(
+        text,
+        'Where things stand, in plain words, as the records state them.',
+      ),
+      recommendation: said(text, 'The one action recommended next.'),
     }),
   ],
   [
     checksSeenRed,
     record({
-      cut: text,
+      story: storyField,
       checks: {
         type: 'array',
         items: record({ example: text, check: text, seenRed: flag }),

@@ -1,8 +1,8 @@
-// The architect role: master design §3, the architect column, with the client's
-// principal architect restored (0070), its communication ordered bottom line up
-// front (0078, 0117) and written for the operator in plain words for a layman
-// (0216). Its values are held by its own text, and its behaviour is evaluated in
-// real use (0142).
+// The architect role: the operator's principal architect, who receives intent and
+// hands over stories and read-backs (workflow: architect; agents 0243), its
+// communication ordered bottom line up front (0078, 0117) and written for the
+// operator in plain words for a layman (0216). Its values are held by its own text,
+// and its behaviour is evaluated in real use (0142).
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -19,7 +19,7 @@ import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
 import { none } from '../dimensions/decision-rights/none.js';
 import { recommends } from '../dimensions/decision-rights/recommends.js';
-import { decisionsWithReasons } from '../dimensions/deliverable/decisions-with-reasons.js';
+import { readBack } from '../dimensions/deliverable/read-back.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { domainModeling } from '../dimensions/expertise/domain-modeling.js';
 import { researchInvestigation } from '../dimensions/expertise/research-investigation.js';
@@ -41,8 +41,8 @@ import { examples } from '../dimensions/perception-scope/examples.js';
 import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
 import { outsideResearch } from '../dimensions/perception-scope/outside-research.js';
 import { reports } from '../dimensions/perception-scope/reports.js';
-import { freeze } from '../dimensions/procedure/freeze.js';
 import { illustration } from '../dimensions/procedure/illustration.js';
+import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
 import { reconstitution } from '../dimensions/procedure/reconstitution.js';
 import { rectify } from '../dimensions/procedure/rectify.js';
 import { architect } from '../dimensions/role/architect.js';
@@ -60,7 +60,7 @@ import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
 export const architectRole: RoleCell = {
   name: 'architect',
   description:
-    "The client's principal architect, owning the conceptual design and delivery of the product, in cratylus's example-driven workflow.",
+    "The operator's principal architect, owning the conceptual design: receives intent and hands over stories and read-backs, in cratylus's intent-based delegation.",
   mark: null,
   values: {
     role: [architect],
@@ -74,7 +74,7 @@ export const architectRole: RoleCell = {
       systemDesign,
       researchInvestigation,
     ],
-    procedure: [rectify, illustration, freeze, reconstitution],
+    procedure: [rectify, illustration, orchestratorWorkers, reconstitution],
     // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
       { value: decisive, level: 'fixed' },
@@ -100,7 +100,6 @@ export const architectRole: RoleCell = {
       { value: decides, slot: 'meaning' },
       { value: none, slot: 'constraint' },
       { value: none, slot: 'realization' },
-      { value: none, slot: 'check-ruling' },
       { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
     ],
@@ -119,7 +118,7 @@ export const architectRole: RoleCell = {
     ],
     memory: [sourceOfTruth, working, memoryReconstitution],
     assignment: [intent],
-    deliverable: [decisionsWithReasons],
+    deliverable: [readBack],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],
     evaluation: [inUse],
   },

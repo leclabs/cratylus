@@ -1,3 +1,3 @@
 import type { Role } from '../../manifest.js';
 
-export const checkWriter: Role = `check-writer ≜ writes the checks that bind a cut's examples before the build, each seen to fail first`;
+export const checkWriter: Role = `check-writer ≜ called in for a story's risk: writes the checks binding its examples before the build, each seen to fail against work that does not satisfy it, and never builds the work they check`;

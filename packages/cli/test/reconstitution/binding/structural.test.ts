@@ -5,16 +5,13 @@ import type { Fixture } from '../../agent-launch/fixture.js';
 import {
   assignment,
   bindingFixture,
-  brief,
   command,
   declaration,
-  git,
-  ledger,
   load,
-  open,
+  outcome,
   outputValidator,
-  report,
   roles,
+  story,
   succeeds,
   task,
 } from './fixture.js';
@@ -40,47 +37,44 @@ afterEach(() => {
 });
 
 describe('reconstitution — binding (delivered declarations and extension)', () => {
-  it('agents/1 — typed cut brief starts the lead with those inputs and its output schema, never prose substitutes', async () => {
-    open(f);
+  it('agents/1 — a typed story starts the lead with those inputs and its output schema, never prose substitutes', async () => {
     const validate = outputValidator(f, 'lead');
     expect(
-      validate(report),
+      validate(outcome),
       'binds its deliverable as the harness output schema',
     ).toBe(true);
     running = await load(f);
-    const event = task('lead', brief);
+    const event = task('lead', story);
     const before = structuredClone(event);
     const result = await running.fire('tool_call', event);
     expect(result?.block, 'starts the lead with those inputs').not.toBe(true);
     expect(event, 'assignment inputs are not substituted').toEqual(before);
+    expect(event.input.tasks[0]!.task).toBe(assignment(story));
     if (result?.input !== undefined)
       expect(
         result.input,
         'a revised dispatch keeps the same typed assignment',
       ).toMatchObject(before.input);
-    expect(
-      ledger(f),
-      'dispatch is the harness event, not a prose reminder',
-    ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          kind: 'dispatched',
-          cut: 'film',
-          role: 'lead',
-        }),
-      ]),
-    );
   });
 
-  for (const field of ['examples', 'concepts', 'decisions'] as const) {
-    it(`agents/2 — missing ${field} is warned, naming it, and the lead is dispatched`, async () => {
+  for (const field of [
+    'story',
+    'slice',
+    'why',
+    'acceptanceCriteria',
+    'outOfScope',
+    'path',
+    'review',
+    'cost',
+  ] as const) {
+    it(`agents/2 — a story missing ${field} is warned, naming it, and the lead is dispatched`, async () => {
       running = await load(f);
-      const bad: Record<string, unknown> = { ...brief };
+      const bad: Record<string, unknown> = { ...story };
       delete bad[field];
-      const event = task('lead', brief);
+      const event = task('lead', story);
       event.input.tasks.push({
         id: 'two',
-        description: 'Malformed handoff',
+        description: 'Malformed handover',
         agent: 'lead',
         task: assignment(bad),
       });
@@ -90,96 +84,51 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       expect(warnings(running), `naming the missing ${field}`).toContain(field);
     });
   }
-  it('agents/2 — ill-typed assignment fields are named in a warning rather than accepted silently', async () => {
+  it('agents/2 — ill-typed story fields are named in a warning rather than accepted silently', async () => {
     running = await load(f);
     const result = await running.fire(
       'tool_call',
       task('lead', {
-        ...brief,
-        examples: 'film-production/1',
-        concepts: 2,
-        decisions: null,
+        ...story,
+        acceptanceCriteria: 'the approval is recorded',
+        why: 2,
+        outOfScope: null,
       }),
     );
     expect(result?.block, 'the dispatch is never refused').not.toBe(true);
-    for (const field of ['examples', 'concepts', 'decisions'])
+    for (const field of ['acceptanceCriteria', 'why', 'outOfScope'])
       expect(warnings(running)).toContain(field);
   });
+  it('agents/2 — a complete story is shown without a warning', async () => {
+    running = await load(f);
+    await running.fire('tool_call', task('lead', story));
+    expect(warnings(running)).toBe('');
+  });
 
-  it('agents/3, workflow/17 — accepted structured return is durably readable with the cut without the conversation', () => {
-    const validate = outputValidator(f, 'lead');
-    expect(
-      validate(report),
-      'return fitting that deliverable contract is accepted',
-    ).toBe(true);
-    open(f);
-    succeeds(
-      f,
-      'lifecycle',
-      JSON.stringify({
-        kind: 'reported',
-        transition: 'lead-report-1',
-        cut: 'film',
-        run: 'lead-1',
-        report,
-      }),
-    );
-    expect(
-      ledger(f).filter((e) => e.kind === 'reported'),
-      'never reduced to an unstructured success sentence',
-    ).toEqual([
-      expect.objectContaining({ cut: 'film', run: 'lead-1', report }),
-    ]);
-    // Each CLI request is a fresh process and holds none of the earlier conversation.
-    const state = succeeds(f, 'workPackage', 'state', '--cut', 'film');
-    expect(
-      state.report,
-      'outcomes, evidence by example and check, both verdicts, figures and every hardening note remain',
-    ).toEqual(report);
-  });
-  it('workflow/17 — reported ledger entry survives a fresh state query with every note and figure', () => {
-    open(f);
-    succeeds(
-      f,
-      'lifecycle',
-      JSON.stringify({
-        kind: 'reported',
-        transition: 'durable-report',
-        cut: 'film',
-        run: 'lead-1',
-        report,
-      }),
-    );
-    expect(
-      succeeds(f, 'workPackage', 'state', '--cut', 'film').report,
-      'durably readable with the cut; never loses a hardening note',
-    ).toEqual(report);
-  });
   for (const field of [
     'evidence',
-    'verdicts',
-    'efficiency',
-    'hardeningNotes',
+    'criteria',
+    'meaningQuestions',
+    'followUps',
+    'cost',
   ]) {
-    it(`agents/4 — fluent explanation cannot substitute for omitted ${field}`, () => {
+    it(`agents/4 — fluent explanation cannot substitute for an outcome omitting ${field}`, () => {
       const validate = outputValidator(f, 'lead');
-      const bad = structuredClone(report) as Record<string, unknown>;
+      const bad = structuredClone(outcome) as Record<string, unknown>;
       if (field === 'evidence') {
         // biome-ignore lint/performance/noDelete: this negative must omit the field, not set it to undefined.
-        delete (bad.outcomes as Record<string, unknown>[])[0]!.evidence;
+        delete (bad.criteria as Record<string, unknown>[])[0]!.evidence;
       } else delete bad[field];
       expect(
-        validate(
-          'Everything passed; both independent judges accepted the work.',
-        ),
+        validate('Every criterion holds; the reviewer approved the work.'),
         'a fluent explanation never substitutes for the deliverable',
       ).toBe(false);
       expect(validate(bad), `return omitting ${field} does not pass`).toBe(
         false,
       );
       expect(
-        validate({ ...report, hardeningNotes: [] }),
-        'explicitly empty hardening notes are not omitted',
+        validate({ ...outcome, followUps: [] }),
+        'explicitly empty follow-ups are not omitted',
       ).toBe(true);
     });
   }
@@ -187,45 +136,41 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     {
       role: 'builder',
       input: {
-        cut: 'film',
-        workPackage: 'approval',
-        outputs: ['approval.txt'],
-        concepts: ['approval'],
-        examples: ['film-production/1'],
+        task: 'record-approval',
+        story: 'film',
+        goal: "The creative's approval of a finished film is recorded.",
+        changes: 'Records the approval when the creative approves.',
+        decisions: [],
+        done: 'film-production/1 holds and every check passes.',
       },
-      missing: 'outputs',
-      output: { cut: 'film', workPackage: 'approval', done: true },
-      missingReturn: 'done',
+      missing: 'goal',
+      output: {
+        change: 'Records the approval when the creative approves.',
+        tests: 'Adds the check binding film-production/1.',
+        verified: 'Every check passes.',
+      },
+      missingReturn: 'verified',
     },
     {
-      role: 'assayer',
+      role: 'reviewer',
       input: {
-        cut: 'film',
-        workPackages: ['approval'],
-        examples: ['film-production/1'],
-        decisions: [],
-      },
-      missing: 'workPackages',
-      output: {
-        cut: 'film',
-        verdicts: [
-          {
-            workPackage: 'approval',
-            concept: 'approval',
-            passes: true,
-            evidence: 'film-production/1: approval check',
-          },
+        pullRequest: '#1',
+        story: 'film',
+        acceptanceCriteria: [
+          "The creative's approval of a finished film is recorded.",
         ],
-        hardeningNotes: [],
+        examples: ['film-production/1'],
       },
-      missingReturn: 'verdicts',
+      missing: 'pullRequest',
+      output: { verdict: 'approve', findings: [], meaningQuestions: [] },
+      missingReturn: 'verdict',
     },
     {
       role: 'check-writer',
-      input: { cut: 'film', examples: ['film-production/1'] },
+      input: { story: 'film', examples: ['film-production/1'] },
       missing: 'examples',
       output: {
-        cut: 'film',
+        story: 'film',
         checks: [
           {
             example: 'film-production/1',
@@ -238,19 +183,19 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     },
     {
       role: 'illustrator',
-      input: { cut: 'film', concepts: ['approval'] },
+      input: { story: 'film', concepts: ['approval'] },
       missing: 'concepts',
       output: { examples: [], flaggedTerms: [] },
       missingReturn: 'flaggedTerms',
     },
   ];
   for (const contract of contracts) {
-    it(`agents/5 — ${contract.role} assignment mismatch is warned at its handoff, not only the lead's, and goes ahead`, async () => {
+    it(`agents/5 — ${contract.role} assignment mismatch is warned at its handover, not only the lead's, and goes ahead`, async () => {
       running = await load(f);
       const bad: Record<string, unknown> = { ...contract.input };
       delete bad[contract.missing];
       const result = await running.fire('tool_call', task(contract.role, bad));
-      expect(result?.block, 'the handoff is never refused').not.toBe(true);
+      expect(result?.block, 'the handover is never refused').not.toBe(true);
       const warning = warnings(running);
       expect(warning).toContain(contract.role);
       expect(warning).toContain(contract.missing);
@@ -267,6 +212,13 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       );
     });
   }
+  it('agents/5 — a task with no story is a complete handover to a builder', async () => {
+    running = await load(f);
+    const { story: _none, ...noStory } = contracts[0]!.input;
+    const result = await running.fire('tool_call', task('builder', noStory));
+    expect(result?.block, 'the handover is never refused').not.toBe(true);
+    expect(warnings(running)).toBe('');
+  });
 
   for (const role of roles) {
     it(`agents/7, workflow/30 — ${role} keeps default tools including shell and all journal appends`, async () => {
@@ -292,11 +244,11 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       ).toEqual(explanation.verbs.map((v) => v.name));
     });
   }
-  it('agents/8 — assayer gathers evidence in the normal environment without a required worktree', async () => {
-    const d = declaration(f, 'assayer');
+  it('agents/8 — reviewer gathers evidence in the normal environment without a required worktree', async () => {
+    const d = declaration(f, 'reviewer');
     expect(
       d.frontmatter.isolation,
-      'never requires an isolated copy or a separate worktree merely because it is an assayer',
+      'never requires an isolated copy or a separate worktree merely because it is a reviewer',
     ).not.toBe('worktree');
     const isolationModule = join(
       f.home,
@@ -314,31 +266,30 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     }
     if (process.env.BINDING_RED === '1')
       isolationHooks.push(async () => ({
-        input: { tasks: [{ agent: 'assayer', isolated: true }] },
+        input: { tasks: [{ agent: 'reviewer', isolated: true }] },
       }));
     for (const hook of isolationHooks) {
       const answer = await hook(
-        task('assayer', {
-          cut: 'film',
-          workPackages: ['approval'],
+        task('reviewer', {
+          pullRequest: '#1',
+          story: 'film',
           examples: ['film-production/1'],
-          decisions: [],
         }),
       );
       expect(
         answer,
-        'the delivered binding never requires an isolated assayer task',
+        'the delivered binding never requires an isolated reviewer task',
       ).not.toEqual(
         expect.objectContaining({
           input: expect.objectContaining({
             tasks: expect.arrayContaining([
-              expect.objectContaining({ agent: 'assayer', isolated: true }),
+              expect.objectContaining({ agent: 'reviewer', isolated: true }),
             ]),
           }),
         }),
       );
     }
-    running = await load(f, { role: 'assayer', kind: 'sub' });
+    running = await load(f, { role: 'reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
     expect(
       d.text,
@@ -348,8 +299,8 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
   it('agents/10 — no retired read-only journal gate survives as an alternate narrowing route', async () => {
     running = await load(f, { role: 'lead', kind: 'sub' });
     // An old host declaration cannot resurrect the retired appending-verb gate.
-    omp.agents.find((a) => a.name === 'assayer')!.tools = ['read'];
-    running.ctx.agent.name = 'assayer';
+    omp.agents.find((a) => a.name === 'reviewer')!.tools = ['read'];
+    running.ctx.agent.name = 'reviewer';
     await running.fire('session_start');
     const journal = running.tools
       .filter((t) => t.name === 'concept_journal')
@@ -378,43 +329,5 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     expect(
       command(f, 'concepts', 'design', '--context', 'film-production').stdout,
     ).toContain('screening');
-  });
-
-  it('workflow/29 — cut record carries branch information and a dispatch off that branch is warned, never refused', async () => {
-    open(f);
-    expect(
-      succeeds(f, 'workPackage', 'state', '--cut', 'film').branch,
-      'cut record carries that branch name',
-    ).toBe('feature/film');
-    git(f, 'switch', '-qc', 'other');
-    running = await load(f);
-    const event = task('lead', brief);
-    const off = await running.fire('tool_call', event);
-    expect(off?.block, 'a dispatch off the branch goes ahead').not.toBe(true);
-    expect(warnings(running)).toContain('film');
-    expect(warnings(running)).toContain('feature/film');
-    git(f, 'switch', 'feature/film');
-    const before = running.notices.length;
-    const allowed = await running.fire('tool_call', event);
-    expect(
-      allowed?.block,
-      'branch name is information, not instructions required in the assignment',
-    ).not.toBe(true);
-    expect(
-      running.notices.slice(before).filter((n) => n.level === 'warning'),
-      'on its branch the dispatch is not warned',
-    ).toEqual([]);
-    expect(event.input.tasks[0]!.task).toBe(assignment(brief));
-    if (allowed?.input !== undefined)
-      expect(
-        allowed.input,
-        'the delivered assignment adds no branching instructions',
-      ).toMatchObject(event.input);
-  });
-  it('workflow/29 — lead dispatch without its cut record is warned, naming the cut, and goes ahead', async () => {
-    running = await load(f);
-    const result = await running.fire('tool_call', task('lead', brief));
-    expect(result?.block, 'the dispatch is never refused').not.toBe(true);
-    expect(warnings(running)).toContain('film');
   });
 });

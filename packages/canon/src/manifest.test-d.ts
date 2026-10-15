@@ -41,7 +41,7 @@ const baseFixture: Agent = {
   description: 'a builder fixture',
   mark: { emoji: '✈️', hue: 'green' },
   key: null,
-  role: [{ value: 'builder ≜ owns one work package', level: 'fixed' }],
+  role: [{ value: 'builder ≜ receives one task', level: 'fixed' }],
   objective: [
     {
       value: 'correctness ≜ satisfies its examples',
@@ -83,7 +83,7 @@ const baseFixture: Agent = {
     },
   ],
   memory: [{ value: 'working ≜ the session context', level: 'fixed' }],
-  assignment: [{ value: 'work-package ≜ the outputs it owns', level: 'firm' }],
+  assignment: [{ value: 'task ≜ one change', level: 'firm' }],
   deliverable: [{ value: deliverableV, level: 'firm' }],
   guardrails: [
     { value: guardrailA, level: 'fixed' },
