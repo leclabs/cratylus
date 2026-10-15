@@ -27,9 +27,9 @@ names them: `concepts`, `ledger` and `versionSkew`. A corpus's skill names one o
 | `ledger`      | `state`, `story`, `task`, `end`                                                                                                                                      |
 | `versionSkew` | `report`                                                                                                                                                             |
 
-Every journal and ledger entry records who appended it (`by`: the agent making the call, named by
-the harness in `CRATYLUS_AGENT`, else git's user). History is held by review and the record, never a
-gate (decision 0143): the journal and the ledger are append-only because their verbs only append.
+Every journal entry records who appended it (`by`: the agent making the call, named by the harness
+in `CRATYLUS_AGENT`, else git's user). History is held by review and the record, never a gate
+(decision 0143): the journal and the ledger are append-only because their verbs only append.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
@@ -56,9 +56,9 @@ behaviour, with the bounded contexts it touches) and each task (one change endin
 request, with the story it belongs to, if any) in flight, and how each ended, merged or dropped.
 `state` tells each with what it cost: its agent runs in total and by role, the tokens its runs
 reported and its elapsed time, worked out from the entries' timestamps. The runs are never recorded
-by a verb: the harness's binding records each dispatch and its return from what the harness sees its
-agents do, through the hidden `cratylus lifecycle` command (`appendLifecycle`), and a dispatch
-naming a story or task not yet recorded records it in flight. It explains itself as `ledger`.
+by a verb: the harness's binding records a dispatch and its return from what the harness sees, through
+the hidden `cratylus lifecycle` command (`appendLifecycle`), only for a dispatch whose assignment
+names a story or a task; a dispatch naming a story or task not yet recorded records it in flight. It explains itself as `ledger`.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL` and `LEDGER`, the concept
 journal's and the ledger's explanations, so a consumer reads which verbs read and which append as

@@ -94,9 +94,9 @@ reaches it in the host config that deploy writes.
 It knows no harness: `concepts` and `ledger` are repository-scoped. `concepts` keeps the concept
 journal; `ledger` keeps the record of the work — each story and task in flight and how each ended,
 merged or dropped — and what each cost in agent runs by role, tokens and elapsed time. The runs reach
-the ledger only from what the harness sees its agents do: on omp the extension forge projects records
-each dispatch and return through the hidden `cratylus lifecycle` command, and elapsed time is read
-from the entries' timestamps.
+the ledger only from what the harness sees: on omp the extension forge projects records a task call's
+dispatch and return through the hidden `cratylus lifecycle` command when the item's assignment names
+a story or a task, and elapsed time is read from the entries' timestamps.
 
 A lifecycle guardrail is not the runtime's. It is a canon hook cell that forge projects as the
 harness's own hook — on omp, as an extension module — so the runtime hosts the capabilities above and
