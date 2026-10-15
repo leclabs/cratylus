@@ -1,0 +1,13 @@
+{
+  "id": "01M50CZAB69QFDGQWZV4P5MP1S",
+  "at": "2026-10-15T18:25:13.574Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "workflow",
+  "subject": "the practice cratylus ships for building against a design by delegating intent",
+  "relation": "practised on a user's own bounded contexts, which it never models; its agent roles are composed in the agents context, and the operator is a person; its capabilities, the concept journal and the ledger, reach a harness through delivery; cratylus's development practises it on cratylus itself, as any user would.",
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated.",
+  "supersedes": [
+    "01M4VRGETZ2ZD54WRTSF4KSMT3"
+  ]
+}

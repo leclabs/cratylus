@@ -4,7 +4,7 @@
 // and never stored.
 //
 // It gives the context's subject and its relation in the context map, its
-// cycles, open decisions and the cuts in flight whose contexts include it, and
+// cycles, open decisions and the work in flight on it, and
 // the whole as plain prose (`account`): the one place each live concept is told,
 // WHOLE BEFORE PARTS, so the overview gives each concept once.
 //
@@ -13,9 +13,14 @@
 // already-shown concept built from it, ties in recorded order; the concepts
 // reachable only through a cycle follow in recorded order, and each cycle is
 // named. Each concept appears once.
+//
+// WORK IN FLIGHT ON IT: each story in flight recorded with the context among
+// its contexts, or with none, which touches every context; and each task in
+// flight of a story that touches it. A task with no story changes no meaning,
+// so it touches no context.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { CutPhase } from '../work-package/index.js';
+import type { Task, Work } from '../ledger/index.js';
 import type { ContextView, DecisionView, Meaning } from './views.js';
 
 /** One context's overview. */
@@ -26,20 +31,12 @@ export interface ContextOverview {
   readonly cycles: readonly (readonly string[])[];
   /** Each open decision by what it says, its title, and its id as a reference. */
   readonly openDecisions: readonly { title: string; id: string }[];
-  readonly cutsInFlight: readonly {
-    cut: string;
-    phase: CutPhase;
-    branch: string;
-  }[];
+  /** The stories and tasks in flight that touch it. */
+  readonly workInFlight: {
+    readonly stories: readonly { story: string }[];
+    readonly tasks: readonly { task: string; story: string }[];
+  };
   readonly account: string;
-}
-
-/** A cut as the ledger records it, with its phase now. */
-export interface LedgerCut {
-  readonly cut: string;
-  readonly branch: string;
-  readonly contexts: readonly string[];
-  readonly phase: CutPhase;
 }
 
 /** `concepts`, in recorded order, whole before parts, and the cycles among
@@ -119,14 +116,14 @@ const sentence = (text: string): string => {
   return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 };
 
-/** The overview of `design`'s context, given every decision and every cut the
+/** The overview of `design`'s context, given every decision and the work the
  *  ledger records; `map` names the context map its relation is told in. */
 export function overviewOf(
   design: Omit<ContextView, 'concepts'> & {
     readonly concepts: readonly Meaning[];
   },
   decisions: readonly DecisionView[],
-  cuts: readonly LedgerCut[],
+  work: Work,
   map = 'the context map',
 ): ContextOverview {
   const context = design.name;
@@ -134,9 +131,22 @@ export function overviewOf(
   const open = decisions
     .filter((d) => d.context === context && d.status === 'open')
     .map((d) => ({ title: d.title, id: d.id }));
-  const inFlight = cuts
-    .filter((c) => c.phase === 'in flight' && c.contexts.includes(context))
-    .map(({ cut, phase, branch }) => ({ cut, phase, branch }));
+  const touched = (contexts: readonly string[] | undefined) =>
+    contexts === undefined || contexts.includes(context);
+  const storyContexts = new Map(work.stories.map((s) => [s.story, s.contexts]));
+  const inFlight = {
+    stories: work.stories
+      .filter((s) => s.ended === undefined && touched(s.contexts))
+      .map(({ story }) => ({ story })),
+    tasks: work.tasks
+      .filter(
+        (t): t is Task & { readonly story: string } =>
+          t.ended === undefined &&
+          t.story !== undefined &&
+          touched(storyContexts.get(t.story)),
+      )
+      .map(({ task, story }) => ({ task, story })),
+  };
 
   const opening =
     design.subject !== null
@@ -186,12 +196,14 @@ export function overviewOf(
       : `Still open, not settled meaning: ${open
           .map((d) => `“${d.title}” (decision ${d.id})`)
           .join('; ')}.`;
-  const cutProse =
-    inFlight.length === 0
-      ? 'No cut is in flight.'
-      : `In flight: ${inFlight
-          .map((c) => `the cut ${c.cut}, on the branch ${c.branch}`)
-          .join('; ')}.`;
+  const working = [
+    ...inFlight.stories.map((s) => `the story ${s.story}`),
+    ...inFlight.tasks.map((t) => `the task ${t.task} of the story ${t.story}`),
+  ];
+  const workProse =
+    working.length === 0
+      ? 'No work is in flight.'
+      : `In flight: ${working.join('; ')}.`;
 
   return {
     context,
@@ -199,12 +211,12 @@ export function overviewOf(
     relation: design.relation,
     cycles,
     openDecisions: open,
-    cutsInFlight: inFlight,
+    workInFlight: inFlight,
     account: [
       opening.join(' '),
       [...conceptProse, ...cycleProse, ...competingProse].join(' '),
       decisionProse,
-      cutProse,
+      workProse,
     ].join('\n\n'),
   };
 }

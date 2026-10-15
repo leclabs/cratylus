@@ -22,7 +22,7 @@
 // prose: the very defect the oracle exists to catch, reappearing inside it.
 //
 // Convergence is union AND subtract at ONE seam, so the subtract is here and not
-// in `runProject` — the same cut `deploy` makes by pruning in `deployLocal` rather
+// in `runProject` — the same split `deploy` makes by pruning in `deployLocal` rather
 // than in `runDeploy`. A `--clean` flag was refused: default-off makes
 // non-convergence the default and the stale artifact the silent case, and
 // `MODEL.md:68` (`REGENERABLE`) says a Target is deploy-owned and ¬hand-edit — a

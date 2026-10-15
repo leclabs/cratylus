@@ -1,0 +1,16 @@
+{
+  "id": "01M50CYXF8X2A5EJV1T67V9A6B",
+  "at": "2026-10-15T18:25:00.392Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "held-out example",
+  "wording": "An example the architect holds back from the builders when a story's risk warrants, given only to its reviewers, so passing the visible examples while missing the concept is caught. It is held back by omission alone, never named to a builder or mentioned, since a prohibition would announce it. When one fails, builders learn the concept and the shortfall but not the case, and a case revealed to fix it becomes visible and is replaced by a new held-out one.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. Held-out examples are a specialist means for a story's risk and are used in review.",
+  "supersedes": [
+    "01M4W14KF10KFVYACQ95HYQ2P7"
+  ]
+}

@@ -274,7 +274,7 @@ describe('catalog re-cut: the visible examples', () => {
       architect: '@frontier:high',
       lead: '@frontier:high',
       builder: '@frontier:medium',
-      assayer: '@frontier:xhigh',
+      reviewer: '@frontier-other-family:xhigh',
       illustrator: '@frontier-other-family:high',
       'check-writer': '@frontier-other-family:high',
       kino: '@frontier:high',
@@ -363,8 +363,8 @@ describe('catalog re-cut: the visible examples', () => {
 // Rulings 0084–0085: isolate the rebound assertions so one old coordinate cannot
 // mask another's red proof. Other assertions above keep their original meaning.
 describe('catalog re-cut: rulings 0084–0085', () => {
-  it('0068: the assayer has no read-only restriction', () => {
-    expect(composedRole('assayer').readOnly).toBeUndefined();
+  it('0068: the reviewer has no read-only restriction', () => {
+    expect(composedRole('reviewer').readOnly).toBeUndefined();
   });
 
   it("0070: the architect is the operator's principal architect", () => {

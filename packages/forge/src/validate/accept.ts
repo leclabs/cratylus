@@ -9,7 +9,7 @@
 // STATIC floor decided here (pure, hermetic, deterministic — runs in every
 // `pnpm test`) and a LIVE authority decided by the priors-only blind cold-oracle
 // (`./oracle.ts`, fresh /tmp, no corpus/session/root reads). The two decode-shaped
-// legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle judgments (does the
+// legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle rulings (does the
 // fragment / anchor decode to intent under LLM-priors ALONE?); the static witness is
 // their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
 // The five structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·ENFORCED·REGENERABLE)
@@ -233,11 +233,11 @@ export function canonical(
  * SIGNIFIED — α(c)=σ*(c). Static FLOOR: α is a well-formed sign (shortlex kebab);
  * a sign that is not even well-formed is provably ≠ σ* (σ* is a well-formed
  * fittest sign). The σ* circumscription itself — do the anchor's fired priors
- * pick out exactly this concept? — is the live oracle's judgment (`oracle.ts`),
+ * pick out exactly this concept? — is the live oracle's ruling (`oracle.ts`),
  * empirically anchored by the nonce positive control (a sign firing NO
  * circumscribing prior cannot be σ*). NB: |home(α)|>1 is PARTITIONED's leg (one
  * concept, many homes), NOT an injectivity failure here (which is two distinct
- * concepts colliding on one anchor — a concept-identity judgment, oracle-side).
+ * concepts colliding on one anchor — a concept-identity ruling, oracle-side).
  */
 export function signified(cell: AcceptCell): LegVerdict {
   const pass = KEBAB.test(cell.slug);
@@ -288,7 +288,7 @@ export function partitioned(cell: AcceptCell, homes: Homes): LegVerdict {
  * body must not re-emit the anchor's own lexical field (residue ⊇ fired(α) ⇒ the
  * gloss restates the name the reader already decoded). A leading self-restatement
  * is the crisp convictable signature; the full residue=D∖fired subtraction is the
- * oracle's finer judgment.
+ * oracle's finer ruling.
  */
 export function parsimonious(cell: AcceptCell): LegVerdict {
   const restated = slugTokens(cell.slug).filter((t) =>

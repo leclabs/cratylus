@@ -77,7 +77,7 @@ description, the practices already installed here ticked (on a fresh host, the o
 preselects).
 
 `--practices <name,…>` names the practices to install, as in
-`--practices example-driven-workflow`, and `--all` takes every one. They are refused together, and
+`--practices intent-based-delegation`, and `--all` takes every one. They are refused together, and
 so is a name no practice answers to; that refusal lists the
 practices the corpus declares. Without a terminal and with neither flag, `install` refuses before
 writing anything and lists them too: what it installed last time is a default for a question, never
@@ -267,14 +267,14 @@ and warns where it falls short; they are not the same, and this is what a user m
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
-  neither cuts that isolation from the bound plan's line. Building off the line is the agent's own
+  neither starts that isolation from the bound plan's line. Building off the line is the agent's own
   work, on either harness. On Claude Code the
-  agent runs in a worktree of its own, cut as Claude Code cuts any, by its `worktree.baseRef`.
+  agent runs in a worktree of its own, made as Claude Code makes any, from its `worktree.baseRef`.
   omp's agent definition has no field for isolation, so install does what omp offers: a dispatch
   of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's
   checkout and never writes the main checkout. What it built is kept as the branch
-  `omp/task/<id>` in your repository, not applied. The copy is cut from the dispatcher's HEAD and
-  its uncommitted work, and omp takes no ref to cut it from. Where the checkout has uncommitted
+  `omp/task/<id>` in your repository, not applied. The copy is made from the dispatcher's HEAD and
+  its uncommitted work, and omp takes no ref to start it from. Where the checkout has uncommitted
   work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once
   per such agent and install prints the same in its summary.
 
@@ -359,12 +359,12 @@ cratylus uninstall [options]
 
 ## Capabilities
 
-A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `concepts`, `workPackage` and `versionSkew`:
+A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `concepts`, `ledger` and `versionSkew`:
 
 ```sh
 cratylus concepts state
 cratylus concepts supersede 'reservation expiry' --context booking --wording '…' --reason '…'
-cratylus workPackage levels --cut delivery
+cratylus ledger state
 ```
 
 ### `cratylus concepts`
@@ -377,7 +377,7 @@ The concept journal is `design/journal` at the top of the git repository you run
 
 **The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `overview` and `state` show it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
 
-**What stands.** A decision stands while it is open or accepted, neither superseded nor deprecated. `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement; a decision recorded with `decide --cut <name>` is deprecated, with no entry, once the ledger records that cut integrated. A cut's example files (`design/examples/<context>/<cut>.md`) are history once the cut is integrated, unless a standing decision keeps them (`decide --keeps <context>/<cut>`). A cut is finished once its work is complete or it is integrated. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `title`, `kind`, `id` and `entry` (their whole text is `decisions`'), and gives the `efficiency` only of the cuts the ledger records not yet finished; `overview` tells only standing open ones and the cuts in flight; and `leakage` reads only standing decisions and examples. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or the integrated `cut`), each decision's `supersedes` and `kinds`, and every cut's `efficiency`. Every view shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references; `overview`'s account tells an open one as `“<title>” (decision <id>)`.
+**What stands.** A decision stands while it is open or accepted, until a later decision supersedes it or a later entry deprecates it: `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. A story's example files (`design/examples/<context>/<story>.md`) are history once the ledger records the story ended, merged or dropped, unless a standing decision keeps them (`decide --keeps <context>/<story>`). Entries recorded by earlier workflows are read as recorded: a decision whose entry names a cut stays deprecated, and that cut's example files history, once the ledger's history records the cut integrated, and the `efficiency` entries recorded for cuts are past effort. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `title`, `kind`, `id` and `entry` (their whole text is `decisions`'); `overview` tells only standing open ones and the stories and tasks in flight; and `leakage` reads only standing decisions and examples. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or, for a decision recorded about a cut, the integrated `cut`), each decision's `supersedes`, `kinds` and recorded `cut`, the examples that are history, and on `state` the past effort recorded, as `efficiency`. Every view shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references; `overview`'s account tells an open one as `“<title>” (decision <id>)`.
 
 `leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the standing numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by its title, context and id, an example by file and number, a context's description by context and `field`, `subject` or `relation`), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and, with `--history`, its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. A live concept's wording and a context's current subject and relation, which state only what holds now, are also warned where they cite a decision by its number (rule `cites a decision`), recount their history, what changed or what something used to be or no longer is (`recounts history`), or only extend the version they replace, keeping its wording whole and adding to it (`only extends the version it replaces`, the words being what was added). When what `context`, `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
@@ -528,7 +528,6 @@ cratylus concepts decide [options] <id>
 | `--status <value>`       |
 | `--supersedes <value>`   |
 | `--kind <value>`         |
-| `--cut <value>`          |
 | `--keeps <value>`        |
 
 #### `cratylus concepts accept`
@@ -562,183 +561,49 @@ cratylus concepts deprecate [options] <id>
 | ------------------ |
 | `--reason <value>` |
 
-### `cratylus workPackage`
+### `cratylus ledger`
 
-The work package capability. Its verbs are `inventory`, `assignment`, `levels`, `history`, `efficiency`, `state`, `frozen`, `open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check` and `record`.
+The record of a project's work. Its verbs are `state`, `story`, `task` and `end`.
 
-As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus workPackage --help` and `cratylus workPackage <verb> --help` print them, and `cratylus workPackage --explain` and `cratylus workPackage <verb> --explain` print the same explanation as JSON (its name `work package`). The entries below name only each verb's usage and the flags it takes.
+As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus ledger --help` and `cratylus ledger <verb> --help` print them, and `cratylus ledger --explain` and `cratylus ledger <verb> --explain` print the same explanation as JSON. The entries below name only each verb's usage and the flags it takes.
 
-Every verb but `frozen` takes `--cut <name>`, a cut identified by its name alone, across contexts: its visible examples are every `design/examples/<context>/<name>.md` in the git repository you run it in, its contexts are those contexts, and an example is referenced as `<context>/<n>`; an example's concepts are the names in the parenthesis that opens it, each a concept of its own context. A concept the cut's contexts share is given to `--concept` as `<context>/<name>`. `frozen` takes no cut: it reads every cut opened and not yet integrated.
+The ledger is kept in `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted, so a branch's entries arrive elsewhere only with its merge. A dispatch and its return reach it only from the harness's own agent events, through the harness binding; a dispatch naming a story or task not yet recorded records it in flight. `state` tells each story and task in flight and each ended, merged or dropped, with its agent runs by role, its tokens and its elapsed time, worked out from the entries' own timestamps.
 
-The cut's entries are kept in its **ledger**, `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted, since its verbs only append, as the journal's do, so a branch's entries arrive elsewhere only with its merge. Every entry carries a transition id, and an entry whose transition is already recorded is refused, with nothing written. The appending verbs (`open`, `freeze`, `integrate`, `submit`, `update`, `commit`, `check`) each append one entry; `record` appends one `efficiency` entry per context of the cut to the concept journal instead, which `cratylus concepts state` reads back as the context's `efficiency`. A cut's phase, each work package's status, the packages ready to dispatch and the cut's figures are computed from the ledger on every call (`state`, `efficiency`), never stored. Every verb prints JSON. A refusal is one line on stderr, exit 1, and appends, stages and commits nothing.
-
-No verb records a dispatch, a return, an assayer's verdict or the lead's report: those reach the ledger only from the harness's own agent events, through the harness binding. A work package is `submitted`, then `dispatched` and `returned` as the harness reports its builder, then `approved` once at least two distinct assayers' latest verdicts on it all pass, `failing` when every one has a finding, or `disputed` when they disagree; the cut is `open`, then `in flight` from its first dispatch, then `complete` once every work package is approved, and `integrated` once its integration is recorded, whatever its work packages' statuses, which stay as recorded. A commit whose subject opens `feat(cut:<name>): ` while the ledger shows that cut neither complete nor integrated gets a warning from this repository's post-commit hook, and is never refused.
-
-The levels are computed from the packages' dependencies with `@dagrejs/graphlib`, never declared. `commit` runs `git --literal-pathspecs add -A -- <paths>` and `git --literal-pathspecs commit --only -m <message> -- <paths>`, so a path is never read as a glob. A path outside the package's outputs, or a file the paths would commit outside them (such as another package's file under a directory path), is committed with a warning naming it, as is a commit for a package no builder was dispatched for.
-
-A cut is **frozen** from `open` until `integrate`. `cratylus workPackage frozen` is the one account of what each frozen cut freezes: its `examples` (each context's examples and held-out example text, from opening), its `checks` (exactly the paths its `freeze` entries name; a held-out check under `design/judgment/<context>/<cut>/` is frozen only once a `freeze` names it, never with the folder by implication), its `concepts` and its `architects`; and `unchecked`, its visible examples, as `<context>/<n>`, that no file under a frozen check names.
-
-The freeze is a rule held by review and the record, never a gate (decision 0143): no hook refuses a commit or a branch update. Every concept journal entry records who appended it (`by`: `CRATYLUS_AGENT`, else git's user), and `define`, `supersede` and `retire` of a concept a frozen cut's examples name, by anyone but that cut's architect, are recorded with a warning naming the cut. `integrate` records who made it, the same maker, and warns, naming the cut and its architect, when that is not the architect; integrating ends the freeze for good.
-
-#### `cratylus workPackage inventory`
+#### `cratylus ledger state`
 
 ```sh
-cratylus workPackage inventory [options]
+cratylus ledger state [options]
 ```
 
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage assignment`
+#### `cratylus ledger story`
 
 ```sh
-cratylus workPackage assignment [options] <package>
+cratylus ledger story [options] <name>
 ```
 
-| Flag            |
-| --------------- |
-| `--cut <value>` |
+| Flag                |
+| ------------------- |
+| `--context <value>` |
 
-#### `cratylus workPackage levels`
-
-```sh
-cratylus workPackage levels [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage history`
+#### `cratylus ledger task`
 
 ```sh
-cratylus workPackage history [options] <package>
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage efficiency`
-
-```sh
-cratylus workPackage efficiency [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage state`
-
-```sh
-cratylus workPackage state [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage frozen`
-
-```sh
-cratylus workPackage frozen [options]
-```
-
-#### `cratylus workPackage open`
-
-```sh
-cratylus workPackage open [options]
-```
-
-| Flag                  |
-| --------------------- |
-| `--cut <value>`       |
-| `--branch <value>`    |
-| `--architect <value>` |
-
-#### `cratylus workPackage freeze`
-
-```sh
-cratylus workPackage freeze [options]
+cratylus ledger task [options] <name>
 ```
 
 | Flag              |
 | ----------------- |
-| `--cut <value>`   |
-| `--check <value>` |
+| `--story <value>` |
 
-#### `cratylus workPackage integrate`
-
-```sh
-cratylus workPackage integrate [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
-
-#### `cratylus workPackage submit`
+#### `cratylus ledger end`
 
 ```sh
-cratylus workPackage submit [options] <package>
-```
-
-| Flag                   |
-| ---------------------- |
-| `--cut <value>`        |
-| `--output <value>`     |
-| `--concept <value>`    |
-| `--depends-on <value>` |
-| `--needs <value>`      |
-
-#### `cratylus workPackage update`
-
-```sh
-cratylus workPackage update [options] <package>
-```
-
-| Flag                   |
-| ---------------------- |
-| `--cut <value>`        |
-| `--output <value>`     |
-| `--concept <value>`    |
-| `--depends-on <value>` |
-| `--needs <value>`      |
-
-#### `cratylus workPackage commit`
-
-```sh
-cratylus workPackage commit [options] <package>
+cratylus ledger end [options] <name>
 ```
 
 | Flag                |
 | ------------------- |
-| `--cut <value>`     |
-| `--message <value>` |
-| `--path <value>`    |
-
-#### `cratylus workPackage check`
-
-```sh
-cratylus workPackage check [options]
-```
-
-| Flag                |
-| ------------------- |
-| `--cut <value>`     |
-| `--failure <value>` |
-
-#### `cratylus workPackage record`
-
-```sh
-cratylus workPackage record [options]
-```
-
-| Flag            |
-| --------------- |
-| `--cut <value>` |
+| `--outcome <value>` |
 
 ### `cratylus versionSkew`
 

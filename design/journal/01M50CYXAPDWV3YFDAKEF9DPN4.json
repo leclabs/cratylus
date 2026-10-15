@@ -1,0 +1,16 @@
+{
+  "id": "01M50CYXAPDWV3YFDAKEF9DPN4",
+  "at": "2026-10-15T18:25:00.246Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision rights",
+  "wording": "Who decides what: the operator decides what is wanted and why, its technical requirements included, its priorities and release; the architect decides meaning, stories and examples included, turning intent into known patterns and bringing the operator decisions already taken, never questions it can answer; the lead decides realization, every technical decision and merging approved pull requests included, within the operator's requirements and weighing its recommendations.",
+  "builtFrom": [
+    "meaning question"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. Merging is the lead's, which settles who merges; cuts and their branches are gone.",
+  "supersedes": [
+    "01M4W14KKJDZYQ15HDJ0M13BH8"
+  ]
+}

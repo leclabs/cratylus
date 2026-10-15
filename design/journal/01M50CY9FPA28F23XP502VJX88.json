@@ -1,0 +1,18 @@
+{
+  "id": "01M50CY9FPA28F23XP502VJX88",
+  "at": "2026-10-15T18:24:39.926Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "ledger",
+  "wording": "The record of a project's work: each story and task in flight, how each ended, merged or dropped, and what each cost in agent runs by role, tokens and elapsed time, taken as it happens from what the harness saw its agents do, never from an agent remembering. It holds what a fresh session needs to see what is in flight and how it ended, and nothing more.",
+  "builtFrom": [
+    "story",
+    "task",
+    "efficiency"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. The operator, 2026-10-15: the work record shrinks to what a fresh session needs, what is in flight, how it ended and what it cost.",
+  "supersedes": [
+    "01M4W14K3V1TFRDZDH5KF091V6"
+  ]
+}

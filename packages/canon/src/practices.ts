@@ -24,14 +24,14 @@ export const PRACTICES: readonly Practice[] = [
     ],
   },
   {
-    name: 'example-driven-workflow',
+    name: 'intent-based-delegation',
     description:
-      'Build against a design: the architect, lead, builders, assayer, illustrator and check-writer of the example-driven workflow, and the personas kino, nico and mav.',
+      "Build against a design by intent-based delegation: the architect, lead, builder and reviewer, the illustrator and check-writer called in for a story's risk, and the personas kino, nico and mav over the architect.",
     agents: [
       'architect',
       'lead',
       'builder',
-      'assayer',
+      'reviewer',
       'illustrator',
       'check-writer',
       'kino',

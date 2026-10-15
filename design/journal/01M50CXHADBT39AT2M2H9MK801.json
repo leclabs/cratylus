@@ -1,0 +1,17 @@
+{
+  "id": "01M50CXHADBT39AT2M2H9MK801",
+  "at": "2026-10-15T18:24:15.181Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "review",
+  "wording": "A judgment of one pull request by someone who did not write it, sized to its story's risk: against the change and, where they apply, the story's acceptance criteria and examples, held-out ones included. It approves or asks for changes, naming each finding, and never repairs the work; a doubt about what a concept or an example means goes to the architect as a meaning question.",
+  "builtFrom": [
+    "pull request",
+    "story",
+    "held-out example",
+    "meaning question"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated.",
+  "supersedes": []
+}

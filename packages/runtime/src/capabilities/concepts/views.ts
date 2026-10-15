@@ -25,15 +25,17 @@
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
 // has it. A decision is SUPERSEDED once any decision supersedes it, else
-// DEPRECATED once its deprecation is recorded or the cut it names is
-// integrated, else ACCEPTED once recorded accepted or its acceptance is
-// recorded, else OPEN. An open or accepted decision STANDS; a superseded or
-// deprecated one is history.
+// DEPRECATED once its deprecation is recorded, else ACCEPTED once recorded
+// accepted or its acceptance is recorded, else OPEN. An open or accepted
+// decision STANDS; a superseded or deprecated one is history. Entries are
+// read as recorded: a decision recorded about a cut is also deprecated once
+// the ledger's history records that cut integrated.
 // Its KIND, stating meaning or constraining realization, is the latest one
 // recorded for it, on the decision itself or by a classification after it;
 // it has none until one is recorded.
 //
-// A cut's EFFICIENCY figures are its context's latest efficiency entry for it.
+// Past EFFORT: the efficiency entries recorded for cuts, each cut's latest
+// entry of its context holding its figures; history only.
 //
 // WHAT STANDS of a design or a decision is what a view shows unless history is
 // asked for: a design without its retired concepts or the reason each live
@@ -112,7 +114,8 @@ export interface KindRecord {
 }
 
 /** Why a decision no longer stands without a replacement: the entry that
- *  deprecated it, with its reason, or the cut it was about, integrated. */
+ *  deprecated it, with its reason, or, for one recorded about a cut, that cut,
+ *  integrated. */
 export type Deprecation =
   | { readonly entry: string; readonly reason: string }
   | { readonly cut: string };
@@ -132,9 +135,9 @@ export interface DecisionView {
   readonly supersededBy: readonly string[];
   /** Every kind recorded for the decision, in the order recorded. */
   readonly kinds: readonly KindRecord[];
-  /** The cut it was about, where it names one. */
+  /** The cut it was recorded about, where its entry names one: history. */
   readonly cut?: string;
-  /** The example files it keeps standing, each as `<context>/<cut>`. */
+  /** The example files it keeps standing, each as `<context>/<story>`. */
   readonly keeps?: readonly string[];
   /** Why it is deprecated, where it is. */
   readonly deprecation?: Deprecation;
@@ -148,8 +151,9 @@ export const stands = (decision: DecisionView): boolean =>
   decision.status === 'open' || decision.status === 'accepted';
 
 /** `decision` as it stands: what it says, its title first, its status and
- *  governing kind, its id and entry last as references; without what it
- *  superseded, what superseded it, or every kind recorded for it. */
+ *  governing kind, the example files it keeps, its id and entry last as
+ *  references; without what it superseded, what superseded it, every kind
+ *  recorded for it, or the cut it was recorded about. */
 export const standingDecision = ({
   title,
   context,
@@ -158,7 +162,6 @@ export const standingDecision = ({
   situation,
   decision,
   consequences,
-  cut,
   keeps,
   id,
   entry,
@@ -170,7 +173,6 @@ export const standingDecision = ({
   situation,
   decision,
   consequences,
-  ...(cut === undefined ? {} : { cut }),
   ...(keeps === undefined ? {} : { keeps }),
   id,
   entry,

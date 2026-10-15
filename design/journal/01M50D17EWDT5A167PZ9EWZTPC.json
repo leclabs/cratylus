@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17EWDT5A167PZ9EWZTPC",
+  "at": "2026-10-15T18:26:16.156Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0169",
+  "entry": "01M4VQN0R0ZG4T5BRPZ96C6Y2Y",
+  "reason": "Stated by the agents context's decision that agents are judged in real use; nothing remains of live behavioural runs to rule on."
+}

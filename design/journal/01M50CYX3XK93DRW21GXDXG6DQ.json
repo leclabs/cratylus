@@ -1,0 +1,16 @@
+{
+  "id": "01M50CYX3XK93DRW21GXDXG6DQ",
+  "at": "2026-10-15T18:25:00.029Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "illustrator",
+  "wording": "The agent that writes a story's examples cold from its concepts alone, when the story's risk warrants, flagging each term that is unclear, so its examples double as the test that the concepts carry their meaning.",
+  "builtFrom": [
+    "illustration"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. The illustrator is a specialist called in for a story's risk.",
+  "supersedes": [
+    "01M4J5R9RNFVAX1MJT2RGK5P39"
+  ]
+}

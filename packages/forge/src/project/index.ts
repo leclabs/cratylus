@@ -262,7 +262,7 @@ export interface ProjectedTree extends ProjectReport {
 
 /** The form a runtime capability takes on a harness. */
 export interface ProjectedCapability {
-  readonly capability: 'concepts' | 'workPackage';
+  readonly capability: 'concepts' | 'ledger';
   readonly form: 'native' | 'extension' | 'prose';
   /** The harness's own facility holding it, for the native form. */
   readonly facility?: string;
@@ -349,7 +349,7 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
 /** The runtime capabilities a harness is offered, those that explain themselves. */
 const EXPLAINED_CAPABILITIES: readonly ProjectedCapability['capability'][] = [
   'concepts',
-  'workPackage',
+  'ledger',
 ];
 
 /** A capability as `<bin> <capability> --explain` answers it: the shape the

@@ -1,0 +1,12 @@
+{
+  "id": "01M50CZAFH4AKEYHB822XBQ9P1",
+  "at": "2026-10-15T18:25:13.713Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "development",
+  "name": "completion check",
+  "reason": "The operator, 2026-10-15: cuts and their completion no longer exist, so there is nothing for it to catch; the ledger records how each story and task ended.",
+  "supersedes": [
+    "01M4W14MN63MBS13H4CAYNVETE"
+  ]
+}

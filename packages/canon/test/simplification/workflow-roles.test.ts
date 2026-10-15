@@ -1,7 +1,8 @@
-// workflow · roles (decision 0145): the roles concept states each party's sight, change
-// and decision, no limit on whom a party may dispatch and no test of how its behaviour
-// is judged; and nothing delivered refuses the architect an act on the ground of how it
-// behaves or replies.
+// workflow · roles (decisions 0145, 0243): the roles concept states what each party
+// receives and hands over, no limit on whom a party may dispatch and no test of how its
+// behaviour is judged; each delivered role still names its sight, change and decision;
+// and nothing delivered refuses the architect an act on the ground of how it behaves or
+// replies.
 //
 // The roles as delivered are the role cells canon ships, each projected as the
 // declaration of the agent holding it; the concept itself as cratylus's own journal
@@ -65,11 +66,11 @@ describe('workflow/7 — the roles concept names sight, change and decision, and
   it('workflow/7: canon delivers the six roles', () => {
     expect(roleCells.map((r) => r.name).sort()).toEqual([
       'architect',
-      'assayer',
       'builder',
       'check-writer',
       'illustrator',
       'lead',
+      'reviewer',
     ]);
   });
 
@@ -117,7 +118,7 @@ describe('workflow/7 — the roles concept names sight, change and decision, and
     );
   });
 
-  it('workflow/7: the roles concept, read from the design, names sight, change and decision and no dispatch limit or behaviour test', () => {
+  it('workflow/7: the roles concept, read from the design, names what each party receives and hands over, and no dispatch limit or behaviour test', () => {
     const r = cratylus(ROOT, ['concepts', 'design', '--context', 'workflow']);
     expect(r.status, r.stderr).toBe(0);
     const found =
@@ -128,9 +129,8 @@ describe('workflow/7 — the roles concept names sight, change and decision, and
     expect(meaning, 'the workflow context has no live roles concept').not.toBe(
       '',
     );
-    expect(meaning).toMatch(/\bsees?\b|\bsight\b/i);
-    expect(meaning).toMatch(/\bchanges?\b/i);
-    expect(meaning).toMatch(/\bdecides?\b|\bdecision/i);
+    expect(meaning).toMatch(/\breceives?\b/i);
+    expect(meaning).toMatch(/\bhands? over\b/i);
     expect(meaning).not.toMatch(
       /\bdispatch|\bhandoffs? (are|is) held|\bspawn/i,
     );

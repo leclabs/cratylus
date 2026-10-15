@@ -3,7 +3,7 @@
 // (`./init.ts`) is a pure structure-emitter: it copies the render tree and writes
 // AGENTS.md — but WHAT that document SAYS (the project prose) is corpus DOCTRINE,
 // injected as a `ProjectTemplate`. The engine declares the SHAPE; a corpus
-// supplies the DATA (mirror of the validate `Policy` cut — algorithm in the
+// supplies the DATA (mirror of the validate `Policy` split — algorithm in the
 // engine, policy injected).
 //
 // Forge ships `DEFAULT_PROJECT_TEMPLATE` so the engine scaffolds a valid project

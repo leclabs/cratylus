@@ -81,10 +81,9 @@ describe('workflow/1 — no live suite or recorded-run proof exists, or is named
 
 // ── workflow/2 ──────────────────────────────────────────────────────────────────
 
-/** A test: a test or spec file, a vitest configuration, or the code of a judgment or
- *  of recorded evidence. */
+/** A test: a test or spec file, a vitest configuration, or the code of recorded evidence. */
 const TEST_ENTRY =
-  /\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)vitest\.config\.[cm]?[jt]s$|^design\/(judgment|evidence)\/.*\.([cm]?[jt]sx?|sh)$/;
+  /\.(test|spec)\.[cm]?[jt]sx?$|(^|\/)vitest\.config\.[cm]?[jt]s$|^design\/evidence\/.*\.([cm]?[jt]sx?|sh)$/;
 
 /** Starting omp or an agent: a program call naming one, a command line running one, a
  *  scenario runner that runs one, a live lane, or a model client. */

@@ -1,0 +1,16 @@
+{
+  "id": "01M50D036MPHZMP1K74DZTXRWS",
+  "at": "2026-10-15T18:25:39.028Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0225",
+  "context": "workflow",
+  "title": "Review sized to the risk",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. Judgment by independent assayers is replaced by review.",
+  "decision": "Every pull request gets one review by someone who did not write it, on another model family than the builder where one is available. A story whose risk warrants it gets a second reviewer or the operator's review, as its story states. Two reviewers who disagree on meaning send the question to the architect.",
+  "consequences": "The review and proportionality concepts state this.",
+  "status": "accepted",
+  "supersedes": "0163",
+  "supersedesEntry": "01M4VQN0CMG9AE0VMEEY4XPM8B",
+  "decisionKind": "realization"
+}

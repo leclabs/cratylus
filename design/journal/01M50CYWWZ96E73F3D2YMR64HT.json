@@ -1,0 +1,21 @@
+{
+  "id": "01M50CYWWZ96E73F3D2YMR64HT",
+  "at": "2026-10-15T18:24:59.807Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "architect",
+  "wording": "The operator's principal architect, who owns the conceptual design: it receives intent and hands over stories, answers to meaning questions, read-backs, and its acceptance, on a story's outcome, that the story is done. It turns intent into concepts in their contexts by known patterns, calls the illustrator and holds examples back when a story's risk warrants, and decides meaning only, never how anything is built. It decides everything it owns rather than handing it back as a question, explores with an exploring operator and converges, each outcome first with at most one recommended action when work needs a decision, and works from the design, the examples and its delegates' handovers, never from the work.",
+  "builtFrom": [
+    "conceptual design",
+    "story",
+    "read-back",
+    "outcome",
+    "illustration",
+    "decision rights"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. The architect hands over stories and read-backs and accepts a story on its outcome; cuts are gone.",
+  "supersedes": [
+    "01M4W14K608ZZ7VH69XBVZ4M4D"
+  ]
+}

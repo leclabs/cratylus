@@ -105,7 +105,7 @@ export function realize(
       continue;
     }
     // REC ≽, mechanical leg: the signifier carries the load — the anchor
-    // must be recoverable from the home artifact. (The semantic ≽ judgment
+    // must be recoverable from the home artifact. (The semantic ≽ ruling
     // against the gloss set is the LLM's, made at plan time.)
     if (c.anchor && !body.includes(c.anchor)) {
       reasons.push(

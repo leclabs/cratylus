@@ -58,14 +58,32 @@ are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents
 
-The plugin carries nine agents, all in the practice `example-driven-workflow`. `architect`, `lead`,
-`builder`, `assayer`, `illustrator` and `check-writer` are the generic holders of their roles. A role
-cell (`src/roles/<role>.ts`) states a value for every factor, an explicitly empty set counting as one,
-and `agents/<role>.ts` is `holder(<role>Role)`: named for the role, carrying nothing beyond it and no
-mark. `holder` refuses a cell missing a factor, a scalar without exactly one value, a slot not filled
-exactly once, and empty guardrails.
+The plugin carries nine agents, all in the practice `intent-based-delegation`, which delivers
+intent-based delegation. `architect`, `lead`, `builder` and `reviewer` are the generic holders of
+their roles, with `illustrator` and `check-writer` as specialists called in when a story's risk
+warrants them. Each role is defined by what it receives and what it hands over, never by steps:
 
-kino, nico and mav are personas over the architect role, `persona(architectRole, residue)`: each is
+- **architect** — the operator's principal architect, owning the conceptual design: receives intent,
+  hands over stories, answers to meaning questions and read-backs; decides meaning only.
+- **lead** — owns a story's realization, or a task with no story: orchestrates its tasks to builders
+  and their pull requests to reviewers (orchestrator-workers), merges each approved pull request
+  that passes every check, and hands over the outcome.
+- **builder** — receives one task and hands over one pull request that passes every check.
+- **reviewer** — reviews one pull request it did not write, against the change and, where they
+  apply, its story's acceptance criteria and examples, held-out ones included; hands over one
+  review and never builds or repairs the work.
+- **illustrator** — writes a story's examples cold from its concepts alone, flagging unclear terms.
+- **check-writer** — writes the checks binding a story's examples, each seen failing before the build.
+
+The reviewer, the illustrator and the check-writer run on another model family than the builders
+where one is available. A role cell (`src/roles/<role>.ts`) states a value for every factor, an
+explicitly empty set counting as one, and `agents/<role>.ts` is `holder(<role>Role)`: named for the
+role, carrying nothing beyond it and no mark. `holder` refuses a cell missing a factor, a scalar
+without exactly one value, a slot not filled exactly once, and empty guardrails.
+
+kino, nico and mav are personas over the architect role, each named for its expertise (kino film
+production, nico the corpus's concept space and the cold-decode oracle, mav any software
+repository), `persona(architectRole, residue)`: each is
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
 after the role's, and restating one the role holds changes only its enforcement level or note. It
@@ -83,26 +101,32 @@ agent keeps the harness's defaults (0142). Its `key` is reserved for ipseic agen
 `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named exports,
 for a corpus that composes agents of its own over these roles.
 
-## Typed handoffs
+## Typed handovers
 
 An assignment and a deliverable are values of their factors, and each carries its contract as JSON
 Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
-the value's anchor). Composition copies the pair onto the agent as `contract`:
+the value's anchor). Composition copies the pair onto the agent as `contract`. Each handover states
+what it must contain, so one passed without a part shows what is missing (`?` marks an optional
+field, `[≥1]` a list that may not be empty):
 
-| Role         | Assignment                                                             | Deliverable                                                                         |
-| ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| lead         | cut brief `{cut, concepts[≥1], examples[≥1], decisions[≥1]}`           | outcome with efficiency `{cut, outcomes[≥1], verdicts, efficiency, hardeningNotes}` |
-| builder      | work package `{cut, workPackage, outputs[≥1], concepts[≥1], examples}` | done or failing case `{cut, workPackage, done, failingCase?}`                       |
-| assayer      | judgment brief `{cut, workPackages[≥1], examples[≥1], decisions}`      | verdict per concept `{cut, verdicts[≥1], hardeningNotes}`                           |
-| check-writer | examples `{cut, examples[≥1]}`                                         | checks seen red `{cut, checks}`                                                     |
-| illustrator  | concepts `{cut, concepts[≥1]}`                                         | examples with flagged terms `{examples, flaggedTerms}`                              |
+| Role         | Assignment                                                                                                                                                | Deliverable                                                        |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| lead         | story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, path, review, cost, examples?, decisions?, contexts?}`, or a task with no story (as below) | outcome `{story, criteria[≥1], meaningQuestions, followUps, cost}` |
+| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                     | pull request `{change, tests, verified}`                           |
+| reviewer     | review request `{pullRequest, story?, acceptanceCriteria?, examples?}`                                                                                    | review `{verdict, findings, meaningQuestions}`                     |
+| check-writer | examples `{story, examples[≥1]}`                                                                                                                          | checks seen red `{story, checks}`                                  |
+| illustrator  | concepts `{story, concepts[≥1]}`                                                                                                                          | examples with flagged terms `{examples, flaggedTerms}`             |
 
-The architect's assignment is free-text intent and its deliverable goes to the operator, so it
-carries no contract. A builder's `examples` may be empty: a package sharing outputs owns no example.
-A harness binds the deliverable as its own output schema, shows the assignment form when an agent
-is dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in
-the dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
-field; it never refuses the dispatch or the launch for it (0142(3)).
+The lead's assignment takes either form, stated as alternatives (`anyOf`); it fits when it fits any
+one. Its outcome names the story, or for a task with no story the task, and holds each acceptance
+criterion (or, for a task, what done means) with whether it holds and its evidence, and the cost in
+agent runs by role, tokens and elapsed time. A review's `verdict` is `approve` or `changes`. The
+architect's handovers are a person's — free-text intent in, a read-back to the operator out (where
+things stand, with one recommendation) — so it carries no contract. A harness binds the deliverable
+as its own output schema, shows the assignment form when an agent is dispatched or launched, and
+checks the assignment given (one fenced `assignment` JSON block in the dispatch text) with the
+schema package's `checkAssignment`, warning of each missing or ill-typed field, of the closest form
+where there are alternatives; it never refuses the dispatch or the launch for it (0142(3)).
 
 ## Evaluation and drift
 
@@ -134,8 +158,8 @@ directory fields are resolved against `import.meta.url` at definition time and c
 entry. Canon reaches the projector as **data** — the corpus is passed to it as a plugin — and no
 cell imports it.
 
-No cell imports the runtime either. A skill names the capability it routes to — `concepts` or
-`workPackage`, the two built into the runtime — as `runtime: { capability: … }`,
+No cell imports the runtime either. A skill names the capability it routes to — `concepts`,
+`ledger` or `versionSkew`, the three built into the runtime — as `runtime: { capability: … }`,
 never its implementation, and a cell that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
 and mechanism never referencing each other — and [ARCHITECTURE.md](../../ARCHITECTURE.md) records

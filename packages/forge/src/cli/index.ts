@@ -19,7 +19,7 @@
 //
 // The commands print through `./style.ts` and return their exit code; an action sets
 // it as the process's exit code, so a stream a command holds open is the command's to
-// close, not a `process.exit` that cuts it off.
+// close, not a `process.exit` that ends it early.
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';

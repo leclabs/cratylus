@@ -1,0 +1,23 @@
+{
+  "id": "01M50CYWZ9X1MMFCSY90XNF6QX",
+  "at": "2026-10-15T18:24:59.881Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "The agent that owns a story's realization, or a task with no story: it breaks the story into tasks and orchestrates them, handing each to a builder and each pull request to a reviewer; when the story's risk warrants, it calls the check-writer and adds a second reviewer or the operator's review. It merges approved pull requests that pass every check, makes and records every technical decision within the operator's requirements, and hands over the story's outcome, or a meaning question, never changing a concept or an example.",
+  "builtFrom": [
+    "story",
+    "task",
+    "pull request",
+    "review",
+    "outcome",
+    "decision",
+    "check-writer",
+    "orchestrator-workers"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. The lead receives a story or a task and hands over its outcome; work packages, rounds and integration are gone.",
+  "supersedes": [
+    "01M4W14K8AMJRRRPH2SRPWJJYZ"
+  ]
+}

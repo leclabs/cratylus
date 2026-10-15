@@ -46,7 +46,7 @@ const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 /** What a reading of a ledger read past, written by a newer runtime: each
  *  kind it left uninterpreted, with how many entries of it, and each value it
  *  does not know of a known kind's field, with how many entries hold it. The
- *  concept journal and the work package ledger read past the same way. */
+ *  concept journal and the ledger read past the same way. */
 export class ReadPast {
   readonly kinds = new Map<string, number>();
   /** By `<kind>.<field>`, each value with how many entries hold it. */

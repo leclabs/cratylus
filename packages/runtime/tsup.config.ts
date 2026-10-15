@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 // runtime is a library: one entry per `exports` subpath, each with its .d.ts, so a
-// consumer imports the contracts (`.`, `./example-substrate`), a
+// consumer imports the contracts (`.`), a
 // capability module, the capability keyspace, or `capabilityCommands` (`./main`) with types
 // intact. The executable is the installable CLI package's; this one ships no bin.
 export default defineConfig([
@@ -14,7 +14,6 @@ export default defineConfig([
       'runtime-config': 'src/runtime-config.ts',
       ulid: 'src/ulid.ts',
       'verb-flags': 'src/verb-flags.ts',
-      'example-substrate': 'src/example-substrate.ts',
     },
     format: ['esm'],
     dts: true,

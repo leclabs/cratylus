@@ -1,12 +1,6 @@
 import './omp-mocks.js';
 import { spawnSync } from 'node:child_process';
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { Ajv, type AnySchema } from 'ajv';
 import { expect } from 'vitest';
@@ -20,35 +14,39 @@ export const roles = [
   'lead',
   'check-writer',
   'builder',
-  'assayer',
+  'reviewer',
 ];
-export const brief = {
-  cut: 'film',
-  concepts: ['approval'],
+export const story = {
+  story: 'film',
+  slice: 'The creative approves a finished film.',
+  why: 'A film is released only once its creative has approved it.',
+  acceptanceCriteria: [
+    "The creative's approval of a finished film is recorded.",
+  ],
+  outOfScope: [],
+  path: 'plain',
+  review: 'One reviewer per pull request.',
+  cost: 'One task.',
   examples: ['film-production/1'],
   decisions: ['0081'],
 };
-export const report = {
-  cut: 'film',
-  outcomes: [
+export const outcome = {
+  story: 'film',
+  criteria: [
     {
-      example: 'film-production/1',
-      concept: 'approval',
-      outcome: 'pass',
-      evidence: 'film-production/1: approval check passed',
+      criterion: "The creative's approval of a finished film is recorded.",
+      holds: true,
+      evidence:
+        'film-production/1: the approval is recorded once the creative approves',
     },
   ],
-  verdicts: [
-    { assayer: 'A', verdict: 'accept', findings: [] },
-    { assayer: 'B', verdict: 'accept', findings: [] },
-  ],
-  efficiency: {
-    agentRuns: { total: 3, byRole: { builder: 1, assayer: 2 } },
-    rounds: 1,
-    wholeCheckRuns: 1,
+  meaningQuestions: [],
+  followUps: ['Approval could be exercised with another creative.'],
+  cost: {
+    agentRuns: { total: 3, byRole: { builder: 1, reviewer: 1, lead: 1 } },
     tokens: 127,
+    elapsed: '14m',
   },
-  hardeningNotes: ['Approval could be exercised with another creative.'],
 };
 export const assignment = (value: unknown) =>
   `\`\`\`assignment\n${JSON.stringify(value)}\n\`\`\``;
@@ -61,7 +59,7 @@ export const task = (agent: string, value: unknown, id = 'handoff-1') => ({
     tasks: [
       {
         id: 'one',
-        description: 'Realize the confirmed cut',
+        description: 'Realize the confirmed story',
         agent,
         task: assignment(value),
       },
@@ -159,28 +157,6 @@ export function bindingFixture() {
   git(f, 'add', '--', 'design');
   git(f, 'commit', '-qm', 'Fixture Given');
   return f;
-}
-export function open(f: Fixture) {
-  return succeeds(
-    f,
-    'workPackage',
-    'open',
-    '--cut',
-    'film',
-    '--branch',
-    'feature/film',
-    '--architect',
-    'film-production=creative',
-  );
-}
-export function ledger(f: Fixture): Record<string, unknown>[] {
-  const path = join(f.cwd, 'design/ledger');
-  return existsSync(path)
-    ? readdirSync(path)
-        .sort()
-        .filter((p) => p.endsWith('.json'))
-        .map((p) => JSON.parse(readFileSync(join(path, p), 'utf8')))
-    : [];
 }
 // The pinned validator, with mutation disabled. This checks the actual output JSON Schema
 // published to omp, never a second test-authored deliverable schema.

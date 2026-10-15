@@ -1,12 +1,12 @@
-// The builder role: master design §3, the builder column. The design states only its
-// realization right (P); every other decision class is – (no part), as confirmed by
-// the architect.
+// The builder role: receives one task and hands over one pull request (workflow:
+// builder; agents 0243). It performs realization (P); every other decision class is –
+// (no part).
 
 import type { RoleCell } from '../compose.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
 import { editOwnOutputs } from '../dimensions/action-scope/edit-own-outputs.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
-import { workPackage } from '../dimensions/assignment/work-package.js';
+import { task } from '../dimensions/assignment/task.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
 import { answerOnly } from '../dimensions/communication-style/answer-only.js';
@@ -14,7 +14,7 @@ import { maintenance } from '../dimensions/communication-style/maintenance.js';
 import { plain } from '../dimensions/communication-style/plain.js';
 import { none } from '../dimensions/decision-rights/none.js';
 import { performs } from '../dimensions/decision-rights/performs.js';
-import { doneOrFailingCase } from '../dimensions/deliverable/done-or-failing-case.js';
+import { pullRequest } from '../dimensions/deliverable/pull-request.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
 import { fixedAcceptanceCriteria } from '../dimensions/guardrails/fixed-acceptance-criteria.js';
@@ -25,9 +25,9 @@ import { medium } from '../dimensions/model/medium.js';
 import { correctness } from '../dimensions/objective/correctness.js';
 import { satisfice } from '../dimensions/objective/satisfice.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
-import { ownWorkPackage } from '../dimensions/perception-scope/own-work-package.js';
+import { ownTask } from '../dimensions/perception-scope/own-task.js';
 import { work } from '../dimensions/perception-scope/work.js';
-import { build } from '../dimensions/procedure/build.js';
+import { githubFlow } from '../dimensions/procedure/github-flow.js';
 import { builder } from '../dimensions/role/builder.js';
 import { dry } from '../dimensions/stance/dry.js';
 import { scopeDiscipline } from '../dimensions/stance/scope-discipline.js';
@@ -35,7 +35,8 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 
 export const builderRole: RoleCell = {
   name: 'builder',
-  description: 'Builds one work package until its visible examples pass.',
+  description:
+    'Receives one task and hands over one pull request that passes every check.',
   mark: null,
   values: {
     role: [builder],
@@ -44,7 +45,7 @@ export const builderRole: RoleCell = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareEngineering],
-    procedure: [build],
+    procedure: [githubFlow],
     stance: [scopeDiscipline, simplicity, dry],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -57,14 +58,13 @@ export const builderRole: RoleCell = {
       { value: none, slot: 'meaning' },
       { value: none, slot: 'constraint' },
       { value: performs, slot: 'realization' },
-      { value: none, slot: 'check-ruling' },
       { value: none, slot: 'verdict' },
       { value: none, slot: 'release' },
     ],
     autonomy: [{ value: humanInTheLoop, note: 'of the lead' }, handoff],
     perceptionScope: [
-      ownWorkPackage,
-      { value: examples, note: 'its own' },
+      ownTask,
+      { value: examples, note: "its story's visible ones" },
       work,
     ],
     actionScope: [editOwnOutputs, runChecks, commitOwnPaths],
@@ -73,8 +73,8 @@ export const builderRole: RoleCell = {
       { value: medium, slot: 'effort' },
     ],
     memory: [working],
-    assignment: [workPackage],
-    deliverable: [doneOrFailingCase],
+    assignment: [task],
+    deliverable: [pullRequest],
     guardrails: [honesty, fixedAcceptanceCriteria],
     evaluation: [inUse],
   },

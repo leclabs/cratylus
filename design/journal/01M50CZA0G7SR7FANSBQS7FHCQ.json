@@ -1,0 +1,12 @@
+{
+  "id": "01M50CZA0G7SR7FANSBQS7FHCQ",
+  "at": "2026-10-15T18:25:13.232Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "build",
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. A builder's work is a task ending in one pull request; rounds of a build no longer exist.",
+  "supersedes": [
+    "01M4J5RAB5E5AK3WDSEJABJS8D"
+  ]
+}

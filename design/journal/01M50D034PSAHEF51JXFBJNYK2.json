@@ -1,0 +1,16 @@
+{
+  "id": "01M50D034PSAHEF51JXFBJNYK2",
+  "at": "2026-10-15T18:25:38.966Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0224",
+  "context": "workflow",
+  "title": "Merging is the lead's; pushing follows the project's convention",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. The open question was who pushes a cut's branch and when the lead integrates; a lead's run ended before the architect's acceptance.",
+  "decision": "The lead merges each approved pull request that passes every check as its task ends, so nothing waits on the architect's acceptance; the architect accepts the story on its outcome. Pushing to the shared repository follows the project's convention; in cratylus it needs the operator's say-so, which an operator's confirmation of a change can give for the pushes that change needs.",
+  "consequences": "Settles the open question; no merge waits on the end of a story.",
+  "status": "accepted",
+  "supersedes": "0210",
+  "supersedesEntry": "01M4VZ5Y1Y4932AC31VJVT2BFV",
+  "decisionKind": "meaning"
+}

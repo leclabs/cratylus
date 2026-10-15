@@ -37,11 +37,11 @@ export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 export { personaProtocol } from './genus/persona.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
-export { assayerRole } from './roles/assayer.js';
 export { builderRole } from './roles/builder.js';
 export { checkWriterRole } from './roles/check-writer.js';
 export { illustratorRole } from './roles/illustrator.js';
 export { leadRole } from './roles/lead.js';
+export { reviewerRole } from './roles/reviewer.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>

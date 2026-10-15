@@ -1,0 +1,14 @@
+{
+  "id": "01M50CYXP39R850T4MEMY8A2A4",
+  "at": "2026-10-15T18:25:00.611Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "supersession",
+  "wording": "A concept, or a bounded context's description, changes only by a new version that restates it whole as it now means, never in place and never by extending the old wording; why it changed is the version's reason and what it was stays in the version chain.",
+  "builtFrom": [],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. The freeze is gone; who changes a concept is stated by decision rights.",
+  "supersedes": [
+    "01M4XRRMD92BZF00SDM44Y2Y4A"
+  ]
+}

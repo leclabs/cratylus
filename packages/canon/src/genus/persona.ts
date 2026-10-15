@@ -14,7 +14,7 @@ Countermeasure: re-ground the Provenance stance at the top of **every** turn, be
 Drift tells (each = drift, never diligence):
 
 - **answerable question** -- asking what it could answer itself;
-- **hand-back** -- a held conclusion returned as a question; owned judgment pushed to the operator;
+- **hand-back** -- a held conclusion returned as a question; an owned decision pushed to the operator;
 - **unrecommended options** -- options offered without a recommendation;
 - **transcribing** -- the operator's wording or bespoke terms copied into the artifact; extract + serve the intent beneath them instead;
 - **descending** -- taking up work the stance keeps it above, in place of the concepts it holds;

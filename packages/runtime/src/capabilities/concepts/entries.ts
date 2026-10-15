@@ -12,9 +12,9 @@
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id, and its acceptance (`accept`), each classification of its kind
 // (`classify`) and its deprecation (`deprecate`) are entries of their own, so
-// the decision's record never changes. A cut's efficiency figures
-// (`efficiency`) are recorded by the work package capability; the latest for a
-// cut are its figures.
+// the decision's record never changes. No verb writes the kind `efficiency`
+// any more: those entries, each a cut's effort figures, are read as recorded,
+// the latest for a cut being its figures, and shown only as history.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -91,9 +91,11 @@ export type DecisionKind = (typeof DECISION_KINDS)[number];
  *  decision's name and `supersedesEntry` its entry (absent on entries written
  *  before names could be shared, which are read by their name alone).
  *  `decisionKind` is present only where the decision was recorded with its
- *  kind; `cut` only where it names the cut it was about, and `keeps` only where
- *  it keeps example files standing past their cut's integration, each as
- *  `<context>/<cut>`. */
+ *  kind, and `keeps` only where it keeps example files standing once their
+ *  story is done, each as `<context>/<story>`. `cut`, the cut a decision was
+ *  recorded about, is no longer written; where an entry carries it, the
+ *  decision is deprecated once the ledger's history records that cut
+ *  integrated. */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;

@@ -695,8 +695,8 @@ describe('omp capability interface', () => {
       expect(tool?.approval({ verb: 'put' })).toBe('write');
     });
 
-    it('offers the work package capability whole every turn, the concept journal as a device', async () => {
-      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['workPackage']);
+    it('offers the ledger whole every turn, the concept journal as a device', async () => {
+      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['ledger']);
       const tools = await load(EXPLANATION);
       expect(
         Object.fromEntries(
@@ -707,7 +707,7 @@ describe('omp capability interface', () => {
         ),
       ).toEqual({
         concepts: 'discoverable',
-        workPackage: 'essential',
+        ledger: 'essential',
         versionSkew: 'discoverable',
       });
     });
@@ -1199,7 +1199,7 @@ describe('omp capability interface', () => {
       });
       expect(tools).toEqual(['stand_in_concepts', 'version_skew']);
       expect(warnings[0]).toHaveLength(1);
-      expect(warnings[0]?.[0]).toMatch(/does not provide workPackage /);
+      expect(warnings[0]?.[0]).toMatch(/does not provide ledger /);
     });
 
     it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
@@ -1558,11 +1558,11 @@ describe('omp capability interface', () => {
       declare(
         {
           name: 'lead',
-          description: 'Realizes a cut.',
+          description: 'Realizes a story.',
           assignment: {
             type: 'object',
             properties: {
-              cut: { type: 'string', description: 'The cut, by its name.' },
+              story: { type: 'string', description: 'The story, by its name.' },
               examples: {
                 type: 'array',
                 items: { type: 'string' },
@@ -1575,17 +1575,17 @@ describe('omp capability interface', () => {
                 description: 'The decisions in force.',
               },
             },
-            required: ['cut', 'examples', 'decisions'],
+            required: ['story', 'examples', 'decisions'],
           },
         },
-        'Realize the cut.',
+        'Realize the story.',
       );
     const LEAD_FORM = [
       '- lead: give its assignment in the task text as one fenced code block with info string `assignment` holding one JSON object:',
       '  ```assignment',
-      '  {"cut": …, "examples": …, "decisions": …}',
+      '  {"story": …, "examples": …, "decisions": …}',
       '  ```',
-      '  - `cut` (string, required): The cut, by its name.',
+      '  - `story` (string, required): The story, by its name.',
       '  - `examples` (list of strings, at least 1, required): The visible examples, as <context>/<number>.',
       '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
     ].join('\n');
@@ -1648,8 +1648,8 @@ describe('omp capability interface', () => {
       });
       const dispatching = [
         'h = agent(prompt, agent="lead", label="film-approval lead")\nprint(h.id, h.status)',
-        'const h = await agent({ agent: "lead", task: "Lead the cut." });',
-        'pool = workpool([("lead", "Lead the cut.")])',
+        'const h = await agent({ agent: "lead", task: "Lead the story." });',
+        'pool = workpool([("lead", "Lead the story.")])',
         'await tool.task({ tasks: [{ agent: "lead", task: "t" }] })',
         'await tool["task"]({"tasks": []})',
       ];
@@ -1703,32 +1703,44 @@ describe('omp capability interface', () => {
           toolCallId: 'call',
           input: {
             context: 'A long prose brief.',
-            tasks: [{ agent: 'lead', task: 'Realize the film cut, please.' }],
+            tasks: [{ agent: 'lead', task: 'Realize the film story, please.' }],
           },
         }),
       ).toBeUndefined();
       expect(plain.did.notices).toEqual([
-        `dispatch warning, going ahead: lead assignment is missing: cut, examples, decisions\n${LEAD_FORM}`,
+        `dispatch warning, going ahead: lead assignment is missing: story, examples, decisions\n${LEAD_FORM}`,
       ]);
     });
 
-    it('checks and captures a dispatch whatever the harness calls the tool that carries it', async () => {
-      const ASSAYER = () =>
-        declare(
-          {
-            name: 'assayer',
-            description: 'Judges a cut.',
-            assignment: {
-              type: 'object',
-              properties: {
-                cut: { type: 'string', description: 'The cut, by its name.' },
-              },
-              required: ['cut'],
+    /** A builder declaring a typed task, as projection writes one. */
+    const BUILDER = () =>
+      declare(
+        {
+          name: 'builder',
+          description: 'Builds a task.',
+          assignment: {
+            type: 'object',
+            properties: {
+              task: { type: 'string', description: 'The task, by its name.' },
+              story: { type: 'string', description: 'The story it serves.' },
             },
+            required: ['task'],
           },
-          'Judge the cut.',
-        );
-      omp.agents = [LEAD(), ASSAYER()];
+        },
+        'Build it.',
+      );
+    /** The lifecycle events the stand-in command was sent, in order. */
+    const lifecycleSent = (calls: string) =>
+      readFileSync(calls, 'utf8')
+        .trim()
+        .split('\n')
+        .filter((line) => line !== '')
+        .map((line) => JSON.parse(line) as string[])
+        .filter((args) => args[0] === 'lifecycle')
+        .map((args) => JSON.parse(args[1] ?? '') as Record<string, unknown>);
+
+    it('checks and records a dispatch whatever the harness calls the tool that carries it', async () => {
+      omp.agents = [LEAD(), BUILDER()];
       const cwd = mkdtempSync(join(tmpdir(), 'omp-dispatch-cwd-'));
       tmp.push(cwd);
       const calls = join(cwd, 'calls.jsonl');
@@ -1747,7 +1759,7 @@ describe('omp capability interface', () => {
             toolName,
           ).toBeUndefined();
           expect(session.did.notices, toolName).toHaveLength(1);
-          // A typed dispatch is captured, and its settled return too.
+          // A typed dispatch is recorded, and its settled return too.
           writeFileSync(calls, '');
           await session.fire('tool_call', 'main', {
             toolName,
@@ -1755,9 +1767,9 @@ describe('omp capability interface', () => {
             input: {
               tasks: [
                 {
-                  agent: 'assayer',
+                  agent: 'builder',
                   name: 'A',
-                  task: '```assignment\n{"cut":"film"}\n```',
+                  task: '```assignment\n{"task":"renewal-form"}\n```',
                 },
               ],
             },
@@ -1765,114 +1777,98 @@ describe('omp capability interface', () => {
           await session.fire('tool_result', 'main', {
             toolName,
             toolCallId: `call-${toolName}`,
-            details: { results: [{ index: 0, id: 'A', output: 'judged' }] },
+            details: { results: [{ index: 0, id: 'A', output: 'built' }] },
           });
-          const events = readFileSync(calls, 'utf8')
-            .trim()
-            .split('\n')
-            .map((line) => JSON.parse(line) as string[])
-            .filter((args) => args[0] === 'lifecycle')
-            .map(
-              (args) => JSON.parse(args[1] ?? '') as Record<string, unknown>,
-            );
-          expect(events, toolName).toEqual([
+          expect(lifecycleSent(calls), toolName).toEqual([
             {
               kind: 'dispatched',
-              transition: `call-${toolName}/A/dispatched`,
-              cut: 'film',
-              role: 'assayer',
-              run: `call-${toolName}/A`,
+              call: `call-${toolName}`,
+              agent: 'A',
+              role: 'builder',
+              task: 'renewal-form',
             },
-            {
-              kind: 'returned',
-              transition: `call-${toolName}/A/returned`,
-              cut: 'film',
-              role: 'assayer',
-              run: `call-${toolName}/A`,
-            },
+            { kind: 'returned', call: `call-${toolName}`, agent: 'A' },
           ]);
+          expect(session.did.notices, toolName).toHaveLength(1);
         }
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
       }
     });
 
-    it("warns of a builder's dispatch while an example its package owns is unchecked by a frozen check, and lets it through", async () => {
-      omp.agents = [
-        declare(
-          {
-            name: 'builder',
-            description: 'Builds a work package.',
-            assignment: {
-              type: 'object',
-              properties: {
-                cut: { type: 'string', description: 'The cut.' },
-                workPackage: { type: 'string', description: 'The package.' },
-              },
-              required: ['cut', 'workPackage'],
-            },
-          },
-          'Build it.',
-        ),
-      ];
-      const cwd = mkdtempSync(join(tmpdir(), 'omp-builder-cwd-'));
+    it('sends the story and task an assignment names with the role, and the tokens the harness reports on return, and nothing for an item naming neither', async () => {
+      omp.agents = [LEAD(), BUILDER()];
+      const cwd = mkdtempSync(join(tmpdir(), 'omp-record-cwd-'));
       tmp.push(cwd);
-      const answers = join(cwd, 'answers.json');
-      const answer = (unchecked: string[]) =>
-        writeFileSync(
-          answers,
-          JSON.stringify({
-            'workPackage state': {
-              branch: 'feature/renewal',
-              workPackages: [{ name: 'renewal-work', status: 'pending' }],
-              ready: ['renewal-work'],
-            },
-            'workPackage inventory': {
-              unserved: [],
-              unowned: [],
-              examples: [
-                { ref: 'library/1', package: 'renewal-work' },
-                { ref: 'library/2', package: 'renewal-work' },
-                { ref: 'library/3', package: 'hours-work' },
+      const calls = join(cwd, 'calls.jsonl');
+      writeFileSync(calls, '');
+      process.env.STAND_IN_CALLS = calls;
+      try {
+        const session = await started(undefined, cwd);
+        await session.fire('session_start');
+        expect(
+          await session.fire('tool_call', 'main', {
+            toolName: 'task',
+            toolCallId: 'batch',
+            input: {
+              context: 'Renewal of a library loan.',
+              tasks: [
+                {
+                  agent: 'lead',
+                  name: 'Lead',
+                  task: '```assignment\n{"story":"renewal","examples":["library/1"],"decisions":[]}\n```',
+                },
+                {
+                  agent: 'builder',
+                  name: 'Form',
+                  task: '```assignment\n{"task":"renewal-form","story":"renewal"}\n```',
+                },
+                // Naming neither story nor task: not sent, nor its return.
+                { agent: 'scout', task: 'Look around.' },
               ],
             },
-            'workPackage frozen': {
-              cuts: [{ cut: 'renewal', unchecked }],
-            },
           }),
-        );
-      process.env.STAND_IN_ANSWERS = answers;
-      try {
-        const dispatch = async (id: string) => {
-          const session = await started(undefined, cwd);
-          await session.fire('session_start');
-          expect(
-            await session.fire('tool_call', 'main', {
-              toolName: 'task',
-              toolCallId: id,
-              input: {
-                tasks: [
-                  {
-                    agent: 'builder',
-                    task: '```assignment\n{"cut":"renewal","workPackage":"renewal-work"}\n```',
-                  },
-                ],
-              },
-            }),
-          ).toBeUndefined();
-          return session.did.notices.join('\n');
-        };
-        answer(['library/2', 'library/3']);
-        const warned = await dispatch('unchecked');
-        expect(warned).toContain(
-          'builder dispatch of cut renewal: work package renewal-work owns visible examples no frozen check names: library/2 (',
-        );
-        expect(warned).not.toContain('library/3');
-        // Another package's unchecked example never concerns this one.
-        answer(['library/3']);
-        expect(await dispatch('checked')).toBe('');
+        ).toBeUndefined();
+        await session.fire('tool_result', 'main', {
+          toolName: 'task',
+          toolCallId: 'batch',
+          details: {
+            results: [
+              { index: 0, id: 'Lead', tokens: 51234 },
+              { index: 1, id: 'Form', tokens: 18000 },
+              { index: 2, id: '2' },
+            ],
+          },
+        });
+        // The same return delivered again is sent once.
+        await session.fire('tool_result', 'main', {
+          toolName: 'task',
+          toolCallId: 'batch',
+          details: { results: [{ index: 1, id: 'Form', tokens: 18000 }] },
+        });
+        expect(lifecycleSent(calls)).toEqual([
+          {
+            kind: 'dispatched',
+            call: 'batch',
+            agent: 'Lead',
+            role: 'lead',
+            story: 'renewal',
+          },
+          {
+            kind: 'dispatched',
+            call: 'batch',
+            agent: 'Form',
+            role: 'builder',
+            story: 'renewal',
+            task: 'renewal-form',
+          },
+          { kind: 'returned', call: 'batch', agent: 'Lead', tokens: 51234 },
+          { kind: 'returned', call: 'batch', agent: 'Form', tokens: 18000 },
+        ]);
+        // Nothing is warned of: every assignment fits, and every send succeeded.
+        expect(session.did.notices).toEqual([]);
       } finally {
-        Reflect.deleteProperty(process.env, 'STAND_IN_ANSWERS');
+        Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
       }
     });
 

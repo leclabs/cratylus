@@ -1,0 +1,16 @@
+{
+  "id": "01M50D030SSMCMM58H677ZVDD1",
+  "at": "2026-10-15T18:25:38.841Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0222",
+  "context": "workflow",
+  "title": "Adopt intent-based delegation",
+  "situation": "The example-driven workflow put every change of meaning through one prescribed procedure, the cut, whose units grew into long runs and whose mechanics (work packages, the freeze, rounds of the whole check, warnings about skipped steps) cost more than they held. Established practice already names each part. The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure.",
+  "decision": "Cratylus ships intent-based delegation. Each party passes intent down and takes back a result, deciding how within its own rights, by orchestrator-workers. The unit of meaning is the story: one thin slice of behaviour a user can rely on, with acceptance criteria and examples where misunderstanding is likely, stating which path it takes, how much review that warrants and roughly what it will cost; it is done when its criteria hold in merged work. Epics only group stories. A task is one change on its own branch ending in one pull request with one review; a change that alters no meaning is a task with no story. Each role is defined by what it receives and hands over, and each handover states what it must contain: a story (the slice, why, its acceptance criteria, what is out of scope, its path and the review it warrants, its rough cost), a task (its goal in the story's terms, what it changes, the technical decisions that bind it, what done means), a pull request (the change, its tests, what was verified), a review (against the change and, where they apply, the story's examples), an outcome (which criteria hold with evidence, meaning questions, follow-ups, cost), and a read-back to the operator (where things stand, with one recommendation). Scaling up for risk: the architect calls the illustrator and holds examples back for review; the lead calls the check-writer and adds a second reviewer or the operator's review. Named, not restated: domain-driven design, GitHub flow, code review sized to the risk, specification by example, orchestrator-workers. Retired: the cut, work package, dependency graph, freeze, build rounds, judgment, the whole check's rounds, integration, the assayer, the warnings about skipped cut steps, the completion check, and the workflow's own branching rules. Kept: the design record, the read-back at session start, decision rights and the check; the ledger shrinks to what is in flight, how it ended and what it cost, elapsed time included.",
+  "consequences": "The workflow concepts are restated to this charter. The change is realized as ordinary engineering, not a cut, on one integration branch ahead of dev, in tasks a lead runs; it is done when a cold architect's read-back of the workflow is short and right. Contracts and the context map are untouched.",
+  "status": "accepted",
+  "supersedes": "0217",
+  "supersedesEntry": "01M4W4R6YF6M59TTJAQXT72Q5J",
+  "decisionKind": "meaning"
+}

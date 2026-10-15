@@ -1,0 +1,20 @@
+{
+  "id": "01M50CY9B62JG0J8B2SXCG0VG8",
+  "at": "2026-10-15T18:24:39.782Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "semantic gap",
+  "wording": "The distance between the meaning the operator and architect settled and what agents' work actually realizes; it opens whenever work is judged by anything but that meaning, such as a green suite or an agent's own account, and is held closed by construction, not by agents remembering or obeying: acceptance criteria agreed before the build, examples where misunderstanding is likely, held-out examples where risk warrants, review by someone who did not write the work, and a record that keeps the meaning when a session forgets it.",
+  "builtFrom": [
+    "concept",
+    "example",
+    "held-out example",
+    "review",
+    "concept journal"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. Review and acceptance criteria now hold the gap closed in place of judgment and the freeze.",
+  "supersedes": [
+    "01M4W14JX67CFVV8QTMYZGXKQ8"
+  ]
+}

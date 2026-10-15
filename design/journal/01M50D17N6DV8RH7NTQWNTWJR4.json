@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17N6DV8RH7NTQWNTWJR4",
+  "at": "2026-10-15T18:26:16.358Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0197",
+  "entry": "01M4VRGEMNR8RSA88SV630VP8F",
+  "reason": "The whole check no longer exists; the check concept states that every check runs on every pull request."
+}

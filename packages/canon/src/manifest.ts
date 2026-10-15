@@ -114,12 +114,17 @@ export const MANIFEST = {
     slots: [
       { name: 'intent', gloss: 'what is wanted and why' },
       { name: 'priority', gloss: 'what comes first' },
-      { name: 'meaning', gloss: 'concepts and examples' },
+      {
+        name: 'meaning',
+        gloss: 'concepts, stories and examples, and accepting a story done',
+      },
       { name: 'constraint', gloss: 'decisions on realization' },
-      { name: 'realization', gloss: 'how the work, or the checks, are built' },
-      { name: 'check-ruling', gloss: 'changing a frozen check' },
-      { name: 'verdict', gloss: 'whether the work is accepted' },
-      { name: 'release', gloss: 'admitting the change to the project' },
+      {
+        name: 'realization',
+        gloss: 'how the work, or the checks, are built and merged',
+      },
+      { name: 'verdict', gloss: 'whether a pull request is approved' },
+      { name: 'release', gloss: 'making merged work available to its users' },
     ],
   },
   autonomy: {
@@ -298,7 +303,7 @@ export type Evaluation = Value<'evaluation'>;
 // factor above), which is a different concept; one root would cover two.
 export const RUNTIME_CAPABILITIES = [
   'concepts',
-  'workPackage',
+  'ledger',
   'versionSkew',
 ] as const satisfies readonly CapabilityName[];
 

@@ -277,9 +277,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/stories/E6/S7.opt-in-lossless.test.ts': 'BEHAVIORAL',
 
   // ── runtime ──────────────────────────────────────────────────────────
-  // Checks execution/output/rubric examples plus held-out secrecy and
-  // capability-protected red-first freeze behavior using fixtures it supplies.
-  'runtime/example-substrate.test.ts': 'BEHAVIORAL',
   'runtime/brand-derived-literals.test.ts': 'GATE',
   // drives `dispatchConcepts` over scratch git repositories it builds itself; its
   // refusals (a flag given twice, a journal entry that is not one, a directory
@@ -298,17 +295,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // runs the leakage detector over text it supplies and the journal verbs in scratch git
   // repositories it builds itself; its leaking and plain passages ARE its fixtures.
   'runtime/leakage.test.ts': 'BEHAVIORAL',
-  // reads cuts' phases over ledgers it builds itself and over the repository's own
-  // ledger, which it reads and never writes: integration settles a cut's phase.
-  'runtime/ledger/checks.test.ts': 'BEHAVIORAL',
-  // runs the pure ledger fold over entries it builds itself: statuses, approval by two
-  // distinct assayers, failing and disputed packages, phase, ready, figures, report.
-  'runtime/ledger/fold.test.ts': 'BEHAVIORAL',
-  // runs the ledger store, lifecycle, open, integrate and completion check in
-  // throwaway git repos; its refused repeated transitions and integration by a
-  // non-architect, and its warnings, ARE its fixtures.
-  'runtime/ledger/ledger.test.ts': 'BEHAVIORAL',
-  // runs the pure context overview over designs, decisions and cuts it builds itself:
+  // drives `dispatchLedger` and the lifecycle append over scratch git repositories
+  // it builds itself; its refused names, repeated events and other shapes, and its
+  // cut-era history entries, ARE its fixtures.
+  'runtime/ledger.test.ts': 'BEHAVIORAL',
+  // runs the pure context overview over designs, decisions and work it builds itself:
   // whole before parts, named cycles, and the account told in that order.
   'runtime/overview/overview.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a
@@ -327,10 +318,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the live capabilities' verbs are each checked for a summary, a positional and a
   // description of every flag; a verb and a flag it leaves unsaid are its fixtures.
   'runtime/verb-descriptions.test.ts': 'GATE',
-  // drives `dispatchWorkPackage` over scratch git repositories it builds itself;
-  // its refusals (an overlapping output, an unowned need, a commit git refuses)
-  // and its warning (a commit outside the package's outputs) ARE its fixtures.
-  'runtime/work-package.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
