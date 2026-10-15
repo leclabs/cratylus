@@ -1,11 +1,13 @@
-// The lead role: master design §3, the lead column ("others I" expanded).
+// The lead role: owns a story's realization, or a task with no story; orchestrates its
+// tasks to builders and their pull requests to reviewers, merges what is approved and
+// passes every check, and hands over the outcome (workflow: lead; agents 0243).
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
-import { integrate } from '../dimensions/action-scope/integrate.js';
+import { merge } from '../dimensions/action-scope/merge.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
-import { cutBrief } from '../dimensions/assignment/cut-brief.js';
+import { story } from '../dimensions/assignment/story.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
@@ -15,7 +17,7 @@ import { maintenance } from '../dimensions/communication-style/maintenance.js';
 import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
-import { outcomeWithEfficiency } from '../dimensions/deliverable/outcome-with-efficiency.js';
+import { outcome } from '../dimensions/deliverable/outcome.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareDelivery } from '../dimensions/expertise/software-delivery.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
@@ -32,9 +34,8 @@ import { conceptJournal } from '../dimensions/perception-scope/concept-journal.j
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { reports } from '../dimensions/perception-scope/reports.js';
 import { work } from '../dimensions/perception-scope/work.js';
-import { build } from '../dimensions/procedure/build.js';
-import { judgment } from '../dimensions/procedure/judgment.js';
-import { wholeCheck } from '../dimensions/procedure/whole-check.js';
+import { githubFlow } from '../dimensions/procedure/github-flow.js';
+import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
 import { lead } from '../dimensions/role/lead.js';
 import { decisive } from '../dimensions/stance/decisive.js';
 import { proportionate } from '../dimensions/stance/proportionate.js';
@@ -43,7 +44,8 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 
 export const leadRole: RoleCell = {
   name: 'lead',
-  description: "Owns a cut's realization in the example-driven workflow.",
+  description:
+    "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their pull requests to reviewers, merges each approved pull request that passes every check, and hands over the story's outcome.",
   mark: null,
   values: {
     role: [lead],
@@ -52,7 +54,7 @@ export const leadRole: RoleCell = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareDelivery, softwareEngineering],
-    procedure: [build, judgment, wholeCheck],
+    procedure: [orchestratorWorkers, githubFlow],
     stance: [decisive, proportionate, separationOfConcerns, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -65,7 +67,6 @@ export const leadRole: RoleCell = {
       { value: input, slot: 'meaning' },
       { value: decides, slot: 'constraint' },
       { value: decides, slot: 'realization' },
-      { value: decides, slot: 'check-ruling' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
@@ -76,14 +77,14 @@ export const leadRole: RoleCell = {
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, work],
-    actionScope: [integrate, commitOwnPaths, runChecks, appendJournal],
+    actionScope: [merge, commitOwnPaths, runChecks, appendJournal],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
     memory: [sourceOfTruth, working],
-    assignment: [cutBrief],
-    deliverable: [outcomeWithEfficiency],
+    assignment: [story],
+    deliverable: [outcome],
     guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],
     evaluation: [inUse],
   },

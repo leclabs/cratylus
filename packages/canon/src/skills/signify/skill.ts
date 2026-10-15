@@ -55,11 +55,11 @@ cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ)
 c ∉ dom(α) ⇒ c ∉ Anchors :
     c is no core agent dimension name or value ⇒ c is the industry's own term, used as the industry understands it ⇒ exclude, logged
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
-    ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the cut was wrong ↦ conceptualize
+    ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the partition was wrong ↦ conceptualize
         ⟨α(cᵢ), α(cⱼ) taken at DIFFERENT altitudes is still this collision⟩
 
 ∃ d : { n : ¬circ(n,c) } all fail on d ALONE ⇒ d ∉ D(c) ∧ ∃ cᵢ ≠ c : d ∈ D(cᵢ) ⟨the property hangs off the wrong noun⟩
-    ↦ conceptualize ⟨re-cut, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution, ¬ that σ*(c) is scarce⟩
+    ↦ conceptualize ⟨re-partition, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution, ¬ that σ*(c) is scarce⟩
 
 ¬circ(n, cᵢ) ⇒ evidence about fired(n), ¬ about cᵢ ⟨fired : Names → ℘(D) reads n ALONE⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩

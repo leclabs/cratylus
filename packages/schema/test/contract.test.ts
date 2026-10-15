@@ -114,6 +114,48 @@ describe('checkAssignment', () => {
   });
 });
 
+describe('checkAssignment over alternative forms', () => {
+  const task: JsonSchema = {
+    type: 'object',
+    properties: { task: { type: 'string' }, done: { type: 'string' } },
+    required: ['task', 'done'],
+  };
+  const either: JsonSchema = { anyOf: [brief, task] };
+
+  it('passes an assignment that fits any one form', () => {
+    expect(checkAssignment('lead', either, fitting).problem).toBeUndefined();
+    expect(
+      checkAssignment('lead', either, { task: 'tidy', done: 'tidied' }),
+    ).toEqual({ missing: [], illTyped: [] });
+  });
+
+  it('reports the problems of the closest form when none fits', () => {
+    expect(checkAssignment('lead', either, { task: 'tidy' }).problem).toBe(
+      'lead assignment is missing: done',
+    );
+    const { decisions: _, ...partial } = fitting;
+    expect(checkAssignment('lead', either, partial).problem).toBe(
+      'lead assignment is missing: decisions',
+    );
+  });
+
+  it('reports the first form when no assignment is given', () => {
+    expect(checkAssignment('lead', either, undefined).missing).toEqual([
+      'cut',
+      'concepts',
+      'examples',
+      'decisions',
+    ]);
+  });
+
+  it('carries its alternatives in the source a harness module copies', () => {
+    const carried = new Function(`return (${String(checkAssignment)})`)();
+    expect(carried('lead', either, { task: 'tidy', done: 'x' }).problem).toBe(
+      undefined,
+    );
+  });
+});
+
 describe('assignmentIn', () => {
   it('reads the first fenced assignment block of a dispatch text', () => {
     const text = `Realize the cut.\n\n\`\`\`assignment\n${JSON.stringify(fitting)}\n\`\`\`\n`;

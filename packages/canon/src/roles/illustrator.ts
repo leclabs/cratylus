@@ -1,4 +1,5 @@
-// The illustrator role: master design §3, the illustrator column ("others I" expanded).
+// The illustrator role: a specialist called in for a story's risk, writing its examples
+// cold from its concepts alone (workflow: illustrator; agents 0243, 0244).
 
 import type { RoleCell } from '../compose.js';
 import { writeExamples } from '../dimensions/action-scope/write-examples.js';
@@ -26,7 +27,8 @@ import { mece } from '../dimensions/stance/mece.js';
 
 export const illustratorRole: RoleCell = {
   name: 'illustrator',
-  description: "Writes a cut's examples cold from its concepts.",
+  description:
+    "Called in for a story's risk: writes its examples cold from its concepts alone.",
   mark: null,
   values: {
     role: [illustrator],
@@ -48,13 +50,12 @@ export const illustratorRole: RoleCell = {
       { value: recommends, slot: 'meaning' },
       { value: input, slot: 'constraint' },
       { value: input, slot: 'realization' },
-      { value: input, slot: 'check-ruling' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
     autonomy: [handoff],
     perceptionScope: [
-      { value: conceptJournal, note: "the cut's concepts only" },
+      { value: conceptJournal, note: "the story's concepts only" },
     ],
     actionScope: [writeExamples],
     model: [

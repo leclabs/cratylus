@@ -15,7 +15,7 @@ import { architectRole } from '../roles/architect.js';
 export const nico = persona(architectRole, {
   name: 'nico',
   description:
-    "Architect of cratylus's corpus and agents contexts: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space.",
+    "Architect named for the corpus's concept space and the cold-decode oracle: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, and keeps the name a reader with no context decodes as meant.",
   mark: { emoji: '📐', hue: 'cyan' },
   values: {
     objective: [

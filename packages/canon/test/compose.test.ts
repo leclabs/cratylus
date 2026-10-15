@@ -6,10 +6,9 @@
 // unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
-import { anchorOf, enforcing } from '@cratylus/schema';
+import { type JsonSchema, anchorOf, enforcing } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
-import { assayer } from '../src/agents/assayer.js';
 import { builder } from '../src/agents/builder.js';
 import { checkWriter } from '../src/agents/check-writer.js';
 import { illustrator } from '../src/agents/illustrator.js';
@@ -17,15 +16,23 @@ import { kino } from '../src/agents/kino.js';
 import { lead } from '../src/agents/lead.js';
 import { mav } from '../src/agents/mav.js';
 import { nico } from '../src/agents/nico.js';
+import { reviewer } from '../src/agents/reviewer.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/dimensions/action-scope/none.js';
 import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-line-up-front.js';
 import { honesty } from '../src/dimensions/guardrails/honesty.js';
-import { assayerRole } from '../src/roles/assayer.js';
 import { builderRole } from '../src/roles/builder.js';
+import { reviewerRole } from '../src/roles/reviewer.js';
 
 const mark = { emoji: '🧪', hue: 'cyan' } as const;
-const holders = { architect, assayer, builder, checkWriter, illustrator, lead };
+const holders = {
+  architect,
+  builder,
+  checkWriter,
+  illustrator,
+  lead,
+  reviewer,
+};
 const agents = { ...holders, kino, mav, nico };
 
 describe('composition over action-scope', () => {
@@ -33,9 +40,9 @@ describe('composition over action-scope', () => {
     const warned: string[] = [];
     const listen = (w: Error) => warned.push(w.message);
     process.on('warning', listen);
-    const widened = persona(assayerRole, {
+    const widened = persona(reviewerRole, {
       name: 'widener',
-      description: 'An assayer that would act.',
+      description: 'A reviewer that would act.',
       mark,
       removes: { actionScope: [none] },
       values: { guardrails: [{ value: honesty, level: 'advisory' }] },
@@ -60,7 +67,7 @@ describe('composition over action-scope', () => {
     ).toThrow(CompositionRefusal);
   });
 
-  it('narrows no composed agent to read-only, the assayer included', () => {
+  it('narrows no composed agent to read-only, the reviewer included', () => {
     for (const [name, agent] of Object.entries(agents))
       expect(agent, name).not.toHaveProperty('readOnly');
   });
@@ -73,34 +80,66 @@ describe('typed handoffs', () => {
       deliverable: holders[name].contract?.deliverable?.required,
     });
     expect(required('lead')).toEqual({
-      assignment: ['cut', 'concepts', 'examples', 'decisions'],
+      assignment: undefined,
       deliverable: [
-        'cut',
-        'outcomes',
-        'verdicts',
-        'efficiency',
-        'hardeningNotes',
+        'story',
+        'criteria',
+        'meaningQuestions',
+        'followUps',
+        'cost',
       ],
     });
+    expect(
+      lead.contract?.assignment?.anyOf?.map((form) => form.required),
+      'the lead takes a story, or a task with no story',
+    ).toEqual([
+      [
+        'story',
+        'slice',
+        'why',
+        'acceptanceCriteria',
+        'outOfScope',
+        'path',
+        'review',
+        'cost',
+      ],
+      builder.contract?.assignment?.required,
+    ]);
     expect(required('builder')).toEqual({
-      assignment: ['cut', 'workPackage', 'outputs', 'concepts', 'examples'],
-      deliverable: ['cut', 'workPackage', 'done'],
+      assignment: ['task', 'goal', 'changes', 'decisions', 'done'],
+      deliverable: ['change', 'tests', 'verified'],
     });
-    expect(required('assayer')).toEqual({
-      assignment: ['cut', 'workPackages', 'examples', 'decisions'],
-      deliverable: ['cut', 'verdicts', 'hardeningNotes'],
+    expect(required('reviewer')).toEqual({
+      assignment: ['pullRequest'],
+      deliverable: ['verdict', 'findings', 'meaningQuestions'],
     });
     expect(required('checkWriter')).toEqual({
-      assignment: ['cut', 'examples'],
-      deliverable: ['cut', 'checks'],
+      assignment: ['story', 'examples'],
+      deliverable: ['story', 'checks'],
     });
     expect(required('illustrator')).toEqual({
-      assignment: ['cut', 'concepts'],
+      assignment: ['story', 'concepts'],
       deliverable: ['examples', 'flaggedTerms'],
     });
   });
 
-  it('gives the architect, whose intent is free text, no contract', () => {
+  it("states each handover's optional parts as properties it does not require", () => {
+    const optional = (schema: JsonSchema | undefined) =>
+      Object.keys(schema?.properties ?? {}).filter(
+        (field) => !schema?.required?.includes(field),
+      );
+    const [story, task] = lead.contract?.assignment?.anyOf ?? [];
+    expect(optional(story)).toEqual(['examples', 'decisions', 'contexts']);
+    expect(optional(task)).toEqual(['story']);
+    expect(optional(builder.contract?.assignment)).toEqual(['story']);
+    expect(optional(reviewer.contract?.assignment)).toEqual([
+      'story',
+      'acceptanceCriteria',
+      'examples',
+    ]);
+  });
+
+  it("gives the architect, whose handovers are a person's, no contract", () => {
     expect(architect).not.toHaveProperty('contract');
   });
 });
@@ -123,9 +162,7 @@ describe('the architect', () => {
     );
     expect(elevation?.level).toBe('fixed');
     const [deliverable] = architect.deliverable;
-    expect(deliverable && anchorOf(deliverable.value)).toBe(
-      'decisions-with-reasons',
-    );
+    expect(deliverable && anchorOf(deliverable.value)).toBe('read-back');
   });
 
   it('carries every drift tell in the persistence protocol, as every agent does', () => {

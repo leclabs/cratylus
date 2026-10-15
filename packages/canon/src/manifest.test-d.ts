@@ -34,17 +34,18 @@ const guardrailB: Guardrails = 'privacy ≜ does not expose private information'
 const expertiseA: Expertise = 'software-engineering ≜ building software well';
 const stanceA: Stance = 'dry ≜ states each fact once';
 const actionScopeA: ActionScope = 'run-checks ≜ run checks and builds';
-const deliverableV: Deliverable = 'done-or-failing-case ≜ done, or the case';
+const deliverableV: Deliverable =
+  'pull-request ≜ the change, its tests and what was verified';
 
 const baseFixture: Agent = {
   name: 'fixture',
   description: 'a builder fixture',
   mark: { emoji: '✈️', hue: 'green' },
   key: null,
-  role: [{ value: 'builder ≜ owns one work package', level: 'fixed' }],
+  role: [{ value: 'builder ≜ receives one task', level: 'fixed' }],
   objective: [
     {
-      value: 'correctness ≜ satisfies its examples',
+      value: 'correctness ≜ does what its task says',
       level: 'fixed',
       slot: 'drive',
     },
@@ -55,7 +56,7 @@ const baseFixture: Agent = {
     },
   ],
   expertise: [{ value: expertiseA, level: 'firm' }],
-  procedure: [{ value: 'build ≜ change the work', level: 'firm' }],
+  procedure: [{ value: 'github-flow ≜ one branch per change', level: 'firm' }],
   stance: [{ value: stanceA, level: 'firm' }],
   communicationStyle: [
     { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
@@ -83,7 +84,7 @@ const baseFixture: Agent = {
     },
   ],
   memory: [{ value: 'working ≜ the session context', level: 'fixed' }],
-  assignment: [{ value: 'work-package ≜ the outputs it owns', level: 'firm' }],
+  assignment: [{ value: 'task ≜ one change', level: 'firm' }],
   deliverable: [{ value: deliverableV, level: 'firm' }],
   guardrails: [
     { value: guardrailA, level: 'fixed' },
