@@ -25,7 +25,7 @@ validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ;
 Role       ≜ (DimensionName → ℘(entry)) ⟨NAMED ∧ TOTAL : a value for EVERY factor the catalog gives a field, an explicitly empty set counting as one ; the EXPECTATIONS of anyone holding the role ; made OF factor values ∴ ¬ itself a factor — the `role` factor carries its SIGN⟩
              ⟨∧ the identity of its generic holder : name · description ; a Role carries no mark⟩
 entry      ≜ ⟨value, level⟩ ⟨level ∈ {advisory, firm, fixed} ∪ {—} : enforcement-level is an ATTRIBUTE of every value held, ¬ a value of its own ; unstated ⇒ the factor's default @ manifest⟩
-generic-holder ≜ holder(Role) : the agent NAMED for its Role (architect · lead · builder · assayer · illustrator · check-writer) ⟨carries nothing beyond the Role : its name and description are the Role's ; no mark ; declares ∅⟩
+generic-holder ≜ holder(Role) : the agent NAMED for its Role (architect · lead · builder · reviewer · illustrator · check-writer) ⟨carries nothing beyond the Role : its name and description are the Role's ; no mark ; declares ∅⟩
              ⟨holder REFUSES a Role missing a factor, a scalar without exactly one value, a slot not filled exactly once, ∨ empty guardrails⟩
 persona    ≜ persona(Role, residue) : an agent named as an individual (kino · nico · mav) ⟨holds one Role and DECLARES its residue over it : its own description and mark at least, any factor value besides⟩
 holds      : agent → Role ⟨SINGULAR : a Role is the contract a PEER dispatches against ∧ ∄ dispatcher that can reason about a union of Roles⟩

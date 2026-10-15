@@ -77,7 +77,7 @@ description, the practices already installed here ticked (on a fresh host, the o
 preselects).
 
 `--practices <name,…>` names the practices to install, as in
-`--practices example-driven-workflow`, and `--all` takes every one. They are refused together, and
+`--practices intent-based-delegation`, and `--all` takes every one. They are refused together, and
 so is a name no practice answers to; that refusal lists the
 practices the corpus declares. Without a terminal and with neither flag, `install` refuses before
 writing anything and lists them too: what it installed last time is a default for a question, never
@@ -267,14 +267,14 @@ and warns where it falls short; they are not the same, and this is what a user m
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
-  neither cuts that isolation from the bound plan's line. Building off the line is the agent's own
+  neither starts that isolation from the bound plan's line. Building off the line is the agent's own
   work, on either harness. On Claude Code the
-  agent runs in a worktree of its own, cut as Claude Code cuts any, by its `worktree.baseRef`.
+  agent runs in a worktree of its own, made as Claude Code makes any, from its `worktree.baseRef`.
   omp's agent definition has no field for isolation, so install does what omp offers: a dispatch
   of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's
   checkout and never writes the main checkout. What it built is kept as the branch
-  `omp/task/<id>` in your repository, not applied. The copy is cut from the dispatcher's HEAD and
-  its uncommitted work, and omp takes no ref to cut it from. Where the checkout has uncommitted
+  `omp/task/<id>` in your repository, not applied. The copy is made from the dispatcher's HEAD and
+  its uncommitted work, and omp takes no ref to start it from. Where the checkout has uncommitted
   work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once
   per such agent and install prints the same in its summary.
 
