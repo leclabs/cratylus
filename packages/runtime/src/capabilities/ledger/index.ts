@@ -18,7 +18,7 @@ import { type Work, foldWork } from './fold.js';
 import { topOf } from './git.js';
 import { ledgerAt } from './store.js';
 
-export { LEDGER, VERBS, dispatchLedger, recordInFlight } from './dispatch.js';
+export { LEDGER, VERBS, dispatchLedger, inFlightDrafts } from './dispatch.js';
 export {
   type Cost,
   type Ending,

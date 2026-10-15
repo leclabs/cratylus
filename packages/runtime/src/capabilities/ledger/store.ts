@@ -132,6 +132,13 @@ export interface Ledger {
   /** Append `draft` as one new entry; refused, writing nothing, when its
    *  transition is already recorded. */
   append<D extends LedgerDraft>(draft: D): D & { id: string; at: string };
+  /** Holding the ledger's lock, read what it holds, then append in order the
+   *  drafts `plan` makes of that reading, so nothing appended between the
+   *  reading and the writing can be missed. Refused, writing nothing, when
+   *  `plan` throws or a draft's transition is already recorded. */
+  appendAfter(
+    plan: (reading: LedgerReading) => readonly LedgerDraft[],
+  ): LedgerEntry[];
 }
 
 /** How long an append waits for another process's append, and when a lock
@@ -213,42 +220,62 @@ export function ledgerAt(
     }
   };
 
+  const appendAfter: Ledger['appendAfter'] = (plan) => {
+    try {
+      return locked(() => {
+        const { reading, transitions, last } = scan();
+        const drafts = plan(reading);
+        const planned = new Set<string>();
+        for (const draft of drafts) {
+          const earlier = transitions.get(draft.transition);
+          if (earlier !== undefined || planned.has(draft.transition))
+            throw refuse(
+              `the transition '${draft.transition}' is already recorded${earlier === undefined ? '' : ` (${LEDGER_DIR}/${earlier}.json)`}; the repeat is refused and nothing is written`,
+            );
+          planned.add(draft.transition);
+        }
+        mkdirSync(dir, { recursive: true });
+        let previous = last;
+        return drafts.map((draft) => {
+          const id = mintAfter(previous);
+          previous = id;
+          const entry = {
+            id,
+            at: new Date(decodeTime(id)).toISOString(),
+            ...draft,
+          } as LedgerEntry;
+          // Written aside, then linked into place: the entry appears whole
+          // or not at all, and an id already taken is never overwritten.
+          const aside = join(dir, `.${id}.partial`);
+          writeFileSync(aside, `${JSON.stringify(entry, null, 2)}\n`, {
+            flag: 'wx',
+          });
+          try {
+            linkSync(aside, join(dir, `${id}.json`));
+          } finally {
+            unlinkSync(aside);
+          }
+          return entry;
+        });
+      });
+    } finally {
+      // Read afresh next time, whether the append was written or refused.
+      cached = undefined;
+    }
+  };
+
   return {
     root: top,
     read() {
       cached ??= scan().reading;
       return cached;
     },
-    append(draft) {
-      return locked(() => {
-        const { transitions, last } = scan();
-        const earlier = transitions.get(draft.transition);
-        if (earlier !== undefined)
-          throw refuse(
-            `the transition '${draft.transition}' is already recorded (${LEDGER_DIR}/${earlier}.json); the repeat is refused and nothing is written`,
-          );
-        const id = mintAfter(last);
-        const entry = {
-          id,
-          at: new Date(decodeTime(id)).toISOString(),
-          ...draft,
-        };
-        mkdirSync(dir, { recursive: true });
-        // Written aside, then linked into place: the entry appears whole or
-        // not at all, and an id already taken is never overwritten.
-        const aside = join(dir, `.${id}.partial`);
-        writeFileSync(aside, `${JSON.stringify(entry, null, 2)}\n`, {
-          flag: 'wx',
-        });
-        try {
-          linkSync(aside, join(dir, `${id}.json`));
-        } finally {
-          unlinkSync(aside);
-        }
-        cached = undefined;
-        return entry;
-      });
-    },
+    append: <D extends LedgerDraft>(draft: D) =>
+      appendAfter(() => [draft])[0] as unknown as D & {
+        id: string;
+        at: string;
+      },
+    appendAfter,
   };
 }
 

@@ -11,7 +11,9 @@
 // once. A dispatch and its return reach the ledger only from the harness's own
 // events, through `cratylus lifecycle` (`../../lifecycle/`), never through a
 // verb; a dispatch naming a story or a task not yet recorded records it in
-// flight, as its verb would (`recordInFlight`).
+// flight, as its verb would (`inFlightDrafts`). Every appending verb's checks
+// read the ledger under its append lock, so they see what is there when the
+// entry is written.
 //
 // Every answer is JSON; `state` also carries `uninterpreted` when it read past
 // entries of kinds this runtime does not know, written by a newer one. Every
@@ -31,7 +33,13 @@ import { Folded } from '../concepts/views.js';
 import { verbOf } from '../plan/argv.js';
 import { foldWork } from './fold.js';
 import { topOf } from './git.js';
-import { type Ledger, OUTCOMES, type Outcome, ledgerAt } from './store.js';
+import {
+  type LedgerDraft,
+  type LedgerReading,
+  OUTCOMES,
+  type Outcome,
+  ledgerAt,
+} from './store.js';
 
 /** A story's or a task's name: a kebab id. */
 const NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -109,16 +117,18 @@ export const LEDGER: CapabilityInterface = {
   verbs: VERBS,
 };
 
-/** Record in `ledger` the `story` and `task` a dispatch names that it does not
- *  yet hold, in flight: the task with the story when both are new. Refused,
- *  writing nothing, for a name that is no kebab id, or a story named as a task
- *  or a task as a story. */
-export function recordInFlight(
-  ledger: Ledger,
+/** The entries recording in flight the `story` and `task` a dispatch names
+ *  that `reading` does not yet hold: the story before the task when both are
+ *  new; none for one already recorded. Refused for a name that is no kebab id,
+ *  or a story named as a task or a task as a story. Made under the ledger's
+ *  lock (`appendAfter`), so dispatches racing to name one new story record it
+ *  once and each is still recorded. */
+export function inFlightDrafts(
+  reading: LedgerReading,
   named: { readonly story?: string; readonly task?: string },
   refuse: (message: string) => Error,
-): void {
-  const { stories, tasks } = foldWork(ledger.read().entries, Date.now());
+): LedgerDraft[] {
+  const { stories, tasks } = foldWork(reading.entries, Date.now());
   const isStory = (name: string) => stories.some((s) => s.story === name);
   const isTask = (name: string) => tasks.some((t) => t.task === name);
   for (const name of [named.story, named.task])
@@ -130,19 +140,27 @@ export function recordInFlight(
     throw refuse(`'${named.story}' is recorded as a task, not a story`);
   if (named.task !== undefined && isStory(named.task))
     throw refuse(`'${named.task}' is recorded as a story, not a task`);
-  if (named.story !== undefined && !isStory(named.story))
-    ledger.append({
-      kind: 'story',
-      transition: `story:${named.story}`,
-      story: named.story,
-    });
-  if (named.task !== undefined && !isTask(named.task))
-    ledger.append({
-      kind: 'task',
-      transition: `task:${named.task}`,
-      task: named.task,
-      ...(named.story === undefined ? {} : { story: named.story }),
-    });
+  return [
+    ...(named.story === undefined || isStory(named.story)
+      ? []
+      : [
+          {
+            kind: 'story',
+            transition: `story:${named.story}`,
+            story: named.story,
+          } as const,
+        ]),
+    ...(named.task === undefined || isTask(named.task)
+      ? []
+      : [
+          {
+            kind: 'task',
+            transition: `task:${named.task}`,
+            task: named.task,
+            ...(named.story === undefined ? {} : { story: named.story }),
+          } as const,
+        ]),
+  ];
 }
 
 /** Route `ledger <verb> [args]` to the ledger of the git repository holding
@@ -187,12 +205,23 @@ export function dispatchLedger(
   };
 
   const ledger = ledgerAt(top, refuse);
-  const { entries, readPast } = ledger.read();
-  const work = foldWork(entries, opts.now ?? Date.now());
-  const story = (n: string) => work.stories.find((s) => s.story === n);
-  const task = (n: string) => work.tasks.find((t) => t.task === n);
-  /** Refuse a name already recorded, as a story or a task. */
-  const unrecorded = (n: string): string => {
+  const now = opts.now ?? Date.now();
+  /** The work `reading` records, and lookups of its stories and tasks. */
+  const workOf = (reading: LedgerReading) => {
+    const work = foldWork(reading.entries, now);
+    return {
+      work,
+      story: (n: string) => work.stories.find((s) => s.story === n),
+      task: (n: string) => work.tasks.find((t) => t.task === n),
+    };
+  };
+  /** The one entry `plan` makes of what the ledger holds, appended under its
+   *  lock, so its checks read what is there when it is written. */
+  const appendOne = (plan: (reading: LedgerReading) => LedgerDraft) =>
+    ledger.appendAfter((reading) => [plan(reading)])[0];
+  /** Refuse a name `reading` already records, as a story or a task. */
+  const unrecorded = (reading: LedgerReading, n: string): string => {
+    const { story, task } = workOf(reading);
     if (story(n) !== undefined)
       throw refuse(`'${n}' is already recorded as a story`);
     if (task(n) !== undefined)
@@ -202,6 +231,8 @@ export function dispatchLedger(
 
   switch (verb) {
     case 'state': {
+      const reading = ledger.read();
+      const { work } = workOf(reading);
       const inFlight = {
         stories: work.stories.filter((s) => s.ended === undefined),
         tasks: work.tasks.filter((t) => t.ended === undefined),
@@ -210,7 +241,7 @@ export function dispatchLedger(
         stories: work.stories.filter((s) => s.ended !== undefined),
         tasks: work.tasks.filter((t) => t.ended !== undefined),
       };
-      const report = readPast.report();
+      const report = reading.readPast.report();
       return {
         inFlight,
         ended,
@@ -218,7 +249,7 @@ export function dispatchLedger(
       };
     }
     case 'story': {
-      const recorded = unrecorded(name());
+      const named = name();
       const contexts = [...new Set(values('context'))];
       if (contexts.length > 0) {
         const known = new Folded(journalAt(top, refuse).entries()).contexts;
@@ -228,25 +259,27 @@ export function dispatchLedger(
             `the journal has no bounded context ${absent.map((c) => `'${c}'`).join(', ')}; record it with concepts context first`,
           );
       }
-      return ledger.append({
+      return appendOne((reading) => ({
         kind: 'story',
-        transition: `story:${recorded}`,
-        story: recorded,
+        transition: `story:${named}`,
+        story: unrecorded(reading, named),
         ...(contexts.length === 0 ? {} : { contexts }),
-      });
+      }));
     }
     case 'task': {
-      const recorded = unrecorded(name());
+      const named = name();
       const of = once('story');
-      if (of !== undefined && story(of) === undefined)
-        throw refuse(
-          `the ledger records no story '${of}'; record it with ledger story first`,
-        );
-      return ledger.append({
-        kind: 'task',
-        transition: `task:${recorded}`,
-        task: recorded,
-        ...(of === undefined ? {} : { story: of }),
+      return appendOne((reading) => {
+        if (of !== undefined && workOf(reading).story(of) === undefined)
+          throw refuse(
+            `the ledger records no story '${of}'; record it with ledger story first`,
+          );
+        return {
+          kind: 'task',
+          transition: `task:${named}`,
+          task: unrecorded(reading, named),
+          ...(of === undefined ? {} : { story: of }),
+        };
       });
     }
     case 'end': {
@@ -256,19 +289,22 @@ export function dispatchLedger(
         throw refuse(
           `give how it ended with --outcome ${OUTCOMES.join(' or ')}`,
         );
-      const endingStory = story(ending);
-      const held = endingStory ?? task(ending);
-      if (held === undefined)
-        throw refuse(`the ledger records no story or task '${ending}'`);
-      if (held.ended !== undefined)
-        throw refuse(
-          `'${ending}' already ended, ${held.ended.outcome}, at ${held.ended.at}`,
-        );
-      return ledger.append({
-        kind: 'end',
-        transition: `end:${ending}`,
-        ...(endingStory === undefined ? { task: ending } : { story: ending }),
-        outcome: outcome as Outcome,
+      return appendOne((reading) => {
+        const { story, task } = workOf(reading);
+        const endingStory = story(ending);
+        const held = endingStory ?? task(ending);
+        if (held === undefined)
+          throw refuse(`the ledger records no story or task '${ending}'`);
+        if (held.ended !== undefined)
+          throw refuse(
+            `'${ending}' already ended, ${held.ended.outcome}, at ${held.ended.at}`,
+          );
+        return {
+          kind: 'end',
+          transition: `end:${ending}`,
+          ...(endingStory === undefined ? { task: ending } : { story: ending }),
+          outcome: outcome as Outcome,
+        };
       });
     }
   }

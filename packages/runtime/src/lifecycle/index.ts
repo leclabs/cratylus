@@ -18,7 +18,7 @@
 
 import { Command } from 'commander';
 import { CLI_BIN } from '../bin-name.js';
-import { recordInFlight } from '../capabilities/ledger/dispatch.js';
+import { inFlightDrafts } from '../capabilities/ledger/dispatch.js';
 import { topOf } from '../capabilities/ledger/git.js';
 import {
   LIFECYCLE_KINDS,
@@ -104,18 +104,29 @@ export function appendLifecycle(
   const ledger = ledgerAt(top, refuse);
   if (draft.kind === 'dispatched') {
     if (draft.story === undefined && draft.task === undefined) return;
-    recordInFlight(ledger, draft, refuse);
-    return ledger.append(draft);
+    // Recording what it names and the dispatch itself is one append under the
+    // ledger's lock: a story or task another dispatch recorded first counts as
+    // recorded, and this dispatch is always written.
+    return ledger
+      .appendAfter((reading) => [
+        ...inFlightDrafts(reading, draft, refuse),
+        draft,
+      ])
+      .at(-1) as LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'>;
   }
-  const dispatched = ledger
-    .read()
-    .entries.some(
+  const [written] = ledger.appendAfter((reading) =>
+    reading.entries.some(
       (e) =>
         e.kind === 'dispatched' &&
         e.call === draft.call &&
         e.agent === draft.agent,
-    );
-  return dispatched ? ledger.append(draft) : undefined;
+    )
+      ? [draft]
+      : [],
+  );
+  return written as
+    | (LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'>)
+    | undefined;
 }
 
 /** `lifecycle '<event-json>'`: harness-facing, hidden from help, never a tool. */

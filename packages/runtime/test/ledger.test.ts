@@ -1,22 +1,28 @@
-// The ledger capability and the lifecycle append: each story and task in
-// flight, how each ended, and what each cost in agent runs by role, tokens and
-// elapsed time, taken from the harness's dispatches and returns; the cut-era
-// entries kept as history.
+// The ledger capability, its store and the lifecycle append: one exclusively
+// created file per entry in ULID order, a transition recorded once even when
+// delivered at once by several processes, each story and task in flight, how
+// each ended, and what each cost in agent runs by role, tokens and elapsed
+// time, taken from the harness's dispatches and returns, every one of them
+// counted though dispatched at once; the cut-era entries kept as history.
 
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
+import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { dispatchLedger } from '../src/capabilities/ledger/dispatch.js';
 import { workIn } from '../src/capabilities/ledger/index.js';
+import { LEDGER_DIR } from '../src/capabilities/ledger/store.js';
 import { appendLifecycle } from '../src/lifecycle/index.js';
 
 let sandbox: string;
@@ -52,6 +58,81 @@ const entry = (n: number, at: string, fields: Record<string, unknown>) => {
     JSON.stringify({ id, at, transition: `fixture:${n}`, ...fields }),
   );
 };
+
+/** Each process's exit code, `script` run as a module in `repo` by `count`
+ *  node processes started at once, the runtime read from its source. */
+const raced = (script: string, count: number) =>
+  Promise.all(
+    Array.from(
+      { length: count },
+      (_, i) =>
+        new Promise<number | null>((resolve, reject) => {
+          const child = spawn(
+            process.execPath,
+            [
+              '--import',
+              pathToFileURL(createRequire(import.meta.url).resolve('tsx/esm'))
+                .href,
+              '--input-type=module',
+              '-e',
+              script.replaceAll('$I', String(i)),
+            ],
+            { cwd: repo, stdio: 'ignore' },
+          );
+          child.on('error', reject);
+          child.on('close', resolve);
+        }),
+    ),
+  );
+const lifecycleModule = JSON.stringify(
+  fileURLToPath(new URL('../src/lifecycle/index.ts', import.meta.url)),
+);
+/** What the entries of the ledger say, in the order of their files' names. */
+const written = () =>
+  files().map(
+    (name) =>
+      JSON.parse(readFileSync(join(repo, LEDGER_DIR, name), 'utf8')) as {
+        id: string;
+        transition: string;
+      },
+  );
+
+describe('the ledger’s store', () => {
+  it('writes one file per entry, named by its ULID, in append order', () => {
+    for (const name of ['a', 'b', 'c']) ledger('task', name);
+    const names = files();
+    expect(names.every((n) => /^[0-9A-HJKMNP-TV-Z]{26}\.json$/.test(n))).toBe(
+      true,
+    );
+    expect(written().map((e) => `${e.id}.json`)).toEqual(names);
+    expect(written().map((e) => e.transition)).toEqual([
+      'task:a',
+      'task:b',
+      'task:c',
+    ]);
+  });
+
+  it('records the same transition once when several processes deliver it at once', async () => {
+    const event = {
+      kind: 'dispatched',
+      call: 'call-1',
+      agent: 'Builder',
+      role: 'builder',
+      task: 'chore',
+    };
+    const codes = await raced(
+      `import { appendLifecycle } from ${lifecycleModule};
+try { appendLifecycle(process.cwd(), ${JSON.stringify(event)}); process.exit(0); }
+catch { process.exit(1); }`,
+      4,
+    );
+    expect(codes.filter((c) => c === 0)).toHaveLength(1);
+    expect(written().map((e) => e.transition)).toEqual([
+      'task:chore',
+      'dispatched:call-1/Builder',
+    ]);
+  }, 30_000);
+});
 
 describe('the ledger’s verbs', () => {
   it('records stories and tasks in flight and how each ended', () => {
@@ -260,6 +341,31 @@ describe('the lifecycle append', () => {
     });
     expect(files()).toHaveLength(4);
   });
+
+  it('counts every one of several dispatches naming one new story at once, recording the story once', async () => {
+    const codes = await raced(
+      `import { appendLifecycle } from ${lifecycleModule};
+try {
+  appendLifecycle(process.cwd(), { kind: 'dispatched', call: 'call-1', agent: 'Builder$I', role: 'builder', story: 'seats' });
+  process.exit(0);
+} catch { process.exit(1); }`,
+      4,
+    );
+    expect(codes).toEqual([0, 0, 0, 0]);
+    expect(
+      written().filter((e) => e.transition === 'story:seats'),
+    ).toHaveLength(1);
+    expect(ledger('state')).toMatchObject({
+      inFlight: {
+        stories: [
+          {
+            story: 'seats',
+            cost: { agentRuns: { total: 4, byRole: { builder: 4 } } },
+          },
+        ],
+      },
+    });
+  }, 30_000);
 
   it('records nothing, and never fails, for a dispatch naming neither, or the return of one it does not hold', () => {
     expect(dispatched({})).toBeUndefined();
