@@ -29,8 +29,9 @@
 // `integrate`, `submit`, `update`, `commit`, `check`, `verdict`, `reported`,
 // and `dispatched` and `returned` naming a cut) are known history: never in
 // flight, never counted, never reported as unknown. The one fact still read
-// from them is which cuts were integrated, which keeps a decision about an
-// integrated cut deprecated in the concept journal.
+// from them is which cuts were integrated, which keeps a decision recorded
+// about such a cut deprecated, and its examples history, in the concept
+// journal.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -129,9 +130,6 @@ export interface Ledger {
   readonly root: string;
   /** What the ledger holds now. */
   read(): LedgerReading;
-  /** Append `draft` as one new entry; refused, writing nothing, when its
-   *  transition is already recorded. */
-  append<D extends LedgerDraft>(draft: D): D & { id: string; at: string };
   /** Holding the ledger's lock, read what it holds, then append in order the
    *  drafts `plan` makes of that reading, so nothing appended between the
    *  reading and the writing can be missed. Refused, writing nothing, when
@@ -270,11 +268,6 @@ export function ledgerAt(
       cached ??= scan().reading;
       return cached;
     },
-    append: <D extends LedgerDraft>(draft: D) =>
-      appendAfter(() => [draft])[0] as unknown as D & {
-        id: string;
-        at: string;
-      },
     appendAfter,
   };
 }

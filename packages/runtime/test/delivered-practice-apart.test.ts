@@ -30,7 +30,9 @@ const delivered = {
   identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
   subject: 'How the work is done.',
   relation: 'Upstream of every other context of its origin.',
-  concepts: [{ name: 'cut', wording: 'One reviewable change.', builtFrom: [] }],
+  concepts: [
+    { name: 'story', wording: 'A change of meaning, told.', builtFrom: [] },
+  ],
 };
 
 let root: string;

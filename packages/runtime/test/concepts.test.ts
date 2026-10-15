@@ -88,9 +88,9 @@ describe('the concept journal as a library', () => {
     }
   });
 
-  it('names the maker git’s user when no agent is named, and warns of no freeze', () => {
+  it('names the maker git’s user when no agent is named, and warns of nothing the ledger’s history holds', () => {
     version('define', 'A hold lasts ten minutes.', 'First.');
-    // A cut opened in the ledger's history and never integrated freezes nothing.
+    // An entry of the ledger's history, read as recorded, warns of nothing.
     historyEntry(1, {
       kind: 'cut',
       cut: 'seats',
@@ -545,6 +545,7 @@ describe('the concept journal as a library', () => {
     expect(overview().contexts[0]?.account).toContain('No work is in flight.');
     dispatchLedger(['story', 'seats', '--context', 'booking'], { from });
     dispatchLedger(['story', 'rows', '--context', 'other'], { from });
+    dispatchLedger(['story', 'everywhere'], { from });
     appendLifecycle(from, {
       kind: 'dispatched',
       call: 'call-1',
@@ -567,8 +568,8 @@ describe('the concept journal as a library', () => {
           context: 'booking',
           subject: 'Booking.',
           workInFlight: {
-            stories: [{ story: 'seats' }],
-            tasks: [{ task: 'seats-hold', story: 'seats' }, { task: 'chore' }],
+            stories: [{ story: 'seats' }, { story: 'everywhere' }],
+            tasks: [{ task: 'seats-hold', story: 'seats' }],
           },
         },
       ],
@@ -577,9 +578,11 @@ describe('the concept journal as a library', () => {
       'Hold means: A seat kept aside.',
     );
     expect(overview().contexts[0]?.account).toContain(
-      'In flight: the story seats; the task seats-hold of the story seats; the task chore.',
+      'In flight: the story seats; the story everywhere; the task seats-hold of the story seats.',
     );
-    dispatchLedger(['end', 'chore', '--outcome', 'merged'], { from });
+    // A task with no story changes no meaning: it touches no context.
+    expect(overview().contexts[0]?.account).not.toContain('chore');
+    dispatchLedger(['end', 'everywhere', '--outcome', 'dropped'], { from });
     expect(overview().contexts[0]?.workInFlight).toEqual({
       stories: [{ story: 'seats' }],
       tasks: [{ task: 'seats-hold', story: 'seats' }],
@@ -646,40 +649,69 @@ describe('the concept journal as a library', () => {
   });
 
   it('shows only standing decisions and examples, history when asked', () => {
+    /** The flags recording decision `id` in booking, accepted. */
+    const decideFlags = (id: string) => [
+      '--context',
+      'booking',
+      '--title',
+      `${id} title`,
+      '--situation',
+      'S',
+      '--decision',
+      'D',
+      '--consequences',
+      'C',
+      '--status',
+      'accepted',
+    ];
     const decide = (id: string, ...more: string[]) =>
-      concepts(
-        'decide',
-        id,
-        '--context',
-        'booking',
-        '--title',
-        `${id} title`,
-        '--situation',
-        'S',
-        '--decision',
-        'D',
-        '--consequences',
-        'C',
-        '--status',
-        'accepted',
-        ...more,
-      ) as { id: string };
+      concepts('decide', id, ...decideFlags(id), ...more);
+    type Listed = {
+      decisions: {
+        id: string;
+        status: string;
+        deprecation?: unknown;
+        cut?: string;
+      }[];
+    };
+    const decisions = (...flags: string[]): Listed['decisions'] => {
+      const answer = concepts('decisions', ...flags) as Listed;
+      return answer.decisions;
+    };
     const listed = (...flags: string[]) =>
-      (
-        concepts('decisions', ...flags) as {
-          decisions: { id: string; status: string; deprecation?: unknown }[];
-        }
-      ).decisions.map(({ id, status, deprecation }) => ({
+      decisions(...flags).map(({ id, status, deprecation }) => ({
         id,
         status,
         ...(deprecation === undefined ? {} : { deprecation }),
       }));
+    // A decision recorded by an earlier workflow names the cut it was about;
+    // no verb records one now, so it is written as it was recorded.
+    const aboutId = `01J${'0'.repeat(22)}1`;
+    writeFileSync(
+      join(repo, 'design/journal', `${aboutId}.json`),
+      JSON.stringify({
+        id: aboutId,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'decide',
+        decisionId: 'about',
+        context: 'booking',
+        title: 'about title',
+        situation: 'S',
+        decision: 'D',
+        consequences: 'C',
+        status: 'accepted',
+        supersedes: null,
+        cut: 'stalls',
+      }),
+    );
     decide('rule');
     decide('old');
     decide('new', '--supersedes', 'old');
-    const about = decide('about', '--cut', 'seats');
-    expect(about).toMatchObject({ cut: 'seats' });
     decide('keeper', '--keeps', 'booking/seats');
+    refused(
+      ['decide', 'cutting', ...decideFlags('cutting'), '--cut', 'seats'],
+      /^concepts decide: it does not take --cut/,
+    );
     refused(
       ['deprecate', 'rule'],
       /^concepts deprecate: give why it no longer applies with --reason/,
@@ -689,25 +721,8 @@ describe('the concept journal as a library', () => {
       /^concepts deprecate: the decision 'old' is superseded; only a standing decision is deprecated/,
     );
     refused(
-      [
-        'decide',
-        'bad',
-        '--context',
-        'booking',
-        '--title',
-        'T',
-        '--situation',
-        'S',
-        '--decision',
-        'D',
-        '--consequences',
-        'C',
-        '--status',
-        'open',
-        '--keeps',
-        'seats',
-      ],
-      /^concepts decide: the kept example file 'seats' is not one/,
+      ['decide', 'bad', ...decideFlags('bad'), '--keeps', 'seats'],
+      /^concepts decide: the kept example file 'seats' is not one; name it as <context>\/<story>/,
     );
     const deprecated = concepts('deprecate', 'rule', '--reason', 'Done.') as {
       id: string;
@@ -722,11 +737,12 @@ describe('the concept journal as a library', () => {
       /^concepts deprecate: the decision 'rule' is deprecated/,
     );
     expect(listed()).toEqual([
-      { id: 'new', status: 'accepted' },
       { id: 'about', status: 'accepted' },
+      { id: 'new', status: 'accepted' },
       { id: 'keeper', status: 'accepted' },
     ]);
     expect(listed('--history')).toEqual([
+      { id: 'about', status: 'accepted' },
       {
         id: 'rule',
         status: 'deprecated',
@@ -734,21 +750,29 @@ describe('the concept journal as a library', () => {
       },
       { id: 'old', status: 'superseded' },
       { id: 'new', status: 'accepted' },
-      { id: 'about', status: 'accepted' },
       { id: 'keeper', status: 'accepted' },
     ]);
+    // The cut a recorded decision names is history, shown only when asked.
+    expect(decisions().find((d) => d.id === 'about')).not.toHaveProperty('cut');
+    expect(decisions('--history').find((d) => d.id === 'about')?.cut).toBe(
+      'stalls',
+    );
 
-    // The cut a decision was about, integrated, deprecates it; its examples
-    // are history unless a standing decision keeps them.
+    // A story's examples are history once the story is done, merged or
+    // dropped, unless a standing decision keeps them; a cut's examples, and
+    // a decision recorded about it, once the ledger's history records the cut
+    // integrated.
     mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-    writeFileSync(
-      join(repo, 'design/examples/booking/seats.md'),
-      '1. (hold) Given a seat, when held, then `holdSeat()` runs.\n',
-    );
-    writeFileSync(
-      join(repo, 'design/examples/booking/rows.md'),
-      '1. (hold) Given a row, when held, then `holdRow()` runs.\n',
-    );
+    for (const [story, call] of [
+      ['seats', 'holdSeat'],
+      ['rows', 'holdRow'],
+      ['lanes', 'holdLane'],
+      ['stalls', 'holdStall'],
+    ])
+      writeFileSync(
+        join(repo, 'design/examples/booking', `${story}.md`),
+        `1. (hold) Given one, when held, then \`${call}()\` runs.\n`,
+      );
     const git = (...args: string[]) =>
       execFileSync(
         'git',
@@ -757,20 +781,19 @@ describe('the concept journal as a library', () => {
       );
     git('add', '-A');
     git('commit', '-qm', 'examples');
-    // The ledger's history records both cuts integrated.
-    for (const [n, cut] of [
-      [1, 'seats'],
-      [3, 'rows'],
-    ] as const) {
-      historyEntry(n, {
-        kind: 'cut',
-        cut,
-        branch: `feature/${cut}`,
-        contexts: ['booking'],
-        architects: { booking: 'desk' },
-      });
-      historyEntry(n + 1, { kind: 'integrate', cut });
-    }
+    const from = join(repo, 'nested');
+    for (const story of ['seats', 'rows', 'lanes'])
+      dispatchLedger(['story', story, '--context', 'booking'], { from });
+    dispatchLedger(['end', 'seats', '--outcome', 'merged'], { from });
+    dispatchLedger(['end', 'rows', '--outcome', 'dropped'], { from });
+    historyEntry(1, {
+      kind: 'cut',
+      cut: 'stalls',
+      branch: 'feature/stalls',
+      contexts: ['booking'],
+      architects: { booking: 'desk' },
+    });
+    historyEntry(2, { kind: 'integrate', cut: 'stalls' });
     expect(listed()).toEqual([
       { id: 'new', status: 'accepted' },
       { id: 'keeper', status: 'accepted' },
@@ -778,7 +801,7 @@ describe('the concept journal as a library', () => {
     expect(listed('--history')).toContainEqual({
       id: 'about',
       status: 'deprecated',
-      deprecation: { cut: 'seats' },
+      deprecation: { cut: 'stalls' },
     });
     expect(concepts('state')).toMatchObject({
       contexts: [
@@ -797,24 +820,30 @@ describe('the concept journal as a library', () => {
       contexts: { decisions: Record<string, { id: string }[]> }[];
     };
     expect(state.contexts[0]?.decisions.deprecated?.map((d) => d.id)).toEqual([
-      'rule',
       'about',
+      'rule',
     ]);
     expect(state.contexts[0]?.decisions.superseded?.map((d) => d.id)).toEqual([
       'old',
     ]);
-    const files = (...flags: string[]) =>
-      (
-        concepts('leakage', ...flags) as {
-          warnings: { passage: { kind: string; file?: string } }[];
-        }
-      ).warnings
+    const files = (...flags: string[]) => {
+      const answer = concepts('leakage', ...flags) as {
+        warnings: { passage: { kind: string; file?: string } }[];
+      };
+      return answer.warnings
         .filter((w) => w.passage.kind === 'example')
-        .map((w) => w.passage.file);
-    expect(files()).toEqual(['design/examples/booking/seats.md']);
+        .map((w) => w.passage.file)
+        .sort();
+    };
+    expect(files()).toEqual([
+      'design/examples/booking/lanes.md',
+      'design/examples/booking/seats.md',
+    ]);
     expect(files('--history')).toEqual([
+      'design/examples/booking/lanes.md',
       'design/examples/booking/rows.md',
       'design/examples/booking/seats.md',
+      'design/examples/booking/stalls.md',
     ]);
   });
 });

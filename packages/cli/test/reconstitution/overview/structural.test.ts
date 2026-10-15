@@ -139,18 +139,18 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
   git(f.root, 'switch', 'journal');
   expect(
     snapshot(f.root),
-    'integration does not claim feature journal',
+    'the shared checkout does not claim the feature journal',
   ).toEqual(common);
-  const integration = overview(f);
+  const shared = overview(f);
   expect(
-    integration.workInFlight,
+    shared.workInFlight,
     'shared checkout does not leak feature ledger',
   ).toEqual({ stories: [], tasks: [] });
   expect(
-    integration.openDecisions.map((d) => d.id),
-    'integration does not claim acceptance',
+    shared.openDecisions.map((d) => d.id),
+    'the shared checkout does not claim the acceptance',
   ).toEqual(['colour']);
-  expect(integration.account).toContain(meanings.take);
+  expect(shared.account).toContain(meanings.take);
   git(f.root, 'merge', '--no-edit', 'feature/film');
   expect(overview(f), 'entries land with the work').toEqual(feature);
 });

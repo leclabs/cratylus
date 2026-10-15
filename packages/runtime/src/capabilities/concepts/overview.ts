@@ -16,11 +16,11 @@
 //
 // WORK IN FLIGHT ON IT: each story in flight recorded with the context among
 // its contexts, or with none, which touches every context; and each task in
-// flight whose story touches it, or that has no story or one recorded with no
-// contexts, which touches every context.
+// flight of a story that touches it. A task with no story changes no meaning,
+// so it touches no context.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Work } from '../ledger/index.js';
+import type { Task, Work } from '../ledger/index.js';
 import type { ContextView, DecisionView, Meaning } from './views.js';
 
 /** One context's overview. */
@@ -34,7 +34,7 @@ export interface ContextOverview {
   /** The stories and tasks in flight that touch it. */
   readonly workInFlight: {
     readonly stories: readonly { story: string }[];
-    readonly tasks: readonly { task: string; story?: string }[];
+    readonly tasks: readonly { task: string; story: string }[];
   };
   readonly account: string;
 }
@@ -140,15 +140,12 @@ export function overviewOf(
       .map(({ story }) => ({ story })),
     tasks: work.tasks
       .filter(
-        (t) =>
+        (t): t is Task & { readonly story: string } =>
           t.ended === undefined &&
-          touched(
-            t.story === undefined ? undefined : storyContexts.get(t.story),
-          ),
+          t.story !== undefined &&
+          touched(storyContexts.get(t.story)),
       )
-      .map(({ task, story }) =>
-        story === undefined ? { task } : { task, story },
-      ),
+      .map(({ task, story }) => ({ task, story })),
   };
 
   const opening =
@@ -201,10 +198,7 @@ export function overviewOf(
           .join('; ')}.`;
   const working = [
     ...inFlight.stories.map((s) => `the story ${s.story}`),
-    ...inFlight.tasks.map(
-      (t) =>
-        `the task ${t.task}${t.story === undefined ? '' : ` of the story ${t.story}`}`,
-    ),
+    ...inFlight.tasks.map((t) => `the task ${t.task} of the story ${t.story}`),
   ];
   const workProse =
     working.length === 0
