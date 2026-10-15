@@ -1931,7 +1931,7 @@ describe('omp capability interface', () => {
         'This session starts with reconstitution (at every start, read back before acting).',
       );
       for (const line of [
-        "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by: read it whole, never only recalled from tool descriptions or memory.",
+        "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
         'Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.',
         'Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.',
         'Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.',
