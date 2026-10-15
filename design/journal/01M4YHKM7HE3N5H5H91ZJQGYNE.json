@@ -1,0 +1,15 @@
+{
+  "id": "01M4YHKM7HE3N5H5H91ZJQGYNE",
+  "at": "2026-10-15T01:07:44.497Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0220",
+  "context": "delivery",
+  "title": "The delivered practice is shown apart from a project's design",
+  "situation": "Learned on 2026-10-14 adopting the workflow on an existing project with delivered work and an earlier design record. The workflow context delivered with cratylus appeared among the project's own contexts, so architects documented it as part of the product's design and called contexts 'delivered'; decision views also lead with record numbers, which architects copied into documents for the operator.",
+  "decision": "A project's design is its own contexts. The practice cratylus delivers is the practice its agents work by, still read first by a fresh session, but shown apart from the project's design and never in its context map. Decisions are shown by what they say first, their number only as a reference.",
+  "consequences": "Next as ordinary engineering: the views show the delivered practice in its own place and lead decisions with their titles; checked by a cold architect documenting a project, whose documents must cover only the project's contexts.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

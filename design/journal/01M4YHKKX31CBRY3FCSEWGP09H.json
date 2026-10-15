@@ -1,0 +1,15 @@
+{
+  "id": "01M4YHKKX31CBRY3FCSEWGP09H",
+  "at": "2026-10-15T01:07:44.163Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0218",
+  "context": "workflow",
+  "title": "Adopting the workflow on a project that already has work",
+  "situation": "Learned on 2026-10-14 adopting the workflow on an existing project with delivered work and an earlier design record. The workflow said how to build against a design, but not how to start on a project whose design lived in an older record and whose work was partly delivered; architects copied the old record as the design and reported what it said was built as fact.",
+  "decision": "On a project that already has work, the architect establishes the design in the product's own terms, from the operator's statement of what the product is for, weighing every source (earlier records, the product's screens and interfaces, its documents) as evidence, never as the design. It reads the design back and settles it with the operator before recording it; until the design is first committed it is a draft, corrected in place rather than by later entries, and the earlier record is removed in the same commit, staying in history. What is actually built is then established by leads reviewing the delivered work against the design, a review that changes nothing and so is not a cut; acceptance cuts and new work follow from what they find.",
+  "consequences": "How a project with existing work is adopted is part of the workflow, not improvised per project.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
