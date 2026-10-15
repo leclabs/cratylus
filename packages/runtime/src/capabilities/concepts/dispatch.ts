@@ -5,7 +5,7 @@
 //              by, delivered and shown apart from its design, then each of its
 //              own contexts told whole for a reader of it: subject and
 //              relation, concepts whole before parts, open decisions and the
-//              cuts in flight; what a session reads first to reconstitute
+//              work in flight; what a session reads first to reconstitute
 //   state      the project's purpose first, then the delivered practice apart,
 //              then the whole state of each of its own contexts in one answer:
 //              the query a session reconstitutes its detail from
@@ -30,12 +30,12 @@
 // WHAT STANDS. A decision stands while it is open or accepted, neither
 // superseded nor deprecated; one about a cut the ledger records integrated is
 // deprecated without any entry. A cut's example files are history once the cut
-// is integrated, unless a standing decision keeps them. A cut is finished once
-// its work is complete or it is integrated. Every query but `history` reads
-// only what stands: no retired concept, no reason a concept's version was
-// written, no superseded or deprecated decision, nor what a decision superseded
-// or the kinds recorded before its governing one, no example that is history
-// and no finished cut's effort; `state`, `design`, `decisions` and `leakage`
+// is integrated, unless a standing decision keeps them. The cuts integrated are
+// read from the ledger's history. Every query but `history` reads only what
+// stands: no retired concept, no reason a concept's version was written, no
+// superseded or deprecated decision, nor what a decision superseded or the
+// kinds recorded before its governing one, no example that is history and no
+// effort recorded for a cut; `state`, `design`, `decisions` and `leakage`
 // add the history only when asked with `--history`.
 //
 // A query appends nothing and prints JSON; when it read past entries written by
@@ -52,14 +52,6 @@
 // quotation in code type or a flag that holds it. Every refusal is one line
 // opening with `concepts <verb>:`, thrown before anything is appended.
 //
-// THE FREEZE is a rule held by review and the record, never a refusal
-// (decision 0143): `define`, `supersede` and `retire` of a concept that a cut
-// opened and not integrated names in its examples, in the same bounded context,
-// by any agent but the architect every such cut records for that context, are
-// recorded and carry a warning naming the cut; so does any of them while what
-// is frozen cannot be read. What is frozen is read from the ledger and the
-// record (`../work-package/frozen.ts`), never kept here.
-//
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
 // reach for it, whether it reads or appends, and each parameter it takes. Its
@@ -75,12 +67,8 @@ import {
   switchFlag,
   valueFlag,
 } from '../../verb-flags.js';
+import { workIn } from '../ledger/index.js';
 import { verbOf } from '../plan/argv.js';
-import {
-  type FrozenCut,
-  cutsInLedger,
-  frozenCuts,
-} from '../work-package/index.js';
 import {
   type DeliveredContext,
   deliveredDesign,
@@ -110,7 +98,7 @@ import {
   visibleExamples,
   vocabulary,
 } from './leakage.js';
-import { type LedgerCut, overviewOf } from './overview.js';
+import { overviewOf } from './overview.js';
 import {
   type DecisionView,
   Folded,
@@ -119,13 +107,6 @@ import {
   standingDesign,
   stands,
 } from './views.js';
-
-/** A change to a concept a frozen cut names, made by someone other than its
- *  architect: the cuts that freeze it, and what the warning says. */
-interface FreezeWarning {
-  readonly freeze: readonly string[];
-  readonly message: string;
-}
 
 /** The recorded bounded context `what` belongs to, given where it must be. */
 const inContext = (what: string) =>
@@ -167,8 +148,8 @@ export const VERBS = {
     concept: 'context overview',
     effect: 'reads',
     purpose:
-      'Tell the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), each by its title with its id as a reference, then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
-    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
+      'Tell the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts whole, worked out afresh from the recorded design and the ledger (the record of the work): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), each by its title with its id as a reference, then the work in flight that touches it (the stories and tasks being built now), together as a plain prose account for a reader of that context',
+    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and work in flight; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -180,7 +161,7 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the project’s purpose first, what the project is for, then, in a place of its own (practice), the delivered practice the project’s agents work by, and then the whole state of each of the project’s own bounded contexts in one answer: its live concepts (the current meaning of each), competing versions none has chosen, its standing decisions, accepted (settled) and open (not settled), each by its title first, then its kind, its id and entry as references, whose whole text the decisions reading gives, and, for each of its cuts not yet finished (a change to the design built and judged as a whole), how much work it took as last recorded; retired concepts, why each concept’s version was written, superseded and deprecated decisions and the effort of finished cuts are history, shown only when asked',
+      'Read the project’s purpose first, what the project is for, then, in a place of its own (practice), the delivered practice the project’s agents work by, and then the whole state of each of the project’s own bounded contexts in one answer: its live concepts (the current meaning of each), competing versions none has chosen, its standing decisions, accepted (settled) and open (not settled), each by its title first, then its kind, its id and entry as references, whose whole text the decisions reading gives; retired concepts, why each concept’s version was written, superseded and deprecated decisions and the effort recorded for cuts are history, shown only when asked',
     when: 'At the start of a session, or after it was compacted, once the overviews of the delivered practice and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; the delivered practice is shown apart from the project’s contexts and carries no decisions, retired concepts or recorded effort of its own',
     positional: null,
     flags: {
@@ -188,7 +169,7 @@ export const VERBS = {
         'Only this bounded context; every context when left out',
       ),
       history: switchFlag(
-        'Also its history: retired concepts with why each was retired, why each live concept’s version was written, the decisions superseded or deprecated, each with what replaced it or why it no longer applies, and every cut’s effort, finished ones included',
+        'Also its history: retired concepts with why each was retired, why each live concept’s version was written, the decisions superseded or deprecated, each with what replaced it or why it no longer applies, and the effort recorded for each cut',
       ),
     },
   },
@@ -323,7 +304,7 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; while a cut not yet integrated freezes the concept in its bounded context, a change by anyone but that cut’s architect is recorded with a warning naming the cut',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
     when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
     positional: concept(
       'The concept whose meaning changes, by its name in the bounded context',
@@ -342,7 +323,7 @@ export const VERBS = {
     concept: 'retirement',
     effect: 'appends',
     purpose:
-      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept; while a cut not yet integrated freezes the concept in its bounded context, a retirement by anyone but that cut’s architect is recorded with a warning naming the cut',
+      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept',
     when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
     positional: concept(
       'The concept that leaves the design, by its name in the bounded context',
@@ -490,7 +471,7 @@ const READING = {
   'decisions.entry':
     'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
   efficiency:
-    'each cut of the context the ledger records not yet finished (neither its work complete nor it integrated), and given history every cut, with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
+    'given only when history is asked for: each cut of the context with the figures last recorded for it: its agent runs in total and by role, its rounds, its whole-check runs, its tokens (null when no run carried any) and when they were recorded',
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
@@ -594,43 +575,6 @@ function answerOf(
       ? standing.current.map((v) => v.id)
       : [standing.current.id];
   };
-  /** The warning a change to the concept `name` in `where` carries when a
-   *  frozen cut names it and the call is not made by the architect each such
-   *  cut records for `where`, or when what is frozen cannot be read. */
-  const frozenWarnings = (where: string, name: string): FreezeWarning[] => {
-    let cuts: readonly FrozenCut[];
-    try {
-      cuts = frozenCuts(journal.root).cuts;
-    } catch (error) {
-      const why = error instanceof Error ? error.message : String(error);
-      return [
-        {
-          freeze: [],
-          message: `the concept '${name}' in '${where}' could not be checked against the freeze: what is frozen cannot be read: ${why.replace(/\s*\n\s*/g, ' ')}`,
-        },
-      ];
-    }
-    const holding = cuts.filter((c) =>
-      c.concepts.some((k) => k.context === where && k.name === name),
-    );
-    const agent = journal.maker;
-    if (
-      holding.length === 0 ||
-      (agent !== undefined &&
-        holding.every((c) => c.architects[where] === agent))
-    )
-      return [];
-    const by = holding.map((c) => {
-      const architect = c.architects[where];
-      return `'${c.cut}' (architect ${architect === undefined ? 'none' : `'${architect}'`})`;
-    });
-    return [
-      {
-        freeze: holding.map((c) => c.cut),
-        message: `the concept '${name}' in '${where}' is frozen by the ${holding.length === 1 ? 'cut' : 'cuts'} ${by.join(', ')}; only its architect changes it until the cut is integrated, and the change is made by ${agent === undefined ? 'an unknown agent' : `'${agent}'`}: recorded, for review`,
-      },
-    ];
-  };
   /** The entry of the one decision `ref` names; refuses none, or an id
    *  several decisions share. */
   const decisionOf = (ref: string): string => {
@@ -645,24 +589,18 @@ function answerOf(
   };
   /** Whether history is asked for. */
   const history = args.flags.has('history');
-  /** Every cut the ledger records, read once, what it read past kept for the
+  /** What the ledger records, read once, what it read past kept for the
    *  answer. */
-  let recordedCuts: readonly LedgerCut[] | undefined;
-  const ledgerCuts = () => {
-    if (recordedCuts === undefined) {
-      const { cuts, readPast } = cutsInLedger(journal.root, refuse);
-      ledgers.push(readPast);
-      recordedCuts = cuts;
+  let recordedWork: ReturnType<typeof workIn> | undefined;
+  const ledger = () => {
+    if (recordedWork === undefined) {
+      recordedWork = workIn(journal.root, refuse);
+      ledgers.push(recordedWork.readPast);
     }
-    return recordedCuts;
+    return recordedWork;
   };
-  /** The cuts the ledger records integrated. */
-  const integratedCuts = () =>
-    new Set(
-      ledgerCuts()
-        .filter((c) => c.phase === 'integrated')
-        .map((c) => c.cut),
-    );
+  /** The cuts the ledger's history records integrated. */
+  const integratedCuts = () => ledger().integratedCuts;
   /** Every decision, its status worked out from the cuts integrated. */
   const decisionViews = () => folded.decisionViews(integratedCuts());
   /** `design` as shown: whole when history is asked for, else as it stands. */
@@ -676,8 +614,8 @@ function answerOf(
   ) => (history ? design : standingDesign(design));
   /** The state of `where`: its design, its standing decisions each by its
    *  summary, its title first and its id and entry as references (its whole
-   *  text is the decisions reading's), and the figures of its cuts the ledger
-   *  records not yet finished; history too when asked. */
+   *  text is the decisions reading's); history, the figures recorded for its
+   *  cuts among it, too when asked. */
   const state = (decisions: readonly DecisionView[], where: string) => {
     const of = (status: DecisionView['status']) =>
       decisions
@@ -703,11 +641,6 @@ function answerOf(
             ...(deprecation === undefined ? {} : { deprecation }),
           }),
         );
-    const unfinished = new Set(
-      ledgerCuts()
-        .filter((c) => c.phase === 'open' || c.phase === 'in flight')
-        .map((c) => c.cut),
-    );
     return {
       ...shownDesign(folded.design(where)),
       decisions: {
@@ -717,9 +650,7 @@ function answerOf(
           ? { superseded: of('superseded'), deprecated: of('deprecated') }
           : {}),
       },
-      efficiency: folded
-        .efficiency(where)
-        .filter((e) => history || unfinished.has(e.cut)),
+      ...(history ? { efficiency: folded.efficiency(where) } : {}),
     };
   };
   /** The words of `where`: the names of its live concepts and of `also`, and
@@ -799,7 +730,7 @@ function answerOf(
         ...folded.purpose(),
         ...practiceOf(covered.delivered.map(deliveredOverview)),
         contexts: covered.own.map((where) =>
-          overviewOf(folded.design(where), decisions, ledgerCuts()),
+          overviewOf(folded.design(where), decisions, ledger().work),
         ),
       };
     }
@@ -1061,7 +992,6 @@ function answerOf(
       };
       const passage: Passage = { kind: 'concept', context: where, name };
       const found = [
-        ...frozenWarnings(where, name),
         ...warnings(passage, [wording], own(where, name)),
         ...restating(
           passage,
@@ -1077,15 +1007,13 @@ function answerOf(
       const where = context();
       const reason = read.required('reason', 'the reason');
       const supersedes = superseding(where, name, false);
-      const found = frozenWarnings(where, name);
-      const entry = journal.append({
+      return journal.append({
         kind: 'retire',
         context: where,
         name,
         reason,
         supersedes,
       });
-      return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'decide': {
       const decisionId = read.named('decision id');

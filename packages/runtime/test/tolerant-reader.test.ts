@@ -1,10 +1,10 @@
-// The concept journal and the work package ledger as an older runtime reads
+// The concept journal and the ledger as an older runtime reads
 // them: entries of kinds it does not know, and journal entries of a known kind
 // holding a value it does not know, are read past and reported with every
 // reading, appending still works and leaves every entry as it was, and an entry
 // of a known kind it cannot read is refused by name. The command-line examples
 // (cli `test/delivery-journal`) bind the contract end to end; these hold it for
-// the library and for the work package capability.
+// the library and for the ledger capability.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -19,7 +19,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
+import { dispatchLedger } from '../src/capabilities/ledger/dispatch.js';
 
 let sandbox: string;
 let repo: string;
@@ -217,38 +217,30 @@ it('refuses a known entry it cannot read by name, though an unknown kind is pres
   expect(files()).toEqual(before);
 });
 
-it('records a cut’s figures into a journal holding an unknown kind', () => {
-  mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-  writeFileSync(
-    join(repo, 'design/examples/booking/delivery.md'),
-    '1. (hold) **Given** a hold.\n',
-  );
+it('shows a cut’s recorded figures only as history, in a journal holding an unknown kind', () => {
   known();
-  unknown(9, 'annotation');
+  entry(9, {
+    kind: 'efficiency',
+    context: 'booking',
+    cut: 'delivery',
+    agentRuns: { total: 2, byRole: { builder: 2 } },
+    rounds: 1,
+    wholeCheckRuns: 1,
+    tokens: null,
+  });
+  unknown(10, 'annotation');
   const before = files();
-  const recorded = dispatchWorkPackage(['record', '--cut', 'delivery'], {
-    from: repo,
-  }) as { id: string; kind: string };
-  expect(recorded).toMatchObject({ kind: 'efficiency', context: 'booking' });
-  const after = files();
-  expect(Object.keys(after).filter((name) => !(name in before))).toEqual([
-    `${recorded.id}.json`,
-  ]);
-  for (const [name, bytes] of Object.entries(before))
-    expect(after[name]).toBe(bytes);
   expect(concepts('state', '--history')).toMatchObject({
     contexts: [{ efficiency: [{ cut: 'delivery' }] }],
     uninterpreted: { kinds: { annotation: 1 }, mayBeIncomplete: true },
   });
-  expect(concepts('state')).toMatchObject({ contexts: [{ efficiency: [] }] });
+  expect(
+    (concepts('state') as { contexts: object[] }).contexts[0],
+  ).not.toHaveProperty('efficiency');
+  expect(files()).toEqual(before);
 });
 
-it('reads the ledger past a kind it does not know, in every reading, and appends past it', () => {
-  mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-  writeFileSync(
-    join(repo, 'design/examples/booking/delivery.md'),
-    '1. (hold) **Given** a hold.\n',
-  );
+it('reads the ledger past a kind it does not know, and appends past it', () => {
   const ledger = join(repo, 'design/ledger');
   mkdirSync(ledger);
   const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
@@ -258,55 +250,27 @@ it('reads the ledger past a kind it does not know, in every reading, and appends
         id: id(n),
         at: '2016-07-30T23:54:10.259Z',
         transition: `fixture:${n}`,
-        cut: 'delivery',
         ...fields,
       }),
     );
-  ledgerEntry(1, {
-    kind: 'cut',
-    branch: 'feature/delivery',
-    contexts: ['booking'],
-    architects: { booking: 'architect' },
-  });
-  ledgerEntry(3, {
-    kind: 'submit',
-    workPackage: 'reader',
-    outputs: ['before.ts'],
-    concepts: ['hold'],
-    dependsOn: [],
-    needs: [],
-  });
-  const workPackage = (...argv: string[]) =>
-    dispatchWorkPackage([...argv, '--cut', 'delivery'], {
-      from: repo,
-    }) as Record<string, unknown>;
-  const ledgerReadings = [
-    ['state'],
-    ['inventory'],
-    ['assignment', 'reader'],
-    ['levels'],
-    ['history', 'reader'],
-    ['efficiency'],
-  ];
-  const baseline = ledgerReadings.map((argv) => workPackage(...argv));
-  for (const value of baseline)
-    expect(value).not.toHaveProperty('uninterpreted');
-  ledgerEntry(5, { kind: 'annotation', workPackage: 'reader' });
+  ledgerEntry(1, { kind: 'story', story: 'reader' });
+  ledgerEntry(3, { kind: 'end', story: 'reader', outcome: 'merged' });
+  const state = () =>
+    dispatchLedger(['state'], { from: repo }) as Record<string, unknown>;
+  const baseline = state();
+  expect(baseline).not.toHaveProperty('uninterpreted');
+  ledgerEntry(5, { kind: 'annotation', story: 'reader' });
   const report = {
     kinds: { annotation: 1 },
     mayBeIncomplete: true,
     reading: expect.any(String),
   };
-  for (const [i, argv] of ledgerReadings.entries())
-    expect(workPackage(...argv)).toEqual({
-      ...baseline[i],
-      uninterpreted: report,
-    });
+  expect(state()).toEqual({ ...baseline, uninterpreted: report });
   const bytes = readFileSync(join(ledger, `${id(5)}.json`), 'utf8');
-  const updated = workPackage('update', 'reader', '--output', 'after.ts');
-  expect(updated).not.toHaveProperty('uninterpreted');
-  expect(workPackage('assignment', 'reader')).toMatchObject({
-    outputs: ['after.ts'],
+  const recorded = dispatchLedger(['task', 'reader-view'], { from: repo });
+  expect(recorded).not.toHaveProperty('uninterpreted');
+  expect(state()).toMatchObject({
+    inFlight: { tasks: [{ task: 'reader-view' }] },
     uninterpreted: report,
   });
   expect(readFileSync(join(ledger, `${id(5)}.json`), 'utf8')).toBe(bytes);

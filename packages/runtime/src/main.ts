@@ -28,7 +28,7 @@
 // capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
-// `concepts` and `workPackage` print their JSON result; `concepts` is handed the
+// `concepts` and `ledger` print their JSON result; `concepts` is handed the
 // contexts the installation it reaches delivers, so its views show them beside the
 // project's own. A refusal is a loud code-1 failure, printed as `cratylus <message>`,
 // a message opening with the capability and the verb, so it reads as every other
@@ -36,11 +36,10 @@
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
 //
-// HARNESS-FACING COMMANDS are no capability: `lifecycle` (a lifecycle entry from
-// the harness's own agent event) and `completion-check` (run by the post-commit
-// hook).
-// `harnessCommands` exports them for the program to hold HIDDEN, so no help
-// lists them and no capability surface, and so no agent tool, offers them.
+// THE HARNESS-FACING COMMAND is no capability: `lifecycle` (a lifecycle entry
+// from the harness's own agent event). `harnessCommands` exports it for the
+// program to hold HIDDEN, so no help lists it and no capability surface, and so
+// no agent tool, offers it.
 //
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
 // not written here: its one home is `./bin-name.ts`. See that module for why the
@@ -55,6 +54,11 @@ import {
   JOURNAL,
 } from './capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from './capabilities/concepts/index.js';
+import {
+  LEDGER,
+  VERBS as LEDGER_VERBS,
+  dispatchLedger,
+} from './capabilities/ledger/dispatch.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
   VERSION_SKEW,
@@ -62,16 +66,10 @@ import {
   dispatchVersionSkew,
 } from './capabilities/version-skew/index.js';
 import {
-  WORK_PACKAGE,
-  VERBS as WORK_PACKAGE_VERBS,
-} from './capabilities/work-package/dispatch.js';
-import { dispatchWorkPackage } from './capabilities/work-package/index.js';
-import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
   type Capability,
 } from './capability.js';
-import { completionCheckCommand } from './completion-check/index.js';
 import {
   type CapabilityInterface,
   type ExplainedVerb,
@@ -88,10 +86,10 @@ import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
  * interface. A refusal throws.
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
- * `workPackage`, never the kebab dir name nor an abbreviation. That is the word
+ * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
  * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `workPackage` cell
- * yields `spawnSync(CLI_BIN, ['workPackage', …])`).
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `ledger` cell yields
+ * `spawnSync(CLI_BIN, ['ledger', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {
@@ -111,10 +109,10 @@ const SURFACES: {
       ),
     explained: JOURNAL,
   },
-  workPackage: {
-    verbs: WORK_PACKAGE_VERBS,
-    run: (argv) => JSON.stringify(dispatchWorkPackage(argv), null, 2),
-    explained: WORK_PACKAGE,
+  ledger: {
+    verbs: LEDGER_VERBS,
+    run: (argv) => JSON.stringify(dispatchLedger(argv), null, 2),
+    explained: LEDGER,
   },
   versionSkew: {
     verbs: VERSION_SKEW_VERBS,
@@ -338,8 +336,8 @@ export function capabilityCommands(build: Build = {}): Command[] {
   return CAPABILITIES.map((capability) => capabilityCommand(capability, build));
 }
 
-/** The harness-facing commands, `lifecycle` and `completion-check`: no
- *  capability, never an agent tool; the program holds them hidden. */
+/** The harness-facing command, `lifecycle`: no capability, never an agent
+ *  tool; the program holds it hidden. */
 export function harnessCommands(): Command[] {
-  return [lifecycleCommand(), completionCheckCommand()];
+  return [lifecycleCommand()];
 }

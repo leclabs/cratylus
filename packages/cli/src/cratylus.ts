@@ -3,8 +3,8 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`concepts`, `workPackage`, `versionSkew`) and the hidden harness-facing commands
-// (`lifecycle`, `completion-check`), and `@cratylus/canon` the corpus `install`
+// (`concepts`, `ledger`, `versionSkew`) and the hidden harness-facing command
+// (`lifecycle`), and `@cratylus/canon` the corpus `install`
 // falls back to. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
@@ -203,9 +203,9 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
-  // A harness-facing command (`lifecycle`, `completion-check`) is held by a program
-  // of its own, never by the one whose help, README and agent tools list commands:
-  // the harness's channel and the post-commit hook's check are no one's to offer.
+  // A harness-facing command (`lifecycle`) is held by a program of its own, never
+  // by the one whose help, README and agent tools list commands: the harness's
+  // channel is no one's to offer.
   const harness = harnessCommands().find(
     (command) => command.name() === argv[0],
   );

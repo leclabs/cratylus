@@ -26,7 +26,7 @@ it('delivery/1 — native facility wins over an available extension and prose', 
     ...adapterByName('omp'),
     nativeCapabilities: {
       concepts: 'native-journal',
-      workPackage: 'native-work',
+      ledger: 'native-work',
     },
     capabilitySurface: () => {
       extensionCalls++;
@@ -47,7 +47,7 @@ it('delivery/1 — native facility wins over an available extension and prose', 
   ).toMatchObject({
     capabilities: [
       { capability: 'concepts', form: 'native', facility: 'native-journal' },
-      { capability: 'workPackage', form: 'native', facility: 'native-work' },
+      { capability: 'ledger', form: 'native', facility: 'native-work' },
     ],
   });
   expect(
@@ -66,11 +66,11 @@ it('delivery/3 — with neither route prose comes from the capability and claims
   expect(tree, 'prose is the last-resort form').toMatchObject({
     capabilities: [
       { capability: 'concepts', form: 'prose' },
-      { capability: 'workPackage', form: 'prose' },
+      { capability: 'ledger', form: 'prose' },
     ],
   });
   const prose = tree.files.map((file) => file.content).join('\n');
-  for (const capability of ['concepts', 'workPackage']) {
+  for (const capability of ['concepts', 'ledger']) {
     const explanation: Explanation = JSON.parse(
       success(h.command([capability, '--explain'])),
     );
@@ -89,7 +89,7 @@ it('delivery/3 — with neither route prose comes from the capability and claims
     ).toContain(`cratylus ${capability}`);
   }
   expect(prose, 'never falsely claims a callable tool').not.toMatch(
-    /registerTool|call (?:the )?(?:concept_journal|work_package) tool/i,
+    /registerTool|call (?:the )?(?:concept_journal|ledger) tool/i,
   );
 });
 
@@ -100,7 +100,7 @@ it('delivery/6 — delivered capabilities explain when; no workflow-restating ov
     .map((path) => readFileSync(path, 'utf8'));
   if (process.env.RECONSTITUTION_RED === '1')
     skills.push(
-      'To recover the conceptual design, call concept_journal overview. Then query work_package for ready work packages.',
+      'To recover the conceptual design, call concept_journal overview. Then query ledger for the work in flight.',
     );
   for (const text of skills)
     expect(
@@ -109,7 +109,7 @@ it('delivery/6 — delivered capabilities explain when; no workflow-restating ov
     ).not.toMatch(
       /\b(?:to (?:recover|read|record) (?:the )?(?:conceptual )?design|when (?:recovering|reading|recording) (?:the )?design)[^\n]*(?:concept_journal|cratylus concepts)/i,
     );
-  for (const capability of ['concepts', 'workPackage']) {
+  for (const capability of ['concepts', 'ledger']) {
     const explanation: Explanation = JSON.parse(
       success(h.command([capability, '--explain'])),
     );

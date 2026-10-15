@@ -1,4 +1,4 @@
-import { cpSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   afterAll,
@@ -13,7 +13,6 @@ import {
   snapshot as fileSnapshot,
   success,
 } from '../capability-port/fixture.js';
-import { repositoryRoot } from '../concept-journal/fixture.js';
 import {
   type Host,
   type TemporaryRepository,
@@ -161,75 +160,41 @@ describe('delivery: older concept journal readers', () => {
     },
   );
 
-  it.each([
-    ['state'],
-    ['inventory'],
-    ['assignment', 'reader'],
-    ['levels'],
-    ['history', 'reader'],
-    ['efficiency'],
-  ])(
-    'workflow/1 — work-package %s reads past an unknown ledger kind and computes later known entries',
-    (...args) => {
-      const examples = join(journal.root, 'design/examples/workflow');
-      mkdirSync(examples, { recursive: true });
-      cpSync(
-        join(repositoryRoot, 'design/examples/workflow/delivery.md'),
-        join(examples, 'delivery.md'),
+  it('workflow/1 — ledger state reads past an unknown ledger kind and computes later known entries', () => {
+    const directory = join(journal.root, 'design/ledger');
+    mkdirSync(directory, { recursive: true });
+    const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
+      writeFileSync(
+        join(directory, `${id(n)}.json`),
+        JSON.stringify({
+          id: id(n),
+          at: '2016-07-30T23:54:10.259Z',
+          transition: `fixture:${n}`,
+          ...fields,
+        }),
+        { flag: 'wx' },
       );
-      const directory = join(journal.root, 'design/ledger');
-      mkdirSync(directory, { recursive: true });
-      const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
-        writeFileSync(
-          join(directory, `${id(n)}.json`),
-          JSON.stringify({
-            id: id(n),
-            at: '2016-07-30T23:54:10.259Z',
-            transition: `fixture:${n}`,
-            cut: 'delivery',
-            ...fields,
-          }),
-          { flag: 'wx' },
-        );
-      ledgerEntry(1, {
-        kind: 'cut',
-        branch: 'feature/delivery',
-        contexts: ['workflow'],
-        architects: { workflow: 'architect' },
-      });
-      ledgerEntry(3, {
-        kind: 'submit',
-        workPackage: 'reader',
-        outputs: ['before.ts'],
-        concepts: ['concept journal'],
-        dependsOn: [],
-        needs: [],
-      });
-      ledgerEntry(5, {
-        kind: 'update',
-        workPackage: 'reader',
-        changes: { outputs: ['after.ts'] },
-      });
-      const command = ['workPackage', ...args, '--cut', 'delivery'];
-      const baseline = JSON.parse(
-        success(installed.command(command, journal.root)),
-      );
-      ledgerEntry(4, {
-        kind: 'annotation',
-        workPackage: 'reader',
-        changes: { outputs: ['INVENTED.ts'] },
-        payload: 'A future ledger entry',
-      });
-      const before = fileSnapshot(directory);
-      const value = JSON.parse(
-        success(installed.command(command, journal.root)),
-      );
-      for (const [key, expected] of Object.entries(baseline))
-        expect(value[key], `known ledger view: ${key}`).toEqual(expected);
-      reportsUnknown(value, { annotation: 1 });
-      expect(fileSnapshot(directory)).toEqual(before);
-    },
-  );
+    ledgerEntry(1, { kind: 'story', story: 'reader' });
+    ledgerEntry(3, { kind: 'task', task: 'reader-view', story: 'reader' });
+    ledgerEntry(5, { kind: 'end', task: 'reader-view', outcome: 'merged' });
+    // Ended, so its elapsed time stays put between the two readings.
+    ledgerEntry(6, { kind: 'end', story: 'reader', outcome: 'merged' });
+    const command = ['ledger', 'state'];
+    const baseline = JSON.parse(
+      success(installed.command(command, journal.root)),
+    );
+    ledgerEntry(4, {
+      kind: 'annotation',
+      task: 'reader-view',
+      payload: 'A future ledger entry',
+    });
+    const before = fileSnapshot(directory);
+    const value = JSON.parse(success(installed.command(command, journal.root)));
+    for (const key of ['inFlight', 'ended'])
+      expect(value[key], `known ledger view: ${key}`).toEqual(baseline[key]);
+    reportsUnknown(value, { annotation: 1 });
+    expect(fileSnapshot(directory)).toEqual(before);
+  });
 
   it.each(views.map((args) => ({ label: args.join(' '), args })))(
     'workflow/2 — $label reports every unknown kind and count on both requests',

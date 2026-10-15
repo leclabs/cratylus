@@ -1,10 +1,9 @@
 // The context overview, pure: the order whole before parts with its cycles
-// named, open decisions and cuts in flight of the context alone, and the
+// named, open decisions and the work in flight on the context alone, and the
 // account telling them in that order.
 
 import { describe, expect, it } from 'vitest';
 import {
-  type LedgerCut,
   overviewOf,
   wholeBeforeParts,
 } from '../../src/capabilities/concepts/overview.js';
@@ -13,6 +12,7 @@ import type {
   ContextView,
   DecisionView,
 } from '../../src/capabilities/concepts/views.js';
+import type { Work } from '../../src/capabilities/ledger/index.js';
 
 const concept = (name: string, ...builtFrom: string[]): ConceptView => ({
   name,
@@ -119,34 +119,49 @@ describe('whole before parts', () => {
 });
 
 describe('the overview of one context', () => {
-  const cuts: LedgerCut[] = [
-    {
-      cut: 'opened',
-      branch: 'feature/opened',
-      contexts: ['film'],
-      phase: 'open',
-    },
-    {
-      cut: 'film',
-      branch: 'feature/film',
-      contexts: ['film', 'scheduling'],
-      phase: 'in flight',
-    },
-    {
-      cut: 'elsewhere',
-      branch: 'feature/else',
-      contexts: ['scheduling'],
-      phase: 'in flight',
-    },
-    {
-      cut: 'done',
-      branch: 'feature/done',
-      contexts: ['film'],
-      phase: 'complete',
-    },
-  ];
+  const cost = {
+    agentRuns: { total: 0, byRole: {} },
+    tokens: null,
+    elapsedSeconds: 0,
+  };
+  const at = '2026-10-15T00:00:00.000Z';
+  const ended = { outcome: 'merged', at } as const;
+  const work: Work = {
+    stories: [
+      {
+        story: 'film',
+        contexts: ['film', 'scheduling'],
+        tasks: ['shoot'],
+        recorded: at,
+        cost,
+      },
+      { story: 'everywhere', tasks: [], recorded: at, cost },
+      {
+        story: 'elsewhere',
+        contexts: ['scheduling'],
+        tasks: ['slotting'],
+        recorded: at,
+        cost,
+      },
+      {
+        story: 'finished',
+        contexts: ['film'],
+        tasks: [],
+        recorded: at,
+        ended,
+        cost,
+      },
+    ],
+    tasks: [
+      { task: 'shoot', story: 'film', recorded: at, cost },
+      { task: 'slotting', story: 'elsewhere', recorded: at, cost },
+      { task: 'chore', recorded: at, cost },
+      { task: 'merged-chore', recorded: at, ended, cost },
+    ],
+  };
+  const none: Work = { stories: [], tasks: [] };
 
-  it('gives its own open decisions and its cuts in flight, telling them after the concepts', () => {
+  it('gives its own open decisions and the work in flight on it, telling them after the concepts', () => {
     const answer = overviewOf(
       design([concept('take'), concept('production', 'take')]),
       [
@@ -155,7 +170,7 @@ describe('the overview of one context', () => {
         decision('replaced', 'superseded'),
         decision('slots', 'open', 'scheduling'),
       ],
-      cuts,
+      work,
     );
     expect(answer).toMatchObject({
       context: 'film',
@@ -168,19 +183,20 @@ describe('the overview of one context', () => {
     expect(answer).toMatchObject({
       cycles: [],
       openDecisions: [{ id: 'colour', title: 'Decide colour' }],
-      cutsInFlight: [
-        { cut: 'film', phase: 'in flight', branch: 'feature/film' },
-      ],
+      workInFlight: {
+        stories: [{ story: 'film' }, { story: 'everywhere' }],
+        tasks: [{ task: 'shoot', story: 'film' }, { task: 'chore' }],
+      },
     });
-    const at = (text: string) => answer.account.indexOf(text);
+    const where = (text: string) => answer.account.indexOf(text);
     const order = [
       'Making a film.',
       'It asks scheduling for dates.',
       'Production means: The production. It is built from take.',
       'Take means: The take.',
       'Decide colour',
-      'feature/film',
-    ].map(at);
+      'the story film; the story everywhere; the task shoot of the story film; the task chore.',
+    ].map(where);
     expect(order.every((i) => i >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
     expect(
@@ -191,19 +207,20 @@ describe('the overview of one context', () => {
       'agreed',
       'replaced',
       'slots',
-      'opened',
       'elsewhere',
-      'done',
+      'slotting',
+      'finished',
+      'merged-chore',
     ])
       expect(answer.account).not.toContain(absent);
   });
 
   it('says plainly when nothing is open, in flight or related', () => {
-    const answer = overviewOf(design([], { relation: '' }), [], []);
+    const answer = overviewOf(design([], { relation: '' }), [], none);
     expect(answer.account).toContain('No relation to other contexts');
     expect(answer.account).toContain('no live concept');
     expect(answer.account).toContain('No decision is open.');
-    expect(answer.account).toContain('No cut is in flight.');
+    expect(answer.account).toContain('No work is in flight.');
   });
 
   it('names a cycle in the account and tells competing descriptions without choosing one', () => {
@@ -217,7 +234,7 @@ describe('the overview of one context', () => {
         ],
       }),
       [],
-      [],
+      none,
     );
     expect(answer.cycles).toEqual([['a', 'b']]);
     expect(answer.subject).toBeNull();

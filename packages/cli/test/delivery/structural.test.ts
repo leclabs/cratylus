@@ -608,28 +608,6 @@ it('delivery/13 — each startup reports a genuinely earlier command even when i
   }
 });
 
-it('delivery/14 — matching an actual earlier command stays silent with both versions queryable', async () => {
-  h = fresh();
-  version(h, '0.11.0');
-  success(install(h));
-  const old = earlierCommand(h);
-  const ext = await load(h);
-  try {
-    await ext.start();
-    expect(
-      ext.notifications.filter(
-        (n) => n.level === 'warning' && /skew/i.test(n.text),
-      ),
-    ).toEqual([]);
-    expect(await versions(ext)).toEqual({
-      artifacts: old.version,
-      command: old.version,
-    });
-  } finally {
-    ext.restore();
-  }
-});
-
 it('delivery/15 — restoring the current command and reinstalling resolves real-build skew', async () => {
   h = fresh();
   success(install(h));

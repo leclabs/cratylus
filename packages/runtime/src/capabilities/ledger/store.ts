@@ -1,16 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The LEDGER: the directory `design/ledger` at the top of the git repository
-// holding the working directory, one entry per file, tracked and versioned with
-// the branch, so a branch's entries arrive elsewhere only with its merge.
+// The LEDGER's store: the directory `design/ledger` at the top of the git
+// repository holding the working directory, one entry per file, tracked and
+// versioned with the branch, so a branch's entries arrive elsewhere only with
+// its merge.
 //
 // An entry's file is named by its id, a ULID, and holds the entry as JSON. It
 // is created exclusively and never overwritten, modified or deleted: the
-// ledger's verbs only append, so two branches that both
-// appended merge in git as the union of their files. Entries are read only from
-// this directory of the working tree and are ordered by their id, like the
-// concept journal's, and like it the ledger reads past an entry of a kind this
-// runtime does not know, written by a newer one, counting it by its kind so
-// every reading can say what it left uninterpreted.
+// ledger only appends, so two branches that both appended merge in git as the
+// union of their files. Entries are read only from this directory of the
+// working tree and are ordered by their id, like the concept journal's, and
+// like it the ledger reads past an entry of a kind this runtime does not know,
+// written by a newer one, counting it by its kind so every reading can say
+// what it left uninterpreted.
 //
 // Every entry carries a TRANSITION, its own id: appending an entry whose
 // transition is already recorded is refused, and nothing is written. Appends
@@ -18,13 +19,18 @@
 // common directory, so the same transition delivered twice at once is still
 // recorded once.
 //
-// Entry kinds: `cut` (the cut's record, by `open`); `freeze` (checks frozen with
-// the cut) and `integrate` (the cut integrated, its freeze ended); `submit`,
-// `update`, `commit`, `check` (the work package verbs); and the LIFECYCLE kinds
-// `dispatched`, `returned`, `verdict`, `reported`, written only from the
-// harness's own agent events through `cratylus lifecycle`. Nothing derived
-// (status, phase, readiness, figures, what is frozen) is ever stored; `fold.ts`
-// computes it.
+// Entry kinds: `story` and `task` (one in flight, recorded by its verb or by
+// the first dispatch naming it), `end` (how one ended: merged or dropped), and
+// the harness's own `dispatched` and `returned`, written only through
+// `cratylus lifecycle`. Nothing derived (what is in flight, what each cost) is
+// ever stored; `fold.ts` computes it.
+//
+// HISTORY. Entries written while the ledger kept cuts (kinds `cut`, `freeze`,
+// `integrate`, `submit`, `update`, `commit`, `check`, `verdict`, `reported`,
+// and `dispatched` and `returned` naming a cut) are known history: never in
+// flight, never counted, never reported as unknown. The one fact still read
+// from them is which cuts were integrated, which keeps a decision about an
+// integrated cut deprecated in the concept journal.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -49,87 +55,38 @@ export const LEDGER_DIR = 'design/ledger';
 /** An entry's file name: its id, then `.json`. */
 const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 
-/** The fields of a work package a submission sets and an update replaces. */
-export interface PackageFields {
-  readonly outputs: readonly string[];
-  readonly concepts: readonly string[];
-  readonly dependsOn: readonly string[];
-  readonly needs: readonly string[];
-}
-
-/** One commit a builder made as its package's. */
-export interface CommitRecord {
-  readonly sha: string;
-  readonly message: string;
-  readonly paths: readonly string[];
-}
-
-/** One assayer's verdict on one concept of one work package. */
-export interface ConceptVerdict {
-  readonly workPackage: string;
-  readonly concept: string;
-  readonly passes: boolean;
-  readonly evidence: string;
-  readonly finding?: string;
-}
+/** How a story or a task ended. */
+export const OUTCOMES = ['merged', 'dropped'] as const;
+export type Outcome = (typeof OUTCOMES)[number];
 
 /** The lifecycle kinds: written only from the harness's agent events. */
-export const LIFECYCLE_KINDS = [
-  'dispatched',
-  'returned',
-  'verdict',
-  'reported',
-] as const;
+export const LIFECYCLE_KINDS = ['dispatched', 'returned'] as const;
 
 /** What is appended, before the ledger stamps it with its id and time. */
-export type LedgerDraft = {
-  readonly transition: string;
-  readonly cut: string;
-} & (
+export type LedgerDraft = { readonly transition: string } & (
   | {
-      readonly kind: 'cut';
-      readonly branch: string;
-      readonly contexts: readonly string[];
-      readonly architects: Readonly<Record<string, string>>;
+      readonly kind: 'story';
+      readonly story: string;
+      readonly contexts?: readonly string[];
     }
-  | ({ readonly kind: 'submit'; readonly workPackage: string } & PackageFields)
-  | { readonly kind: 'freeze'; readonly checks: readonly string[] }
-  | { readonly kind: 'integrate'; readonly agent?: string }
-  | {
-      readonly kind: 'update';
-      readonly workPackage: string;
-      readonly changes: Partial<PackageFields>;
-    }
-  | {
-      readonly kind: 'commit';
-      readonly workPackage: string;
-      readonly commit: CommitRecord;
-    }
-  | { readonly kind: 'check'; readonly failures: readonly string[] }
+  | { readonly kind: 'task'; readonly task: string; readonly story?: string }
+  | ({ readonly kind: 'end'; readonly outcome: Outcome } & (
+      | { readonly story: string }
+      | { readonly task: string }
+    ))
   | {
       readonly kind: 'dispatched';
-      readonly workPackage?: string;
+      readonly call: string;
+      readonly agent: string;
       readonly role: string;
-      readonly run: string;
+      readonly story?: string;
+      readonly task?: string;
     }
   | {
       readonly kind: 'returned';
-      readonly workPackage?: string;
-      readonly role: string;
-      readonly run: string;
+      readonly call: string;
+      readonly agent: string;
       readonly tokens?: number;
-    }
-  | {
-      readonly kind: 'verdict';
-      readonly assayer: string;
-      readonly run: string;
-      readonly verdicts: readonly ConceptVerdict[];
-      readonly hardeningNotes: readonly unknown[];
-    }
-  | {
-      readonly kind: 'reported';
-      readonly run: string;
-      readonly report: unknown;
     }
 );
 
@@ -139,8 +96,11 @@ export type LedgerEntry = LedgerDraft & {
   readonly at: string;
 };
 
-/** The kinds the ledger records. */
-const KINDS: readonly string[] = [
+/** The kinds the ledger records now. */
+const KINDS: readonly string[] = ['story', 'task', 'end', ...LIFECYCLE_KINDS];
+
+/** The kinds of the cut-era entries, each naming its cut: known history. */
+const CUT_KINDS: readonly string[] = [
   'cut',
   'freeze',
   'integrate',
@@ -148,17 +108,27 @@ const KINDS: readonly string[] = [
   'update',
   'commit',
   'check',
+  'verdict',
+  'reported',
   ...LIFECYCLE_KINDS,
 ];
+
+/** What one reading of the ledger holds. */
+export interface LedgerReading {
+  /** Every entry of a kind this runtime records, in append order. */
+  readonly entries: readonly LedgerEntry[];
+  /** The cuts the ledger's history records integrated. */
+  readonly integratedCuts: ReadonlySet<string>;
+  /** The entries of kinds this runtime does not know, read past. */
+  readonly readPast: ReadPast;
+}
 
 /** The ledger of one working tree. */
 export interface Ledger {
   /** The top of the git repository holding the ledger. */
   readonly root: string;
-  /** Every entry of a kind this runtime knows, in append order. */
-  entries(): readonly LedgerEntry[];
-  /** The entries of kinds this runtime does not know, read past. */
-  readPast(): ReadPast;
+  /** What the ledger holds now. */
+  read(): LedgerReading;
   /** Append `draft` as one new entry; refused, writing nothing, when its
    *  transition is already recorded. */
   append<D extends LedgerDraft>(draft: D): D & { id: string; at: string };
@@ -179,9 +149,9 @@ export function ledgerAt(
   refuse: (message: string) => Error,
 ): Ledger {
   const dir = join(top, LEDGER_DIR);
-  /** What the ledger holds: its entries of known kinds, what it read past,
-   *  every transition recorded and its last entry's id, whatever their kind. */
-  const read = () => {
+  /** What the ledger holds, every transition recorded and its last entry's
+   *  id, whatever their kind. */
+  const scan = () => {
     const names = existsSync(dir)
       ? readdirSync(dir, { withFileTypes: true })
           .filter((d) => d.isFile() && ENTRY_FILE.test(d.name))
@@ -189,30 +159,27 @@ export function ledgerAt(
           .sort()
       : [];
     const entries: LedgerEntry[] = [];
+    const integratedCuts = new Set<string>();
     const readPast = new ReadPast();
     const transitions = new Map<string, string>();
     for (const name of names) {
       const entry = entryAt(join(dir, name), name, refuse);
       transitions.set(entry.transition, entry.id);
-      if (KINDS.includes(entry.kind)) entries.push(entry as LedgerEntry);
+      if (typeof entry.cut === 'string' && CUT_KINDS.includes(entry.kind)) {
+        if (entry.kind === 'integrate') integratedCuts.add(entry.cut);
+      } else if (KINDS.includes(entry.kind))
+        entries.push(current(entry, name, refuse));
       else readPast.add(entry.kind);
     }
     return {
-      entries,
-      readPast,
+      reading: { entries, integratedCuts, readPast },
       transitions,
       last: names.at(-1)?.slice(0, -'.json'.length),
     };
   };
 
   /** The last reading, kept until this ledger next appends. */
-  let cached:
-    | { readonly entries: readonly LedgerEntry[]; readonly readPast: ReadPast }
-    | undefined;
-  const reading = () => {
-    cached ??= read();
-    return cached;
-  };
+  let cached: LedgerReading | undefined;
 
   /** Run `body` holding the repository's ledger lock. */
   const locked = <T>(body: () => T): T => {
@@ -248,11 +215,13 @@ export function ledgerAt(
 
   return {
     root: top,
-    entries: () => reading().entries,
-    readPast: () => reading().readPast,
+    read() {
+      cached ??= scan().reading;
+      return cached;
+    },
     append(draft) {
       return locked(() => {
-        const { transitions, last } = read();
+        const { transitions, last } = scan();
         const earlier = transitions.get(draft.transition);
         if (earlier !== undefined)
           throw refuse(
@@ -291,13 +260,20 @@ function mintAfter(last: string | undefined): string {
   return monotonicFactory(Math.random, () => after)();
 }
 
+/** An entry as read from its file, before its kind is known. */
+type Read = Readonly<Record<string, unknown>> & {
+  readonly id: string;
+  readonly kind: string;
+  readonly transition: string;
+};
+
 /** The entry in the file at `path`, named `name`, of whatever kind it names;
  *  refuses one that is not an entry of this ledger. */
 function entryAt(
   path: string,
   name: string,
   refuse: (message: string) => Error,
-): { readonly id: string; readonly kind: string; readonly transition: string } {
+): Read {
   const entry: unknown = (() => {
     try {
       return JSON.parse(readFileSync(path, 'utf8'));
@@ -314,14 +290,58 @@ function entryAt(
     typeof entry.kind === 'string' &&
     entry.kind !== '' &&
     'transition' in entry &&
-    typeof entry.transition === 'string' &&
-    'cut' in entry &&
-    typeof entry.cut === 'string';
+    typeof entry.transition === 'string';
   if (!isEntry)
     throw refuse(
       `the ledger entry ${LEDGER_DIR}/${name} is not an entry of this ledger`,
     );
-  // Appended only by a runtime and never edited: its id, kind, transition and
-  // cut vouch for the rest of its shape.
-  return entry as { id: string; kind: string; transition: string };
+  return entry as Read;
+}
+
+/** `entry`, of a kind the ledger records now, as that kind; refuses one
+ *  missing a field its kind holds. */
+function current(
+  entry: Read,
+  name: string,
+  refuse: (message: string) => Error,
+): LedgerEntry {
+  const text = (field: string) => typeof entry[field] === 'string';
+  const optional = (field: string) => entry[field] === undefined || text(field);
+  const readable = ((): boolean => {
+    switch (entry.kind) {
+      case 'story':
+        return (
+          text('story') &&
+          (entry.contexts === undefined ||
+            (Array.isArray(entry.contexts) &&
+              entry.contexts.every((c) => typeof c === 'string')))
+        );
+      case 'task':
+        return text('task') && optional('story');
+      case 'end':
+        return (
+          text('story') !== text('task') &&
+          (OUTCOMES as readonly unknown[]).includes(entry.outcome)
+        );
+      case 'dispatched':
+        return (
+          text('call') &&
+          text('agent') &&
+          text('role') &&
+          optional('story') &&
+          optional('task')
+        );
+      default:
+        return (
+          text('call') &&
+          text('agent') &&
+          (entry.tokens === undefined || Number.isInteger(entry.tokens))
+        );
+    }
+  })();
+  if (!readable)
+    throw refuse(
+      `the ledger entry ${LEDGER_DIR}/${name} is a ${entry.kind} entry this runtime cannot read`,
+    );
+  return entry as unknown as LedgerEntry;
 }

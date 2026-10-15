@@ -695,8 +695,8 @@ describe('omp capability interface', () => {
       expect(tool?.approval({ verb: 'put' })).toBe('write');
     });
 
-    it('offers the work package capability whole every turn, the concept journal as a device', async () => {
-      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['workPackage']);
+    it('offers the ledger whole every turn, the concept journal as a device', async () => {
+      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['ledger']);
       const tools = await load(EXPLANATION);
       expect(
         Object.fromEntries(
@@ -707,7 +707,7 @@ describe('omp capability interface', () => {
         ),
       ).toEqual({
         concepts: 'discoverable',
-        workPackage: 'essential',
+        ledger: 'essential',
         versionSkew: 'discoverable',
       });
     });
@@ -1199,7 +1199,7 @@ describe('omp capability interface', () => {
       });
       expect(tools).toEqual(['stand_in_concepts', 'version_skew']);
       expect(warnings[0]).toHaveLength(1);
-      expect(warnings[0]?.[0]).toMatch(/does not provide workPackage /);
+      expect(warnings[0]?.[0]).toMatch(/does not provide ledger /);
     });
 
     it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {

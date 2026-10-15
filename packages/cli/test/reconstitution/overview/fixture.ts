@@ -1,13 +1,50 @@
+// Black-box overview fixtures. Every command starts the built CLI in a new process.
+import { spawnSync } from 'node:child_process';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { expect } from 'vitest';
 import {
-  type ExecutionFixture,
-  fixture,
+  type TemporaryRepository,
   git,
-  run,
-  write,
-} from '../../execution/fixture.js';
-export { fixture, git, run, write };
-export type { ExecutionFixture };
+  repositoryRoot,
+  temporaryRepository,
+} from '../../concept-journal/fixture.js';
+export { git };
+export interface OverviewFixture extends TemporaryRepository {
+  home: string;
+}
+export function fixture(): OverviewFixture {
+  const repository = temporaryRepository();
+  const home = join(repository.sandbox, 'home');
+  mkdirSync(home);
+  return { ...repository, home };
+}
+export function write(f: OverviewFixture, path: string, text: string): void {
+  const destination = join(f.root, path);
+  mkdirSync(dirname(destination), { recursive: true });
+  writeFileSync(destination, text);
+}
+export function run(f: OverviewFixture, ...args: string[]) {
+  const result = spawnSync(
+    process.execPath,
+    [join(repositoryRoot, 'packages/cli/dist/cratylus.js'), ...args],
+    {
+      cwd: f.root,
+      encoding: 'utf8',
+      timeout: 30_000,
+      env: {
+        ...process.env,
+        HOME: f.home,
+        XDG_CONFIG_HOME: join(f.home, '.config'),
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_GLOBAL: '/dev/null',
+        GIT_TERMINAL_PROMPT: '0',
+      },
+    },
+  );
+  if (result.error) throw result.error;
+  return { code: result.status, stdout: result.stdout, stderr: result.stderr };
+}
 export const subject = 'Making a film from recorded performances.';
 export const relation =
   'Film production asks scheduling for available shooting dates.';
@@ -22,13 +59,13 @@ export interface Overview {
   relation: string;
   cycles: string[][];
   openDecisions: { id: string; title: string }[];
-  cutsInFlight: { cut: string; phase: string; branch: string }[];
+  workInFlight: {
+    stories: { story: string }[];
+    tasks: { task: string; story?: string }[];
+  };
   account: string;
 }
-export function command<T = unknown>(
-  f: ExecutionFixture,
-  ...args: string[]
-): T {
+export function command<T = unknown>(f: OverviewFixture, ...args: string[]): T {
   const result = run(f, ...args);
   expect(
     result.code,
@@ -37,7 +74,7 @@ export function command<T = unknown>(
   return JSON.parse(result.stdout) as T;
 }
 export function concept(
-  f: ExecutionFixture,
+  f: OverviewFixture,
   name: string,
   wording: string,
   builtFrom: string[] = [],
@@ -57,7 +94,7 @@ export function concept(
     ...builtFrom.flatMap((part) => ['--built-from', part]),
   );
 }
-export function seed(f: ExecutionFixture) {
+export function seed(f: OverviewFixture) {
   command(
     f,
     'concepts',
@@ -74,7 +111,7 @@ export function seed(f: ExecutionFixture) {
   concept(f, 'production', meanings.production, ['shoot']);
   decision(f);
 }
-export function decision(f: ExecutionFixture) {
+export function decision(f: OverviewFixture) {
   return command(
     f,
     'concepts',
@@ -94,51 +131,23 @@ export function decision(f: ExecutionFixture) {
     'open',
   );
 }
-export function openCut(f: ExecutionFixture, cut = 'film') {
-  write(
-    f,
-    `design/examples/film-production/${cut}.md`,
-    '1. (production) Given a film, when made, then its shoots are recorded.\n',
-  );
-  command(
-    f,
-    'workPackage',
-    'open',
-    '--cut',
-    cut,
-    '--branch',
-    'feature/film',
-    '--architect',
-    'film-production=creative',
-  );
-  command(
-    f,
-    'workPackage',
-    'submit',
-    'shoot',
-    '--cut',
-    cut,
-    '--output',
-    'film.txt',
-    '--concept',
-    'production',
-  );
-}
-export function dispatch(f: ExecutionFixture, cut = 'film') {
+/** The harness's dispatch of the builder of task `task` of story `story`,
+ *  which records both in flight. */
+export function dispatch(f: OverviewFixture, story = 'film', task = 'shoot') {
   command(
     f,
     'lifecycle',
     JSON.stringify({
       kind: 'dispatched',
-      transition: `${cut}-dispatch`,
-      cut,
-      workPackage: 'shoot',
+      call: `${story}-call`,
+      agent: `${task}-builder`,
       role: 'builder',
-      run: `${cut}-builder`,
+      story,
+      task,
     }),
   );
 }
-export function overview(f: ExecutionFixture): Overview {
+export function overview(f: OverviewFixture): Overview {
   const answer = command<{ contexts: Overview[] }>(
     f,
     'concepts',
