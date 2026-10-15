@@ -170,10 +170,11 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
-to drift. Every turn carries the assignment form of each agent that takes a typed one; a dispatch or
-launch whose assignment misfits, a lead's or builder's dispatch the cut's record does not support,
-and an `eval` call whose code dispatches a delegate (`agent(…)`, `workpool(…)`, `tool.task`,
-`tool["task"]`) are each warned of and go ahead (decision 0142(3)).
+to drift. Every turn carries the handover form of each agent that takes a typed one; a dispatch or
+launch whose assignment is incomplete, and an `eval` call whose code dispatches a delegate (`agent(…)`,
+`workpool(…)`, `tool.task`, `tool["task"]`), are each warned of and go ahead — never refused. The
+extension also records each run in the ledger: a dispatch and its return, with the agent, its role, the
+story or task the assignment names and the tokens the return reports, through `cratylus lifecycle`.
 
 ## The harness adapter port
 

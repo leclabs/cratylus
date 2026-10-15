@@ -74,7 +74,7 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
   BEING/FACE  : a cell is a BEING ; deploy projects it to MANY per-harness Targets = its FACES
                 ⟨one being → {face_h}_{h∈harness}⟩ ; what would make the faces one individual across sessions
-                — a persona's memory and continuity — is OUTSIDE cratylus for now : the runtime ships concepts · workPackage and no memory, so no face carries one
+                — a persona's memory and continuity — is OUTSIDE cratylus for now : the runtime ships concepts · ledger · versionSkew and no memory, so no face carries one
                 ⟨extends SelfAuthored ∉ Target: whatever memory a host keeps is neither projected nor per-harness⟩
 
 Corpus ≜ lfp( S ↦ { c ∣ grounded(c,S) } ) ; grounded(c,S) ⇔ defn(c) resolves-in (inline-≜(c) ∪ S ∪ LLM-priors)
