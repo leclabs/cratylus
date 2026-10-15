@@ -1695,7 +1695,7 @@ describe('omp capability interface', () => {
 
     it('warns of a misfit dispatch with the assignment form, and lets it through', async () => {
       omp.agents = [LEAD()];
-      const plain = await started(undefined, tmpdir());
+      const plain = await started();
       await plain.fire('session_start');
       expect(
         await plain.fire('tool_call', 'main', {
@@ -1796,7 +1796,7 @@ describe('omp capability interface', () => {
       }
     });
 
-    it('sends the story and task an assignment names with the role, and the tokens the harness reports on return', async () => {
+    it('sends the story and task an assignment names with the role, and the tokens the harness reports on return, and nothing for an item naming neither', async () => {
       omp.agents = [LEAD(), BUILDER()];
       const cwd = mkdtempSync(join(tmpdir(), 'omp-record-cwd-'));
       tmp.push(cwd);
@@ -1823,7 +1823,7 @@ describe('omp capability interface', () => {
                   name: 'Form',
                   task: '```assignment\n{"task":"renewal-form","story":"renewal"}\n```',
                 },
-                // Untyped and naming neither: still sent, and the runtime records nothing.
+                // Naming neither story nor task: not sent, nor its return.
                 { agent: 'scout', task: 'Look around.' },
               ],
             },
@@ -1862,10 +1862,8 @@ describe('omp capability interface', () => {
             story: 'renewal',
             task: 'renewal-form',
           },
-          { kind: 'dispatched', call: 'batch', agent: '2', role: 'scout' },
           { kind: 'returned', call: 'batch', agent: 'Lead', tokens: 51234 },
           { kind: 'returned', call: 'batch', agent: 'Form', tokens: 18000 },
-          { kind: 'returned', call: 'batch', agent: '2' },
         ]);
         // Nothing is warned of: every assignment fits, and every send succeeded.
         expect(session.did.notices).toEqual([]);
@@ -2034,8 +2032,7 @@ describe('omp capability interface', () => {
         sendUserMessage: (message: unknown) => told.push(message),
       });
       const ctx = {
-        // A real directory: the dispatch among the acts is sent to the stand-in command there.
-        cwd: tmpdir(),
+        cwd: '/the/session/cwd',
         agent: { kind: 'main' },
         model: { provider: 'fixture', id: 'base' },
         modelRegistry: { standIn: 'registry' },

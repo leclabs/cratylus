@@ -969,13 +969,14 @@ const SESSION_PLACEMENT: readonly string[] = [
  * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). What a call may change is
  * a rule held by review and by the record, which names the agent each call names.
  *
- * EACH AGENT RUN RECORDED. Each agent run the harness sees is sent to the ledger by
- * `<bin> lifecycle`, so the ledger's cost is what the harness saw: `dispatched` for
- * each item of a `task` call, by the call's id and the item's, with the agent it runs
- * as (its role) and the `story` and `task` its assignment names at its top level, and
- * `returned` when it returns, by the same ids, with its tokens when the harness
- * reports them. The module only sends; the runtime decides what is recorded (a
- * dispatch naming neither story nor task records nothing), and no time is sent: the
+ * EACH AGENT RUN RECORDED. Each agent run the harness sees for a story or a task is
+ * sent to the ledger by `<bin> lifecycle`, so the ledger's cost is what the harness
+ * saw: `dispatched` for each item of a `task` call whose assignment names a `story`
+ * or a `task` at its top level, by the call's id and the item's, with the agent it
+ * runs as (its role) and what it names, and `returned` when it returns, by the same
+ * ids, with its tokens when the harness reports them. An item naming neither is not
+ * sent, nor is its return: the module loads in every omp session, in any repository.
+ * The module only sends; what is recorded is the runtime's, and no time is sent: the
  * ledger reads elapsed time from its entries. A failed send is warned of, and a
  * dispatch always goes ahead.
  *
@@ -1954,8 +1955,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  });',
         '',
         "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
-        '  // contract, each misfit warned of, and each item recorded with the story and task its',
-        '  // assignment names; the dispatch goes ahead.',
+        '  // contract, each misfit warned of, and each item naming a story or a task recorded with',
+        '  // them; the dispatch goes ahead.',
         '  pi.on("tool_call", async (event, ctx) => {',
         '    const input = (event.input ?? {}) as Record<string, unknown>;',
         '    if (!isDispatch(input)) return undefined;',
@@ -1980,6 +1981,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '          return typeof value === "string" && value.trim() !== "" ? [[field, value]] : [];',
         '        }),',
         '      );',
+        '      // An item naming neither is no work of a story or task: nothing is sent, now or on return.',
+        '      if (Object.keys(names).length === 0) continue;',
         '      const at: Dispatch = { call: event.toolCallId, agent: h.id, cwd: session.cwd, actor: actor(session) };',
         '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
         '      await record({ kind: "dispatched", call: at.call, agent: at.agent, role: h.agent, ...names }, at, session);',
