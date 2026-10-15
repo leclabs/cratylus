@@ -1,0 +1,15 @@
+{
+  "id": "01M50H5GCT00QXXDBPHY9N1DBE",
+  "at": "2026-10-15T19:38:30.682Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0248",
+  "context": "workflow",
+  "title": "Every agent run on the work counts toward its cost",
+  "situation": "Raised by the lead realizing intent-based delegation, 2026-10-15. Agent runs launched other than by a dispatch the harness records were only warned about, so their cost was missing from the ledger.",
+  "decision": "Every agent run that works on a story or task counts toward its cost, by role, tokens and elapsed time, however it was launched. How the harness captures such runs is the lead's choice.",
+  "consequences": "Capturing runs launched outside a recorded dispatch is a follow-up task.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

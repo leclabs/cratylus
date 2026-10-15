@@ -1,0 +1,14 @@
+{
+  "id": "01M50H5GAWVGJQ40DEY6P0M2QV",
+  "at": "2026-10-15T19:38:30.620Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision",
+  "wording": "A recorded choice, of meaning or of realization, with its context and its consequences; a realization decision is the lead's technical choice or the operator's requirement or recommendation for the lead. It is never edited: it is open until accepted, and it stands until a later decision supersedes it by name or a later entry deprecates it, as a decision about one story is once that story ends, merged or dropped. Only standing decisions are shown unless history is asked for, so how each choice was reached stays readable without being mistaken for what holds now.",
+  "builtFrom": [],
+  "reason": "Raised by the lead realizing intent-based delegation, 2026-10-15. A dropped story ends without being done; decisions about it become history all the same.",
+  "supersedes": [
+    "01M50CYXCZT7391NE28985AXYQ"
+  ]
+}
