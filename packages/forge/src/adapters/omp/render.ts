@@ -127,7 +127,7 @@ export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
 ];
 
 /** The capabilities omp offers whole, as a tool of every turn, rather than mounted
- *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
+ *  as an `xd://` device: a device's prompt line is its purpose shortened, with no
  *  `when` and no verb, so an agent asked what is in flight would never meet the
  *  verb that works it out from the ledger. Offered whole, its own explanation,
  *  each verb's purpose and `when` included, reaches every turn. The concept
@@ -186,9 +186,9 @@ export const ompRoleRouting: RoleRouting = {
  *  was dispatched from. What the copy built is applied back into the dispatcher's
  *  checkout unless `task.isolation.apply` is false, and kept as a branch
  *  `omp/task/<id>` in the dispatcher's repository, the agent's own commits, when
- *  `task.isolation.merge` is `branch` — `patch` keeps only a diff. The copy is cut
+ *  `task.isolation.merge` is `branch` — `patch` keeps only a diff. The copy is made
  *  from the dispatcher's checkout as it stands (its HEAD, its uncommitted work): the
- *  task tool takes no ref to cut it from. The isolation module holds these as
+ *  task tool takes no ref to make it from. The isolation module holds these as
  *  session-scoped runtime overrides, so no host setting is written. */
 export const ompDispatchIsolation: DispatchIsolation = {
   settings: {
@@ -197,7 +197,7 @@ export const ompDispatchIsolation: DispatchIsolation = {
     'task.isolation.merge': 'branch',
   },
   lacks:
-    "cut from the dispatcher's HEAD and not from the plan's line, so the work it builds must be moved onto the line before it is integrated",
+    "made from the dispatcher's HEAD and not from the branch its work belongs on, so the work it builds must be moved onto that branch before it is merged",
 };
 
 // ── Status line: where a session's agent renders ─────────────────────────────
@@ -498,7 +498,7 @@ export function ompIsolationExtensions(
 /**
  * Every registration of one module, deduped, each rendered once.
  *
- * ONE ACT, ONE JUDGMENT. Two registrations of a cell can land on one native event and
+ * ONE ACT, ONE RULING. Two registrations of a cell can land on one native event and
  * one command — purview binds the act `subagent.dispatch.pre` (`tool_call`, tool
  * `task`) AND the unnarrowed `tool.use.pre` (`tool_call`, any tool) — and a `task` call
  * then matches both, so the same dispatch was judged twice. Claude collapses identical
@@ -945,23 +945,18 @@ const SESSION_PLACEMENT: readonly string[] = [
  * (its source carried here verbatim) against the one fenced `assignment` block of
  * the item's text or of the batch's shared context; a misfit is warned of, naming
  * the agent and each missing or ill-typed field with the agent's form, and the call
- * goes ahead. A dispatch whose assignment briefs a cut (`cut`, `concepts`,
- * `examples`, `decisions`: a lead) is warned when the cut has no record or its
- * branch is not checked out; one that names a `workPackage` (a builder) is warned
- * when that package is not ready, a concept of the cut is unserved, a visible
- * example unowned (ruling 0083) or one it owns unchecked by a frozen check — each
- * read by `<bin> workPackage state|inventory|frozen`. A main session launched as an
- * agent with an assignment schema checks its first prompt the same way, whether given
- * on the command line, typed, or by any other route, warns of a misfit, and starts.
+ * goes ahead. A main session launched as an agent with an assignment schema checks
+ * its first prompt the same way, whether given on the command line, typed, or by any
+ * other route, warns of a misfit, and starts.
  *
  * DISPATCH FROM `eval`. A dispatch from `eval` code (the prelude's `agent(…)` or
  * `workpool(…)`, or the task tool called as `tool.task` or `tool["task"]`) reaches
- * no `task` call, so its assignment is not checked and the ledger does not capture
+ * no `task` call, so its assignment is not checked and the ledger does not record
  * it. A session launched as an agent, and a delegate whose declaration carries a
  * typed assignment, is warned so ({@link EVAL_DISPATCH_WARNING}); the call goes ahead.
  *
  * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
- * and lifecycle capture alike, names the agent making it in `CRATYLUS_AGENT`: the
+ * and lifecycle records alike, names the agent making it in `CRATYLUS_AGENT`: the
  * declaration a main session was launched as, the agent a dispatched session runs
  * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
  * runs with that agent named the same way: its command is led by a line exporting
@@ -971,20 +966,19 @@ const SESSION_PLACEMENT: readonly string[] = [
  * in a session that is no agent the line unsets it, and an ambient value is dropped
  * at load, so such a session names no one.
  *
- * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). The freeze is a rule held
- * by review and by the record, which names the agent each call names.
+ * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). What a call may change is
+ * a rule held by review and by the record, which names the agent each call names.
  *
- * LIFECYCLE CAPTURE. The harness's own events are written to the cut's ledger by
- * `<bin> lifecycle`, each with a transition derived from the harness's ids (the
- * task call id, the item, the kind), so one event delivered twice is refused:
- * `dispatched` for each item whose assignment names a cut, `returned` when it
- * returns (with its tokens when reported), `verdict` from an assayer's returned
- * deliverable (`verdicts`) and `reported` from a lead's (`outcomes`). A deliverable
- * is read from the structured output, else from the text returned, whole or as its
- * last fenced JSON block, so a verdict returned after prose is recorded. The ledger
- * keeps an event only for a cut opened in it: work dispatched outside any cut,
- * whatever its assignment's `cut` says, is not recorded, and goes ahead
- * (decision 0201(5)).
+ * EACH AGENT RUN RECORDED. Each agent run the harness sees for a story or a task is
+ * sent to the ledger by `<bin> lifecycle`, so the ledger's cost is what the harness
+ * saw: `dispatched` for each item of a `task` call whose assignment names a `story`
+ * or a `task` at its top level, by the call's id and the item's, with the agent it
+ * runs as (its role) and what it names, and `returned` when it returns, by the same
+ * ids, with its tokens when the harness reports them. An item naming neither is not
+ * sent, nor is its return: the module loads in every omp session, in any repository.
+ * The module only sends; what is recorded is the runtime's, and no time is sent: the
+ * ledger reads elapsed time from its entries. A failed send is warned of, and a
+ * dispatch always goes ahead.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
@@ -1134,7 +1128,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
         '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
-        '// its purpose cut short.',
+        '// its purpose shortened.',
         `const ESSENTIAL: readonly string[] = ${JSON.stringify(OMP_ESSENTIAL_CAPABILITIES)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
         "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
@@ -1387,10 +1381,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'interface Schema {',
         '  required?: readonly string[];',
         '}',
-        '// What a cut brief requires: a dispatch whose agent takes one opens the cut (a lead).',
-        'const CUT_BRIEF: readonly string[] = ["cut", "concepts", "examples", "decisions"];',
-        'const requires = (schema: Schema | undefined, fields: readonly string[]): boolean =>',
-        '  schema !== undefined && fields.every((f) => (schema.required ?? []).includes(f));',
         '',
         '// One item of a `task` call: the agent it runs as and its own id (its name, else its',
         '// position), with its assignment once checked.',
@@ -1399,7 +1389,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  agent: string;',
         '  id: string;',
         '  index: number;',
-        '  schema?: Schema;',
         '  assignment?: Record<string, unknown>;',
         '}',
         '',
@@ -1435,119 +1424,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return typeof input.context === "string" ? assignmentIn(input.context) : undefined;',
         '}',
         '',
-        "// The cut's state and reading, as the work package capability computes them now.",
-        'interface CutState {',
-        '  branch: string | null;',
-        '  workPackages: { name: string; status: string }[];',
-        '  ready: string[];',
-        '}',
-        'interface CutInventory {',
-        '  unserved: string[];',
-        '  unowned: string[];',
-        '  examples: { ref: string; package?: string | null }[];',
-        '}',
-        '// A cut opened and not integrated, as `workPackage frozen` answers it: its visible examples',
-        '// no frozen check names.',
-        'interface FrozenCut {',
-        '  cut: string;',
-        '  unchecked: string[];',
-        '}',
-        'const cutRead = async <T>(verb: string, cut: string, cwd: string, agent: string | undefined): Promise<T> =>',
-        '  JSON.parse(await run(["workPackage", verb, "--cut", cut], cwd, undefined, agent)) as T;',
         'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
-        '',
-        "// What a lead's dispatch is warned of: it opens the cut's work, which wants the cut recorded",
-        '// with its branch, and that branch checked out here.',
-        'async function leadWarning(cut: string, cwd: string, agent: string | undefined): Promise<string | undefined> {',
-        '  const open = `${COMMAND} workPackage open --cut ${cut} --branch <branch> --architect <context>=<architect>`;',
-        '  let state: CutState;',
-        '  try {',
-        '    state = await cutRead<CutState>("state", cut, cwd, agent);',
-        '  } catch (error) {',
-        '    return `lead dispatch of cut ${cut}: ${messageOf(error)}; record the cut with its branch (${open})`;',
-        '  }',
-        '  if (typeof state.branch !== "string")',
-        '    return `lead dispatch of cut ${cut}: the cut has no record naming its branch; record it (${open})`;',
-        '  let head: string;',
-        '  try {',
-        '    head = (await execOf("git", ["rev-parse", "--abbrev-ref", "HEAD"], cwd)).trim();',
-        '  } catch (error) {',
-        '    head = `no branch (${messageOf(error)})`;',
-        '  }',
-        '  return head === state.branch',
-        '    ? undefined',
-        '    : `lead dispatch of cut ${cut}: its branch ${state.branch} is not checked out (${head} is), and the lead works in this checkout`;',
-        '}',
-        '',
-        "// What a builder's dispatch is warned of (ruling 0083): its package not ready, a concept of",
-        '// the cut unserved, a visible example unowned, or one it owns unchecked by a frozen check.',
-        'async function builderWarning(cut: string, packages: readonly string[], cwd: string, agent: string | undefined): Promise<string | undefined> {',
-        '  let state: CutState;',
-        '  let inventory: CutInventory;',
-        '  let frozen: FrozenCut[];',
-        '  try {',
-        '    [state, inventory, frozen] = await Promise.all([',
-        '      cutRead<CutState>("state", cut, cwd, agent),',
-        '      cutRead<CutInventory>("inventory", cut, cwd, agent),',
-        '      run(["workPackage", "frozen"], cwd, undefined, agent).then((text) => (JSON.parse(text) as { cuts: FrozenCut[] }).cuts),',
-        '    ]);',
-        '  } catch (error) {',
-        '    return `builder dispatch of cut ${cut}: ${messageOf(error)}`;',
-        '  }',
-        '  const problems: string[] = [];',
-        '  if (inventory.unserved.length > 0)',
-        '    problems.push(`concepts no work package serves: ${inventory.unserved.join(", ")}`);',
-        '  if (inventory.unowned.length > 0)',
-        '    problems.push(`visible examples no work package owns: ${inventory.unowned.join(", ")}`);',
-        '  const unchecked = new Set(frozen.find((c) => c.cut === cut)?.unchecked ?? []);',
-        '  for (const name of packages) {',
-        '    const known = state.workPackages.find((p) => p.name === name);',
-        '    if (known === undefined) problems.push(`${name} is no work package of the cut`);',
-        '    else if (!state.ready.includes(name))',
-        '      problems.push(`work package ${name} is not ready (it is ${known.status}; a package is ready once every package it depends on has returned and it is not yet dispatched, returned to build by a finding, or returned into a fix round by a failing whole check)`);',
-        '    const bare = inventory.examples.filter((e) => e.package === name && unchecked.has(e.ref)).map((e) => e.ref);',
-        '    if (bare.length > 0)',
-        '      problems.push(`work package ${name} owns visible examples no frozen check names: ${bare.join(", ")} (${COMMAND} workPackage freeze --cut ${cut} --check <path>)`);',
-        '  }',
-        '  return problems.length === 0 ? undefined : `builder dispatch of cut ${cut}: ${problems.join("; ")}`;',
-        '}',
-        '',
-        "// What a returned deliverable records: a lead's report (`outcomes`) or an assayer's",
-        '// verdicts (`verdicts`, each on a work package).',
-        'function deliverableEntry(',
-        '  deliverable: unknown,',
-        '  at: { cut: string; run: string; assayer: string },',
-        '): Record<string, unknown> | undefined {',
-        '  if (typeof deliverable !== "object" || deliverable === null) return undefined;',
-        '  const d = deliverable as Record<string, unknown>;',
-        '  if (Array.isArray(d.outcomes))',
-        '    return { kind: "reported", transition: `${at.run}/reported`, cut: at.cut, run: at.run, report: d };',
-        '  if (Array.isArray(d.verdicts) && d.verdicts.every((v) => typeof v === "object" && v !== null && "workPackage" in v))',
-        '    return {',
-        '      kind: "verdict",',
-        '      transition: `${at.run}/verdict`,',
-        '      cut: at.cut,',
-        '      assayer: at.assayer,',
-        '      run: at.run,',
-        '      verdicts: d.verdicts,',
-        '      hardeningNotes: Array.isArray(d.hardeningNotes) ? d.hardeningNotes : [],',
-        '    };',
-        '  return undefined;',
-        '}',
-        '',
-        "// A returned text's JSON: the whole text, else its last fenced block that parses, as an",
-        '// agent returning its deliverable after prose writes it.',
-        'function jsonIn(text: unknown): unknown {',
-        '  if (typeof text !== "string") return undefined;',
-        '  const fenced = [...text.matchAll(/```[a-z]*\\n([\\s\\S]*?)\\n```/g)].map((m) => m[1] ?? "");',
-        '  for (const candidate of [text, ...fenced.reverse()])',
-        '    try {',
-        '      return JSON.parse(candidate);',
-        '    } catch {',
-        '      // not JSON: the next candidate',
-        '    }',
-        '  return undefined;',
-        '}',
         '',
         "// omp's own sections that prescribe an identity, a stance or a procedure, by heading: a session",
         '// launched as a declaration takes all three from the declaration alone. Every other section,',
@@ -2027,44 +1904,33 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      : ["# Assignment forms", "", "Give a dispatch of these agents its assignment in its task text so:", "", ...forms].join("\\n");',
         '  }',
         '',
-        '  // The harness event appended to the ledger of the repository holding `cwd`. A refusal of a',
-        '  // transition already written is the same event delivered twice, and nothing more.',
-        '  async function capture(event: Record<string, unknown>, at: { cwd: string; agent?: string }, ctx?: Session): Promise<void> {',
+        '  // An agent run the harness sees, sent to the ledger of the repository holding `cwd` as',
+        "  // the dispatching agent (`actor`); what is recorded of it is the runtime's. A failed send is",
+        '  // warned of, and nothing more.',
+        '  async function record(event: Record<string, unknown>, at: { cwd: string; actor?: string }, ctx?: Session): Promise<void> {',
         '    try {',
-        '      await run(["lifecycle", JSON.stringify(event)], at.cwd, undefined, at.agent);',
+        '      await run(["lifecycle", JSON.stringify(event)], at.cwd, undefined, at.actor);',
         '    } catch (error) {',
-        '      const message = messageOf(error);',
-        '      if (!message.includes(String(event.transition))) ctx?.ui.notify(`${COMMAND} lifecycle: ${message}`, "warning");',
+        '      ctx?.ui.notify(`${COMMAND} lifecycle: ${messageOf(error)}`, "warning");',
         '    }',
         '  }',
-        '  // Each item dispatched for a cut, by its task call and position: what its return records,',
-        '  // and the agent that dispatched it, whose capture its return is.',
+        "  // Each item dispatched and not yet returned, by its task call and position: the harness's",
+        '  // ids its return is recorded by, and the agent that dispatched it.',
         '  interface Dispatch {',
-        '    cut: string;',
-        '    role: string;',
-        '    run: string;',
-        '    workPackage?: string;',
+        '    call: string;',
+        '    agent: string;',
         '    cwd: string;',
-        '    agent?: string;',
+        '    actor?: string;',
         '  }',
         '  const dispatches = new Map<string, Dispatch>();',
-        '  async function returned(at: Dispatch, assayer: string, deliverable: unknown, tokens: unknown, ctx?: Session): Promise<void> {',
-        '    const { cut, role, run: runId, workPackage } = at;',
-        '    await capture(',
-        '      {',
-        '        kind: "returned",',
-        '        transition: `${runId}/returned`,',
-        '        cut,',
-        '        role,',
-        '        run: runId,',
-        '        ...(workPackage === undefined ? {} : { workPackage }),',
-        '        ...(typeof tokens === "number" ? { tokens } : {}),',
-        '      },',
-        '      at,',
-        '      ctx,',
-        '    );',
-        '    const entry = deliverableEntry(deliverable, { cut, run: runId, assayer });',
-        '    if (entry !== undefined) await capture(entry, at, ctx);',
+        '  // The return of the item dispatched under `key`, with its tokens when the harness reports',
+        '  // them, recorded once: a return delivered again finds no dispatch.',
+        '  async function returned(key: string, tokens: unknown, ctx?: Session): Promise<void> {',
+        '    const at = dispatches.get(key);',
+        '    if (at === undefined) return;',
+        '    dispatches.delete(key);',
+        '    const counted = typeof tokens === "number" && Number.isInteger(tokens) && tokens >= 0;',
+        '    await record({ kind: "returned", call: at.call, agent: at.agent, ...(counted ? { tokens } : {}) }, at, ctx);',
         '  }',
         '',
         "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
@@ -2089,7 +1955,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  });',
         '',
         "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
-        '  // contract, then the cut it serves; each problem is warned of, and the dispatch goes ahead.',
+        '  // contract, each misfit warned of, and each item naming a story or a task recorded with',
+        '  // them; the dispatch goes ahead.',
         '  pi.on("tool_call", async (event, ctx) => {',
         '    const input = (event.input ?? {}) as Record<string, unknown>;',
         '    if (!isDispatch(input)) return undefined;',
@@ -2098,81 +1965,48 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const handoffs = itemsOf(input);',
         '    const problems: string[] = [];',
         '    for (const h of handoffs) {',
-        '      h.schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
-        '      if (h.schema === undefined) continue;',
         '      const value = assignmentOf(h.item, input);',
-        '      const { problem } = checkAssignment(h.agent, h.schema, value);',
-        '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, h.schema)}`);',
         '      if (typeof value === "object" && value !== null && !Array.isArray(value))',
         '        h.assignment = value as Record<string, unknown>;',
-        '    }',
-        '    const leads = new Set<string>();',
-        '    const builders = new Map<string, string[]>();',
-        '    for (const { schema, assignment } of handoffs) {',
-        '      const cut = assignment?.cut;',
-        '      if (typeof cut !== "string") continue;',
-        '      if (requires(schema, CUT_BRIEF)) leads.add(cut);',
-        '      if (requires(schema, ["workPackage"]) && typeof assignment?.workPackage === "string")',
-        '        builders.set(cut, [...(builders.get(cut) ?? []), assignment.workPackage]);',
-        '    }',
-        '    for (const cut of leads) {',
-        '      const problem = await leadWarning(cut, session.cwd, actor(session));',
-        '      if (problem !== undefined) problems.push(problem);',
-        '    }',
-        '    for (const [cut, packages] of builders) {',
-        '      const problem = await builderWarning(cut, packages, session.cwd, actor(session));',
-        '      if (problem !== undefined) problems.push(problem);',
+        '      const schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
+        '      if (schema === undefined) continue;',
+        '      const { problem } = checkAssignment(h.agent, schema, value);',
+        '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, schema)}`);',
         '    }',
         '    if (problems.length > 0) session.ui.notify(`dispatch warning, going ahead: ${problems.join("\\n")}`, "warning");',
         '    for (const h of handoffs) {',
-        '      const cut = h.assignment?.cut;',
-        '      if (typeof cut !== "string") continue;',
-        '      const workPackage = typeof h.assignment?.workPackage === "string" ? h.assignment.workPackage : undefined;',
-        '      const at: Dispatch = { cut, role: h.agent, run: `${event.toolCallId}/${h.id}`, workPackage, cwd: session.cwd, agent: actor(session) };',
-        '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
-        '      await capture(',
-        '        {',
-        '          kind: "dispatched",',
-        '          transition: `${at.run}/dispatched`,',
-        '          cut,',
-        '          role: h.agent,',
-        '          run: at.run,',
-        '          ...(workPackage === undefined ? {} : { workPackage }),',
-        '        },',
-        '        at,',
-        '        session,',
+        '      const names = Object.fromEntries(',
+        '        ["story", "task"].flatMap((field) => {',
+        '          const value = h.assignment?.[field];',
+        '          return typeof value === "string" && value.trim() !== "" ? [[field, value]] : [];',
+        '        }),',
         '      );',
+        '      // An item naming neither is no work of a story or task: nothing is sent, now or on return.',
+        '      if (Object.keys(names).length === 0) continue;',
+        '      const at: Dispatch = { call: event.toolCallId, agent: h.id, cwd: session.cwd, actor: actor(session) };',
+        '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
+        '      await record({ kind: "dispatched", call: at.call, agent: at.agent, role: h.agent, ...names }, at, session);',
         '    }',
         '    return undefined;',
         '  });',
         '',
-        '  // A settled dispatch returns each item it ran: its return, tokens and deliverable. The call',
-        '  // is known by its id, whatever the tool carrying it is called.',
+        '  // A settled dispatch returns each item it ran, with its tokens. The call is known by its',
+        '  // id, whatever the tool carrying it is called.',
         '  pi.on("tool_result", async (event, ctx) => {',
         '    const details = (event as { details?: { results?: unknown } }).details;',
         '    const results = Array.isArray(details?.results) ? details.results : [];',
         '    for (const raw of results) {',
         '      const r = (raw ?? {}) as Record<string, unknown>;',
-        '      const at = dispatches.get(`${event.toolCallId}#${String(r.index)}`);',
-        '      if (at === undefined) continue;',
-        '      const structured = r.structuredOutput as { data?: unknown } | undefined;',
-        '      const deliverable = structured?.data ?? jsonIn(r.output);',
-        '      await returned(at, typeof r.id === "string" ? r.id : at.run, deliverable, r.tokens, ctx as unknown as Session);',
+        '      await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, ctx as unknown as Session);',
         '    }',
         '    return undefined;',
         '  });',
-        "  // A background item settles outside its call: omp's own lifecycle event says so, and its",
-        '  // deliverable sits beside its session file: structured, else as the text it returned.',
+        "  // A background item settles outside its call: omp's own lifecycle event says so.",
         '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
         '  bus?.on?.("task:subagent:lifecycle", (data) => {',
         '    const e = (data ?? {}) as Record<string, unknown>;',
         '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
-        '    const at = dispatches.get(`${String(e.parentToolCallId)}#${String(e.index)}`);',
-        '    if (at === undefined) return;',
-        '    const base = typeof e.sessionFile === "string" ? e.sessionFile.replace(/\\.jsonl$/, "") : undefined;',
-        '    const file = base === undefined ? undefined : [`${base}.json`, `${base}.md`].find((f) => existsSync(f));',
-        '    const deliverable = file === undefined ? undefined : jsonIn(readFileSync(file, "utf8"));',
-        '    void returned(at, typeof e.id === "string" ? e.id : at.run, deliverable, undefined);',
+        '    void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
         '  });',
         '',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',

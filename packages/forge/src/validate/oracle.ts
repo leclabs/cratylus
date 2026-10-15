@@ -23,7 +23,7 @@
 //
 // These calls hit the network + a live model — SLOW and non-deterministic. They
 // are NOT part of the hermetic `pnpm test` floor; the caller gates them behind
-// `COLD_ORACLE_LIVE=1` (an integration lane). The static floor (`./accept.ts`)
+// `COLD_ORACLE_LIVE=1` (a live lane). The static floor (`./accept.ts`)
 // runs always; this oracle is the pre-land ceiling.
 
 import { execFileSync } from 'node:child_process';

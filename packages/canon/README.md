@@ -58,7 +58,7 @@ are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents
 
-The plugin carries nine agents, all in the practice `example-driven-workflow`, which delivers
+The plugin carries nine agents, all in the practice `intent-based-delegation`, which delivers
 intent-based delegation. `architect`, `lead`, `builder` and `reviewer` are the generic holders of
 their roles, with `illustrator` and `check-writer` as specialists called in when a story's risk
 warrants them. Each role is defined by what it receives and what it hands over, never by steps:
