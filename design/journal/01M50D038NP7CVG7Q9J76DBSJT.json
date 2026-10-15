@@ -1,0 +1,16 @@
+{
+  "id": "01M50D038NP7CVG7Q9J76DBSJT",
+  "at": "2026-10-15T18:25:39.093Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0226",
+  "context": "workflow",
+  "title": "How checks are written",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. Checks were written for every cut by a check-writer and frozen.",
+  "decision": "Every check runs on every pull request and nothing merges unless all pass. A builder writes the tests its change needs. When a story's risk calls for a check-writer, the checks binding its examples are written before the build by someone other than the builders and trusted only once seen to fail. A check binds the example's meaning, never wording the example did not fix; where a capability already defines correctness, the check delegates to it. Agents' behaviour is judged in use, never checked.",
+  "consequences": "The check and check-writer concepts state this.",
+  "status": "accepted",
+  "supersedes": "0164",
+  "supersedesEntry": "01M4VQN0EHXH1F4KCTH6VDM8TH",
+  "decisionKind": "meaning"
+}

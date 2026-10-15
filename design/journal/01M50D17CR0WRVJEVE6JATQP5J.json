@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17CR0WRVJEVE6JATQP5J",
+  "at": "2026-10-15T18:26:16.088Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0168",
+  "entry": "01M4VQN0P6WZVBX46ZJQ2C1H0Z",
+  "reason": "Stated by the agents context's decision that agents are judged in real use; it spoke of cuts, which no longer exist."
+}

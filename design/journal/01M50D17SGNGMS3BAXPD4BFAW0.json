@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17SGNGMS3BAXPD4BFAW0",
+  "at": "2026-10-15T18:26:16.496Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0122",
+  "entry": "01M4PDQ0PHYVMYJR7VF7WC4ZA4",
+  "reason": "A lead now receives a story or a task with no story, so a request outside a cut no longer arises."
+}

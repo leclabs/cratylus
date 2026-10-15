@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17H1WK7YAYP9AV91PKCV",
+  "at": "2026-10-15T18:26:16.225Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0170",
+  "entry": "01M4VQN0SSTXQQ96MQ4HXN015J",
+  "reason": "Stated by the agents context's decision that agents are judged in real use; nothing remains of runs to assert over."
+}

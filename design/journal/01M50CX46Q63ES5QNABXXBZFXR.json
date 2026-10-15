@@ -1,0 +1,14 @@
+{
+  "id": "01M50CX46Q63ES5QNABXXBZFXR",
+  "at": "2026-10-15T18:24:01.751Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "pull request",
+  "wording": "The handover of one task's change for review and merging: the change, its tests, and what was verified. It merges only once its review approves it and every check passes.",
+  "builtFrom": [
+    "check"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation, in which each task ends in one pull request with one review, and each handover states what it must contain.",
+  "supersedes": []
+}

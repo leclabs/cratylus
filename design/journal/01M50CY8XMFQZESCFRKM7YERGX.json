@@ -1,0 +1,28 @@
+{
+  "id": "01M50CY8XMFQZESCFRKM7YERGX",
+  "at": "2026-10-15T18:24:39.348Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "intent-based delegation",
+  "wording": "The practice cratylus ships for building against a design: each party passes intent down and takes back a result, deciding how within its own rights. The operator states intent and priorities, the architect turns intent into stories, the lead breaks each story into tasks, builders hand over pull requests and reviewers review them, with effort and review sized to each story's risk; the record and reconstitution keep the meaning across sessions, and the check holds every merge. It names established practice rather than restating it: domain-driven design for meaning, GitHub flow, code review sized to the risk, specification by example where it is needed, and orchestrator-workers for delegating.",
+  "builtFrom": [
+    "conceptual design",
+    "story",
+    "epic",
+    "task",
+    "review",
+    "handover",
+    "orchestrator-workers",
+    "decision rights",
+    "proportionality",
+    "reconstitution",
+    "check",
+    "release",
+    "roles",
+    "efficiency",
+    "semantic gap"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. It replaces the example-driven workflow as the whole the workflow's concepts make.",
+  "supersedes": []
+}

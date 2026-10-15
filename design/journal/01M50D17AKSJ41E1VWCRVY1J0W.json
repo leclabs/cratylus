@@ -1,0 +1,9 @@
+{
+  "id": "01M50D17AKSJ41E1VWCRVY1J0W",
+  "at": "2026-10-15T18:26:16.019Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0149",
+  "entry": "01M4V2QVYD2X66A5R4HRB69DTC",
+  "reason": "Integration no longer exists; a story ends merged or dropped, and anything unfinished is a follow-up in its outcome."
+}

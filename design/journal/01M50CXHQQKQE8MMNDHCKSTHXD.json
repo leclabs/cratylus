@@ -1,0 +1,14 @@
+{
+  "id": "01M50CXHQQKQE8MMNDHCKSTHXD",
+  "at": "2026-10-15T18:24:15.607Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "reviewer",
+  "wording": "The agent that reviews one pull request it did not write, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; it never builds or repairs the work it reviews.",
+  "builtFrom": [
+    "review"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated.",
+  "supersedes": []
+}

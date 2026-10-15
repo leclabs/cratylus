@@ -1,0 +1,16 @@
+{
+  "id": "01M50CZADCWV3SBZDC300VKZPV",
+  "at": "2026-10-15T18:25:13.644Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability",
+  "wording": "A programmatic thing an agent calls as a tool and the operator runs as a command, such as the concept journal or the ledger; it explains itself, and reaches agents and the operator by its capability port.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "The workflow's work package ledger becomes the ledger of stories and tasks (operator, 2026-10-15).",
+  "supersedes": [
+    "01M4VRGFPVT4CRMZXX5QK14N46"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "01M50D0ZD5CE6DWEQ63EV22V6C",
+  "at": "2026-10-15T18:26:07.909Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0232",
+  "context": "workflow",
+  "title": "Order of the remaining work",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. The earlier order is done or overtaken: the line between meaning and mechanics, and delivering the workflow's design to every project, are realized.",
+  "decision": "Recommended: (1) realize intent-based delegation; (2) the consumer trial, kino on a film-production project, which waits for the operator; (3) contracts between contexts, as a story; (4) the ipseic round. Priority is the operator's.",
+  "consequences": "Accepted, it replaces the earlier order.",
+  "status": "accepted",
+  "supersedes": "0194",
+  "supersedesEntry": "01M4VQN2ZFP934D4EVVQRB29PF",
+  "decisionKind": "meaning"
+}

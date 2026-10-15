@@ -1,0 +1,16 @@
+{
+  "id": "01M50D0ZS5JQ4TP724HCY2NR5S",
+  "at": "2026-10-15T18:26:08.293Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0238",
+  "context": "workflow",
+  "title": "The record shows only what holds",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure.",
+  "decision": "The record's views show only what currently holds: standing concepts, standing decisions, standing examples, open decisions and the work in flight. History (superseded and deprecated decisions, retired concepts, finished work's examples) is kept and shown only when asked for.",
+  "consequences": "Nothing is pending under it.",
+  "status": "accepted",
+  "supersedes": "0213",
+  "supersedesEntry": "01M4W35YEQ2KVCQA35HVSRQ7YB",
+  "decisionKind": "meaning"
+}

@@ -1,0 +1,16 @@
+{
+  "id": "01M50D0ZB757K4099NQF13YMVJ",
+  "at": "2026-10-15T18:26:07.847Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0231",
+  "context": "workflow",
+  "title": "Bounded contexts",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. The rule for work spanning contexts was stated for cuts.",
+  "decision": "Every concept belongs to exactly one bounded context. Cratylus's contexts are workflow, agents, corpus and delivery, which make the product, and development, which is how the product is made. A story spans contexts only where the same architect holds them; otherwise one story per context, joined by contracts. One architect may hold several contexts, but never merges their models. The workflow never models a user's contexts; users bring their own.",
+  "consequences": "Contracts and the context map are otherwise unchanged.",
+  "status": "accepted",
+  "supersedes": "0189",
+  "supersedesEntry": "01M4VQN1Y803NMJ1RVG0KGG0G6",
+  "decisionKind": "meaning"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "01M50CYXKT8A6QA9P1KJF15J4T",
+  "at": "2026-10-15T18:25:00.538Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "work",
+  "wording": "What a story's tasks change in the project, which its acceptance criteria and examples are checked against.",
+  "builtFrom": [],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. Stories and tasks produce the work; cuts are gone.",
+  "supersedes": [
+    "01M4J5RAF6051WACA7PQX2XZBY"
+  ]
+}

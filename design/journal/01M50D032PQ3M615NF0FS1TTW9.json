@@ -1,0 +1,16 @@
+{
+  "id": "01M50D032PQ3M615NF0FS1TTW9",
+  "at": "2026-10-15T18:25:38.902Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0223",
+  "context": "workflow",
+  "title": "The architect decides meaning; the lead realizes and merges; the operator decides intent, priority and release",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. Rights were stated around cuts: their scope, their branches and their integration.",
+  "decision": "(1) The operator decides intent, priorities and release, and reviews where a story's risk calls for a person. A technical requirement of the operator's is its accepted decision and binds the lead; a technical recommendation is its open decision, which the lead settles. (2) The architect decides meaning only: concepts, stories, examples, meaning questions, and accepting a story done on its outcome; never how anything is built. (3) The lead decides realization: every technical decision, which it records, and merging approved pull requests that pass every check. Pushing to a project's shared repository follows that project's own convention.",
+  "consequences": "The architect, lead, operator and decision rights concepts state this.",
+  "status": "accepted",
+  "supersedes": "0160",
+  "supersedesEntry": "01M4VKWWQS5X39FAEFPHHRNNP5",
+  "decisionKind": "meaning"
+}

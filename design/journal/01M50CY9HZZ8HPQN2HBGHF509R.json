@@ -1,0 +1,22 @@
+{
+  "id": "01M50CY9HZZ8HPQN2HBGHF509R",
+  "at": "2026-10-15T18:24:39.999Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "context overview",
+  "wording": "An account of one bounded context computed from the concept journal and the ledger, never written by hand, read first at every reconstitution: its subject and place in the context map, then its concepts in plain prose, each whole before its parts and otherwise in the order recorded, with any cycle named, then its open decisions and the work in flight on it, so a session meets the design whole before its parts.",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "context map",
+    "decision",
+    "concept journal",
+    "ledger",
+    "story"
+  ],
+  "reason": "The operator, 2026-10-15: the workflow becomes intent-based delegation instead of a prescribed procedure; each role is defined by what it receives and hands over, each handover states what it must contain, and established practice is named rather than restated. Stories and tasks in flight replace cuts in flight.",
+  "supersedes": [
+    "01M4W14K1K9XENJBJ0FNXRWDC7"
+  ]
+}
