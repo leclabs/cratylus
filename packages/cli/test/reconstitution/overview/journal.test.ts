@@ -5,14 +5,14 @@ import {
   unchangedFiles,
 } from '../../concept-journal/fixture.js';
 import {
-  type ExecutionFixture,
+  type OverviewFixture,
   command,
   concept,
   fixture,
   git,
   seed,
 } from './fixture.js';
-let f: ExecutionFixture;
+let f: OverviewFixture;
 beforeEach(() => {
   f = fixture();
 });

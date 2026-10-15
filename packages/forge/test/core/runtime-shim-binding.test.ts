@@ -40,15 +40,13 @@ describe('runtime-shim binding', () => {
     const body = renderSkillCellBody({
       verb: 'Slice',
       block: BLOCK,
-      runtime: { capability: 'workPackage' },
+      runtime: { capability: 'ledger' },
     });
-    expect(body).toContain('scripts/workPackage.mjs');
+    expect(body).toContain('scripts/ledger.mjs');
   });
 
   it('leaks NO absolute path, checkout path, or bin name into the body', () => {
-    const body = skillBody(
-      resolved({ runtime: { capability: 'workPackage' } }),
-    );
+    const body = skillBody(resolved({ runtime: { capability: 'ledger' } }));
     // The whole point of the seam: the bin name has ONE home (the shim emitter),
     // never the projected markdown. A rebrand must not have to touch cells.
     expect(body).not.toContain(CLI_BIN);

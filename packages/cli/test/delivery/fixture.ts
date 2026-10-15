@@ -468,6 +468,8 @@ export function earlierCommand(h: Host) {
     ['cratylus-forge-0.14.5.tgz', '@cratylus/forge'],
     ['cratylus-runtime-0.10.0.tgz', '@cratylus/runtime'],
     ['cratylus-schema-0.9.1.tgz', '@cratylus/schema'],
+    // A dependency of the earlier runtime that today's packages no longer bring.
+    ['dagrejs-graphlib-4.0.5.tgz', '@dagrejs/graphlib'],
   ]) {
     const target = join(prefix, 'node_modules', name!);
     rmSync(target, { recursive: true, force: true });

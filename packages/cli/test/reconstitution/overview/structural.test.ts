@@ -1,29 +1,27 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { snapshot } from '../../concept-journal/fixture.js';
 import {
-  type ExecutionFixture,
+  type OverviewFixture,
   command,
   concept,
   dispatch,
   fixture,
   git,
   meanings,
-  openCut,
   ordered,
   overview,
   relation,
   seed,
   subject,
 } from './fixture.js';
-let f: ExecutionFixture;
+let f: OverviewFixture;
 beforeEach(() => {
   f = fixture();
 });
 afterEach(() => f.dispose());
 
-it('workflow/2 — subject and relation first, whole before parts, then open decisions and cuts in flight', () => {
+it('workflow/2 — subject and relation first, whole before parts, then open decisions and work in flight', () => {
   seed(f);
-  openCut(f);
   dispatch(f);
   const answer = overview(f);
   expect(answer, 'recorded subject and context-map relation').toMatchObject({
@@ -49,9 +47,10 @@ it('workflow/2 — subject and relation first, whole before parts, then open dec
   expect(answer.openDecisions, 'then its open decisions').toEqual([
     { id: 'colour', title: 'Choose the colour treatment' },
   ]);
-  expect(answer.cutsInFlight, 'then cuts in flight').toEqual([
-    { cut: 'film', phase: 'in flight', branch: 'feature/film' },
-  ]);
+  expect(answer.workInFlight, 'then work in flight').toEqual({
+    stories: [{ story: 'film' }],
+    tasks: [{ task: 'shoot', story: 'film' }],
+  });
   // Prose ordering, fidelity and subject/relation are judged by workflow/22;
   // requiring verbatim source wording here would reject valid plain prose.
   expect(
@@ -60,13 +59,13 @@ it('workflow/2 — subject and relation first, whole before parts, then open dec
   ).not.toBe('');
 });
 
-it('workflow/3 — next overview reflects supersession, acceptance and newly dispatched cut without rewriting an account', () => {
+it('workflow/3 — next overview reflects supersession, acceptance and newly dispatched work without rewriting an account', () => {
   seed(f);
-  openCut(f);
   const before = overview(f);
-  expect(before.cutsInFlight, 'newly dispatched, not merely recorded').toEqual(
-    [],
-  );
+  expect(before.workInFlight, 'nothing dispatched yet').toEqual({
+    stories: [],
+    tasks: [],
+  });
   concept(
     f,
     'take',
@@ -94,8 +93,8 @@ it('workflow/3 — next overview reflects supersession, acceptance and newly dis
   ).not.toContain(meanings.take);
   expect(after.openDecisions, 'never settled decision as open').toEqual([]);
   expect(
-    after.cutsInFlight.map((c) => c.cut),
-    'reflects newly dispatched cut',
+    after.workInFlight.stories.map((s) => s.story),
+    'reflects newly dispatched work',
   ).toEqual(['film']);
   expect(
     snapshot(f.root),
@@ -128,11 +127,10 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
     '--reason',
     'Film creative acceptance.',
   );
-  openCut(f);
   dispatch(f);
   const feature = overview(f);
   expect(
-    feature.cutsInFlight.map((c) => c.cut),
+    feature.workInFlight.stories.map((s) => s.story),
     'feature shows its dispatch',
   ).toEqual(['film']);
   expect(feature.openDecisions, 'feature shows acceptance').toEqual([]);
@@ -145,9 +143,9 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
   ).toEqual(common);
   const integration = overview(f);
   expect(
-    integration.cutsInFlight,
+    integration.workInFlight,
     'shared checkout does not leak feature ledger',
-  ).toEqual([]);
+  ).toEqual({ stories: [], tasks: [] });
   expect(
     integration.openDecisions.map((d) => d.id),
     'integration does not claim acceptance',
@@ -157,7 +155,7 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
   expect(overview(f), 'entries land with the work').toEqual(feature);
 });
 
-it('workflow/16 — cut concepts, decisions and acceptances integrate in an ordinary checkout without a worktree', () => {
+it('workflow/16 — feature concepts, decisions and acceptances integrate in an ordinary checkout without a worktree', () => {
   seed(f);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Base film design');
@@ -194,7 +192,7 @@ it('workflow/16 — cut concepts, decisions and acceptances integrate in an ordi
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Film design and acceptance');
   git(f.root, 'switch', 'journal');
-  expect(snapshot(f.root), 'recorded on the cut branch').toEqual(before);
+  expect(snapshot(f.root), 'recorded on the feature branch').toEqual(before);
   git(f.root, 'merge', '--no-edit', 'feature/film');
   expect(snapshot(f.root), 'arrive with its merge').toEqual(feature);
   expect(
@@ -213,7 +211,7 @@ it('workflow/16 — cut concepts, decisions and acceptances integrate in an ordi
     process.env.RECONSTITUTION_RED === '1'
       ? actual.filter((name: string) => name !== 'review')
       : actual,
-    'cut concept lands with its merge',
+    'feature concept lands with its merge',
   ).toContain('review');
 });
 

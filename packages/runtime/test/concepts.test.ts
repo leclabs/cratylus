@@ -18,7 +18,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
+import { dispatchLedger } from '../src/capabilities/ledger/dispatch.js';
 import { appendLifecycle } from '../src/lifecycle/index.js';
 
 let sandbox: string;
@@ -34,6 +34,20 @@ afterEach(() => rmSync(sandbox, { recursive: true, force: true }));
 const concepts = (...argv: string[]) =>
   dispatchConcepts(argv, { from: join(repo, 'nested') });
 const journal = () => readdirSync(join(repo, 'design/journal')).sort();
+/** Ledger entry `n` of the ledger's cut-era history, as it was written. */
+const historyEntry = (n: number, fields: Record<string, unknown>) => {
+  const id = `01ARZ3NDEKTSV4RRFFQ69G5F${String(n).padStart(2, '0')}`;
+  mkdirSync(join(repo, 'design/ledger'), { recursive: true });
+  writeFileSync(
+    join(repo, 'design/ledger', `${id}.json`),
+    JSON.stringify({
+      id,
+      at: '2016-07-30T23:54:10.259Z',
+      transition: `history:${n}`,
+      ...fields,
+    }),
+  );
+};
 const refused = (argv: string[], words: RegExp) => {
   const before = journal();
   expect(() => concepts(...argv)).toThrow(words);
@@ -74,38 +88,24 @@ describe('the concept journal as a library', () => {
     }
   });
 
-  it('names one maker for the record and the freeze: git’s user when no agent is named', () => {
+  it('names the maker git’s user when no agent is named, and warns of no freeze', () => {
     version('define', 'A hold lasts ten minutes.', 'First.');
-    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-    writeFileSync(
-      join(repo, 'design/examples/booking/seats.md'),
-      '1. (hold) Given a seat, when held, then it is kept aside.\n',
-    );
-    dispatchWorkPackage(
-      [
-        'open',
-        '--cut',
-        'seats',
-        '--branch',
-        'b',
-        '--architect',
-        'booking=keeper',
-      ],
-      { from: repo },
-    );
-    const asGitUser = (name: string) => {
-      execFileSync('git', ['config', 'user.name', name], { cwd: repo });
-      return version('supersede', 'A hold lasts five minutes.', 'Sharper.');
-    };
-    const architect = asGitUser('keeper') as Record<string, unknown>;
-    expect(architect).toMatchObject({ by: 'keeper' });
-    expect(architect).not.toHaveProperty('warnings');
-    expect(asGitUser('stranger')).toMatchObject({
-      by: 'stranger',
-      warnings: [
-        { freeze: ['seats'], message: expect.stringContaining("'stranger'") },
-      ],
+    // A cut opened in the ledger's history and never integrated freezes nothing.
+    historyEntry(1, {
+      kind: 'cut',
+      cut: 'seats',
+      branch: 'b',
+      contexts: ['booking'],
+      architects: { booking: 'keeper' },
     });
+    execFileSync('git', ['config', 'user.name', 'stranger'], { cwd: repo });
+    const changed = version(
+      'supersede',
+      'A hold lasts five minutes.',
+      'Sharper.',
+    ) as Record<string, unknown>;
+    expect(changed).toMatchObject({ by: 'stranger' });
+    expect(changed).not.toHaveProperty('warnings');
   });
 
   it('mints each id past the journal’s last, even one from a later clock', () => {
@@ -530,33 +530,35 @@ describe('the concept journal as a library', () => {
       '1. (hold) Given a seat, when held, then it is kept aside.\n',
     );
     const from = join(repo, 'nested');
-    dispatchWorkPackage(
-      [
-        'open',
-        '--cut',
-        'seats',
-        '--branch',
-        'feature/seats',
-        '--architect',
-        'booking=desk',
-      ],
-      { from },
-    );
     const overview = () =>
       concepts('overview', '--context', 'booking') as {
         contexts: {
           context: string;
-          cutsInFlight: unknown[];
+          workInFlight: unknown;
           account: string;
         }[];
       };
-    expect(overview().contexts[0]?.cutsInFlight).toEqual([]);
+    expect(overview().contexts[0]?.workInFlight).toEqual({
+      stories: [],
+      tasks: [],
+    });
+    expect(overview().contexts[0]?.account).toContain('No work is in flight.');
+    dispatchLedger(['story', 'seats', '--context', 'booking'], { from });
+    dispatchLedger(['story', 'rows', '--context', 'other'], { from });
     appendLifecycle(from, {
       kind: 'dispatched',
-      transition: 'seats-lead',
-      cut: 'seats',
-      role: 'lead',
-      run: 'lead',
+      call: 'call-1',
+      agent: 'SeatsBuilder',
+      role: 'builder',
+      story: 'seats',
+      task: 'seats-hold',
+    });
+    appendLifecycle(from, {
+      kind: 'dispatched',
+      call: 'call-1',
+      agent: 'ChoreBuilder',
+      role: 'builder',
+      task: 'chore',
     });
     const before = journal();
     expect(overview()).toMatchObject({
@@ -564,15 +566,24 @@ describe('the concept journal as a library', () => {
         {
           context: 'booking',
           subject: 'Booking.',
-          cutsInFlight: [
-            { cut: 'seats', phase: 'in flight', branch: 'feature/seats' },
-          ],
+          workInFlight: {
+            stories: [{ story: 'seats' }],
+            tasks: [{ task: 'seats-hold', story: 'seats' }, { task: 'chore' }],
+          },
         },
       ],
     });
     expect(overview().contexts[0]?.account).toContain(
       'Hold means: A seat kept aside.',
     );
+    expect(overview().contexts[0]?.account).toContain(
+      'In flight: the story seats; the task seats-hold of the story seats; the task chore.',
+    );
+    dispatchLedger(['end', 'chore', '--outcome', 'merged'], { from });
+    expect(overview().contexts[0]?.workInFlight).toEqual({
+      stories: [{ story: 'seats' }],
+      tasks: [{ task: 'seats-hold', story: 'seats' }],
+    });
     expect(journal()).toEqual(before);
     expect(concepts('overview')).toMatchObject({
       contexts: [{ context: 'booking' }, { context: 'other' }],
@@ -746,21 +757,19 @@ describe('the concept journal as a library', () => {
       );
     git('add', '-A');
     git('commit', '-qm', 'examples');
-    const from = join(repo, 'nested');
-    for (const cut of ['seats', 'rows']) {
-      dispatchWorkPackage(
-        [
-          'open',
-          '--cut',
-          cut,
-          '--branch',
-          `feature/${cut}`,
-          '--architect',
-          'booking=desk',
-        ],
-        { from },
-      );
-      dispatchWorkPackage(['integrate', '--cut', cut], { from });
+    // The ledger's history records both cuts integrated.
+    for (const [n, cut] of [
+      [1, 'seats'],
+      [3, 'rows'],
+    ] as const) {
+      historyEntry(n, {
+        kind: 'cut',
+        cut,
+        branch: `feature/${cut}`,
+        contexts: ['booking'],
+        architects: { booking: 'desk' },
+      });
+      historyEntry(n + 1, { kind: 'integrate', cut });
     }
     expect(listed()).toEqual([
       { id: 'new', status: 'accepted' },

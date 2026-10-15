@@ -12,11 +12,13 @@ import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import {
+  VERBS as LEDGER,
+  dispatchLedger,
+} from '../src/capabilities/ledger/dispatch.js';
+import {
   VERBS as VERSION_SKEW,
   dispatchVersionSkew,
 } from '../src/capabilities/version-skew/index.js';
-import { VERBS as WORK_PACKAGE } from '../src/capabilities/work-package/dispatch.js';
-import { dispatchWorkPackage } from '../src/capabilities/work-package/index.js';
 import {
   CAPABILITIES,
   CAPABILITY_SUMMARIES,
@@ -71,7 +73,7 @@ async function run(
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   concepts: CONCEPTS,
-  workPackage: WORK_PACKAGE,
+  ledger: LEDGER,
   versionSkew: VERSION_SKEW,
 };
 
@@ -92,7 +94,7 @@ describe('the capability commands print their help from the declarations', () =>
 
   it.each([
     ['concepts', 'define', '<concept>'],
-    ['workPackage', 'open', null],
+    ['ledger', 'story', '<name>'],
   ] as const)(
     '%s %s --help documents its positional and every flag',
     async (c, verb, positional) => {
@@ -142,7 +144,7 @@ describe('the capability commands answer an undeclared verb with what to do', ()
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
     concepts: dispatchConcepts,
-    workPackage: dispatchWorkPackage,
+    ledger: dispatchLedger,
     versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 
@@ -210,7 +212,7 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
 describe('the capability commands refuse a word the verb does not take', () => {
   const cases: [Capability, string, string[]][] = [
     ['concepts', 'history', ['c', 'extra']],
-    ['workPackage', 'state', ['extra']],
+    ['ledger', 'state', ['extra']],
   ];
 
   it.each(cases)(

@@ -13,7 +13,7 @@
 // id, and its acceptance (`accept`), each classification of its kind
 // (`classify`) and its deprecation (`deprecate`) are entries of their own, so
 // the decision's record never changes. A cut's efficiency figures
-// (`efficiency`) are recorded by the work package capability; the latest for a
+// (`efficiency`) were recorded by the retired cut ledger; the latest for a
 // cut are its figures.
 //
 // An entry of a kind named here is read only when it carries every field its

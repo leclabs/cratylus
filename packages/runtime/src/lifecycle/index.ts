@@ -1,35 +1,31 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// LIFECYCLE — the one way a lifecycle entry reaches the ledger:
-// `cratylus lifecycle '<event-json>'`, called by the harness binding from the
-// harness's own agent events, never offered to an agent as a tool and never a
-// capability verb.
+// LIFECYCLE — the one way the harness's own agent events reach the ledger:
+// `cratylus lifecycle '<event-json>'`, called by the harness binding, never
+// offered to an agent as a tool and never a capability verb.
 //
-// The event is one JSON object: `kind` (`dispatched`, `returned`, `verdict`,
-// `reported`), `transition` (an id the binding derives from the harness's own
-// ids, so the same harness event delivered twice is refused), `cut`, and the
-// fields of its kind:
-//   dispatched  role, run, workPackage? (set for a builder)
-//   returned    role, run, workPackage?, tokens? (a whole number)
-//   verdict     assayer, run, verdicts [{workPackage, concept, passes,
-//               evidence, finding?}], hardeningNotes []
-//   reported    run, report (the lead's deliverable, an object)
+// The event is one JSON object: `kind`, then the fields of its kind:
+//   dispatched  call (the harness's id of the dispatching call), agent (the
+//               dispatched agent's id), role, story? and task? (what the
+//               dispatch's assignment named)
+//   returned    call, agent, tokens? (a whole number, when reported)
 // It is appended to the ledger of the repository holding the working
-// directory, and only for a cut opened in that ledger (a `cut` entry of its
-// name): an event naming no opened cut, the dispatch of work outside any cut
-// (decision 0201(5)), writes nothing and is no failure, so the dispatch goes
-// ahead unrecorded. An event of another shape, or a transition already
-// recorded, is refused with nothing written and a non-zero exit.
+// directory. A dispatch naming a story or a task not yet recorded records it
+// in flight first. A dispatch naming neither is recorded for nothing and is no
+// failure, and so is the return of a dispatch the ledger does not hold. An
+// event of another shape, or one already recorded (by its call and agent), is
+// refused with nothing written and a non-zero exit.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { Command } from 'commander';
 import { CLI_BIN } from '../bin-name.js';
-import { topOf } from '../capabilities/work-package/git.js';
+import { inFlightDrafts } from '../capabilities/ledger/dispatch.js';
+import { topOf } from '../capabilities/ledger/git.js';
 import {
   LIFECYCLE_KINDS,
   type LedgerDraft,
   type LedgerEntry,
   ledgerAt,
-} from '../capabilities/work-package/ledger.js';
+} from '../capabilities/ledger/store.js';
 
 /** A lifecycle event as the ledger records it. */
 export type LifecycleEvent = Extract<
@@ -39,78 +35,62 @@ export type LifecycleEvent = Extract<
 
 const refuse = (message: string) => new Error(`lifecycle: ${message}`);
 
-/** `event` read as a lifecycle event; refuses any other shape, naming each
- *  missing or ill-typed field. */
+/** `event` read as a lifecycle event, its transition made from its kind, call
+ *  and agent; refuses any other shape, naming each missing or ill-typed
+ *  field. */
 export function lifecycleEvent(event: unknown): LifecycleEvent {
   if (typeof event !== 'object' || event === null || Array.isArray(event))
     throw refuse('the event is not a JSON object');
   const e = event as Record<string, unknown>;
+  if (!LIFECYCLE_KINDS.some((k) => k === e.kind))
+    throw refuse(
+      `the event's kind is ${JSON.stringify(e.kind)}; give one of ${LIFECYCLE_KINDS.join(', ')}`,
+    );
   const wrong: string[] = [];
   const text = (field: string, optional = false) => {
     const value = e[field];
     if (value === undefined && optional) return;
     if (typeof value !== 'string' || value.trim() === '') wrong.push(field);
   };
-  if (!LIFECYCLE_KINDS.some((k) => k === e.kind))
-    throw refuse(
-      `the event's kind is ${JSON.stringify(e.kind)}; give one of ${LIFECYCLE_KINDS.join(', ')}`,
-    );
-  text('transition');
-  text('cut');
-  text('run');
-  switch (e.kind) {
-    case 'dispatched':
-    case 'returned':
-      text('role');
-      text('workPackage', true);
-      if (
-        e.kind === 'returned' &&
-        e.tokens !== undefined &&
-        !(Number.isInteger(e.tokens) && (e.tokens as number) >= 0)
-      )
-        wrong.push('tokens');
-      break;
-    case 'verdict':
-      text('assayer');
-      if (
-        !Array.isArray(e.verdicts) ||
-        e.verdicts.length === 0 ||
-        !e.verdicts.every(
-          (v: unknown) =>
-            typeof v === 'object' &&
-            v !== null &&
-            typeof (v as Record<string, unknown>).workPackage === 'string' &&
-            typeof (v as Record<string, unknown>).concept === 'string' &&
-            typeof (v as Record<string, unknown>).passes === 'boolean' &&
-            typeof (v as Record<string, unknown>).evidence === 'string' &&
-            ['string', 'undefined'].includes(
-              typeof (v as Record<string, unknown>).finding,
-            ),
-        )
-      )
-        wrong.push('verdicts');
-      if (!Array.isArray(e.hardeningNotes)) wrong.push('hardeningNotes');
-      break;
-    case 'reported':
-      if (
-        typeof e.report !== 'object' ||
-        e.report === null ||
-        Array.isArray(e.report)
-      )
-        wrong.push('report');
-      break;
-  }
+  text('call');
+  text('agent');
+  if (e.kind === 'dispatched') {
+    text('role');
+    text('story', true);
+    text('task', true);
+  } else if (
+    e.tokens !== undefined &&
+    !(Number.isInteger(e.tokens) && (e.tokens as number) >= 0)
+  )
+    wrong.push('tokens');
   if (wrong.length > 0)
     throw refuse(
       `the ${String(e.kind)} event is missing or mistypes: ${wrong.join(', ')}; nothing is written`,
     );
-  return e as unknown as LifecycleEvent;
+  const run = `${e.call}/${e.agent}`;
+  return e.kind === 'dispatched'
+    ? {
+        kind: 'dispatched',
+        transition: `dispatched:${run}`,
+        call: e.call as string,
+        agent: e.agent as string,
+        role: e.role as string,
+        ...(e.story === undefined ? {} : { story: e.story as string }),
+        ...(e.task === undefined ? {} : { task: e.task as string }),
+      }
+    : {
+        kind: 'returned',
+        transition: `returned:${run}`,
+        call: e.call as string,
+        agent: e.agent as string,
+        ...(e.tokens === undefined ? {} : { tokens: e.tokens as number }),
+      };
 }
 
 /** Append lifecycle `event` to the ledger of the repository holding `from`,
- *  answering the entry written; `undefined`, writing nothing, when the event
- *  names no cut opened in that ledger. Refused, writing nothing, for another
- *  shape or a repeated transition. */
+ *  answering the entry written; `undefined`, writing nothing, for a dispatch
+ *  naming no story or task, or the return of a dispatch the ledger does not
+ *  hold. Refused, writing nothing, for another shape or a repeated event. */
 export function appendLifecycle(
   from: string,
   event: unknown,
@@ -122,10 +102,31 @@ export function appendLifecycle(
       `${from} is not inside a git repository; the ledger is kept in one`,
     );
   const ledger = ledgerAt(top, refuse);
-  const opened = ledger
-    .entries()
-    .some((e) => e.kind === 'cut' && e.cut === draft.cut);
-  return opened ? ledger.append(draft) : undefined;
+  if (draft.kind === 'dispatched') {
+    if (draft.story === undefined && draft.task === undefined) return;
+    // Recording what it names and the dispatch itself is one append under the
+    // ledger's lock: a story or task another dispatch recorded first counts as
+    // recorded, and this dispatch is always written.
+    return ledger
+      .appendAfter((reading) => [
+        ...inFlightDrafts(reading, draft, refuse),
+        draft,
+      ])
+      .at(-1) as LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'>;
+  }
+  const [written] = ledger.appendAfter((reading) =>
+    reading.entries.some(
+      (e) =>
+        e.kind === 'dispatched' &&
+        e.call === draft.call &&
+        e.agent === draft.agent,
+    )
+      ? [draft]
+      : [],
+  );
+  return written as
+    | (LifecycleEvent & Pick<LedgerEntry, 'id' | 'at'>)
+    | undefined;
 }
 
 /** `lifecycle '<event-json>'`: harness-facing, hidden from help, never a tool. */
@@ -149,7 +150,7 @@ export function lifecycleCommand(): Command {
             entry ?? {
               recorded: false,
               reason:
-                'the event names no cut opened in the ledger; work outside a cut is not recorded',
+                'the event names no story or task, or returns a dispatch the ledger does not hold; it is not recorded',
             },
             null,
             2,

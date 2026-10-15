@@ -3,8 +3,8 @@
 // capability's name.
 //
 // WHY THIS FILE EXISTS. A capability has one keyspace name, in its declared
-// camelCase register (`workPackage`), and a matching kebab-case port module
-// (`work-package`). The conversion between those registers is already declared by
+// camelCase register (`versionSkew`), and a matching kebab-case port module
+// (`version-skew`). The conversion between those registers is already declared by
 // the corpus and used for `communication-style` / `communicationStyle`; this gate
 // checks that runtime ports and skill declarations remain aligned with the
 // capability vocabulary rather than accumulating alternate names.
@@ -72,12 +72,12 @@ const CARRIER_SKILLS_DIR = join(
 // round-trip leg below pins the two against the corpus's live pairs, so a drift
 // between this copy and the declared home is convicted rather than assumed away.
 
-/** kebab register → camel register: `work-package` → `workPackage`. */
+/** kebab register → camel register: `version-skew` → `versionSkew`. */
 function camel(kebab: string): string {
   return kebab.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 }
 
-/** camel register → kebab register: `workPackage` → `work-package`. */
+/** camel register → kebab register: `versionSkew` → `version-skew`. */
 function kebab(camel: string): string {
   return camel.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 }
@@ -196,14 +196,14 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['concepts', 'workPackage']),
+      expect.arrayContaining(['concepts', 'ledger', 'versionSkew']),
     );
     expect(BASENAMES).toEqual(expect.arrayContaining(['provisional-mailbox']));
     // No canon cell declares a capability today, so the subset axis's reader is
     // pinned on the fixture cell that does: a dark reader fails here rather than
     // passing the live leg empty.
     expect(skillCapabilities(CARRIER_SKILLS_DIR)).toEqual([
-      { skill: 'carrier', capability: 'workPackage' },
+      { skill: 'carrier', capability: 'ledger' },
     ]);
   });
 
@@ -211,8 +211,8 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     // `dimensionField`'s live pair, and this capability's — the map is the corpus's,
     // not this gate's, and these are the witnesses that say so.
     expect(camel('communication-style')).toBe('communicationStyle');
-    expect(camel('work-package')).toBe('workPackage');
-    expect(kebab('workPackage')).toBe('work-package');
+    expect(camel('version-skew')).toBe('versionSkew');
+    expect(kebab('versionSkew')).toBe('version-skew');
     for (const c of CAPABILITIES) expect(camel(kebab(c))).toBe(c);
   });
 
@@ -254,13 +254,13 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic corpus that violates it', () => {
-    const caps = ['concepts', 'workPackage'];
+    const caps = ['concepts', 'ledger', 'versionSkew'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
     // allowlist for it to be added to, so it is convicted by construction.
     expect(
-      portKeyspaceViolations(caps, ['work-package', 'experimental-x']),
+      portKeyspaceViolations(caps, ['version-skew', 'experimental-x']),
     ).toHaveLength(1);
 
     // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the keyspace —
@@ -274,21 +274,21 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(
       portKeyspaceViolations(
         [...caps, 'provisionalX'],
-        ['work-package', 'provisional-x'],
+        ['version-skew', 'provisional-x'],
       ),
     ).toHaveLength(1);
 
     // A keyspace member with no port module is legal: `concepts` has none.
     // …and the clean corpus really is clean through the same function, so the two
     // convictions above are the predicate biting, not the predicate always firing.
-    expect(portKeyspaceViolations(caps, ['work-package'])).toEqual([]);
+    expect(portKeyspaceViolations(caps, ['version-skew'])).toEqual([]);
 
     // AXIS 2: a cell forwarding to a capability no host binds.
     expect(
       subsetViolations(caps, [{ skill: 'ghost', capability: 'unknown' }]),
     ).toHaveLength(1);
     expect(
-      subsetViolations(caps, [{ skill: 'carrier', capability: 'workPackage' }]),
+      subsetViolations(caps, [{ skill: 'carrier', capability: 'ledger' }]),
     ).toEqual([]);
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.

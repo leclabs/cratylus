@@ -119,25 +119,21 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
- *  (`<bin> <capability> --explain`), the concept journal and the work package
- *  capability. */
+ *  (`<bin> <capability> --explain`), the concept journal and the ledger. */
 export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'concepts',
-  'workPackage',
+  'ledger',
   'versionSkew',
 ];
 
 /** The capabilities omp offers whole, as a tool of every turn, rather than mounted
  *  as an `xd://` device: a device's prompt line is its purpose cut short, with no
- *  `when` and no verb, so the work package capability's line ended before where
- *  the cut stands, and an agent asked where its cut stands never met the verb that
- *  works it out from the ledger. Offered whole, its own explanation, each verb's
- *  purpose and `when` included, reaches every turn. The concept journal stays a
- *  device: its line leads with reading the design, and the agents that recover it
- *  first are sent to it by their session-start note. */
-export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = [
-  'workPackage',
-];
+ *  `when` and no verb, so an agent asked what is in flight would never meet the
+ *  verb that works it out from the ledger. Offered whole, its own explanation,
+ *  each verb's purpose and `when` included, reaches every turn. The concept
+ *  journal stays a device: its line leads with reading the design, and the agents
+ *  that recover it first are sent to it by their session-start note. */
+export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = ['ledger'];
 
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains
