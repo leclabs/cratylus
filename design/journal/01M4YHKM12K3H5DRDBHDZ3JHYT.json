@@ -1,0 +1,15 @@
+{
+  "id": "01M4YHKM12K3H5DRDBHDZ3JHYT",
+  "at": "2026-10-15T01:07:44.290Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0219",
+  "context": "workflow",
+  "title": "A concept is named by the term already in use",
+  "situation": "Learned on 2026-10-14 adopting the workflow on an existing project with delivered work and an earlier design record. Asked for names in the users' words, architects first wrote names as sentences, then invented labels, then copied identifiers from the code without reading what they named.",
+  "decision": "A concept's name is a term, never a sentence: the word its users, its screens, its interface and its agents' tools already use for it, found where it is used, not invented; where no such word exists yet, the plain word a user would say. Where the product uses one word for two things, or a word for something other than what it names, that is a flaw in the product's language, fixed in the product, never a name to copy.",
+  "consequences": "The concept concept says so.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}
