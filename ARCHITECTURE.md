@@ -113,10 +113,12 @@ package.
 harness's adapters, the version of cratylus that projected them, and, read-only under `delivered/`,
 the contexts the release delivers (decision 0207): cratylus's own `workflow` context, projected from
 its concept journal at the `cratylus` package's build and handed to forge by the command, which
-places it as given and computes nothing about it. The concept journal's views show it in every
-project beside the project's own contexts, as `cratylus:workflow`, marked delivered and read-only,
-unless the project's journal holds that context itself; nothing is written into a project's journal
-for it. The harness's own surfaces only
+places it as given and computes nothing about it. It is the practice a project's agents work by,
+never part of the project's design: the concept journal's views show it in every project apart from
+the project's own contexts and never in its context map, as `cratylus:workflow`, marked delivered and
+read-only, still offered first, unless the project's journal holds that context itself, where it is
+the project's own and part of its design; nothing is written into a project's journal for it. The
+harness's own surfaces only
 refer into it (for omp, the root linked into its plugin directory as an extension package), and the
 root records every reference and host-file edit it made. So what cratylus placed is known by
 construction, never inferred from names, contents or digests: install replaces the root whole

@@ -26,18 +26,21 @@ beforeEach(() => {
 afterEach(() => h.dispose());
 
 it.each(['design', 'state', 'overview'])(
-  'workflow/1 — %s includes the release in a journal-less project without writing',
+  'workflow/1 — %s shows the release apart from the project, in a journal-less project without writing',
   (verb) => {
     const answer = views(h, verb);
     expect(existsSync(join(h.cwd, 'design/journal'))).toBe(false);
-    expect(answer).toHaveLength(1);
-    assertDelivered(answer[0], verb);
-    assertDelivered(views(h, verb, '--context', qualified)[0], verb);
+    expect(answer.contexts).toEqual([]);
+    expect(answer.practice).toHaveLength(1);
+    assertDelivered(answer.practice[0], verb);
+    const named = views(h, verb, '--context', qualified);
+    expect(named.contexts).toEqual([]);
+    assertDelivered(named.practice[0], verb);
   },
 );
 
 it.each(['design', 'state', 'overview'])(
-  'workflow/2 — %s keeps unrelated same-name contexts separate',
+  'workflow/2 — %s keeps unrelated same-name contexts separate, the release apart from the project',
   (verb) => {
     h.seed();
     h.concepts('context', 'workflow', '--subject', 'A project workflow.');
@@ -53,19 +56,18 @@ it.each(['design', 'state', 'overview'])(
     );
     const before = snapshot(h.cwd);
     const answer = views(h, verb);
-    expect(answer.map((c) => c.name ?? c.context).sort()).toEqual(
-      ['booking', qualified, 'workflow'].sort(),
-    );
-    const local = answer.find((c) => (c.name ?? c.context) === 'workflow')!;
-    expect(local).not.toHaveProperty('delivered');
+    expect(answer.contexts.map((c) => c.name ?? c.context).sort()).toEqual([
+      'booking',
+      'workflow',
+    ]);
+    const local = answer.contexts.find(
+      (c) => (c.name ?? c.context) === 'workflow',
+    )!;
     expectMeaning(local, 'A project-only practice.');
-    expect(
-      answer.find((c) => (c.name ?? c.context) === 'booking'),
-    ).not.toHaveProperty('delivered');
-    assertDelivered(
-      answer.find((c) => (c.name ?? c.context) === qualified),
-      verb,
-    );
+    expect(answer.practice.map((c) => c.name ?? c.context)).toEqual([
+      qualified,
+    ]);
+    assertDelivered(answer.practice[0], verb);
     expect(snapshot(h.cwd)).toEqual(before);
   },
 );
@@ -74,11 +76,15 @@ it.each(['workflow', 'branch-practice'])(
   'workflow/3 — identity suppresses the release under the project name %s',
   (name) => {
     // The baseline binds inclusion too: silently ignoring all delivery is not suppression.
-    expect.soft(views(h, 'design').map((c) => c.name)).toContain(qualified);
+    expect
+      .soft(views(h, 'design').practice.map((c) => c.name))
+      .toContain(qualified);
     ownSource(h, name);
     const before = snapshot(h.cwd);
     for (const verb of ['design', 'state', 'overview']) {
-      const answer = views(h, verb);
+      const { contexts: answer, practice } = views(h, verb);
+      // Held by the project, it is part of its design: no practice apart.
+      expect(practice).toEqual([]);
       assertSourceView(answer, verb, name);
       // Suppression already holds vacuously on a reader that ignores all delivery.
       // Prove the same assertions reject a duplicate and a delivered override.
@@ -211,11 +217,11 @@ it('workflow/5 — appends to the unrelated project workflow while preserving de
     ],
   });
   const answer = views(h, 'design');
-  expect(answer.find((c) => c.name === 'workflow')).toMatchObject({
+  expect(answer.contexts.find((c) => c.name === 'workflow')).toMatchObject({
     concepts: [expect.objectContaining({ wording: 'Current local practice.' })],
   });
   assertDelivered(
-    answer.find((c) => c.name === qualified),
+    answer.practice.find((c) => c.name === qualified),
     'design',
   );
   expect(readFileSync(deliveredPath(h), 'utf8')).toBe(release);
@@ -267,20 +273,23 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
   git(h.cwd, 'commit', '-m', 'Source workflow');
   expect(
     views(h, 'design')
-      .map((c) => c.name)
+      .contexts.map((c) => c.name)
       .sort(),
   ).toEqual(['booking', 'workflow']);
+  expect(views(h, 'design').practice).toEqual([]);
   git(h.cwd, 'switch', 'journal');
+  expect(views(h, 'design').contexts.map((c) => c.name)).toEqual(['booking']);
   assertDelivered(
-    views(h, 'design').find((c) => c.name === qualified),
+    views(h, 'design').practice.find((c) => c.name === qualified),
     'design',
   );
   git(h.cwd, 'switch', 'source');
   expect(
     views(h, 'design')
-      .map((c) => c.name)
+      .contexts.map((c) => c.name)
       .sort(),
   ).toEqual(['booking', 'workflow']);
+  expect(views(h, 'design').practice).toEqual([]);
 });
 
 it('workflow/10 — the first project context records only itself and retains the delivered view', () => {
@@ -294,13 +303,9 @@ it('workflow/10 — the first project context records only itself and retains th
   expect(entry).toMatchObject({ kind: 'context', name: 'booking' });
   expect(entry).not.toHaveProperty('delivered');
   const answer = views(h, 'design');
-  expect(answer.map((c) => c.name).sort()).toEqual(
-    ['booking', qualified].sort(),
-  );
-  assertDelivered(
-    answer.find((c) => c.name === qualified),
-    'design',
-  );
+  expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
+  expect(answer.practice.map((c) => c.name)).toEqual([qualified]);
+  assertDelivered(answer.practice[0], 'design');
   expect(snapshot(h.cwd)).toEqual(journal);
 });
 
@@ -309,7 +314,7 @@ it('delivery/2 — one installation supplies multiple projects', () => {
   try {
     const result = h.command(['concepts', 'design'], other.root);
     expect(result.code, result.stderr).toBe(0);
-    assertDelivered(JSON.parse(result.stdout).contexts[0], 'design');
+    assertDelivered(JSON.parse(result.stdout).practice.contexts[0], 'design');
     expect(snapshot(other.root)).toEqual({});
   } finally {
     other.dispose();
@@ -326,5 +331,5 @@ it('delivery/2 — explicit installation selection wins over other roots in HOME
   };
   putDocument(h, alternate, selected);
   h.env.CRATYLUS_INSTALLATION = selected;
-  assertDelivered(views(h, 'design')[0], 'design', alternate);
+  assertDelivered(views(h, 'design').practice[0], 'design', alternate);
 });

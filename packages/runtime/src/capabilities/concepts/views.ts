@@ -117,19 +117,19 @@ export type Deprecation =
   | { readonly entry: string; readonly reason: string }
   | { readonly cut: string };
 
+/** A decision as the views show it: what it says first, its title, and its id
+ *  and entry last, as references. */
 export interface DecisionView {
-  readonly entry: string;
-  readonly id: string;
-  readonly context: string;
   readonly title: string;
+  readonly context: string;
+  readonly status: 'open' | 'accepted' | 'superseded' | 'deprecated';
+  /** The governing kind: the latest recorded, `null` where none is. */
+  readonly kind: DecisionKind | null;
   readonly situation: string;
   readonly decision: string;
   readonly consequences: string;
-  readonly status: 'open' | 'accepted' | 'superseded' | 'deprecated';
   readonly supersedes: string | null;
   readonly supersededBy: readonly string[];
-  /** The governing kind: the latest recorded, `null` where none is. */
-  readonly kind: DecisionKind | null;
   /** Every kind recorded for the decision, in the order recorded. */
   readonly kinds: readonly KindRecord[];
   /** The cut it was about, where it names one. */
@@ -138,6 +138,8 @@ export interface DecisionView {
   readonly keeps?: readonly string[];
   /** Why it is deprecated, where it is. */
   readonly deprecation?: Deprecation;
+  readonly id: string;
+  readonly entry: string;
 }
 
 /** Whether `decision` stands: open or accepted, neither superseded nor
@@ -145,32 +147,33 @@ export interface DecisionView {
 export const stands = (decision: DecisionView): boolean =>
   decision.status === 'open' || decision.status === 'accepted';
 
-/** `decision` as it stands: its own text, status and governing kind, without
- *  what it superseded, what superseded it, or every kind recorded for it. */
+/** `decision` as it stands: what it says, its title first, its status and
+ *  governing kind, its id and entry last as references; without what it
+ *  superseded, what superseded it, or every kind recorded for it. */
 export const standingDecision = ({
-  entry,
-  id,
-  context,
   title,
+  context,
+  status,
+  kind,
   situation,
   decision,
   consequences,
-  status,
-  kind,
   cut,
   keeps,
-}: DecisionView) => ({
-  entry,
   id,
-  context,
+  entry,
+}: DecisionView) => ({
   title,
+  context,
+  status,
+  kind,
   situation,
   decision,
   consequences,
-  status,
-  kind,
   ...(cut === undefined ? {} : { cut }),
   ...(keeps === undefined ? {} : { keeps }),
+  id,
+  entry,
 });
 
 /** `design` as it stands: its live concepts by their meaning alone, without
@@ -522,21 +525,21 @@ export class Folded {
           ? this.deprecation(d.id, integrated)
           : undefined;
       return {
-        entry: d.id,
-        id: d.decisionId,
-        context: d.context,
         title: d.title,
+        context: d.context,
+        status,
+        kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
         situation: d.situation,
         decision: d.decision,
         consequences: d.consequences,
-        status,
         supersedes: d.supersedes,
         supersededBy: [...(this.supersededBy.get(d.id) ?? [])],
-        kind: this.kinds.get(d.id)?.at(-1)?.kind ?? null,
         kinds: [...(this.kinds.get(d.id) ?? [])],
         ...(d.cut === undefined ? {} : { cut: d.cut }),
         ...(d.keeps === undefined ? {} : { keeps: [...d.keeps] }),
         ...(deprecation === undefined ? {} : { deprecation }),
+        id: d.decisionId,
+        entry: d.id,
       };
     });
   }

@@ -24,7 +24,8 @@ export interface ContextOverview {
   readonly subject: string | null;
   readonly relation: string | null;
   readonly cycles: readonly (readonly string[])[];
-  readonly openDecisions: readonly { id: string; title: string }[];
+  /** Each open decision by what it says, its title, and its id as a reference. */
+  readonly openDecisions: readonly { title: string; id: string }[];
   readonly cutsInFlight: readonly {
     cut: string;
     phase: CutPhase;
@@ -119,19 +120,20 @@ const sentence = (text: string): string => {
 };
 
 /** The overview of `design`'s context, given every decision and every cut the
- *  ledger records. */
+ *  ledger records; `map` names the context map its relation is told in. */
 export function overviewOf(
   design: Omit<ContextView, 'concepts'> & {
     readonly concepts: readonly Meaning[];
   },
   decisions: readonly DecisionView[],
   cuts: readonly LedgerCut[],
+  map = 'the context map',
 ): ContextOverview {
   const context = design.name;
   const { ordered, cycles } = wholeBeforeParts(design.concepts);
   const open = decisions
     .filter((d) => d.context === context && d.status === 'open')
-    .map((d) => ({ id: d.id, title: d.title }));
+    .map((d) => ({ title: d.title, id: d.id }));
   const inFlight = cuts
     .filter((c) => c.phase === 'in flight' && c.contexts.includes(context))
     .map(({ cut, phase, branch }) => ({ cut, phase, branch }));
@@ -141,8 +143,8 @@ export function overviewOf(
       ? [
           `The ${context} context is about this: ${sentence(design.subject)}`,
           (design.relation ?? '').trim() === ''
-            ? 'No relation to other contexts in the context map is recorded.'
-            : `In the context map: ${sentence(design.relation as string)}`,
+            ? `No relation to other contexts in ${map} is recorded.`
+            : `In ${map}: ${sentence(design.relation as string)}`,
         ]
       : design.competingDescriptions.length === 0
         ? [
@@ -182,7 +184,7 @@ export function overviewOf(
     open.length === 0
       ? 'No decision is open.'
       : `Still open, not settled meaning: ${open
-          .map((d) => `the decision ${d.id}, “${d.title}”`)
+          .map((d) => `“${d.title}” (decision ${d.id})`)
           .join('; ')}.`;
   const cutProse =
     inFlight.length === 0
