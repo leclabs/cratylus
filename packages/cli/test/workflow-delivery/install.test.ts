@@ -67,7 +67,7 @@ it('delivery/1, delivery/2 — the built release installs its complete source de
   ).toBe(0);
   expect(existsSync(join(owned(h), 'agents/architect.md'))).toBe(true);
   expect(snapshot(h.cwd)).toEqual({});
-  assertDelivered(views(h, 'design')[0], 'design', actual);
+  assertDelivered(views(h, 'design').practice[0], 'design', actual);
 });
 
 it('delivery/3 — upgrading replaces an earlier release completely without touching booking', () => {
@@ -111,7 +111,7 @@ it('delivery/3 — upgrading replaces an earlier release completely without touc
   expect(statSync(deliveredPath(h)).mode & 0o222).toBe(0);
   expect(snapshot(h.cwd)).toEqual(before);
   assertDelivered(
-    views(h, 'design').find((c) => c.name === qualified),
+    views(h, 'design').practice.find((c) => c.name === qualified),
     'design',
     actual,
   );
@@ -137,7 +137,7 @@ it('delivery/4 — later development journal wording does not mutate the install
   );
   expect(readFileSync(deliveredPath(h), 'utf8')).toBe(before);
   assertDelivered(
-    views(h, 'design').find((c) => c.name === qualified),
+    views(h, 'design').practice.find((c) => c.name === qualified),
     'design',
     release,
   );
@@ -149,7 +149,9 @@ it('delivery/5 — uninstall removes delivered material with the root and leaves
   const before = snapshot(h.cwd);
   // Isolate removal from production of the projection: the fixture supplies an installed document.
   putDocument(h);
-  expect.soft(views(h, 'design').map((c) => c.name)).toContain(qualified);
+  expect
+    .soft(views(h, 'design').practice.map((c) => c.name))
+    .toContain(qualified);
   success(h.command(['uninstall', '--harness', 'omp', '--home', h.home]));
   function removed(
     rootRemains: boolean,
@@ -173,7 +175,9 @@ it('delivery/5 — uninstall removes delivered material with the root and leaves
       'leaked.json': JSON.stringify(document),
     }),
   ).toThrow();
-  expect(views(h, 'design').map((c) => c.name)).toEqual(['booking']);
+  const after = views(h, 'design');
+  expect(after.contexts.map((c) => c.name)).toEqual(['booking']);
+  expect(after.practice).toEqual([]);
   for (const bytes of Object.values(snapshot(h.cwd)))
     expect(Buffer.from(bytes, 'base64').toString()).not.toContain(
       document.subject,

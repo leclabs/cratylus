@@ -1,16 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The concepts capability's VERB SURFACE — `concepts <verb> [args]`.
 //
-//   overview   the project's purpose first, then each context told whole for a
-//              reader of it: subject and relation, concepts whole before
-//              parts, open decisions and the cuts in flight; what a session
-//              reads first to reconstitute
-//   state      the project's purpose first, then the whole state of each
-//              context in one answer: the query a session reconstitutes its
-//              detail from
-//   design     the current design of each context
+//   overview   the project's purpose first, then the practice its agents work
+//              by, delivered and shown apart from its design, then each of its
+//              own contexts told whole for a reader of it: subject and
+//              relation, concepts whole before parts, open decisions and the
+//              cuts in flight; what a session reads first to reconstitute
+//   state      the project's purpose first, then the delivered practice apart,
+//              then the whole state of each of its own contexts in one answer:
+//              the query a session reconstitutes its detail from
+//   design     the delivered practice apart, then the current design of each of
+//              the project's own contexts
 //   history    every version of one concept, or of a context's description
-//   decisions  the decisions with their status
+//   decisions  the decisions with their status, each by its title first
 //   leakage    where realization shows through the journal's design, decisions
 //              and examples, and where a wording tells what is not its current
 //              meaning: a reading of the concept journal
@@ -84,6 +86,7 @@ import {
   deliveredDesign,
   deliveredOverview,
   marksOf,
+  practiceOf,
   qualifiedName,
 } from './delivered.js';
 import {
@@ -164,8 +167,8 @@ export const VERBS = {
     concept: 'context overview',
     effect: 'reads',
     purpose:
-      'Tell the project’s purpose first, what the project is for, and then each bounded context whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
-    when: 'First, at the start of a session or after it was compacted, for the delivered workflow context and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight; every context includes those the installation delivers, each named by its origin and context, marked delivered and read-only, unless this journal holds that context itself',
+      'Tell the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts whole, worked out afresh from the recorded design and the ledger (the record of the cuts and their work packages): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), each by its title with its id as a reference, then the cuts in flight that touch it (changes to the design being built now), together as a plain prose account for a reader of that context',
+    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, before reading the detail it needs about its design, its decisions and its cuts, and reading back the current design, open decisions and cuts in flight; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -177,8 +180,8 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Read the project’s purpose first, what the project is for, and then the whole state of each bounded context in one answer: its live concepts (the current meaning of each), competing versions none has chosen, its standing decisions, accepted (settled) and open (not settled), each by its id, title and kind, whose whole text the decisions reading gives, and, for each of its cuts not yet finished (a change to the design built and judged as a whole), how much work it took as last recorded; retired concepts, why each concept’s version was written, superseded and deprecated decisions and the effort of finished cuts are history, shown only when asked',
-    when: 'At the start of a session, or after it was compacted, once the overviews of the delivered workflow context and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; every context includes those the installation delivers, which carry no decisions, retired concepts or recorded effort of their own',
+      'Read the project’s purpose first, what the project is for, then, in a place of its own (practice), the delivered practice the project’s agents work by, and then the whole state of each of the project’s own bounded contexts in one answer: its live concepts (the current meaning of each), competing versions none has chosen, its standing decisions, accepted (settled) and open (not settled), each by its title first, then its kind, its id and entry as references, whose whole text the decisions reading gives, and, for each of its cuts not yet finished (a change to the design built and judged as a whole), how much work it took as last recorded; retired concepts, why each concept’s version was written, superseded and deprecated decisions and the effort of finished cuts are history, shown only when asked',
+    when: 'At the start of a session, or after it was compacted, once the overviews of the delivered practice and each touched context are read, to recover the detail of the conceptual design, its decisions and what is still open from what is recorded rather than from memory, and read them back before acting; the delivered practice is shown apart from the project’s contexts and carries no decisions, retired concepts or recorded effort of its own',
     positional: null,
     flags: {
       context: valueFlag(
@@ -193,8 +196,8 @@ export const VERBS = {
     concept: 'conceptual design',
     effect: 'reads',
     purpose:
-      'Show the current conceptual design of each bounded context: its live concepts, each by its current meaning, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
-    when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands; every context includes those the installation delivers, marked delivered and read-only',
+      'Show the delivered practice the project’s agents work by in a place of its own (practice), then the current conceptual design of each of the project’s own bounded contexts: its live concepts, each by its current meaning, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
+    when: 'Before work relies on what a concept means now, or after recording a change to the design, to see the design as it currently stands; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
     positional: null,
     flags: {
       context: valueFlag(
@@ -228,7 +231,7 @@ export const VERBS = {
     concept: 'decision',
     effect: 'reads',
     purpose:
-      'List the standing decisions in the order recorded, each open or accepted, with its governing kind; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it. A decision is deprecated by a later entry naming it with a reason, or once the cut it names as the one it was about is integrated',
+      'List the standing decisions in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it. A decision is deprecated by a later entry naming it with a reason, or once the cut it names as the one it was about is integrated',
     when: 'To see what has been decided and what still awaits acceptance, before acting on a choice or after recording or accepting a decision; with history, to see how a choice was reached or why one no longer applies',
     positional: null,
     flags: {
@@ -456,7 +459,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the project’s purpose and the delivered workflow context’s overview and each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record the project’s purpose and each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. Its views of the current design, state and overview include the contexts the installation delivers, named by origin and context, marked delivered and read-only, beside the project’s own; nothing is ever recorded into one',
+  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the project’s purpose, the delivered practice’s overview and each touched context’s overview first and then the detail it needs; to read back its current concepts, their history and its decisions before acting; and to record the project’s purpose and each change to a bounded context, a concept or a decision as it is made, so the design is kept nowhere else. A project’s design and context map are its own contexts only: its views of the current design, state and overview show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first; nothing is ever recorded into one. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 
@@ -464,6 +467,10 @@ export const JOURNAL: CapabilityInterface = {
 const READING = {
   purpose:
     'what the project is for, read before its parts; null while none is recorded, and while purposes recorded differently on merged branches compete, each then listed under competingPurposes until a later concepts purpose with a reason settles them',
+  practice:
+    'the practice the project’s agents work by, delivered with the installation and read before the project’s own contexts: each delivered context’s current design, named by its origin, marked delivered and read-only; not part of the project’s design, never among its contexts nor in its context map; absent where none is delivered or the journal holds the context itself',
+  contexts:
+    'the project’s own bounded contexts: its design and its context map',
   competingDescriptions:
     'descriptions of the context recorded differently on merged branches; while any are listed, subject and relation are null and none is chosen until a later concepts context with a reason settles them',
   concepts:
@@ -473,9 +480,9 @@ const READING = {
   retired:
     'given only when history is asked for: concepts retired from the design, each with its reason',
   'decisions.accepted':
-    'standing decisions accepted, neither superseded nor deprecated: settled; each by its entry, id, title and kind, its whole text read with concepts decisions',
+    'standing decisions accepted, neither superseded nor deprecated: settled; each by its title first, then its kind, its id and entry as references, its whole text read with concepts decisions',
   'decisions.open':
-    'standing decisions recorded and not yet accepted: not settled; each by its entry, id, title and kind, its whole text read with concepts decisions',
+    'standing decisions recorded and not yet accepted: not settled; each by its title first, then its kind, its id and entry as references, its whole text read with concepts decisions',
   'decisions.superseded':
     'given only when history is asked for: decisions a later decision replaced, each naming what superseded it',
   'decisions.deprecated':
@@ -487,10 +494,10 @@ const READING = {
 } as const;
 
 /** Route `concepts <verb> [args]` to the journal of the git repository holding
- *  `from`, beside the contexts `delivered` holds, which the command reads from
- *  the installation it reaches and a library caller hands in or leaves out;
- *  returns what the verb prints as JSON, a reading with what it read past of the
- *  journal and of any other ledger it read. */
+ *  `from`, showing apart from its contexts the ones `delivered` holds, which the
+ *  command reads from the installation it reaches and a library caller hands in
+ *  or leaves out; returns what the verb prints as JSON, a reading with what it
+ *  read past of the journal and of any other ledger it read. */
 export function dispatchConcepts(
   argv: readonly string[],
   opts: {
@@ -668,27 +675,28 @@ function answerOf(
     design: D,
   ) => (history ? design : standingDesign(design));
   /** The state of `where`: its design, its standing decisions each by its
-   *  summary (its whole text is the decisions reading's), and the figures of
-   *  its cuts the ledger records not yet finished; history too when asked. */
+   *  summary, its title first and its id and entry as references (its whole
+   *  text is the decisions reading's), and the figures of its cuts the ledger
+   *  records not yet finished; history too when asked. */
   const state = (decisions: readonly DecisionView[], where: string) => {
     const of = (status: DecisionView['status']) =>
       decisions
         .filter((d) => d.context === where && d.status === status)
         .map(
           ({
-            entry,
-            id,
             title,
             kind,
+            id,
+            entry,
             cut,
             keeps,
             supersededBy,
             deprecation,
           }) => ({
-            entry,
-            id,
             title,
             kind,
+            id,
+            entry,
             ...(cut === undefined ? {} : { cut }),
             ...(keeps === undefined ? {} : { keeps }),
             ...(status === 'superseded' ? { supersededBy } : {}),
@@ -789,12 +797,10 @@ function answerOf(
       const decisions = decisionViews();
       return {
         ...folded.purpose(),
-        contexts: [
-          ...covered.own.map((where) =>
-            overviewOf(folded.design(where), decisions, ledgerCuts()),
-          ),
-          ...covered.delivered.map(deliveredOverview),
-        ],
+        ...practiceOf(covered.delivered.map(deliveredOverview)),
+        contexts: covered.own.map((where) =>
+          overviewOf(folded.design(where), decisions, ledgerCuts()),
+        ),
       };
     }
     case 'state': {
@@ -803,18 +809,10 @@ function answerOf(
       return {
         ...folded.purpose(),
         reading: READING,
-        contexts: [
-          ...covered.own.map((where) => state(decisions, where)),
-          ...covered.delivered.map((d) => ({
-            ...shownDesign(deliveredDesign(d)),
-            decisions: {
-              accepted: [],
-              open: [],
-              ...(history ? { superseded: [], deprecated: [] } : {}),
-            },
-            efficiency: [],
-          })),
-        ],
+        ...practiceOf(
+          covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
+        ),
+        contexts: covered.own.map((where) => state(decisions, where)),
       };
     }
     case 'leakage': {
@@ -856,7 +854,7 @@ function answerOf(
             )
             .flatMap((d) =>
               warnings(
-                { kind: 'decision', context: where, id: d.id },
+                { kind: 'decision', title: d.title, context: where, id: d.id },
                 [d.title, d.situation, d.decision, d.consequences],
                 words,
               ),
@@ -930,10 +928,10 @@ function answerOf(
     case 'design': {
       const covered = covering();
       return {
-        contexts: [
-          ...covered.own.map((where) => shownDesign(folded.design(where))),
-          ...covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
-        ],
+        ...practiceOf(
+          covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
+        ),
+        contexts: covered.own.map((where) => shownDesign(folded.design(where))),
       };
     }
     case 'decisions': {
@@ -1145,7 +1143,7 @@ function answerOf(
         kind === 'realization'
           ? []
           : warnings(
-              { kind: 'decision', context: where, id: decisionId },
+              { kind: 'decision', title, context: where, id: decisionId },
               [title, situation, decision, consequences],
               own(where),
             );

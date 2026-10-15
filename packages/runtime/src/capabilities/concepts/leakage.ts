@@ -35,16 +35,21 @@ import { join, relative, sep } from 'node:path';
 /** Where the visible examples are, relative to the top of the repository. */
 export const EXAMPLES_DIR = 'design/examples';
 
-/** The passage a warning names: a live concept, a decision, a visible example
- *  by its file (relative to the repository) and number, or one field of a
- *  context's current description. */
+/** The passage a warning names: a live concept, a decision by its title with
+ *  its id as a reference, a visible example by its file (relative to the
+ *  repository) and number, or one field of a context's current description. */
 export type Passage =
   | {
       readonly kind: 'concept';
       readonly context: string;
       readonly name: string;
     }
-  | { readonly kind: 'decision'; readonly context: string; readonly id: string }
+  | {
+      readonly kind: 'decision';
+      readonly title: string;
+      readonly context: string;
+      readonly id: string;
+    }
   | {
       readonly kind: 'example';
       readonly file: string;

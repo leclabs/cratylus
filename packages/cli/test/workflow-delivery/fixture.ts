@@ -72,8 +72,32 @@ export function putDocument(h: Host, value = document, root = owned(h)): void {
 export function readDocument(h: Host): Delivered {
   return JSON.parse(readFileSync(deliveredPath(h), 'utf8'));
 }
-export function views(h: Host, verb: string, ...args: string[]): ContextView[] {
-  return h.concepts<{ contexts: ContextView[] }>(verb, ...args).contexts;
+/** A view's answer: the project's own `contexts`, its design and context map,
+ *  and apart from them the delivered `practice` (none where it shows none),
+ *  which, where shown, is labelled and comes before the project's contexts. */
+export function views(
+  h: Host,
+  verb: string,
+  ...args: string[]
+): { contexts: ContextView[]; practice: ContextView[] } {
+  const answer = h.concepts<{
+    contexts: ContextView[];
+    practice?: { about: string; contexts: ContextView[] };
+  }>(verb, ...args);
+  if (answer.practice !== undefined) {
+    expect(answer.practice.about).toMatch(/practice/);
+    expect(answer.practice.about).toMatch(/not part of this project.s design/);
+    const keys = Object.keys(answer);
+    expect(keys.indexOf('practice')).toBeLessThan(keys.indexOf('contexts'));
+  }
+  for (const own of answer.contexts)
+    expect(own, 'a project context is never delivered').not.toHaveProperty(
+      'delivered',
+    );
+  return {
+    contexts: answer.contexts,
+    practice: answer.practice?.contexts ?? [],
+  };
 }
 export function assertDelivered(
   context: ContextView | undefined,
@@ -100,6 +124,9 @@ export function assertDelivered(
       );
     expect(context!.account).toMatch(/delivered/i);
     expect(context!.account).toMatch(/read.only/i);
+    expect(context!.account).toMatch(/practice this project.s agents work by/);
+    expect(context!.account).toMatch(/not part of this project.s design/);
+    expect(context!.account).not.toMatch(/In the context map/);
   } else
     expect(
       context!
@@ -111,8 +138,8 @@ export function assertDelivered(
         .sort((a, b) => a.name.localeCompare(b.name)),
     ).toEqual([...value.concepts].sort((a, b) => a.name.localeCompare(b.name)));
   if (verb === 'state') {
-    expect(context!.decisions).toEqual({ accepted: [], open: [] });
-    expect(context!.efficiency).toEqual([]);
+    expect(context).not.toHaveProperty('decisions');
+    expect(context).not.toHaveProperty('efficiency');
     expect(context).not.toHaveProperty('retired');
   }
 }

@@ -1,20 +1,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // A DELIVERED CONTEXT: one bounded context's current design, projected from the
-// concept journal of the repository that owns it and shipped with a release, so
-// every project reads it beside its own contexts without holding it in its journal.
+// concept journal of the repository that owns it and shipped with a release: the
+// practice a project's agents work by, never part of the project's design, read
+// without the project holding it in its journal.
 //
 // THE PROJECTION (`deliverContext`) is the context's current subject and relation
 // and its live concepts, each at its current version: no history, no decisions, no
 // retired or competing material, nothing time-dependent. Its provenance is the
 // origin that delivers it, the release's version, the context's name and its
-// IDENTITY: the id of the entry that first recorded the context, which holds
-// whatever the context is later described as or called.
+// IDENTITY: the id of the entry that first recorded it, which holds whatever the
+// context is later described as or called.
 //
-// THE VIEWS show a delivered context under its origin-qualified name
-// (`<origin>:<context>`), marked delivered and read-only, unless the journal being
-// read holds a context entry whose id is its identity: that journal owns the
-// context, so its own design is the one shown. Nothing is ever appended to a
-// project's journal for a delivered context.
+// THE VIEWS show a delivered context APART from the project's own contexts, in
+// the place of its own `practiceOf` gives (`practice`), labelled as the practice
+// the project's agents work by and offered before the project's contexts; never
+// among them nor in the project's context map. It is named by its origin
+// (`<origin>:<context>`) and marked delivered and read-only, unless the journal
+// being read holds a context entry whose id is its identity: that journal owns
+// the context, which is then part of its design and shown among its own. Nothing
+// is ever appended to a project's journal for a delivered context.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { journalAt } from './journal.js';
@@ -118,14 +122,36 @@ export function deliveredDesign(delivered: DeliveredContext) {
 }
 
 /** The overview of `delivered`, as `overview` gives a context's, marked, its
- *  account saying first where it comes from and that it is read-only. */
+ *  account saying first that it is the practice the project's agents work by,
+ *  where it comes from, and that it is not the project's design and read-only;
+ *  its relation told in its origin's context map, never the project's. */
 export function deliveredOverview(delivered: DeliveredContext) {
-  const overview = overviewOf(deliveredDesign(delivered), [], []);
+  const overview = overviewOf(
+    deliveredDesign(delivered),
+    [],
+    [],
+    `${delivered.origin}’s context map`,
+  );
   return {
     ...overview,
-    account: `The ${qualifiedName(delivered)} context is delivered by ${delivered.origin} at version ${delivered.version} and is read-only: it is read as delivered, never recorded into or changed through this project’s journal.\n\n${overview.account}`,
+    account: `The ${qualifiedName(delivered)} context is the practice this project’s agents work by, delivered by ${delivered.origin} at version ${delivered.version}. It is not part of this project’s design and has no place in its context map; it is read-only, read as delivered, never recorded into or changed through this project’s journal.\n\n${overview.account}`,
     ...marksOf(delivered),
   };
+}
+
+/** What the views say the delivered practice is, in the place they show it. */
+export const PRACTICE =
+  'the practice this project’s agents work by, delivered with the installation and read first, before the project’s own contexts; it is not part of this project’s design, never among its contexts nor in its context map, and is read-only, never recorded into its journal';
+
+/** The place of its own a view shows `contexts`, the delivered ones it covers,
+ *  in: labelled as the practice, apart from the project's contexts; nothing
+ *  where it covers none. */
+export function practiceOf<C>(contexts: readonly C[]): {
+  practice?: { about: string; contexts: readonly C[] };
+} {
+  return contexts.length === 0
+    ? {}
+    : { practice: { about: PRACTICE, contexts } };
 }
 
 /** Whether `value`, read from `file`, is a delivered context; refuses one that
