@@ -493,7 +493,7 @@ describe('omp launch', () => {
   });
 });
 
-describe('omp capability interface', () => {
+describe('omp tool definitions', () => {
   const PATH = process.env.PATH;
   afterEach(() => {
     process.env.PATH = PATH;
@@ -1214,7 +1214,7 @@ describe('omp capability interface', () => {
     });
   });
 
-  describe('launches a main session as an agent declaration omp discovers', () => {
+  describe('launches a main session as an agent definition omp discovers', () => {
     type Handler = (event: unknown, ctx: unknown) => unknown;
     const BASE = ['the base prompt'];
 
@@ -1836,10 +1836,10 @@ describe('omp capability interface', () => {
       );
       for (const line of [
         "Read the design state of each touched context and of the delivered workflow (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the standing decisions your work needs. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
-        "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project's version control and the lead's outcomes; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",
-        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
+        "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project's version control and the lead's outcomes; the work product itself — the project tree, source, tests — is not a source: never list, search or open it.",
+        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the user stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
         'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
-        'A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
+        'A read-back held at an approval gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
       ])
         expect(turns[0]).toContain(line);
       // It no longer sends the agent on past the read-back in the same turn.

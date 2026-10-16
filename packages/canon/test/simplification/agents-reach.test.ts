@@ -2,7 +2,7 @@
 // role starts with the harness's default tools, narrowed only where its declaration
 // names the observed harm.
 //
-// Read from the delivered project as omp receives it: the projected agent declarations
+// Read from the delivered project as omp receives it: the projected agent definitions
 // (the settings omp's own dispatch honours) and the projected extension modules, loaded
 // in process into a stand-in omp (no omp, agent or model runs).
 

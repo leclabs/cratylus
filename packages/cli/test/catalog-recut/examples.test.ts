@@ -190,7 +190,7 @@ describe('catalog re-cut: the visible examples', () => {
       narrowed.mark.emoji,
     );
     for (const [factor, anchor] of [
-      ['perception-scope', 'work'],
+      ['perception-scope', 'work-product'],
       ['action-scope', 'edit-own-outputs'],
     ] as const) {
       const wider = fixture(

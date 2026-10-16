@@ -6,7 +6,7 @@ optimal-signifiers, authored as typed TypeScript.
 The discipline is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
 therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
-markdown a harness reads is a projection of these modules.
+markdown an agent harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
 _means_, never how either is carried. What every package is for is
@@ -60,25 +60,27 @@ are [`@cratylus/schema`](../schema/README.md)'s.
 
 The plugin carries nine agents, all in the practice `intent-based-delegation`, which delivers
 intent-based delegation. `architect`, `lead`, `builder` and `reviewer` are the generic holders of
-their roles, with `illustrator` and `check-writer` as specialists called in when a story's risk
-warrants them. Each role is defined by what it receives and what it hands over, never by steps:
+their roles, with `illustrator` and `check-writer` as specialists called in when a user story's risk
+warrants them. Each role is defined by what it receives and what it hands off, never by steps:
 
-- **architect** — the operator's principal architect, owning the conceptual design: receives intent,
-  hands over stories, answers to meaning questions and read-backs; decides meaning only.
-- **lead** — owns a story's realization, or a task with no story: orchestrates its tasks to builders
-  (orchestrator-workers) and their changes to review as its story's risk calls for (Ship, Show or
-  Ask), joins each change by the project's own integration once every check passes and any review
-  due before it joins approves it, and hands over the outcome. Where the operator has asked to
-  review a change before it joins, no agent reviews it: the operator's review is its review, and it
-  joins only on the operator's sign-off.
-- **builder** — receives one task and hands over one change that passes every check.
-- **reviewer** — reviews one change it did not write, before or after it joins as its story's risk
-  calls for, against the change and, where they apply, its story's acceptance criteria and
-  examples, held-out ones included; hands over one review and never builds or repairs the work. It
-  never reviews a change the operator has asked to review itself; the operator takes that change's
-  held-out examples directly from the design.
-- **illustrator** — writes a story's examples cold from its concepts alone, flagging unclear terms.
-- **check-writer** — writes the checks binding a story's examples, each seen failing before the build.
+- **architect** — the operator's principal architect, owning the conceptual model: receives intent,
+  hands off user stories, answers to meaning questions and read-backs; decides meaning only.
+- **lead** — owns a user story's realization, or a task with no story: orchestrates its tasks to
+  builders (orchestrator-workers) and their changes to code review as the story's risk calls for
+  (Ship, Show or Ask), joins each change by the project's own integration once every check passes
+  and any review due before it joins approves it, and hands off the outcome. Where the operator has
+  asked to review a change before it joins, no agent reviews it: the operator's review is its code
+  review, and it joins only on the operator's sign-off, an approval gate.
+- **builder** — receives one task and hands off one change that passes every check.
+- **reviewer** — reviews one change it did not write, before or after it joins as its user story's
+  risk calls for, against the change and, where they apply, the story's acceptance criteria and
+  examples, held-out ones included; hands off one code review and never builds or repairs the work.
+  It never reviews a change the operator has asked to review itself; the operator takes that
+  change's held-out examples directly from the design.
+- **illustrator** — writes a user story's examples cold from its concepts alone, flagging unclear
+  terms.
+- **check-writer** — writes the checks binding a user story's examples, each seen failing before the
+  build.
 
 The reviewer, the illustrator and the check-writer run on another model family than the builders
 where one is available. A role cell (`src/roles/<role>.ts`) states a value for every factor, an
@@ -102,43 +104,44 @@ harm from one is on record (decision 0142(2)).
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
 effort (`routing`), its typed handoff (`contract`) and the per-turn persistence protocol every agent
 re-grounds its stance by (`persistence`). Nothing narrows its tools or whom it may dispatch: every
-agent keeps the harness's defaults (0142). Its `key` is reserved for ipseic agents and is empty.
+agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic agents and is empty.
 `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named exports,
 for a corpus that composes agents of its own over these roles.
 
-## Typed handovers
+## Typed handoffs
 
 An assignment and a deliverable are values of their factors, and each carries its contract as JSON
 Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
-the value's anchor). Composition copies the pair onto the agent as `contract`. Each handover states
+the value's anchor). Composition copies the pair onto the agent as `contract`. Each handoff states
 what it must contain, so one passed without a part shows what is missing (`?` marks an optional
 field, `[≥1]` a list that may not be empty):
 
-| Role         | Assignment                                                                                                                                                | Deliverable                                                        |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| lead         | story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, path, review, cost, examples?, decisions?, contexts?}`, or a task with no story (as below) | outcome `{story, criteria[≥1], meaningQuestions, followUps, cost}` |
-| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                     | change `{change, tests, verified}`                                 |
-| reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                                                         | review `{verdict, findings, meaningQuestions}`                     |
-| check-writer | examples `{story, examples[≥1]}`                                                                                                                          | checks seen red `{story, checks}`                                  |
-| illustrator  | concepts `{story, concepts[≥1]}`                                                                                                                          | examples with flagged terms `{examples, flaggedTerms}`             |
+| Role         | Assignment                                                                                                                                                     | Deliverable                                                        |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, path, review, cost, examples?, decisions?, contexts?}`, or a task with no story (as below) | outcome `{story, criteria[≥1], meaningQuestions, followUps, cost}` |
+| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                          | change `{change, tests, verified}`                                 |
+| reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                                                              | code review `{verdict, findings, meaningQuestions}`                |
+| check-writer | examples `{story, examples[≥1]}`                                                                                                                               | checks seen red `{story, checks}`                                  |
+| illustrator  | concepts `{story, concepts[≥1]}`                                                                                                                               | examples with flagged terms `{examples, flaggedTerms}`             |
 
 The lead's assignment takes either form, stated as alternatives (`anyOf`); it fits when it fits any
-one. Its outcome names the story, or for a task with no story the task, and holds each acceptance
-criterion (or, for a task, what done means) with whether it holds and its evidence, and the cost in
-agent runs by role, tokens and elapsed time. A review's `verdict` is `approve` or `changes`. The
-architect's handovers are a person's — free-text intent in, a read-back to the operator out (where
-things stand, with one recommendation) — so it carries no contract. A harness binds the deliverable
-as its own output schema, shows the assignment form when an agent is dispatched or launched, and
-checks the assignment given (one fenced `assignment` JSON block in the dispatch text) with the
-schema package's `checkAssignment`, warning of each missing or ill-typed field, of the closest form
-where there are alternatives; it never refuses the dispatch or the launch for it (0142(3)).
+one. Its outcome names the user story, or for a task with no story the task, and holds each
+acceptance criterion (or, for a task, what done means) with whether it holds and its evidence, and
+the cost in agent runs by role, tokens and elapsed time. A code review's `verdict` is `approve` or
+`changes`. The architect's handoffs are a person's — free-text intent in, a read-back to the
+operator out (where things stand, with one recommendation) — so it carries no contract. An agent
+harness binds the deliverable as its own output schema, shows the assignment form when an agent is
+dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in the
+dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
+field, of the closest form where there are alternatives; it never refuses the dispatch or the launch
+for it (0142(3)).
 
-## Evaluation and drift
+## Evaluation and persona drift
 
 Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
 factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
-replies (0142(1)). Drift is held by the agent's own text, the persistence protocol naming its tells,
-and its definition is revised on the evidence of use.
+replies (0142(1)). Persona drift is held by the agent's own text, the persistence protocol naming
+its tells, and its definition is revised on the evidence of use.
 
 ## The first principle
 

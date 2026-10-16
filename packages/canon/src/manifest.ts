@@ -116,19 +116,20 @@ export const MANIFEST = {
       { name: 'priority', gloss: 'what comes first' },
       {
         name: 'meaning',
-        gloss: 'concepts, stories and examples, and accepting a story done',
+        gloss:
+          'concepts, user stories and examples, and accepting a story done',
       },
       { name: 'constraint', gloss: 'decisions on realization' },
       {
         name: 'realization',
-        gloss: 'how the work, or the checks, are built and joined',
+        gloss: 'how the work product, or the checks, are built and joined',
       },
-      { name: 'verdict', gloss: "whether a change's review approves it" },
+      { name: 'verdict', gloss: "whether a change's code review approves it" },
       { name: 'release', gloss: 'making merged work available to its users' },
       {
         name: 'sign-off',
         gloss:
-          "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
+          "the operator's, at its approval gates, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any approval gate it calls: agreeing that a handoff serves its intent",
         optional: true,
       },
     ],

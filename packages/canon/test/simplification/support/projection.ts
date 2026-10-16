@@ -6,7 +6,7 @@ import { join, relative } from 'node:path';
 import { cratylus, scratchDir } from './cli.js';
 import { ROOT } from './repo.js';
 
-/** One projected agent declaration: its file, front matter and body. */
+/** One projected agent definition: its file, front matter and body. */
 export interface Declaration {
   readonly name: string;
   readonly file: string;

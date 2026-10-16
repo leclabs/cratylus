@@ -6,7 +6,7 @@ export const introspect: Skill = {
   description: `use this skill when an agent needs to self-audit — compare each factor's defined values (each at its enforcement level) against the values actually in effect this session, and name the cause of every divergence.`,
   formalBlock: `A          ≜ the agent introspecting itself
 O_text     ≜ enumerate(\`###\` factor headings @ A's live Target) ⟨READ · ¬ recalled · \`##\` ≜ a group ∴ ∉ O⟩
-O_bind     ≜ enumerate(binding factors @ \`cratylus catalog\`) ⟨never text · compiled to harness tool · dispatch · model-role settings⟩
+O_bind     ≜ enumerate(binding factors @ \`cratylus catalog\`) ⟨never text · compiled to agent-harness tool · dispatch · model-role settings⟩
 O          ≜ O_text ∪ O_bind ⟨∄ fixed-list ∵ corpus declares its own catalog · enforcement-level ≜ an attribute of each entry ∴ ∉ O⟩
 |O|        ≜ |O_text| + |O_bind| ⟨the DENOMINATOR⟩
 V          ≜ the entry value-space { one-entry · entry-set · one-entry-per-slot · unobservable } ⟨entry ≜ value @ level { advisory · firm · fixed }⟩

@@ -1,12 +1,12 @@
-// workflow · roles (decisions 0145, 0243): the roles concept states what each party
-// receives and hands over, no limit on whom a party may dispatch and no test of how its
+// workflow · roles (decisions 0145, 0243): the handoff concept states what each party
+// receives and hands off, no limit on whom a party may dispatch and no test of how its
 // behaviour is judged; each delivered role still names its sight, change and decision;
 // and nothing delivered refuses the architect an act on the ground of how it behaves or
 // replies.
 //
 // The roles as delivered are the role cells canon ships, each projected as the
-// declaration of the agent holding it; the concept itself as cratylus's own journal
-// command reads it from this repository's design.
+// agent definition of the agent holding it; the concept itself as cratylus's own
+// journal command reads it from this repository's design.
 
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
 import * as canon from '../../src/index.js';
@@ -62,7 +62,7 @@ const roleCells = Object.values(canon).filter(
 const BEHAVIOUR_TEST =
   /\bscenarios?\b|\brubrics?\b|\bscored?\b|\bassertions?\b|\bheld[- ]out\b|\bsuites?\b|\brecord(ed|ings?)\s+runs?\b|\brecordings?\b|\bchecked\b|\btest(s|ed)?\b/i;
 
-describe('workflow/7 — the roles concept names sight, change and decision, and no dispatch limit or behaviour test', () => {
+describe('workflow/7 — the roles name sight, change and decision, and the handoff concept no dispatch limit or behaviour test', () => {
   it('workflow/7: canon delivers the six roles', () => {
     expect(roleCells.map((r) => r.name).sort()).toEqual([
       'architect',
@@ -118,19 +118,20 @@ describe('workflow/7 — the roles concept names sight, change and decision, and
     );
   });
 
-  it('workflow/7: the roles concept, read from the design, names what each party receives and hands over, and no dispatch limit or behaviour test', () => {
+  it('workflow/7: the handoff concept, read from the design, names what each party receives and hands off, and no dispatch limit or behaviour test', () => {
     const r = cratylus(ROOT, ['concepts', 'design', '--context', 'workflow']);
     expect(r.status, r.stderr).toBe(0);
     const found =
-      /"name":\s*"roles"[^}]*?"(?:wording|meaning)":\s*"([^"]*)"/.exec(
+      /"name":\s*"handoff"[^}]*?"(?:wording|meaning)":\s*"([^"]*)"/.exec(
         r.stdout,
       );
     const meaning = found?.[1] ?? '';
-    expect(meaning, 'the workflow context has no live roles concept').not.toBe(
-      '',
-    );
+    expect(
+      meaning,
+      'the workflow context has no live handoff concept',
+    ).not.toBe('');
     expect(meaning).toMatch(/\breceives?\b/i);
-    expect(meaning).toMatch(/\bhands? over\b/i);
+    expect(meaning).toMatch(/\bhands? off\b/i);
     expect(meaning).not.toMatch(
       /\bdispatch|\bhandoffs? (are|is) held|\bspawn/i,
     );

@@ -19,13 +19,13 @@ import { type JsonSchema, anchorOf } from '@cratylus/schema';
 import { concepts } from './dimensions/assignment/concepts.js';
 import { examples } from './dimensions/assignment/examples.js';
 import { reviewRequest } from './dimensions/assignment/review-request.js';
-import { story } from './dimensions/assignment/story.js';
 import { task } from './dimensions/assignment/task.js';
+import { userStory } from './dimensions/assignment/user-story.js';
 import { change } from './dimensions/deliverable/change.js';
 import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
+import { codeReview } from './dimensions/deliverable/code-review.js';
 import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
 import { outcome } from './dimensions/deliverable/outcome.js';
-import { review } from './dimensions/deliverable/review.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
 const text: JsonSchema = { type: 'string' };
@@ -50,7 +50,7 @@ const said = (schema: JsonSchema, description: string): JsonSchema => ({
 });
 
 // What a field of a handover names, said once for every handover that holds it.
-const storyField = said(text, 'The story, by its name (a kebab-case id).');
+const storyField = said(text, 'The user story, by its name (a kebab-case id).');
 const exampleRefs = (schema: JsonSchema, whose: string): JsonSchema =>
   said(
     schema,
@@ -84,7 +84,7 @@ const storyForm = record(
     ),
     review: said(
       text,
-      "How the story's changes are reviewed, as its risk picks: Ship (joined with no review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that gate: the operator's review is that change's review, under Ask, and no agent reviews it.",
+      "How the story's changes are reviewed, as its risk picks: Ship (joined with no code review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that approval gate: the operator's review is that change's code review, under Ask, and no agent reviews it.",
     ),
     cost: said(
       text,
@@ -107,9 +107,9 @@ const taskForm = record(
     task: said(text, 'The task, by its name (a kebab-case id).'),
     story: said(
       text,
-      'The story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
+      'The user story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
     ),
-    goal: said(text, "What the task is for, in its story's terms."),
+    goal: said(text, "What the task is for, in its user story's terms."),
     changes: said(text, 'What the task changes.'),
     decisions: said(
       texts,
@@ -122,10 +122,10 @@ const taskForm = record(
 
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
-    story,
+    userStory,
     {
       anyOf: [
-        said(storyForm, 'A story.'),
+        said(storyForm, 'A user story.'),
         said(
           taskForm,
           'A task with no story: a change that alters no meaning.',
@@ -141,7 +141,7 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
         change: said(text, 'The change to review, by its reference.'),
         story: said(
           text,
-          'The story the change serves, by its name; absent for a task with no story.',
+          'The user story the change serves, by its name; absent for a task with no story.',
         ),
         acceptanceCriteria: said(
           texts,
@@ -181,7 +181,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
       record({
         story: said(
           text,
-          'The story, or for a task with no story the task, by name.',
+          'The user story, or for a task with no story the task, by name.',
         ),
         criteria: said(
           {
@@ -195,7 +195,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               holds: said(flag, 'Whether the criterion holds in merged work.'),
               evidence: said(
                 text,
-                "Why it holds or does not, in the design's own terms: what the review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.",
+                "Why it holds or does not, in the design's own terms: what the code review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.",
               ),
             }),
           },
@@ -224,10 +224,10 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               'The time the story took, from its start to its end.',
             ),
           }),
-          'What the story cost, as the harness records it.',
+          'What the story cost, as the agent harness records it.',
         ),
       }),
-      "The lead's outcome of the story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.",
+      "The lead's outcome of the user story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.",
     ),
   ],
   [
@@ -239,11 +239,11 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     }),
   ],
   [
-    review,
+    codeReview,
     record({
       verdict: said(
         { type: 'string', enum: ['approve', 'changes'] },
-        'Whether the review approves the change or asks for changes.',
+        'Whether the code review approves the change or asks for changes.',
       ),
       findings: said(
         texts,

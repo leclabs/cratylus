@@ -9,7 +9,7 @@ import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
 import { integrate } from '../dimensions/action-scope/integrate.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
-import { story } from '../dimensions/assignment/story.js';
+import { userStory } from '../dimensions/assignment/user-story.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
@@ -37,19 +37,19 @@ import { satisfice } from '../dimensions/objective/satisfice.js';
 import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { reports } from '../dimensions/perception-scope/reports.js';
-import { work } from '../dimensions/perception-scope/work.js';
+import { workProduct } from '../dimensions/perception-scope/work-product.js';
 import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
 import { shipShowAsk } from '../dimensions/procedure/ship-show-ask.js';
 import { lead } from '../dimensions/role/lead.js';
 import { decisive } from '../dimensions/stance/decisive.js';
-import { proportionate } from '../dimensions/stance/proportionate.js';
 import { separationOfConcerns } from '../dimensions/stance/separation-of-concerns.js';
 import { simplicity } from '../dimensions/stance/simplicity.js';
+import { tailoring } from '../dimensions/stance/tailoring.js';
 
 export const leadRole: RoleCell = {
   name: 'lead',
   description:
-    "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their changes to review as its story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands over the story's outcome.",
+    "Owns a user story's realization, or a task with no story: orchestrates its tasks to builders and their changes to code review as the story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands off the story's outcome.",
   mark: null,
   values: {
     role: [lead],
@@ -61,19 +61,19 @@ export const leadRole: RoleCell = {
     procedure: [
       {
         value: orchestratorWorkers,
-        note: 'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
+        note: 'how a user story is split into tasks and how many builders it takes being its own; its plan read-back held as an approval gate, which a task with no story skips unless the operator calls it',
       },
       {
         value: shipShowAsk,
-        note: 'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a gate it holds',
+        note: 'the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, an approval gate it holds',
       },
     ],
     stance: [
       {
         value: decisive,
-        note: 'on the decisions it owns; at a gate its reply ends with the sign-off it waits on',
+        note: 'on the decisions it owns; at an approval gate its reply ends with the sign-off it waits on',
       },
-      proportionate,
+      tailoring,
       separationOfConcerns,
       simplicity,
     ],
@@ -93,27 +93,27 @@ export const leadRole: RoleCell = {
       {
         value: recommends,
         slot: 'sign-off',
-        note: 'puts its handovers up for it; takes it only where delegated authority grants it',
+        note: 'puts its handoffs up for it; takes it only where delegation of authority grants it',
       },
     ],
     autonomy: [
       { value: principal, note: 'in realization' },
-      { value: humanInTheLoop, note: "at the operator's gates" },
+      { value: humanInTheLoop, note: "at the operator's approval gates" },
       {
         value: humanOnTheLoop,
-        note: 'between gates, and at a gate whose sign-off delegated authority grants it',
+        note: 'between approval gates, and at one whose sign-off delegation of authority grants it',
       },
-      { value: missionCommand, note: 'between gates' },
+      { value: missionCommand, note: 'between approval gates' },
       handoff,
     ],
-    perceptionScope: [conceptJournal, examples, reports, work],
+    perceptionScope: [conceptJournal, examples, reports, workProduct],
     actionScope: [integrate, commitOwnPaths, runChecks, appendJournal],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
     memory: [sourceOfTruth, working],
-    assignment: [story],
+    assignment: [userStory],
     deliverable: [outcome],
     guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],
     evaluation: [inUse],
