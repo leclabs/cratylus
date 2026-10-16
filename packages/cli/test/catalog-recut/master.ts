@@ -386,7 +386,7 @@ handoff | returns its result, with the evidence that earns it, to whoever dispat
   'perception-scope': glossary(`
 concept-journal | the recorded design: concepts and decisions, per bounded context
 examples | the agreed examples the work is checked against
-held-out-examples | examples withheld from builders, taken directly by whoever reviews, a reviewer or the operator, never through the lead
+held-out-examples | examples withheld from builders, taken directly by whoever reviews, a reviewer or the operator
 reports | what its delegates report, in concept terms
 work | the realization itself: code, documents, test output
 own-task | only its own task, with its story's visible examples
