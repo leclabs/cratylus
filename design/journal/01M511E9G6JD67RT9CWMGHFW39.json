@@ -1,0 +1,16 @@
+{
+  "id": "01M511E9G6JD67RT9CWMGHFW39",
+  "at": "2026-10-16T00:22:55.750Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "authority",
+  "wording": "what an agent may decide: for each class of decision, sign-off at the operator's gates among them, whether it decides, recommends, agrees, gives input or performs, and how far it acts before asking, by scope: principal over what it decides, in the loop at a gate, where it waits for the sign-off it does not hold, on the loop otherwise, acting while it can be overseen and stopped, and out of the loop where the operator delegates its sign-off; between gates it escalates only a fork that is irreversible, about value, or beyond its competence.",
+  "builtFrom": [
+    "factor"
+  ],
+  "reason": "An agent's autonomy was one level for everything it did, so on-the-loop autonomy ran it past the operator's gates; how far it acts before asking now depends on the scope it acts in, and sign-off is a class of decision of its own.",
+  "supersedes": [
+    "01M4JVAAR54KND3Y68KDQE5W2T"
+  ]
+}
