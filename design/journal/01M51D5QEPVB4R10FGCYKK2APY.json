@@ -1,0 +1,9 @@
+{
+  "id": "01M51D5QEPVB4R10FGCYKK2APY",
+  "at": "2026-10-16T03:47:58.038Z",
+  "by": "lead",
+  "kind": "deprecate",
+  "decisionId": "0261",
+  "entry": "01M519J0TP024FGT1MXYBA1QQJ",
+  "reason": "A gate is an interrupt and nothing more (0262). Its request reaches the operator by construction, and joining an agent's session belongs to the harness. So nothing on omp detects, announces or shields a gate, and the projection carries none of it."
+}
