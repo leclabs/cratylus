@@ -1,0 +1,15 @@
+{
+  "id": "01M52H0X1GPNMWVGM2KY4YT78J",
+  "at": "2026-10-16T14:14:28.656Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0289",
+  "context": "workflow",
+  "title": "The retire-ledger story, under the operator's delegated authority; ledger-as-view ends dropped",
+  "situation": "The operator asked to retire the ledger, granting delegated authority over it: its one kept sign-off is its review of the change before it joins dev; every other sign-off on it is taken by whoever holds that gate. The ledger-as-view story, which turned the ledger into a view, was in flight and never joined.",
+  "decision": "(1) The retire-ledger story is the deletion of the ledger, its end state that cratylus keeps no ledger and the check passes. (2) Its read-back is signed off by the architect in the operator's place: the design serves the intent as stated, and the change is a deletion, so nothing in it waits on a value only the operator holds. Its plan read-back is the lead's to take. (3) Review is Ask, with the operator's own review before the change joins dev as its gate, held by the lead. (4) The ledger-as-view story ends dropped: with no ledger its slice is no longer wanted, and nothing of it joins.",
+  "consequences": "The lead realizes the story from dev and hands over its outcome; the operator's review of the change is the one interrupt.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "meaning"
+}

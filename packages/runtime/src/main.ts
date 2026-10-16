@@ -28,18 +28,13 @@
 // capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
-// `concepts` and `ledger` print their JSON result; `concepts` is handed the
+// Each capability prints its JSON result; `concepts` is handed the
 // contexts the installation it reaches delivers, so its views show them beside the
 // project's own. A refusal is a loud code-1 failure, printed as `cratylus <message>`,
 // a message opening with the capability and the verb, so it reads as every other
 // command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
-//
-// THE HARNESS-FACING COMMAND is no capability: `lifecycle` (a lifecycle entry
-// from the harness's own agent event). `harnessCommands` exports it for the
-// program to hold HIDDEN, so no help lists it and no capability surface, and so
-// no agent tool, offers it.
 //
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
 // not written here: its one home is `./bin-name.ts`. See that module for why the
@@ -54,11 +49,6 @@ import {
   JOURNAL,
 } from './capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from './capabilities/concepts/index.js';
-import {
-  LEDGER,
-  VERBS as LEDGER_VERBS,
-  dispatchLedger,
-} from './capabilities/ledger/dispatch.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
   VERSION_SKEW,
@@ -76,7 +66,6 @@ import {
   explain,
   explainVerb,
 } from './explanation.js';
-import { lifecycleCommand } from './lifecycle/index.js';
 import { deliveredContexts } from './runtime-config.js';
 import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 
@@ -88,8 +77,8 @@ import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
  * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `ledger` cell yields
- * `spawnSync(CLI_BIN, ['ledger', …])`).
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `concepts` cell yields
+ * `spawnSync(CLI_BIN, ['concepts', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {
@@ -108,11 +97,6 @@ const SURFACES: {
         2,
       ),
     explained: JOURNAL,
-  },
-  ledger: {
-    verbs: LEDGER_VERBS,
-    run: (argv) => JSON.stringify(dispatchLedger(argv), null, 2),
-    explained: LEDGER,
   },
   versionSkew: {
     verbs: VERSION_SKEW_VERBS,
@@ -334,10 +318,4 @@ function capabilityCommand(capability: Capability, build: Build): Command {
  */
 export function capabilityCommands(build: Build = {}): Command[] {
   return CAPABILITIES.map((capability) => capabilityCommand(capability, build));
-}
-
-/** The harness-facing command, `lifecycle`: no capability, never an agent
- *  tool; the program holds it hidden. */
-export function harnessCommands(): Command[] {
-  return [lifecycleCommand()];
 }

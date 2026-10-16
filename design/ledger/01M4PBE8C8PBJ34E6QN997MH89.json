@@ -1,9 +1,0 @@
-{
-  "id": "01M4PBE8C8PBJ34E6QN997MH89",
-  "at": "2026-10-11T20:46:01.608Z",
-  "kind": "returned",
-  "transition": "toolu_01MZ3gv7kaH6LgyfWPja8HKg/CheckFormat/returned",
-  "cut": "meaning-roles",
-  "role": "check-writer",
-  "run": "toolu_01MZ3gv7kaH6LgyfWPja8HKg/CheckFormat"
-}

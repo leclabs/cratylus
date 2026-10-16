@@ -1,0 +1,16 @@
+{
+  "id": "01M52H0WVKNC1NWTJTK2TDHADH",
+  "at": "2026-10-16T14:14:28.467Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0286",
+  "context": "workflow",
+  "title": "Every agent run on the work counts toward the cost its outcome reports",
+  "situation": "The operator: retire the ledger. Cost was to be captured by cratylus for every agent run, however launched; what work cost is now what the harness records and the outcome reports.",
+  "decision": "Every agent run that works on a story or task counts toward the cost its outcome reports, by role, tokens and elapsed time, however it was launched, as the harness records it. Cratylus captures nothing of its own.",
+  "consequences": "The efficiency and outcome concepts state this.",
+  "status": "accepted",
+  "supersedes": "0248",
+  "supersedesEntry": "01M50H5GCT00QXXDBPHY9N1DBE",
+  "decisionKind": "meaning"
+}

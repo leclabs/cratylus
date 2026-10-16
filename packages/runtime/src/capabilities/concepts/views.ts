@@ -28,8 +28,8 @@
 // DEPRECATED once its deprecation is recorded, else ACCEPTED once recorded
 // accepted or its acceptance is recorded, else OPEN. An open or accepted
 // decision STANDS; a superseded or deprecated one is history. Entries are
-// read as recorded: a decision recorded about a cut is also deprecated once
-// the ledger's history records that cut integrated.
+// read as recorded: a decision recorded about a cut is read by its own status
+// alone.
 // Its KIND, stating meaning or constraining realization, is the latest one
 // recorded for it, on the decision itself or by a classification after it;
 // it has none until one is recorded.
@@ -114,11 +114,11 @@ export interface KindRecord {
 }
 
 /** Why a decision no longer stands without a replacement: the entry that
- *  deprecated it, with its reason, or, for one recorded about a cut, that cut,
- *  integrated. */
-export type Deprecation =
-  | { readonly entry: string; readonly reason: string }
-  | { readonly cut: string };
+ *  deprecated it, with its reason. */
+export interface Deprecation {
+  readonly entry: string;
+  readonly reason: string;
+}
 
 /** A decision as the views show it: what it says first, its title, and its id
  *  and entry last, as references. */
@@ -137,7 +137,7 @@ export interface DecisionView {
   readonly kinds: readonly KindRecord[];
   /** The cut it was recorded about, where its entry names one: history. */
   readonly cut?: string;
-  /** The example files it keeps standing, each as `<context>/<story>`. */
+  /** The example files its entry named it keeping, as recorded. */
   readonly keeps?: readonly string[];
   /** Why it is deprecated, where it is. */
   readonly deprecation?: Deprecation;
@@ -151,7 +151,7 @@ export const stands = (decision: DecisionView): boolean =>
   decision.status === 'open' || decision.status === 'accepted';
 
 /** `decision` as it stands: what it says, its title first, its status and
- *  governing kind, the example files it keeps, its id and entry last as
+ *  governing kind, the example files its entry names, its id and entry last as
  *  references; without what it superseded, what superseded it, every kind
  *  recorded for it, or the cut it was recorded about. */
 export const standingDecision = ({
@@ -490,42 +490,31 @@ export class Folded {
     };
   }
 
-  /** Why the decision recorded by `entry` is deprecated, given the cuts
-   *  `integrated`; `undefined` while it is not. */
-  deprecation(
-    entry: string,
-    integrated: ReadonlySet<string>,
-  ): Deprecation | undefined {
+  /** Why the decision recorded by `entry` is deprecated; `undefined` while it
+   *  is not. */
+  deprecation(entry: string): Deprecation | undefined {
     const recorded = this.deprecations.get(entry);
-    if (recorded !== undefined)
-      return { entry: recorded.id, reason: recorded.reason };
-    const cut = this.decisions.get(entry)?.cut;
-    return cut !== undefined && integrated.has(cut) ? { cut } : undefined;
+    return recorded === undefined
+      ? undefined
+      : { entry: recorded.id, reason: recorded.reason };
   }
 
-  /** The status the decision recorded by `entry` holds now, given the cuts
-   *  `integrated`. */
-  status(
-    entry: string,
-    integrated: ReadonlySet<string> = new Set(),
-  ): DecisionView['status'] {
+  /** The status the decision recorded by `entry` holds now. */
+  status(entry: string): DecisionView['status'] {
     if ((this.supersededBy.get(entry) ?? []).length > 0) return 'superseded';
-    if (this.deprecation(entry, integrated) !== undefined) return 'deprecated';
+    if (this.deprecation(entry) !== undefined) return 'deprecated';
     const recorded = this.decisions.get(entry) as DecideEntry;
     return recorded.status === 'accepted' || this.acceptances.has(entry)
       ? 'accepted'
       : 'open';
   }
 
-  /** Every decision, in the order recorded, as `decisions` gives it, given
-   *  the cuts `integrated`. */
-  decisionViews(integrated: ReadonlySet<string> = new Set()): DecisionView[] {
+  /** Every decision, in the order recorded, as `decisions` gives it. */
+  decisionViews(): DecisionView[] {
     return [...this.decisions.values()].map((d) => {
-      const status = this.status(d.id, integrated);
+      const status = this.status(d.id);
       const deprecation =
-        status === 'deprecated'
-          ? this.deprecation(d.id, integrated)
-          : undefined;
+        status === 'deprecated' ? this.deprecation(d.id) : undefined;
       return {
         title: d.title,
         context: d.context,

@@ -196,14 +196,14 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['concepts', 'ledger', 'versionSkew']),
+      expect.arrayContaining(['concepts', 'versionSkew']),
     );
     expect(BASENAMES).toEqual(expect.arrayContaining(['provisional-mailbox']));
     // No canon cell declares a capability today, so the subset axis's reader is
     // pinned on the fixture cell that does: a dark reader fails here rather than
     // passing the live leg empty.
     expect(skillCapabilities(CARRIER_SKILLS_DIR)).toEqual([
-      { skill: 'carrier', capability: 'ledger' },
+      { skill: 'carrier', capability: 'versionSkew' },
     ]);
   });
 
@@ -254,7 +254,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic corpus that violates it', () => {
-    const caps = ['concepts', 'ledger', 'versionSkew'];
+    const caps = ['concepts', 'versionSkew'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
@@ -288,7 +288,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
       subsetViolations(caps, [{ skill: 'ghost', capability: 'unknown' }]),
     ).toHaveLength(1);
     expect(
-      subsetViolations(caps, [{ skill: 'carrier', capability: 'ledger' }]),
+      subsetViolations(caps, [{ skill: 'carrier', capability: 'versionSkew' }]),
     ).toEqual([]);
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.

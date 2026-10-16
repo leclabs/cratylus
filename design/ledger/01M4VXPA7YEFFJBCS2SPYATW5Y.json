@@ -1,8 +1,0 @@
-{
-  "id": "01M4VXPA7YEFFJBCS2SPYATW5Y",
-  "at": "2026-10-14T00:41:12.190Z",
-  "kind": "check",
-  "transition": "check:workflow-delivery:01M4VXPA7V5S2GWSRNJZ4KH806",
-  "cut": "workflow-delivery",
-  "failures": []
-}

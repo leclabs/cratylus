@@ -1,8 +1,0 @@
-{
-  "id": "01M516VAZV6PVJY1EZ2VQASBEH",
-  "at": "2026-10-16T01:57:26.139Z",
-  "kind": "returned",
-  "transition": "returned:toolu_01HuQjZXxcthVAu356bjoCnh/OperatorToldAtGate",
-  "call": "toolu_01HuQjZXxcthVAu356bjoCnh",
-  "agent": "OperatorToldAtGate"
-}

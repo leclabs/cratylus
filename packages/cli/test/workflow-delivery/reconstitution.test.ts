@@ -100,7 +100,8 @@ it.each([
     ).toBeDefined();
     wholeBeforeDetail(note!);
     expect(note).toMatch(/journal/);
-    expect(note).toMatch(/ledger/);
+    expect(note).toMatch(/version control/);
+    expect(note).not.toMatch(/ledger/);
     expect(note).toMatch(/(?:stand now|current branch|afresh|current design)/);
   },
 );

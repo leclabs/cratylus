@@ -8,6 +8,6 @@ export const carrier: Skill = {
   name: 'carrier',
   description: 'a fixture skill that carries a runtime shim',
   formalBlock: 'C ≜ ⟨carrier⟩\n\n∀c ∈ C : c ≠ ∅',
-  runtime: { capability: 'ledger' },
+  runtime: { capability: 'versionSkew' },
   composition: () => [],
 };

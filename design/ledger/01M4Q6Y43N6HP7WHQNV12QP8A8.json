@@ -1,9 +1,0 @@
-{
-  "id": "01M4Q6Y43N6HP7WHQNV12QP8A8",
-  "at": "2026-10-12T04:46:33.077Z",
-  "kind": "dispatched",
-  "transition": "toolu_01TSMv91bTSk32nKjVthEL2e/RecordChecks/dispatched",
-  "cut": "meaning-roles",
-  "role": "check-writer",
-  "run": "toolu_01TSMv91bTSk32nKjVthEL2e/RecordChecks"
-}

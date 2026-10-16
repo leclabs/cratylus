@@ -87,7 +87,7 @@ const repoRoot = join(canonRoot, '..', '..');
 /** A cell that declares a `runtime` capability — a shim carrier, and the witness
  *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
 const CELL = 'carrier';
-const CAPABILITY = 'ledger';
+const CAPABILITY = 'versionSkew';
 const carrierPlugin = {
   name: 'shim-carrier',
   skills: join(canonRoot, 'test', 'fixtures', 'shim-carrier', 'skills'),

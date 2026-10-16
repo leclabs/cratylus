@@ -4,7 +4,6 @@ import {
   type OverviewFixture,
   command,
   concept,
-  dispatch,
   fixture,
   git,
   meanings,
@@ -20,9 +19,8 @@ beforeEach(() => {
 });
 afterEach(() => f.dispose());
 
-it('workflow/2 — subject and relation first, whole before parts, then open decisions and work in flight', () => {
+it('workflow/2 — subject and relation first, whole before parts, then open decisions', () => {
   seed(f);
-  dispatch(f);
   const answer = overview(f);
   expect(answer, 'recorded subject and context-map relation').toMatchObject({
     context: 'film-production',
@@ -47,10 +45,9 @@ it('workflow/2 — subject and relation first, whole before parts, then open dec
   expect(answer.openDecisions, 'then its open decisions').toEqual([
     { id: 'colour', title: 'Choose the colour treatment' },
   ]);
-  expect(answer.workInFlight, 'then work in flight').toEqual({
-    stories: [{ story: 'film' }],
-    tasks: [{ task: 'shoot', story: 'film' }],
-  });
+  expect(answer, 'the design alone, no work').not.toHaveProperty(
+    'workInFlight',
+  );
   // Prose ordering, fidelity and subject/relation are judged by workflow/22;
   // requiring verbatim source wording here would reject valid plain prose.
   expect(
@@ -59,13 +56,8 @@ it('workflow/2 — subject and relation first, whole before parts, then open dec
   ).not.toBe('');
 });
 
-it('workflow/3 — next overview reflects supersession, acceptance and newly dispatched work without rewriting an account', () => {
+it('workflow/3 — next overview reflects supersession and acceptance without rewriting an account', () => {
   seed(f);
-  const before = overview(f);
-  expect(before.workInFlight, 'nothing dispatched yet').toEqual({
-    stories: [],
-    tasks: [],
-  });
   concept(
     f,
     'take',
@@ -81,7 +73,6 @@ it('workflow/3 — next overview reflects supersession, acceptance and newly dis
     '--reason',
     'The creative chose monochrome.',
   );
-  dispatch(f);
   const journal = snapshot(f.root);
   const after = overview(f);
   expect(after.account, 'reflects the new meaning').toContain(
@@ -93,10 +84,6 @@ it('workflow/3 — next overview reflects supersession, acceptance and newly dis
   ).not.toContain(meanings.take);
   expect(after.openDecisions, 'never settled decision as open').toEqual([]);
   expect(
-    after.workInFlight.stories.map((s) => s.story),
-    'reflects newly dispatched work',
-  ).toEqual(['film']);
-  expect(
     snapshot(f.root),
     'computed without rewriting an overview or journal',
   ).toEqual(journal);
@@ -106,7 +93,7 @@ it('workflow/3 — next overview reflects supersession, acceptance and newly dis
   ).toEqual(after);
 });
 
-it('workflow/8 — branch journal and ledger stay local and land together with merge', () => {
+it('workflow/8 — a branch journal stays local and lands with merge', () => {
   seed(f);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Common design');
@@ -127,12 +114,7 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
     '--reason',
     'Film creative acceptance.',
   );
-  dispatch(f);
   const feature = overview(f);
-  expect(
-    feature.workInFlight.stories.map((s) => s.story),
-    'feature shows its dispatch',
-  ).toEqual(['film']);
   expect(feature.openDecisions, 'feature shows acceptance').toEqual([]);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Film records');
@@ -142,10 +124,6 @@ it('workflow/8 — branch journal and ledger stay local and land together with m
     'the shared checkout does not claim the feature journal',
   ).toEqual(common);
   const shared = overview(f);
-  expect(
-    shared.workInFlight,
-    'shared checkout does not leak feature ledger',
-  ).toEqual({ stories: [], tasks: [] });
   expect(
     shared.openDecisions.map((d) => d.id),
     'the shared checkout does not claim the acceptance',

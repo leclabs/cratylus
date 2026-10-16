@@ -474,7 +474,7 @@ export interface HarnessAdapter {
   capabilitySurface?(): readonly HarnessProjection[];
   /**
    * The harness's OWN facilities that hold a runtime capability, by capability id
-   * (`concepts`, `ledger`) → the facility's name. Projection chooses, for each
+   * (`concepts`) → the facility's name. Projection chooses, for each
    * capability, the native facility first (no extension tool and no prose for it),
    * then the {@link capabilitySurface} extension, then prose generated from the
    * capability's own explanation, and reports which form each took.

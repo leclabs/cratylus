@@ -1,8 +1,0 @@
-{
-  "id": "01M51JKXF09NS6YE3SER5YJTQJ",
-  "at": "2026-10-16T05:23:05.824Z",
-  "kind": "task",
-  "transition": "task:generic-delivered-agents",
-  "task": "generic-delivered-agents",
-  "story": "neutral-conventions"
-}

@@ -1,8 +1,0 @@
-{
-  "id": "01M4PR4JYW33M03MB720CG235C",
-  "at": "2026-10-12T00:27:56.252Z",
-  "kind": "integrate",
-  "transition": "integrate:delivery",
-  "cut": "delivery",
-  "agent": "architect"
-}

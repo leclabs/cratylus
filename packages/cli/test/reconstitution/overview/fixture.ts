@@ -59,10 +59,6 @@ export interface Overview {
   relation: string;
   cycles: string[][];
   openDecisions: { id: string; title: string }[];
-  workInFlight: {
-    stories: { story: string }[];
-    tasks: { task: string; story?: string }[];
-  };
   account: string;
 }
 export function command<T = unknown>(f: OverviewFixture, ...args: string[]): T {
@@ -129,22 +125,6 @@ export function decision(f: OverviewFixture) {
     'The treatment remains to be agreed.',
     '--status',
     'open',
-  );
-}
-/** The harness's dispatch of the builder of task `task` of story `story`,
- *  which records both in flight. */
-export function dispatch(f: OverviewFixture, story = 'film', task = 'shoot') {
-  command(
-    f,
-    'lifecycle',
-    JSON.stringify({
-      kind: 'dispatched',
-      call: `${story}-call`,
-      agent: `${task}-builder`,
-      role: 'builder',
-      story,
-      task,
-    }),
   );
 }
 export function overview(f: OverviewFixture): Overview {

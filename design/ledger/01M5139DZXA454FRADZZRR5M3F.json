@@ -1,8 +1,0 @@
-{
-  "id": "01M5139DZXA454FRADZZRR5M3F",
-  "at": "2026-10-16T00:55:13.661Z",
-  "kind": "returned",
-  "transition": "returned:toolu_01Cf5roEk56jB8UssYnaKncY/ReviewOmpAttach",
-  "call": "toolu_01Cf5roEk56jB8UssYnaKncY",
-  "agent": "ReviewOmpAttach"
-}

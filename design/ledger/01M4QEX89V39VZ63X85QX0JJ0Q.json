@@ -1,9 +1,0 @@
-{
-  "id": "01M4QEX89V39VZ63X85QX0JJ0Q",
-  "at": "2026-10-12T07:05:53.211Z",
-  "kind": "returned",
-  "transition": "toolu_01F2obQmJAYFEiXFRPSxrtoM/DefineRouteCheck2/returned",
-  "cut": "meaning-roles",
-  "role": "check-writer",
-  "run": "toolu_01F2obQmJAYFEiXFRPSxrtoM/DefineRouteCheck2"
-}

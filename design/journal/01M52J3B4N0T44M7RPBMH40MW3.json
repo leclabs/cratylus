@@ -1,0 +1,16 @@
+{
+  "id": "01M52J3B4N0T44M7RPBMH40MW3",
+  "at": "2026-10-16T14:33:17.205Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0291",
+  "context": "workflow",
+  "title": "An example stands while its file is kept; a story's examples leave when it ends",
+  "situation": "Retiring the ledger, the lead found the journal could tell an ended story's examples were history only from the ledger, and realized the views so that every example file present is current and a decision no longer keeps one standing. What an example's standing means is the architect's to rule.",
+  "decision": "An example stands while its file is kept beside the journal. When a story ends, merged or dropped, its examples leave with it: their files are removed in the change that ends it, and they stay readable in the project's version control as what the story was reviewed against. An example meant to outlast its story stays only where the architect says so on its outcome, and its file is then simply kept. No decision is needed to keep one, and none is read to tell whether one stands.",
+  "consequences": "The lead's realization of the views stands as meaning. Ending a story includes removing its example files unless the architect kept them.",
+  "status": "accepted",
+  "supersedes": "0246",
+  "supersedesEntry": "01M50H5G72QPMT1TCDZXNFPNCY",
+  "decisionKind": "meaning"
+}

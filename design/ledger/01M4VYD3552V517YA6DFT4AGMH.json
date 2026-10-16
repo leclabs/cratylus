@@ -1,9 +1,0 @@
-{
-  "id": "01M4VYD3552V517YA6DFT4AGMH",
-  "at": "2026-10-14T00:53:38.597Z",
-  "kind": "returned",
-  "transition": "toolu_01EVufFvZuxQmNYuTKuh3sq3/WorkflowDeliveryAssayerB/returned",
-  "cut": "workflow-delivery",
-  "role": "assayer",
-  "run": "toolu_01EVufFvZuxQmNYuTKuh3sq3/WorkflowDeliveryAssayerB"
-}

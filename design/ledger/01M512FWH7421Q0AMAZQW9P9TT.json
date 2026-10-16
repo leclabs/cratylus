@@ -1,8 +1,0 @@
-{
-  "id": "01M512FWH7421Q0AMAZQW9P9TT",
-  "at": "2026-10-16T00:41:16.583Z",
-  "kind": "task",
-  "transition": "task:omp-gate-attach",
-  "task": "omp-gate-attach",
-  "story": "sign-off-gates"
-}

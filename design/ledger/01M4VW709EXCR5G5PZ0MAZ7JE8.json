@@ -1,9 +1,0 @@
-{
-  "id": "01M4VW709EXCR5G5PZ0MAZ7JE8",
-  "at": "2026-10-14T00:15:21.902Z",
-  "kind": "returned",
-  "transition": "toolu_013DUtxY8h28T7SPYCFD8xLh/WorkflowDeliveryIllustrator/returned",
-  "cut": "workflow-delivery",
-  "role": "illustrator",
-  "run": "toolu_013DUtxY8h28T7SPYCFD8xLh/WorkflowDeliveryIllustrator"
-}

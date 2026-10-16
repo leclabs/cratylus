@@ -1,9 +1,0 @@
-{
-  "id": "01M4VWHDHMB3ABZ0G9J5YC19YH",
-  "at": "2026-10-14T00:21:03.156Z",
-  "kind": "dispatched",
-  "transition": "toolu_01GN7mN1wxCC5VJU3LffBk75/WorkflowDeliveryChecks/dispatched",
-  "cut": "workflow-delivery",
-  "role": "check-writer",
-  "run": "toolu_01GN7mN1wxCC5VJU3LffBk75/WorkflowDeliveryChecks"
-}

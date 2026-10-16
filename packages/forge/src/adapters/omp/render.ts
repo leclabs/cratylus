@@ -119,21 +119,11 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
- *  (`<bin> <capability> --explain`), the concept journal and the ledger. */
+ *  (`<bin> <capability> --explain`), the concept journal and the version skew. */
 export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'concepts',
-  'ledger',
   'versionSkew',
 ];
-
-/** The capabilities omp offers whole, as a tool of every turn, rather than mounted
- *  as an `xd://` device: a device's prompt line is its purpose shortened, with no
- *  `when` and no verb, so an agent asked what is in flight would never meet the
- *  verb that works it out from the ledger. Offered whole, its own explanation,
- *  each verb's purpose and `when` included, reaches every turn. The concept
- *  journal stays a device: its line leads with reading the design, and the agents
- *  that recover it first are sent to it by their session-start note. */
-export const OMP_ESSENTIAL_CAPABILITIES: readonly Capability[] = ['ledger'];
 
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains
@@ -146,10 +136,9 @@ export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
 const OMP_AGENT_FLAG = 'agent';
 
 /** What an agent dispatching a delegate from `eval` code is warned: no `task` call
- *  carries that dispatch, so its assignment is neither shown nor checked, and its
- *  lifecycle is not captured in the ledger. */
+ *  carries that dispatch, so its assignment is neither shown nor checked. */
 const EVAL_DISPATCH_WARNING =
-  'dispatch from eval code: its assignment is not shown or checked and the ledger does not capture it; dispatch with the task tool to have both.';
+  'dispatch from eval code: its assignment is not shown or checked; dispatch with the task tool to have it checked.';
 
 /** `eval` code that dispatches a delegate: the eval prelude's `agent(…)` or `workpool(…)`,
  *  or the task tool called as `tool.task` or `tool["task"]`. */
@@ -951,12 +940,11 @@ const SESSION_PLACEMENT: readonly string[] = [
  *
  * DISPATCH FROM `eval`. A dispatch from `eval` code (the prelude's `agent(…)` or
  * `workpool(…)`, or the task tool called as `tool.task` or `tool["task"]`) reaches
- * no `task` call, so its assignment is not checked and the ledger does not record
- * it. A session launched as an agent, and a delegate whose declaration carries a
+ * no `task` call, so its assignment is not checked. A session launched as an agent, and a delegate whose declaration carries a
  * typed assignment, is warned so ({@link EVAL_DISPATCH_WARNING}); the call goes ahead.
  *
  * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
- * and lifecycle records alike, names the agent making it in `CRATYLUS_AGENT`: the
+ * alike, names the agent making it in `CRATYLUS_AGENT`: the
  * declaration a main session was launched as, the agent a dispatched session runs
  * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
  * runs with that agent named the same way: its command is led by a line exporting
@@ -968,17 +956,6 @@ const SESSION_PLACEMENT: readonly string[] = [
  *
  * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). What a call may change is
  * a rule held by review and by the record, which names the agent each call names.
- *
- * EACH AGENT RUN RECORDED. Each agent run the harness sees for a story or a task is
- * sent to the ledger by `<bin> lifecycle`, so the ledger's cost is what the harness
- * saw: `dispatched` for each item of a `task` call whose assignment names a `story`
- * or a `task` at its top level, by the call's id and the item's, with the agent it
- * runs as (its role) and what it names, and `returned` when it returns, by the same
- * ids, with its tokens when the harness reports them. An item naming neither is not
- * sent, nor is its return: the module loads in every omp session, in any repository.
- * The module only sends; what is recorded is the runtime's, and no time is sent: the
- * ledger reads elapsed time from its entries. A failed send is warned of, and a
- * dispatch always goes ahead.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
@@ -1131,9 +1108,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// The installation this module was placed in: the root above its `extensions/`.',
         'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
-        '// Those offered whole, a tool of every turn, rather than an `xd://` device whose prompt line is',
-        '// its purpose shortened.',
-        `const ESSENTIAL: readonly string[] = ${JSON.stringify(OMP_ESSENTIAL_CAPABILITIES)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
         "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
         '// check every handoff is shown, here and at a launch alike.',
@@ -1229,14 +1203,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// THIS MODULE AS LOADED. omp loads an extension once per process and every session of that',
         '// process, a dispatched one included, runs the module as loaded: an install that replaces it',
         '// reaches only processes started afterwards. So a session started in an older process says',
-        "// so, since the checks of its dispatches and their capture in the ledger are the old module's.",
+        "// so, since the checks of its dispatches are the old module's.",
         'const MODULE = fileURLToPath(import.meta.url);',
         'const LOADED = readFileSync(MODULE, "utf8");',
         'function warnReplaced(session: Session): void {',
         '  const installed = existsSync(MODULE) ? readFileSync(MODULE, "utf8") : undefined;',
         '  if (installed === LOADED) return;',
         '  session.ui.notify(',
-        '    `${COMMAND}: this omp process runs the ${COMMAND} extension it loaded when it started, which the installation has since ${installed === undefined ? "removed" : "replaced"}; its sessions, dispatched ones included, keep the earlier tools, dispatch checks and ledger capture until omp is restarted. Restart omp to run the installed one.`,',
+        '    `${COMMAND}: this omp process runs the ${COMMAND} extension it loaded when it started, which the installation has since ${installed === undefined ? "removed" : "replaced"}; its sessions, dispatched ones included, keep the earlier tools and dispatch checks until omp is restarted. Restart omp to run the installed one.`,',
         '    "warning",',
         '  );',
         '}',
@@ -1386,14 +1360,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  required?: readonly string[];',
         '}',
         '',
-        '// One item of a `task` call: the agent it runs as and its own id (its name, else its',
-        '// position), with its assignment once checked.',
+        '// One item of a `task` call and the agent it runs as.',
         'interface Handoff {',
         '  item: Record<string, unknown>;',
         '  agent: string;',
-        '  id: string;',
-        '  index: number;',
-        '  assignment?: Record<string, unknown>;',
         '}',
         '',
         '// A dispatch is known by what it carries — the agent each item runs as and its task, one item',
@@ -1411,12 +1381,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// The items of a dispatch, batch (`tasks[]`) or flat, each with the agent it names.',
         'function itemsOf(input: Record<string, unknown>): Handoff[] {',
         '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
-        '  return items.flatMap((raw, index) => {',
+        '  return items.flatMap((raw) => {',
         '    if (typeof raw !== "object" || raw === null) return [];',
         '    const item = raw as Record<string, unknown>;',
         '    const agent = typeof item.agent === "string" ? item.agent : typeof input.agent === "string" ? input.agent : "task";',
-        '    const named = [item.name, item.id].find((v): v is string => typeof v === "string" && v !== "");',
-        '    return [{ item, agent, id: named ?? String(index), index }];',
+        '    return [{ item, agent }];',
         '  });',
         '}',
         '',
@@ -1568,8 +1537,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "",',
         '    `This session starts with reconstitution${value[2] ? ` (${value[2]})` : ""}${value[1] ? `: ${value[1]}` : ""}.`,',
         "    `Read each touched context's overview and the delivered workflow overview (${COMMAND}:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.`,",
-        '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
-        '    "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the ledger records them, in your own communication style.",',
+        '    "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project\'s version control and the lead\'s outcomes; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
+        '    "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the project\'s version control and the lead\'s outcomes show them, in your own communication style.",',
         '    "Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.",',
         '    "A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.",',
         '  ].join("\\n");',
@@ -1600,7 +1569,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return [',
         '    "# The records",',
         '    "",',
-        '    "The journal, the ledger and your delegates\' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
+        '    "The journal is the record of the design, and the project\'s version control and your delegates\' reports and outcomes are the record of its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
         '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
         '  ].join("\\n");',
         '}',
@@ -1911,38 +1880,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      : ["# Assignment forms", "", "Give a dispatch of these agents its assignment in its task text so:", "", ...forms].join("\\n");',
         '  }',
         '',
-        '  // An agent run the harness sees, sent to the ledger of the repository holding `cwd` as',
-        "  // the dispatching agent (`actor`); what is recorded of it is the runtime's. A failed send is",
-        '  // warned of, and nothing more.',
-        '  async function record(event: Record<string, unknown>, at: { cwd: string; actor?: string }, ctx?: Session): Promise<void> {',
-        '    try {',
-        '      await run(["lifecycle", JSON.stringify(event)], at.cwd, undefined, at.actor);',
-        '    } catch (error) {',
-        '      ctx?.ui.notify(`${COMMAND} lifecycle: ${messageOf(error)}`, "warning");',
-        '    }',
-        '  }',
-        "  // Each item dispatched and not yet returned, by its task call and position: the harness's",
-        '  // ids its return is recorded by, and the agent that dispatched it.',
-        '  interface Dispatch {',
-        '    call: string;',
-        '    agent: string;',
-        '    cwd: string;',
-        '    actor?: string;',
-        '  }',
-        '  const dispatches = new Map<string, Dispatch>();',
-        '  // The return of the item dispatched under `key`, with its tokens when the harness reports',
-        '  // them, recorded once: a return delivered again finds no dispatch.',
-        '  async function returned(key: string, tokens: unknown, ctx?: Session): Promise<void> {',
-        '    const at = dispatches.get(key);',
-        '    if (at === undefined) return;',
-        '    dispatches.delete(key);',
-        '    const counted = typeof tokens === "number" && Number.isInteger(tokens) && tokens >= 0;',
-        '    await record({ kind: "returned", call: at.call, agent: at.agent, ...(counted ? { tokens } : {}) }, at, ctx);',
-        '  }',
-        '',
         "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
-        '  // through `tool`) never reaches the `task` call where its assignment is shown and checked and',
-        '  // its lifecycle captured. So a session launched as an agent, or a delegate whose declaration',
+        '  // through `tool`) never reaches the `task` call where its assignment is shown and checked. So',
+        '  // a session launched as an agent, or a delegate whose declaration',
         "  // carries a typed assignment, is warned so; the call goes ahead. A plain session and omp's own",
         '  // delegates are told nothing.',
         '  pi.on("tool_call", async (event, ctx) => {',
@@ -1962,58 +1902,22 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  });',
         '',
         "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
-        '  // contract, each misfit warned of, and each item naming a story or a task recorded with',
-        '  // them; the dispatch goes ahead.',
+        '  // contract, each misfit warned of; the dispatch goes ahead.',
         '  pi.on("tool_call", async (event, ctx) => {',
         '    const input = (event.input ?? {}) as Record<string, unknown>;',
         '    if (!isDispatch(input)) return undefined;',
         '    const session = ctx as unknown as Session;',
         '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
-        '    const handoffs = itemsOf(input);',
         '    const problems: string[] = [];',
-        '    for (const h of handoffs) {',
+        '    for (const h of itemsOf(input)) {',
         '      const value = assignmentOf(h.item, input);',
-        '      if (typeof value === "object" && value !== null && !Array.isArray(value))',
-        '        h.assignment = value as Record<string, unknown>;',
         '      const schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
         '      if (schema === undefined) continue;',
         '      const { problem } = checkAssignment(h.agent, schema, value);',
         '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, schema)}`);',
         '    }',
         '    if (problems.length > 0) session.ui.notify(`dispatch warning, going ahead: ${problems.join("\\n")}`, "warning");',
-        '    for (const h of handoffs) {',
-        '      const names = Object.fromEntries(',
-        '        ["story", "task"].flatMap((field) => {',
-        '          const value = h.assignment?.[field];',
-        '          return typeof value === "string" && value.trim() !== "" ? [[field, value]] : [];',
-        '        }),',
-        '      );',
-        '      // An item naming neither is no work of a story or task: nothing is sent, now or on return.',
-        '      if (Object.keys(names).length === 0) continue;',
-        '      const at: Dispatch = { call: event.toolCallId, agent: h.id, cwd: session.cwd, actor: actor(session) };',
-        '      dispatches.set(`${event.toolCallId}#${h.index}`, at);',
-        '      await record({ kind: "dispatched", call: at.call, agent: at.agent, role: h.agent, ...names }, at, session);',
-        '    }',
         '    return undefined;',
-        '  });',
-        '',
-        '  // A settled dispatch returns each item it ran, with its tokens. The call is known by its',
-        '  // id, whatever the tool carrying it is called.',
-        '  pi.on("tool_result", async (event, ctx) => {',
-        '    const details = (event as { details?: { results?: unknown } }).details;',
-        '    const results = Array.isArray(details?.results) ? details.results : [];',
-        '    for (const raw of results) {',
-        '      const r = (raw ?? {}) as Record<string, unknown>;',
-        '      await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, ctx as unknown as Session);',
-        '    }',
-        '    return undefined;',
-        '  });',
-        "  // A background item settles outside its call: omp's own lifecycle event says so.",
-        '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
-        '  bus?.on?.("task:subagent:lifecycle", (data) => {',
-        '    const e = (data ?? {}) as Record<string, unknown>;',
-        '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
-        '    void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
         '  });',
         '',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',
@@ -2039,7 +1943,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      name: tool,',
         '      label: explanation.name,',
         '      description: description(explanation),',
-        '      loadMode: ESSENTIAL.includes(capability) ? ("essential" as const) : ("discoverable" as const),',
+        '      loadMode: "discoverable" as const,',
         '      parameters: pi.typebox.Type.Unsafe(parameters(explanation)),',
         '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
         '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: Session) {',

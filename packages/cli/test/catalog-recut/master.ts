@@ -98,7 +98,7 @@ Return it as one JSON object with these fields:
   - \`evidence\` (string, required): Why it holds or does not, in the design's own terms: what the review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.
 - \`meaningQuestions\` (list of strings, required): Each question whose answer would change a concept or an example, for the architect to settle; empty when there is none.
 - \`followUps\` (list of strings, required): What the story leaves unfinished, each as work to take up later; empty when there is none.
-- \`cost\` (object, required): What the story cost, as the ledger records it.
+- \`cost\` (object, required): What the story cost, as the harness records it.
   - \`agentRuns\` (object, required): The agent runs the harness reports for the story.
     - \`total\` (integer, required): Every agent run the story took.
     - \`byRole\` (map of integers, required): The agent runs by role.
@@ -335,7 +335,7 @@ orchestrator-workers | break the work into pieces, hand each to a worker with it
 ship-show-ask | review each change as its risk calls for: Ship joins it with no review, Show joins it and has it reviewed afterwards, Ask has it reviewed before it joins
 code-review | review a change someone else wrote, before or after it joins as its story's risk calls for, against what it changes and, where they apply, its story's acceptance criteria and examples; approve it or ask for changes, naming each finding
 test-first | write each check before the work it checks, trusted only once seen to fail against work that does not satisfy it
-reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
+reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal, and the work in flight and how it ended from the project's version control and the lead's outcomes, then read the current design, open decisions and the stories and tasks in flight back before acting`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work

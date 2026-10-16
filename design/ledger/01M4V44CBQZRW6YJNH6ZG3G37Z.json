@@ -1,9 +1,0 @@
-{
-  "id": "01M4V44CBQZRW6YJNH6ZG3G37Z",
-  "at": "2026-10-13T17:14:30.135Z",
-  "kind": "dispatched",
-  "transition": "toolu_01BWLo4DwjwVNnVJWECuEcAA/CiSuiteLead/dispatched",
-  "cut": "ci-suite",
-  "role": "lead",
-  "run": "toolu_01BWLo4DwjwVNnVJWECuEcAA/CiSuiteLead"
-}

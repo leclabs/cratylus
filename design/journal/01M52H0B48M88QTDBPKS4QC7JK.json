@@ -1,0 +1,17 @@
+{
+  "id": "01M52H0B48M88QTDBPKS4QC7JK",
+  "at": "2026-10-16T14:14:10.312Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "efficiency",
+  "wording": "The share of effort that goes into work realizing the meaning, measured for every story and task as its agent runs by role, its tokens and its elapsed time, as the harness records them, and reported in its outcome against the rough cost its story stated. A story or task that runs far beyond its size is stopped and reported to the operator rather than pushed on, so effort that does not converge is visible and corrected, not discovered afterwards.",
+  "builtFrom": [
+    "story",
+    "task"
+  ],
+  "reason": "The operator: retire the ledger. What work cost is what the harness records and the outcome reports.",
+  "supersedes": [
+    "01M50CY926671TKMKCP0J68XSF"
+  ]
+}

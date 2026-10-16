@@ -18,8 +18,6 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { dispatchLedger } from '../src/capabilities/ledger/dispatch.js';
-import { appendLifecycle } from '../src/lifecycle/index.js';
 
 let sandbox: string;
 let repo: string;
@@ -34,20 +32,6 @@ afterEach(() => rmSync(sandbox, { recursive: true, force: true }));
 const concepts = (...argv: string[]) =>
   dispatchConcepts(argv, { from: join(repo, 'nested') });
 const journal = () => readdirSync(join(repo, 'design/journal')).sort();
-/** Ledger entry `n` of the ledger's cut-era history, as it was written. */
-const historyEntry = (n: number, fields: Record<string, unknown>) => {
-  const id = `01ARZ3NDEKTSV4RRFFQ69G5F${String(n).padStart(2, '0')}`;
-  mkdirSync(join(repo, 'design/ledger'), { recursive: true });
-  writeFileSync(
-    join(repo, 'design/ledger', `${id}.json`),
-    JSON.stringify({
-      id,
-      at: '2016-07-30T23:54:10.259Z',
-      transition: `history:${n}`,
-      ...fields,
-    }),
-  );
-};
 const refused = (argv: string[], words: RegExp) => {
   const before = journal();
   expect(() => concepts(...argv)).toThrow(words);
@@ -88,16 +72,8 @@ describe('the concept journal as a library', () => {
     }
   });
 
-  it('names the maker git’s user when no agent is named, and warns of nothing the ledger’s history holds', () => {
+  it('names the maker git’s user when no agent is named', () => {
     version('define', 'A hold lasts ten minutes.', 'First.');
-    // An entry of the ledger's history, read as recorded, warns of nothing.
-    historyEntry(1, {
-      kind: 'cut',
-      cut: 'seats',
-      branch: 'b',
-      contexts: ['booking'],
-      architects: { booking: 'keeper' },
-    });
     execFileSync('git', ['config', 'user.name', 'stranger'], { cwd: repo });
     const changed = version(
       'supersede',
@@ -512,7 +488,7 @@ describe('the concept journal as a library', () => {
     });
   });
 
-  it('computes the overview from the journal and the ledger, appending nothing', () => {
+  it('computes the overview from the journal alone, appending nothing', () => {
     concepts(
       'define',
       'hold',
@@ -524,69 +500,19 @@ describe('the concept journal as a library', () => {
       'First.',
     );
     concepts('context', 'other', '--subject', 'Other.');
-    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-    writeFileSync(
-      join(repo, 'design/examples/booking/seats.md'),
-      '1. (hold) Given a seat, when held, then it is kept aside.\n',
-    );
-    const from = join(repo, 'nested');
     const overview = () =>
       concepts('overview', '--context', 'booking') as {
-        contexts: {
-          context: string;
-          workInFlight: unknown;
-          account: string;
-        }[];
+        contexts: { context: string; account: string }[];
       };
-    expect(overview().contexts[0]?.workInFlight).toEqual({
-      stories: [],
-      tasks: [],
-    });
-    expect(overview().contexts[0]?.account).toContain('No work is in flight.');
-    dispatchLedger(['story', 'seats', '--context', 'booking'], { from });
-    dispatchLedger(['story', 'rows', '--context', 'other'], { from });
-    dispatchLedger(['story', 'everywhere'], { from });
-    appendLifecycle(from, {
-      kind: 'dispatched',
-      call: 'call-1',
-      agent: 'SeatsBuilder',
-      role: 'builder',
-      story: 'seats',
-      task: 'seats-hold',
-    });
-    appendLifecycle(from, {
-      kind: 'dispatched',
-      call: 'call-1',
-      agent: 'ChoreBuilder',
-      role: 'builder',
-      task: 'chore',
-    });
     const before = journal();
     expect(overview()).toMatchObject({
-      contexts: [
-        {
-          context: 'booking',
-          subject: 'Booking.',
-          workInFlight: {
-            stories: [{ story: 'seats' }, { story: 'everywhere' }],
-            tasks: [{ task: 'seats-hold', story: 'seats' }],
-          },
-        },
-      ],
+      contexts: [{ context: 'booking', subject: 'Booking.' }],
     });
+    expect(overview().contexts[0]).not.toHaveProperty('workInFlight');
     expect(overview().contexts[0]?.account).toContain(
       'Hold means: A seat kept aside.',
     );
-    expect(overview().contexts[0]?.account).toContain(
-      'In flight: the story seats; the story everywhere; the task seats-hold of the story seats.',
-    );
-    // A task with no story changes no meaning: it touches no context.
-    expect(overview().contexts[0]?.account).not.toContain('chore');
-    dispatchLedger(['end', 'everywhere', '--outcome', 'dropped'], { from });
-    expect(overview().contexts[0]?.workInFlight).toEqual({
-      stories: [{ story: 'seats' }],
-      tasks: [{ task: 'seats-hold', story: 'seats' }],
-    });
+    expect(overview().contexts[0]?.account).not.toContain('flight');
     expect(journal()).toEqual(before);
     expect(concepts('overview')).toMatchObject({
       contexts: [{ context: 'booking' }, { context: 'other' }],
@@ -648,7 +574,7 @@ describe('the concept journal as a library', () => {
     expect(concepts('overview')).not.toHaveProperty('competingPurposes');
   });
 
-  it('shows only standing decisions and examples, history when asked', () => {
+  it('shows only standing decisions, history when asked, and every example file', () => {
     /** The flags recording decision `id` in booking, accepted. */
     const decideFlags = (id: string) => [
       '--context',
@@ -684,33 +610,41 @@ describe('the concept journal as a library', () => {
         status,
         ...(deprecation === undefined ? {} : { deprecation }),
       }));
-    // A decision recorded by an earlier workflow names the cut it was about;
-    // no verb records one now, so it is written as it was recorded.
-    const aboutId = `01J${'0'.repeat(22)}1`;
-    writeFileSync(
-      join(repo, 'design/journal', `${aboutId}.json`),
-      JSON.stringify({
-        id: aboutId,
-        at: '2026-01-01T00:00:00.000Z',
-        kind: 'decide',
-        decisionId: 'about',
-        context: 'booking',
-        title: 'about title',
-        situation: 'S',
-        decision: 'D',
-        consequences: 'C',
-        status: 'accepted',
-        supersedes: null,
-        cut: 'stalls',
-      }),
-    );
+    // Decisions recorded by an earlier workflow name the cut they were about
+    // or the example files they keep; no verb records either now, so each is
+    // written as it was recorded, and each is read by its own status alone.
+    const recorded = (n: number, id: string, fields: object) => {
+      const entry = `01J${'0'.repeat(22)}${n}`;
+      writeFileSync(
+        join(repo, 'design/journal', `${entry}.json`),
+        JSON.stringify({
+          id: entry,
+          at: '2026-01-01T00:00:00.000Z',
+          kind: 'decide',
+          decisionId: id,
+          context: 'booking',
+          title: `${id} title`,
+          situation: 'S',
+          decision: 'D',
+          consequences: 'C',
+          status: 'accepted',
+          supersedes: null,
+          ...fields,
+        }),
+      );
+    };
+    recorded(1, 'about', { cut: 'stalls' });
+    recorded(2, 'keeper', { keeps: ['booking/seats'] });
     decide('rule');
     decide('old');
     decide('new', '--supersedes', 'old');
-    decide('keeper', '--keeps', 'booking/seats');
     refused(
       ['decide', 'cutting', ...decideFlags('cutting'), '--cut', 'seats'],
       /^concepts decide: it does not take --cut/,
+    );
+    refused(
+      ['decide', 'keeping', ...decideFlags('keeping'), '--keeps', 'b/s'],
+      /^concepts decide: it does not take --keeps/,
     );
     refused(
       ['deprecate', 'rule'],
@@ -719,10 +653,6 @@ describe('the concept journal as a library', () => {
     refused(
       ['deprecate', 'old', '--reason', 'Done.'],
       /^concepts deprecate: the decision 'old' is superseded; only a standing decision is deprecated/,
-    );
-    refused(
-      ['decide', 'bad', ...decideFlags('bad'), '--keeps', 'seats'],
-      /^concepts decide: the kept example file 'seats' is not one; name it as <context>\/<story>/,
     );
     const deprecated = concepts('deprecate', 'rule', '--reason', 'Done.') as {
       id: string;
@@ -738,11 +668,12 @@ describe('the concept journal as a library', () => {
     );
     expect(listed()).toEqual([
       { id: 'about', status: 'accepted' },
-      { id: 'new', status: 'accepted' },
       { id: 'keeper', status: 'accepted' },
+      { id: 'new', status: 'accepted' },
     ]);
     expect(listed('--history')).toEqual([
       { id: 'about', status: 'accepted' },
+      { id: 'keeper', status: 'accepted' },
       {
         id: 'rule',
         status: 'deprecated',
@@ -750,66 +681,20 @@ describe('the concept journal as a library', () => {
       },
       { id: 'old', status: 'superseded' },
       { id: 'new', status: 'accepted' },
-      { id: 'keeper', status: 'accepted' },
     ]);
     // The cut a recorded decision names is history, shown only when asked.
     expect(decisions().find((d) => d.id === 'about')).not.toHaveProperty('cut');
     expect(decisions('--history').find((d) => d.id === 'about')?.cut).toBe(
       'stalls',
     );
-
-    // A story's examples are history once the story is done, merged or
-    // dropped, unless a standing decision keeps them; a cut's examples, and
-    // a decision recorded about it, once the ledger's history records the cut
-    // integrated.
-    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
-    for (const [story, call] of [
-      ['seats', 'holdSeat'],
-      ['rows', 'holdRow'],
-      ['lanes', 'holdLane'],
-      ['stalls', 'holdStall'],
-    ])
-      writeFileSync(
-        join(repo, 'design/examples/booking', `${story}.md`),
-        `1. (hold) Given one, when held, then \`${call}()\` runs.\n`,
-      );
-    const git = (...args: string[]) =>
-      execFileSync(
-        'git',
-        ['-c', 'user.name=t', '-c', 'user.email=t@t', ...args],
-        { cwd: repo },
-      );
-    git('add', '-A');
-    git('commit', '-qm', 'examples');
-    const from = join(repo, 'nested');
-    for (const story of ['seats', 'rows', 'lanes'])
-      dispatchLedger(['story', story, '--context', 'booking'], { from });
-    dispatchLedger(['end', 'seats', '--outcome', 'merged'], { from });
-    dispatchLedger(['end', 'rows', '--outcome', 'dropped'], { from });
-    historyEntry(1, {
-      kind: 'cut',
-      cut: 'stalls',
-      branch: 'feature/stalls',
-      contexts: ['booking'],
-      architects: { booking: 'desk' },
-    });
-    historyEntry(2, { kind: 'integrate', cut: 'stalls' });
-    expect(listed()).toEqual([
-      { id: 'new', status: 'accepted' },
-      { id: 'keeper', status: 'accepted' },
-    ]);
-    expect(listed('--history')).toContainEqual({
-      id: 'about',
-      status: 'deprecated',
-      deprecation: { cut: 'stalls' },
-    });
     expect(concepts('state')).toMatchObject({
       contexts: [
         {
           decisions: {
             accepted: [
-              { id: 'new', title: 'new title', kind: null },
+              { id: 'about', title: 'about title', kind: null },
               { id: 'keeper', title: 'keeper title', keeps: ['booking/seats'] },
+              { id: 'new', title: 'new title', kind: null },
             ],
             open: [],
           },
@@ -820,12 +705,22 @@ describe('the concept journal as a library', () => {
       contexts: { decisions: Record<string, { id: string }[]> }[];
     };
     expect(state.contexts[0]?.decisions.deprecated?.map((d) => d.id)).toEqual([
-      'about',
       'rule',
     ]);
     expect(state.contexts[0]?.decisions.superseded?.map((d) => d.id)).toEqual([
       'old',
     ]);
+
+    // Every example file present is current, read with or without history.
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    for (const [story, call] of [
+      ['seats', 'holdSeat'],
+      ['rows', 'holdRow'],
+    ])
+      writeFileSync(
+        join(repo, 'design/examples/booking', `${story}.md`),
+        `1. (hold) Given one, when held, then \`${call}()\` runs.\n`,
+      );
     const files = (...flags: string[]) => {
       const answer = concepts('leakage', ...flags) as {
         warnings: { passage: { kind: string; file?: string } }[];
@@ -835,16 +730,12 @@ describe('the concept journal as a library', () => {
         .map((w) => w.passage.file)
         .sort();
     };
-    expect(files()).toEqual([
-      'design/examples/booking/lanes.md',
-      'design/examples/booking/seats.md',
-    ]);
-    expect(files('--history')).toEqual([
-      'design/examples/booking/lanes.md',
+    const all = [
       'design/examples/booking/rows.md',
       'design/examples/booking/seats.md',
-      'design/examples/booking/stalls.md',
-    ]);
+    ];
+    expect(files()).toEqual(all);
+    expect(files('--history')).toEqual(all);
   });
 });
 

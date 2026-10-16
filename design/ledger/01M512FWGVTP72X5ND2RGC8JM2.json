@@ -1,8 +1,0 @@
-{
-  "id": "01M512FWGVTP72X5ND2RGC8JM2",
-  "at": "2026-10-16T00:41:16.571Z",
-  "kind": "task",
-  "transition": "task:agent-values-by-scope",
-  "task": "agent-values-by-scope",
-  "story": "sign-off-gates"
-}

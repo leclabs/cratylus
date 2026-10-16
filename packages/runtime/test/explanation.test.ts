@@ -16,7 +16,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
 import { JOURNAL } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { LEDGER } from '../src/capabilities/ledger/dispatch.js';
 import { CAPABILITY_SUMMARIES } from '../src/capability.js';
 import {
   type Explanation,
@@ -94,7 +93,6 @@ const PARAMETERS: Record<string, string[]> = {
     'status',
     'supersedes',
     'kind',
-    'keeps',
   ],
   accept: ['id', 'reason'],
   classify: ['id', 'kind', 'reason'],
@@ -235,22 +233,6 @@ describe('concepts --explain', () => {
       deprecate: 'decision',
     });
     expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
-      [],
-    );
-  });
-
-  it('the ledger acts on live concepts of cratylus’s own conceptual design', () => {
-    expect(
-      Object.fromEntries(explain(LEDGER).verbs.map((v) => [v.name, v.concept])),
-    ).toEqual({
-      state: 'ledger',
-      story: 'story',
-      task: 'task',
-      end: 'outcome',
-    });
-    expect(LEDGER.name).toBe('ledger');
-    expect(designAt(repositoryRoot).live).toContain(LEDGER.name);
-    expect(unanchored(explain(LEDGER), designAt(repositoryRoot).live)).toEqual(
       [],
     );
   });
@@ -434,7 +416,6 @@ describe('what the explanation calls required is what the verb refuses without',
       status: 'open',
       supersedes: 'd1',
       kind: 'meaning',
-      keeps: 'booking/slots',
     },
     accept: { id: 'd1', reason: 'Agreed.' },
     classify: { id: 'd1', kind: 'realization', reason: 'It constrains.' },

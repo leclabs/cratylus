@@ -1,8 +1,0 @@
-{
-  "id": "01M4P0NGWQ8EH190EV6SH50SQ7",
-  "at": "2026-10-11T17:37:45.367Z",
-  "kind": "check",
-  "transition": "check:delivery:01M4P0NGWPZ381VBFMJGBS16BX",
-  "cut": "delivery",
-  "failures": []
-}
