@@ -1003,8 +1003,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * with the sign-off it waits on, a current request to the operator: its closing sentence,
  * read across line breaks, is a bidding starting "(Please) sign off …" or a question asking
  * the operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could I
- * have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?"),
- * whatever else it says; or a present wait on the operator's sign-off
+ * have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?", each
+ * opening the sentence after at most "Please", "So", "Then", "And" or "Now"), whatever else
+ * it says; or a present wait on the operator's sign-off
  * ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that
  * the words governing it neither negate nor put in the past. A bare report holds nothing,
  * as the agents' values have every gate reply end on its request. Every other
@@ -1727,13 +1728,16 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const sentence = reply.replace(/\\s+/g, " ").trim().split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
         '  if (/^\\W*(?:please\\s+)?sign[\\s-]?off\\s+(?:the|this|that|these|it|on|to|my|our|here|now|before)\\b/i.test(sentence))',
         '    return true;',
+        '  // A request question opens the closing sentence, after at most a "Please", "So", "Then", "And" or',
+        '  // "Now" (and a comma).',
+        '  const opening = "^\\\\W*(?:(?:please|so|then|and|now),?\\\\s+)?";',
         '  if (',
         '    /\\?\\W*$/.test(sentence) &&',
         '    [',
-        '      /\\b(?:do|will|would|can|could)\\s+you\\s+(?:please\\s+)?sign[\\s-]?off\\b/i,',
-        '      /\\b(?:do|may|can|could)\\s+i\\s+(?:please\\s+)?(?:have|get)\\s+your\\s+sign[\\s-]?off\\b/i,',
-        '      /\\b(?:will|would|can|could)\\s+you\\s+(?:please\\s+)?give\\s+(?:me\\s+|us\\s+)?your\\s+sign[\\s-]?off\\b/i,',
-        '    ].some((request) => request.test(sentence))',
+        '      "(?:do|will|would|can|could)\\\\s+you\\\\s+(?:please\\\\s+)?sign[\\\\s-]?off\\\\b",',
+        '      "(?:do|may|can|could)\\\\s+i\\\\s+(?:please\\\\s+)?(?:have|get)\\\\s+your\\\\s+sign[\\\\s-]?off\\\\b",',
+        '      "(?:will|would|can|could)\\\\s+you\\\\s+(?:please\\\\s+)?give\\\\s+(?:me\\\\s+|us\\\\s+)?your\\\\s+sign[\\\\s-]?off\\\\b",',
+        '    ].some((request) => new RegExp(opening + request, "i").test(sentence))',
         '  )',
         '    return true;',
         '  const wait =',

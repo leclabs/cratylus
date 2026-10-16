@@ -1929,6 +1929,7 @@ describe('omp capability interface', () => {
         'Please sign off the plan without changing the scope.',
         'The plan: three tasks. Do I have your sign-off to start the build?',
         'The plan: three tasks. Could you give your sign-off on it?',
+        'The plan: three tasks. So, could you sign off the plan?',
       ];
       /** Returns that only report a sign-off, or say nothing of one: each is a result. */
       const REPORTING = [
@@ -1942,6 +1943,7 @@ describe('omp capability interface', () => {
         'What does your sign-off mean in this story?',
         'May I send it to the builders for your sign-off?',
         'Where is the recorded reason for your sign-off?',
+        'Why do you sign off plans before implementation?',
       ];
       const CONTRACT = {
         type: 'object',
