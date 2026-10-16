@@ -265,21 +265,22 @@ and warns where it falls short; they are not the same, and this is what a user m
 - **Model, dispatch and tools.** On omp an agent's definition names its own model role,
   `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
-- **A gate held by a delegate (attach).** On omp, when an agent you dispatch whose decision rights
-  hold sign-off and who declares a deliverable ends its turn on a reply that is not that
-  deliverable (a JSON object satisfying its declared output, given whole or in a fenced block), it
-  is holding a gate for your sign-off. cratylus's extension gives the session that dispatched it
-  only a notice in that agent's place: it waits on your sign-off, and you join it in omp's Agent
-  Hub (Alt+A, select the agent, Enter), where you answer it and work with it directly. Its reply is
-  never passed up, whether the dispatch waited for it or ran in the background. omp keeps the
-  agent's session alive; each turn you prompt there reaches the dispatching session as its result
-  once it gives its deliverable, or as another such notice when it stops at another gate. Every
-  other result passes unchanged. An agent that declares no deliverable cannot be told apart this
-  way and holds its gates in your own session: the architect does. What omp limits: with
-  `task.structured` on, omp reminds an agent that ends without its deliverable up to three times,
-  the last forcing it to give one; an isolated agent can be joined only until omp parks it; and
-  omp's own transcript of a background result keeps the reply, which you see in the dispatching
-  session and its compaction reads.
+- **A gate held by a delegate (attach).** On omp, an agent whose decision rights hold sign-off
+  (the architect, the lead) holds a gate for your sign-off when it ends its turn on a reply that
+  is not its declared deliverable (a JSON object satisfying its declared output, given whole or in
+  a fenced block); one that declares no such deliverable hands over to you alone, so holds one at
+  every turn it ends. Install declares such an agent `blocking`, so a dispatch of it always waits
+  for its result. cratylus's extension gives the session that dispatched it only a notice in that
+  agent's place: it waits on your sign-off, and you join it in omp's Agent Hub (Alt+A, select the
+  agent, Enter), where you answer it and work with it directly. Its reply is never passed up. omp
+  keeps the agent's session alive; each turn you prompt there reaches the dispatching session as
+  its result once it gives its deliverable, or as another such notice when it stops at another
+  gate. Every other result passes unchanged. What omp limits: with `task.structured` on, omp
+  reminds an agent that ends without its deliverable up to three times, the last forcing it to
+  give one; an isolated agent can be joined only until omp parks it. And a held reply reaches the
+  dispatching session's own transcript, which you see and its compaction reads, only where omp
+  relays it itself: when the dispatching session messages an agent waiting at a gate, and, with
+  `task.structured` on, when omp accepts a later turn's deliverable that fails its contract.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither starts that isolation from the bound plan's line. Building off the line is the agent's own
