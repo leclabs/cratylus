@@ -2141,58 +2141,69 @@ describe('omp capability interface', () => {
         expect(JSON.stringify(given)).not.toContain('Sign off the plan');
       });
 
-      it('holds a gate only on a reply ending with the sign-off it waits on; any other reply, the deliverable or not, passes as its result', async () => {
-        omp.agents = [GATED()];
-        const content = [
-          { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
-        ];
-        for (const result of [
-          { ...LEAD, output: DELIVERABLE },
-          { ...LEAD, output: `Done.\n\n\`\`\`json\n${DELIVERABLE}\n\`\`\`` },
-          {
-            ...LEAD,
-            output: DELIVERABLE,
-            structuredOutput: { status: 'valid', data: {} },
-          },
-          // A grant's end-state read-back, a reported sign-off, and other prose: results, not gates.
-          ...REPORTING.map((output) => ({ ...LEAD, output })),
-          { ...LEAD, output: '{"story":"renewal"}' },
-        ])
+      /** Results a gate holder may return that pass as its result: deliverables, a grant's
+       *  end-state read-back, a reported sign-off, and other prose. */
+      const PASSING: Record<string, unknown>[] = [
+        { ...LEAD, output: DELIVERABLE },
+        { ...LEAD, output: `Done.\n\n\`\`\`json\n${DELIVERABLE}\n\`\`\`` },
+        {
+          ...LEAD,
+          output: DELIVERABLE,
+          structuredOutput: { status: 'valid', data: {} },
+        },
+        ...REPORTING.map((output) => ({ ...LEAD, output })),
+        { ...LEAD, output: '{"story":"renewal"}' },
+      ];
+      /** Results that end with the sign-off they wait on: each holds a gate. */
+      const HOLDING: Record<string, unknown>[] = [
+        ...ASKING.map((output) => ({ ...LEAD, output })),
+        {
+          ...LEAD,
+          output: `\`\`\`json\n{"story":"renewal"}\n\`\`\`\n${READ_BACK}`,
+        },
+        // Structured results: no deliverable given, and one failing the contract.
+        {
+          ...LEAD,
+          exitCode: 1,
+          stderr: MISSING_YIELD,
+          error: MISSING_YIELD,
+          output: `${MISSING_YIELD}\n\n${READ_BACK}`,
+        },
+        {
+          ...LEAD,
+          exitCode: 1,
+          error: 'schema_violation: missing required fields: outcome',
+          output: READ_BACK,
+          structuredOutput: { status: 'invalid', data: READ_BACK },
+        },
+      ];
+      const content = [
+        { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+      ];
+
+      it.each(PASSING.map((result) => [String(result.output), result]))(
+        'passes a reply not ending with the sign-off it waits on as its result: %s',
+        async (_output, result) => {
+          omp.agents = [GATED()];
           expect(
             (await settle({ content, details: { results: [result] } })).answer,
-            result.output,
           ).toBeUndefined();
-        for (const result of [
-          ...ASKING.map((output) => ({ ...LEAD, output })),
-          {
-            ...LEAD,
-            output: `\`\`\`json\n{"story":"renewal"}\n\`\`\`\n${READ_BACK}`,
-          },
-          // Structured results: no deliverable given, and one failing the contract.
-          {
-            ...LEAD,
-            exitCode: 1,
-            stderr: MISSING_YIELD,
-            error: MISSING_YIELD,
-            output: `${MISSING_YIELD}\n\n${READ_BACK}`,
-          },
-          {
-            ...LEAD,
-            exitCode: 1,
-            error: 'schema_violation: missing required fields: outcome',
-            output: READ_BACK,
-            structuredOutput: { status: 'invalid', data: READ_BACK },
-          },
-        ]) {
+        },
+      );
+
+      it.each(HOLDING.map((result) => [String(result.output), result]))(
+        'holds a gate on a reply ending with the sign-off it waits on: %s',
+        async (_output, result) => {
+          omp.agents = [GATED()];
           const { given } = await settle({
             content,
             details: { results: [result] },
           });
-          expect(given.content, result.output).toEqual([
+          expect(given.content).toEqual([
             { type: 'text', text: waiting('Lead') },
           ]);
-        }
-      });
+        },
+      );
 
       it('holds no gate for a delegate without sign-off, nor for a cancelled or failed run', async () => {
         const content = [
@@ -2661,22 +2672,28 @@ describe('omp capability interface', () => {
           expect(main.told).toEqual([told('Lead')]);
         });
 
-        it('tells of a gate whatever form its closing takes, across line breaks, and of no sign-off only reported', async () => {
-          omp.agents = [GATED()];
-          for (const closing of ASKING) {
+        it.each(ASKING)(
+          'tells of a gate whatever form its closing takes, across line breaks: %s',
+          async (closing) => {
+            omp.agents = [GATED()];
             const { main, runs } = await nested();
             await runs(asked('Plan renewal.'), said(closing));
-            expect(main.told, closing).toEqual([told('Lead')]);
-          }
-          for (const closing of REPORTING) {
+            expect(main.told).toEqual([told('Lead')]);
+          },
+        );
+
+        it.each(REPORTING)(
+          'tells of no gate for a sign-off only reported, and passes the reply on: %s',
+          async (closing) => {
+            omp.agents = [GATED()];
             const { main, arch, runs } = await nested();
             await runs(asked('Plan renewal.'), said(closing));
-            expect(main.told, closing).toEqual([]);
-            expect(JSON.stringify(arch.sent), closing).toContain(
+            expect(main.told).toEqual([]);
+            expect(JSON.stringify(arch.sent)).toContain(
               JSON.stringify(closing).slice(1, -1),
             );
-          }
-        });
+          },
+        );
 
         it('keeps telling of each new gate when the operator resumes a holder before its dispatch’s result arrives', async () => {
           omp.agents = [GATED()];
