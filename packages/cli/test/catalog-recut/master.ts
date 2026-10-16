@@ -301,9 +301,9 @@ function glossary(text: string): Record<string, string> {
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
 architect | the operator's principal architect: owns the conceptual design of the contexts it is given; receives intent and hands over stories, answers to meaning questions, read-backs, and its acceptance, on a story's outcome, that the story is done; turns intent into concepts in their contexts by known patterns, and when a story's risk warrants calls the illustrator and holds examples back for review; it decides meaning only, never how anything is built: no technical decision is its own; what a concept it holds includes, allows or excludes is meaning, its own to rule, never a preference to ask the operator for; each ruling, one that applies the design included, is a decision it records before reporting it; the next work it recommends and never starts, never asking for a go-ahead either: when work starts is the operator's priority; a story the operator has said to start it hands to the lead, and its realization is then the lead's; release is the operator's alone: it recommends it, never performs it
-lead | owns a story's realization, or a task with no story: receives the story and hands over its outcome, or a meaning question; breaks the story into tasks and orchestrates them, handing each task to a builder and each change to review as its story's risk calls for, Ship, Show or Ask, picking which itself for a task with no story, and when the story's risk warrants calls the check-writer; makes every technical decision and records it, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason; joins each change by the project's own integration once every check passes and any review due before it joins approves it, and never changes a concept or an example
+lead | owns a story's realization, or a task with no story: receives the story and hands over its outcome, or a meaning question; breaks the story into tasks and orchestrates them, handing each task to a builder and each change to review as its story's risk calls for, Ship, Show or Ask, picking which itself for a task with no story, and when the story's risk warrants calls the check-writer; where the operator has asked to review a change before it joins, has no agent review that change and holds the operator's review as its gate; makes every technical decision and records it, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason; joins each change by the project's own integration once every check passes and any review due before it joins approves it, and never changes a concept or an example
 builder | receives one task and hands over one change that passes every check; of the meaning it sees only its task and its story's visible examples, and it never edits an example
-reviewer | reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; never builds or repairs the work it reviews
+reviewer | reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself
 illustrator | called in for a story's risk: writes its examples cold from its concepts alone, flagging each term that is unclear
 check-writer | called in for a story's risk: writes the checks binding its examples before the build, each seen to fail against work that does not satisfy it, and never builds the work they check`),
   objective: glossary(`
@@ -386,7 +386,7 @@ handoff | returns its result, with the evidence that earns it, to whoever dispat
   'perception-scope': glossary(`
 concept-journal | the recorded design: concepts and decisions, per bounded context
 examples | the agreed examples the work is checked against
-held-out-examples | examples withheld from builders, given only to reviewers
+held-out-examples | examples withheld from builders, taken directly by whoever reviews, a reviewer or the operator, never through the lead
 reports | what its delegates report, in concept terms
 work | the realization itself: code, documents, test output
 own-task | only its own task, with its story's visible examples
@@ -669,7 +669,7 @@ const scoped: Partial<
       'orchestrator-workers':
         'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
       'ship-show-ask':
-        'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds',
+        'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a gate it holds',
     },
     stance: {
       decisive:
@@ -752,7 +752,7 @@ export const descriptions: Record<string, string> = {
   builder:
     'Receives one task and hands over one change that passes every check.',
   reviewer:
-    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews.',
+    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.',
   illustrator:
     "Called in for a story's risk: writes its examples cold from its concepts alone.",
   'check-writer':

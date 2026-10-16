@@ -1,6 +1,7 @@
 // The reviewer role: reviews one change it did not write, before or after it joins as
 // its story's risk calls for, and hands over one review, never building or repairing
-// the work (workflow: reviewer; agents 0272; workflow 0267). It
+// the work, and never reviewing a change the operator has asked to review itself, whose
+// review is the operator's (workflow: reviewer; agents 0272; workflow 0267, 0292). It
 // runs on another model family than the builders where one is available (0225, 0244),
 // and takes held-out examples directly from where the architect keeps them (0254).
 
@@ -40,7 +41,7 @@ import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
 export const reviewerRole: RoleCell = {
   name: 'reviewer',
   description:
-    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews.',
+    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.',
   mark: null,
   values: {
     role: [reviewer],
