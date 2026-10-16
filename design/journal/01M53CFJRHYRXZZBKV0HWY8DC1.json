@@ -1,0 +1,16 @@
+{
+  "id": "01M53CFJRHYRXZZBKV0HWY8DC1",
+  "at": "2026-10-16T22:14:21.201Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "ipseic agent",
+  "wording": "A persona with selfhood, ipse-identity in Ricoeur's sense: a personal identity that persists across sessions, hosts and harnesses (a name, a mark, and a key pair that signs its acts); its own continuous memory of what it has experienced and knows itself to have experienced, apart from any session's working memory; a personality and mind of its own; a long lifespan in which it grows and changes; and freedom to travel between environments while remaining the same self. Nothing in an agent's composition ties it to one session, host or harness.",
+  "builtFrom": [
+    "persona"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M4JYWW8T0QENTEK33EEZZ5WQ"
+  ]
+}

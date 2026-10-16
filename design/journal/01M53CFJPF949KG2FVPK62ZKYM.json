@@ -1,0 +1,17 @@
+{
+  "id": "01M53CFJPF949KG2FVPK62ZKYM",
+  "at": "2026-10-16T22:14:21.135Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "persona",
+  "wording": "An individually named agent over one role, chosen by the operator for the expertise a project needs, the generic role serving where none fits. What it adds to its role is above all that expertise, the contexts it holds and their industry's knowledge. Its profile is its role's with those additions: it overrides the role's single values and extends its sets, may narrow but never widen its reach, and never removes a guardrail.",
+  "builtFrom": [
+    "role",
+    "reach"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M4W14MC90QK1VFDS05658TXK"
+  ]
+}

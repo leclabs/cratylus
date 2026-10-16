@@ -1,0 +1,9 @@
+{
+  "id": "01M53CG02FCY5TZ4VDZ1DHAMDW",
+  "at": "2026-10-16T22:14:34.831Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0021",
+  "entry": "01M4J5R9D97BX5K3CTPD6PBJ8K",
+  "reason": "Meaning is recorded only in concepts: owned root (one root cratylus owns, surfaces only refer into it, what was placed is known) and upgrade (replaced whole, references rewritten, leaves what the new version places and what the host owns) now state it."
+}

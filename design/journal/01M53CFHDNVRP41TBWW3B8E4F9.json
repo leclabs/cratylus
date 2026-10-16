@@ -1,0 +1,21 @@
+{
+  "id": "01M53CFHDNVRP41TBWW3B8E4F9",
+  "at": "2026-10-16T22:14:19.829Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "proportionality",
+  "wording": "How much ceremony a change gets, sized to its risk, so the method never costs more than the change. A change that alters no meaning takes a task with no story; a story on the plain path is broken into tasks, each built by one builder; a story whose risk warrants more scales up with specialists: illustration with held-out examples, and checks written before the build. Review scales only by the choice of Ship, Show or Ask.",
+  "builtFrom": [
+    "story",
+    "task",
+    "review",
+    "illustration",
+    "held-out example",
+    "check-writer"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M51JAGK0YQGP2Q1SJMJJQM7T"
+  ]
+}

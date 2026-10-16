@@ -1,0 +1,19 @@
+{
+  "id": "01M53CFHSTGTGFEXE8MJB6BKCT",
+  "at": "2026-10-16T22:14:20.218Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "builder",
+  "wording": "The agent that receives one task and hands over one change passing every check, writing the tests its change needs; it may read the rest of the work, but of the meaning it sees only its task and its story's visible examples, and it never edits an example.",
+  "builtFrom": [
+    "task",
+    "change",
+    "check",
+    "example"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M51JAH0WS8QWNYWE4NBES5PB"
+  ]
+}

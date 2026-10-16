@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFYK4V7095EDNX35AGKZM",
+  "at": "2026-10-16T22:14:33.316Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0276",
+  "entry": "01M51K39KA14H7ZTVKW3ETZ2T3",
+  "reason": "Meaning is recorded only in concepts: integration; change now state it."
+}

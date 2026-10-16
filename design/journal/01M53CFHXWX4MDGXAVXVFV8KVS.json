@@ -1,0 +1,17 @@
+{
+  "id": "01M53CFHXWX4MDGXAVXVFV8KVS",
+  "at": "2026-10-16T22:14:20.348Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "illustrator",
+  "wording": "The agent that does illustration for a story whose risk warrants it, its examples doubling as the test that the concepts carry their meaning, and writes the cold replacement for a held-out example a failure exposed.",
+  "builtFrom": [
+    "illustration",
+    "held-out example"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M50CYX3XK93DRW21GXDXG6DQ"
+  ]
+}

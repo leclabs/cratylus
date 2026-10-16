@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFY963KK75X797V74Q128",
+  "at": "2026-10-16T22:14:32.998Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0264",
+  "entry": "01M51D81AEMW02Y077D0HHK9RB",
+  "reason": "Meaning is recorded only in concepts: gate; interrupt now state it."
+}

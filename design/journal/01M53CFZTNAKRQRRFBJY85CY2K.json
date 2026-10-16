@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFZTNAKRQRRFBJY85CY2K",
+  "at": "2026-10-16T22:14:34.581Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0221",
+  "entry": "01M4YHKM9F7D0JN71CGT7GFZXA",
+  "reason": "Meaning is recorded only in concepts: reach: 'Where a tool's constraint conflicts with what the operator asked, the operator's intent wins … the conflict is a defect in the tool; this reaches only tools, never the agent's own values.' now state it."
+}
