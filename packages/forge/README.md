@@ -181,10 +181,10 @@ tokens the return reports. Nothing else is recorded, and a dispatch from `eval` 
 
 **Attach.** A delegate whose declaration's decision rights carry a `sign-off` line holds a gate when
 its turn ends on a reply that ends with the sign-off it waits on, a current request to the operator:
-its closing sentence, read across line breaks, is a question asking for the sign-off, a bidding
-starting "(Please) sign off", or a present wait on the operator's sign-off ("waiting on/for your
-sign-off", "awaiting your sign-off", "pending your sign-off"). A negation, the past tense or a bare
-report holds nothing. Every other reply is a
+its closing sentence, read across line breaks, is a bidding starting "(Please) sign off …" or a
+question asking for the sign-off, whatever else it says; or a present wait on the operator's sign-off
+("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that the words
+governing it neither negate nor put in the past. A bare report holds nothing. Every other reply is a
 result, the declared JSON deliverable or not, whether or not the holder declares one. Such a declaration is projected
 `blocking: true`, so its dispatched run always comes back on the task result. The dispatching
 session learns only that it waits on the operator's sign-off and how the operator joins it, omp's

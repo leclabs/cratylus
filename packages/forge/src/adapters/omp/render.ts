@@ -1001,10 +1001,11 @@ const SESSION_PLACEMENT: readonly string[] = [
  * ATTACH: A GATE HELD BY A DELEGATE (decision 0250(3)). A delegate holds a gate when its
  * declaration's decision rights hold `sign-off` and it ends its turn on a reply that ends
  * with the sign-off it waits on, a current request to the operator: its closing sentence,
- * read across line breaks, is a question asking for the sign-off, a bidding starting
- * "(Please) sign off", or a present wait on the operator's sign-off ("waiting on/for your
- * sign-off", "awaiting your sign-off", "pending your sign-off"), as the agents' values have
- * every gate reply end. A negation, the past tense or a bare report holds nothing. Every other
+ * read across line breaks, is a bidding starting "(Please) sign off …" or a question asking
+ * for the sign-off, whatever else it says; or a present wait on the operator's sign-off
+ * ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that
+ * the words governing it neither negate nor put in the past. A bare report holds nothing,
+ * as the agents' values have every gate reply end on its request. Every other
  * reply is a result, whether or not it is the declared JSON
  * deliverable, and reaches the dispatcher unchanged; a holder declaring no JSON deliverable
  * is judged the same way. A cancelled run, or one failed by its provider or by omp, holds
@@ -1044,8 +1045,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `agent_end`, whoever started it, and a background delivery as above. It is omp's `notify`,
  * a warning line on the operator's screen that no model reads, given once per gate, the
  * gate known by the run it ends (a holder's runs are counted; the task result reports its
- * latest dispatched run, a background delivery its latest ended one), so a late report of
- * an earlier run never silences a later gate.
+ * latest dispatched run; a background delivery, the run it came from: the oldest run omp
+ * handed over itself whose reply the delivery carries), so a late report of an earlier run
+ * is never told twice nor silences a later gate.
  *
  * omp LIMITS ON ATTACH, held as omp gives them: with `task.structured` on, omp reminds a
  * delegate that ends without its deliverable up to three times, the last forcing a yield;
@@ -1712,18 +1714,21 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on, a current",
-        '// request to the operator. Its closing sentence, read across line breaks, is a question asking for',
-        '// the sign-off, a bidding starting "(Please) sign off", or a present wait on the operator\'s',
-        '// sign-off ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off").',
-        '// A negation, the past tense or a bare report holds nothing: such a reply is a result, as is any',
-        '// other, its declared JSON deliverable or not.',
+        '// request to the operator. Its closing sentence, read across line breaks, is a request whatever',
+        '// else it says when it is a bidding starting "(Please) sign off …" or a question asking for the',
+        '// sign-off; or it is a present wait on the operator\'s sign-off ("waiting on/for your sign-off",',
+        '// "awaiting your sign-off", "pending your sign-off") that the words governing it neither negate nor',
+        '// put in the past. Any other reply is a result, its declared JSON deliverable or not.',
         'function holds(reply: string): boolean {',
         '  const sentence = reply.replace(/\\s+/g, " ").trim().split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
-        "  if (/\\b(?:no|not|never|without|none)\\b|n't\\b|\\b(?:did|was|were|had)\\b/i.test(sentence)) return false;",
         '  if (/^\\W*(?:please\\s+)?sign[\\s-]?off\\s+(?:the|this|that|these|it|on|to|my|our|here|now|before)\\b/i.test(sentence))',
         '    return true;',
         '  if (/\\?\\W*$/.test(sentence) && /\\bsign[\\s-]?off\\b/i.test(sentence)) return true;',
-        "  return /\\b(?:waiting\\s+(?:on|for)|awaiting|pending)\\s+(?:your|the\\s+operator(?:'|’)s)\\s+sign[\\s-]?off\\b/i.test(sentence);",
+        '  const wait =',
+        "    /(?:^|\\s)((?:\\S+\\s+){0,2})(?:waiting\\s+(?:on|for)|awaiting|pending)\\s+(?:your|the\\s+operator(?:'|’)s)\\s+sign[\\s-]?off\\b/i.exec(",
+        '      sentence,',
+        '    );',
+        '  return wait !== null && !/\\b(?:no|not|never|longer|was|were|had|been)\\b|n(?:\'|’)t\\b/i.test(wait[1] ?? "");',
         '}',
         '',
         '// What a run replied: the data of the last yield omp accepted, else its last words.',
@@ -1820,11 +1825,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const verdicts = new Map<string, string | false>();',
         '',
         "// Each delegate's runs, so a gate is known by the run it ends: how many it has started, the",
-        '// latest dispatched one (which its task result reports) and the latest one ended (which a',
-        '// background delivery reports).',
+        '// latest dispatched one (which its task result reports), and the later runs omp hands over itself',
+        '// with what each replied, oldest first, each taken by the background delivery carrying that reply.',
         'const runsStarted = new Map<string, number>();',
         'const lastDispatched = new Map<string, string>();',
-        'const lastEnded = new Map<string, string>();',
+        'const handedOver = new Map<string, { run: string; reply: string }[]>();',
         'function started(id: string): string {',
         '  const count = (runsStarted.get(id) ?? 0) + 1;',
         '  runsStarted.set(id, count);',
@@ -2329,7 +2334,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const run = id === undefined || e.detached === true ? undefined : dispatchedRuns.get(id);',
         '    if (id !== undefined && run !== undefined) {',
         '      dispatchedRuns.delete(id);',
-        '      lastEnded.set(id, run.run);',
         '      if (e.status !== "aborted") void runEnded(id, String(e.agent), run);',
         '    }',
         '    if (e.detached === true) void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
@@ -2365,18 +2369,22 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const session = ctx as unknown as Session;',
         '    const self = session.agent;',
         '    if (current?.later !== true || self?.id === undefined || (event as { willContinue?: boolean }).willContinue === true) return;',
-        '    if (current.run !== undefined) lastEnded.set(self.id, current.run);',
         '    const replies = current.messages.filter((m) => m.role === "assistant");',
         '    const last = replies.at(-1);',
         '    if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
+        '    const reply = replyOf(current.messages, last);',
+        '    // A run whose yield omp accepts, or that answers the dispatcher, reaches the dispatcher from omp,',
+        '    // as a background delivery known by its reply.',
+        '    const byOmp =',
+        '      current.messages.some(acceptedYield) ||',
+        '      current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId);',
+        '    if (byOmp && current.run !== undefined)',
+        '      handedOver.set(self.id, [...(handedOver.get(self.id) ?? []), { run: current.run, reply: reply.trim() }]);',
         '    const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === self.name);',
         '    if (!gated(declaration)) return;',
-        '    const reply = replyOf(current.messages, last);',
         '    const held = holds(reply);',
         '    if (held && current.run !== undefined) tell(current.run, self.id, declaration.name);',
-        '    // A run whose yield omp accepts reaches the dispatcher from omp.',
-        '    if (current.messages.some(acceptedYield)) return;',
-        '    if (current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId)) return;',
+        '    if (byOmp) return;',
         '    const dispatcher = self.parentId === undefined ? undefined : sessionsById.get(self.parentId);',
         '    dispatcher?.sendMessage(',
         '      {',
@@ -2435,9 +2443,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '            (gated(declaration) && (job.schema !== undefined || job.status === "completed") && holds(reply));',
         '          verdict = holding ? name : false;',
         '          verdicts.set(key, verdict);',
+        '          // The run this delivery came from: the oldest one handed over whose reply it carries.',
+        '          const runs = handedOver.get(id) ?? [];',
+        '          const from = runs.findIndex((r) => r.reply !== "" && delivery.includes(r.reply));',
+        '          const run = from < 0 ? key : (runs.splice(from, 1)[0]?.run ?? key);',
         '          if (holding && !recorded.has(key)) {',
         '            pi.appendEntry(HELD, { key, agent: name });',
-        '            tell(lastEnded.get(id) ?? key, id, name);',
+        '            tell(run, id, name);',
         '          }',
         '        }',
         '        if (verdict !== false) held.push({ jobId: String(job.jobId), id, agent: verdict });',

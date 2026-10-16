@@ -1925,6 +1925,8 @@ describe('omp capability interface', () => {
         'The plan is below.\n\n**Sign off the plan?**',
         'The plan: three tasks.\n\nPlease sign off on this plan before\nI start the build.',
         'The plan: three tasks. I am waiting for your sign-off before proceeding.',
+        'Please sign off the plan that was just presented.',
+        'Please sign off the plan without changing the scope.',
       ];
       /** Returns that only report a sign-off, or say nothing of one: each is a result. */
       const REPORTING = [
@@ -2609,6 +2611,40 @@ describe('omp capability interface', () => {
           await arch.fire('context', {
             messages: [
               delivered(5, [
+                { id: 'Lead', text: envelope('Lead', 'lead', asking) },
+              ]),
+            ],
+          });
+          expect(main.told).toEqual([told('Lead')]);
+        });
+
+        it('ties a delayed background delivery to the run it came from, after a later run holding no gate', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, runs } = await nested();
+          const asking = 'Two builders now. Do you sign off the revised plan?';
+          // R1 stops at a gate through a yield omp accepts: told at once.
+          await runs(
+            asked('Use two builders.'),
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: asking },
+            },
+            said('Yielded.'),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          // The operator signs off; R2 ends on a plain result.
+          await runs(asked('Signed off.'), said(END_STATE));
+          // R1's delivery arrives late: its gate was told already.
+          await arch.fire('context', {
+            messages: [
+              delivered(6, [
                 { id: 'Lead', text: envelope('Lead', 'lead', asking) },
               ]),
             ],
