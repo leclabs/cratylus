@@ -59,7 +59,7 @@ export function requireDefined<T>(value: T | undefined, label: string): T {
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
-// Decision 0070 and the drift concept, rebound under 0085 and 0090. Keep this expectation
+// Decision 0070 and the drift concept, rebound under 0085, 0090 and 0251. Keep this expectation
 // independent of canon so an omitted protocol or drift tell cannot pass.
 export const personaProtocol = `## Protocol
 
@@ -77,6 +77,8 @@ Drift tells (each = drift, never diligence):
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
 - **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
 - **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.
+
+The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift.
 
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 

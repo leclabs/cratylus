@@ -22,6 +22,8 @@ Drift tells (each = drift, never diligence):
 - **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
 - **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.
 
+The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift.
+
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 
 Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signifier-carrying by construction, never long-form human prose. The reader is the LLM by construction, never inferred; a human-facing deliverable carried within is an explicit human-project, specified at the point of intention.`;
