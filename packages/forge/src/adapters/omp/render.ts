@@ -1003,8 +1003,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * with the sign-off it waits on, a current request to the operator: its closing sentence,
  * read across line breaks, is a bidding starting "(Please) sign off …" or a question asking
  * the operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could I
- * have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?", "… for your
- * sign-off?"),
+ * have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?"),
  * whatever else it says; or a present wait on the operator's sign-off
  * ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that
  * the words governing it neither negate nor put in the past. A bare report holds nothing,
@@ -1720,7 +1719,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// request to the operator. Its closing sentence, read across line breaks, is a request whatever',
         '// else it says when it is a bidding starting "(Please) sign off …" or a question asking the',
         '// operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could I have/get',
-        '// your sign-off …?", "Will/Would/Can/Could you give your sign-off …?", "… for your sign-off?"); or it is a',
+        '// your sign-off …?", "Will/Would/Can/Could you give your sign-off …?"); or it is a',
         '// present wait on the operator\'s sign-off ("waiting on/for your sign-off",',
         '// "awaiting your sign-off", "pending your sign-off") that the words governing it neither negate nor',
         '// put in the past. Any other reply is a result, its declared JSON deliverable or not.',
@@ -1734,7 +1733,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      /\\b(?:do|will|would|can|could)\\s+you\\s+(?:please\\s+)?sign[\\s-]?off\\b/i,',
         '      /\\b(?:do|may|can|could)\\s+i\\s+(?:please\\s+)?(?:have|get)\\s+your\\s+sign[\\s-]?off\\b/i,',
         '      /\\b(?:will|would|can|could)\\s+you\\s+(?:please\\s+)?give\\s+(?:me\\s+|us\\s+)?your\\s+sign[\\s-]?off\\b/i,',
-        '      /\\bfor\\s+your\\s+sign[\\s-]?off\\W*$/i,',
         '    ].some((request) => request.test(sentence))',
         '  )',
         '    return true;',

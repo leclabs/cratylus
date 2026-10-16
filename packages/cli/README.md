@@ -268,8 +268,8 @@ and warns where it falls short; they are not the same, and this is what a user m
 - **A gate held by a delegate (attach).** On omp, an agent whose decision rights hold sign-off
   (the architect, the lead) holds a gate for your sign-off when it ends its turn on a reply that
   ends with the sign-off it waits on: its closing sentence asks you for it now ("Please sign off
-  …", a question asking you to give it such as "Do you sign off …?", "Can I have your sign-off …?"
-  or "… for your sign-off?", or a
+  …", a question asking you to give it such as "Do you sign off …?" or "Can I have your sign-off
+  …?", or a
   wait on it such as "I am waiting for your sign-off"). Any other question, or a sign-off only
   reported, negated or past, holds nothing; any other reply
   is its result, whether or not it is its declared deliverable. Install declares such an agent
