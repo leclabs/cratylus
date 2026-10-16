@@ -1,0 +1,10 @@
+{
+  "id": "01M512NJ5Q5BE013QS0JCXDAJ4",
+  "at": "2026-10-16T00:44:22.583Z",
+  "kind": "dispatched",
+  "transition": "dispatched:toolu_01WMtExy1J41kAkiF5uGTqQD/ReviewConventions",
+  "call": "toolu_01WMtExy1J41kAkiF5uGTqQD",
+  "agent": "ReviewConventions",
+  "role": "reviewer",
+  "story": "sign-off-gates"
+}

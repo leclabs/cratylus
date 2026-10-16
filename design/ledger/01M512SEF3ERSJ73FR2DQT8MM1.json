@@ -1,0 +1,10 @@
+{
+  "id": "01M512SEF3ERSJ73FR2DQT8MM1",
+  "at": "2026-10-16T00:46:29.859Z",
+  "kind": "dispatched",
+  "transition": "dispatched:toolu_01B5NUEU3UKqDzXXLwKwCvMQ/ReviewPerTurnNotes",
+  "call": "toolu_01B5NUEU3UKqDzXXLwKwCvMQ",
+  "agent": "ReviewPerTurnNotes",
+  "role": "reviewer",
+  "story": "sign-off-gates"
+}

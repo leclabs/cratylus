@@ -1,0 +1,8 @@
+{
+  "id": "01M5133AQRZN5MYVJV0C016RZH",
+  "at": "2026-10-16T00:51:53.720Z",
+  "kind": "returned",
+  "transition": "returned:toolu_01RQLwTmv5RV3tNb2xHjoFLZ/OmpGateAttach",
+  "call": "toolu_01RQLwTmv5RV3tNb2xHjoFLZ",
+  "agent": "OmpGateAttach"
+}
