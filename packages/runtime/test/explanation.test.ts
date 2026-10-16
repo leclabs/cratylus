@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
 import { JOURNAL } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
+import { VERSION_SKEW } from '../src/capabilities/version-skew/index.js';
 import { CAPABILITY_SUMMARIES } from '../src/capability.js';
 import {
   type Explanation,
@@ -193,13 +194,13 @@ describe('concepts --explain', () => {
       .filter((v) => !live.includes(v.concept))
       .map((v) => v.name);
 
-  it('acts on live concepts of cratylus’s own conceptual design', () => {
+  it('acts on live concepts of cratylus’s own conceptual model', () => {
     const concepts = Object.fromEntries(
       explain(JOURNAL).verbs.map((v) => [v.name, v.concept]),
     );
     expect(concepts).toEqual({
-      state: 'conceptual design',
-      design: 'conceptual design',
+      state: 'conceptual model',
+      design: 'conceptual model',
       history: 'concept',
       decisions: 'decision',
       leakage: 'concept journal',
@@ -212,9 +213,9 @@ describe('concepts --explain', () => {
       accept: 'decision',
       deprecate: 'decision',
     });
-    expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
-      [],
-    );
+    const live = designAt(repositoryRoot).live;
+    expect(unanchored(explain(JOURNAL), live)).toEqual([]);
+    expect(unanchored(explain(VERSION_SKEW), live)).toEqual([]);
   });
 
   it('convicts a verb whose concept the design has retired', () => {

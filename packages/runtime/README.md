@@ -6,7 +6,7 @@ A skill has two faces: what it _means_, which is canon's, and the programmatic t
 which is this package's. `runtime` is the generic platform beneath that second face, plus the
 record (the concept journal) an agent reconstitutes from.
 
-It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no harness and
+It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
@@ -26,8 +26,8 @@ names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 | `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate` |
 | `versionSkew` | `report`                                                                                                                                     |
 
-Every journal entry records who appended it (`by`: the agent making the call, named by the harness
-in `CRATYLUS_AGENT`, else git's user). History is held by review, as each change's risk calls
+Every journal entry records who appended it (`by`: the agent making the call, named by the agent
+harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
 for, never by refusal (decision 0274): the journal is append-only because its verbs only append.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
@@ -107,7 +107,7 @@ throws when called as a library. Never a silent no-op.
 ## Explaining itself
 
 Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
-for each verb the concept of cratylus's own conceptual design it acts on, when to reach for it, and
+for each verb the concept of cratylus's own conceptual model it acts on, when to reach for it, and
 whether it `reads` or `appends`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus concepts <verb> --explain`
@@ -123,7 +123,7 @@ verb does not take.
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
 corpus's skills declared it. The installation (`installationRoot`) is the one
-`$CRATYLUS_INSTALLATION` names — a harness's adapter names its own on every call — else the one
+`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else the one
 root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
 

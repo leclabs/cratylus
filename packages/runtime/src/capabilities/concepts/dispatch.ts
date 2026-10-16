@@ -128,7 +128,7 @@ const isStatus = (status: string): status is (typeof STATUSES)[number] =>
  *  positional it acts on and the flags it takes. */
 export const VERBS = {
   state: {
-    concept: 'conceptual design',
+    concept: 'conceptual model',
     effect: 'reads',
     purpose:
       'Read the design state, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ wording”, and the competing versions none has settled, each such a line or “name retired”; nothing else: decisions, the concepts each is built from, why each version was written, earlier versions and retired concepts are read apart',
@@ -141,10 +141,10 @@ export const VERBS = {
     },
   },
   design: {
-    concept: 'conceptual design',
+    concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Show the delivered practice the project’s agents work by in a place of its own (practice), then the current conceptual design of each of the project’s own bounded contexts: its live concepts, each by its current meaning with the concepts it is built from, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
+      'Show the delivered practice the project’s agents work by in a place of its own (practice), then the current conceptual model of each of the project’s own bounded contexts: its live concepts, each by its current meaning with the concepts it is built from, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
     when: 'Beyond the design state, before work relies on how a concept is built from others, or after recording a change to the design, to see the design as it currently stands with its parts; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
     positional: null,
     flags: {
@@ -372,7 +372,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual design: at the start of a session, or after it was compacted, to read the design state of the delivered practice and of each context the work touches first, then the standing decisions its work needs, and the history only when how something came to be matters; to read the design back before acting; and to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made, so the design is kept nowhere else. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first; nothing is ever recorded into one. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read the design state of the delivered practice and of each context the work touches first, then the standing decisions its work needs, and the history only when how something came to be matters; to read the design back before acting; and to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made, so the design is kept nowhere else. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first; nothing is ever recorded into one. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 
