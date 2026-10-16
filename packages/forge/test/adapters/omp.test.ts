@@ -1931,6 +1931,8 @@ describe('omp capability interface', () => {
         END_STATE,
         'Plan sign-off taken and recorded.',
         'Built renewal; two pull requests merged.',
+        'No additional sign-off is required.',
+        'I requested sign-off and recorded the approval.',
       ];
       const CONTRACT = {
         type: 'object',
@@ -2579,6 +2581,39 @@ describe('omp capability interface', () => {
           );
           expect(main.told).toEqual([told('Lead')]);
           unread(main, arch, lead, second);
+        });
+
+        it('as a later run whose yield omp accepts stops at a gate, before the dispatcher’s context hook runs', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, runs } = await nested();
+          const asking = 'Two builders now. Do you sign off the revised plan?';
+          await runs(
+            asked('Use two builders.'),
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: asking },
+            },
+            said('Yielded.'),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          // omp hands that run over itself; the extension sends nothing.
+          expect(arch.sent).toEqual([]);
+          // omp's delivery, once the dispatcher turns, tells nothing new.
+          await arch.fire('context', {
+            messages: [
+              delivered(5, [
+                { id: 'Lead', text: envelope('Lead', 'lead', asking) },
+              ]),
+            ],
+          });
+          expect(main.told).toEqual([told('Lead')]);
         });
 
         it('tells of a gate whatever form its closing takes, across line breaks, and of no sign-off only reported', async () => {

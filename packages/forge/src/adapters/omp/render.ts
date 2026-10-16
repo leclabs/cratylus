@@ -1000,11 +1000,11 @@ const SESSION_PLACEMENT: readonly string[] = [
  *
  * ATTACH: A GATE HELD BY A DELEGATE (decision 0250(3)). A delegate holds a gate when its
  * declaration's decision rights hold `sign-off` and it ends its turn on a reply that ends
- * with the sign-off it waits on: its closing sentence, read across line breaks, asks for
- * or waits on the operator's sign-off in any form (a question, a bidding such as "Please
- * sign off …", a statement such as "I am waiting for your sign-off …"), as the agents'
- * values have every gate reply end; a sign-off only reported (taken, recorded) holds
- * nothing. Every other
+ * with the sign-off it waits on, a current request to the operator: its closing sentence,
+ * read across line breaks, is a question asking for the sign-off, a bidding starting
+ * "(Please) sign off", or a present wait on the operator's sign-off ("waiting on/for your
+ * sign-off", "awaiting your sign-off", "pending your sign-off"), as the agents' values have
+ * every gate reply end. A negation, the past tense or a bare report holds nothing. Every other
  * reply is a result, whether or not it is the declared JSON
  * deliverable, and reaches the dispatcher unchanged; a holder declaring no JSON deliverable
  * is judged the same way. A cancelled run, or one failed by its provider or by omp, holds
@@ -1711,22 +1711,25 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return declaration !== undefined && /^- sign-off \\(/m.test(declared(declaration.systemPrompt, "decision-rights"));',
         '}',
         '',
-        "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on. Its closing",
-        "// sentence, read across line breaks, asks for or waits on the operator's sign-off in any form: a",
-        '// question about it, a bidding ("Sign off …", "Please sign off …"), or a statement that it waits,',
-        '// needs or asks for it, or stands until it is given. Every other reply is a result, its declared',
-        '// JSON deliverable or not: a sign-off only reported (taken, recorded, delegated) holds nothing.',
+        "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on, a current",
+        '// request to the operator. Its closing sentence, read across line breaks, is a question asking for',
+        '// the sign-off, a bidding starting "(Please) sign off", or a present wait on the operator\'s',
+        '// sign-off ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off").',
+        '// A negation, the past tense or a bare report holds nothing: such a reply is a result, as is any',
+        '// other, its declared JSON deliverable or not.',
         'function holds(reply: string): boolean {',
         '  const sentence = reply.replace(/\\s+/g, " ").trim().split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
-        '  const signOff = /\\bsign(?:s|ed|ing)?[\\s-]?off\\b/i;',
-        '  if (!signOff.test(sentence)) return false;',
-        '  return (',
-        '    /\\?\\W*$/.test(sentence) ||',
-        '    /^\\W*(?:please\\s+)?sign[\\s-]?off\\b/i.test(sentence) ||',
-        '    /\\bplease\\b/i.test(sentence) ||',
-        '    /\\b(?:wait|await|need|require|ask|request|seek|until|pending)\\w*\\b.*\\bsign(?:s|ed|ing)?[\\s-]?off\\b/i.test(sentence) ||',
-        '    /\\bsign[\\s-]?off\\b.*\\b(?:pending|required|needed|outstanding)\\b/i.test(sentence)',
-        '  );',
+        "  if (/\\b(?:no|not|never|without|none)\\b|n't\\b|\\b(?:did|was|were|had)\\b/i.test(sentence)) return false;",
+        '  if (/^\\W*(?:please\\s+)?sign[\\s-]?off\\s+(?:the|this|that|these|it|on|to|my|our|here|now|before)\\b/i.test(sentence))',
+        '    return true;',
+        '  if (/\\?\\W*$/.test(sentence) && /\\bsign[\\s-]?off\\b/i.test(sentence)) return true;',
+        "  return /\\b(?:waiting\\s+(?:on|for)|awaiting|pending)\\s+(?:your|the\\s+operator(?:'|’)s)\\s+sign[\\s-]?off\\b/i.test(sentence);",
+        '}',
+        '',
+        '// What a run replied: the data of the last yield omp accepted, else its last words.',
+        'function replyOf(messages: Said[], last: Said): string {',
+        '  const data = messages.filter(acceptedYield).at(-1)?.details?.data;',
+        '  return data === undefined ? textOf(last) : typeof data === "string" ? data : JSON.stringify(data);',
         '}',
         '',
         '// A task run that failed or was cut short, which is no reply of its delegate: omp gives it an',
@@ -1852,9 +1855,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
         '  const declaration = (await discoverAgents(run.cwd)).agents.find((a) => a.name === agent);',
         '  if (!gated(declaration)) return;',
-        '  const data = run.messages.filter(acceptedYield).at(-1)?.details?.data;',
-        '  if (holds(data === undefined ? textOf(last) : typeof data === "string" ? data : JSON.stringify(data)))',
-        '    tell(run.run, id, declaration.name);',
+        '  if (holds(replyOf(run.messages, last))) tell(run.run, id, declaration.name);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -2368,12 +2369,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const replies = current.messages.filter((m) => m.role === "assistant");',
         '    const last = replies.at(-1);',
         '    if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
-        '    if (current.messages.some(acceptedYield)) return;',
         '    const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === self.name);',
         '    if (!gated(declaration)) return;',
-        '    const reply = textOf(last);',
+        '    const reply = replyOf(current.messages, last);',
         '    const held = holds(reply);',
         '    if (held && current.run !== undefined) tell(current.run, self.id, declaration.name);',
+        '    // A run whose yield omp accepts reaches the dispatcher from omp.',
+        '    if (current.messages.some(acceptedYield)) return;',
         '    if (current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId)) return;',
         '    const dispatcher = self.parentId === undefined ? undefined : sessionsById.get(self.parentId);',
         '    dispatcher?.sendMessage(',

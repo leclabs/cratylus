@@ -267,8 +267,9 @@ and warns where it falls short; they are not the same, and this is what a user m
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **A gate held by a delegate (attach).** On omp, an agent whose decision rights hold sign-off
   (the architect, the lead) holds a gate for your sign-off when it ends its turn on a reply that
-  ends with the sign-off it waits on: its closing sentence asks for or waits on your sign-off, in
-  any form. A sign-off it only reports holds nothing, and any other reply
+  ends with the sign-off it waits on: its closing sentence asks you for it now (a question, "Please
+  sign off …", or "waiting for your sign-off"). A negation, the past tense or a bare report holds
+  nothing, and any other reply
   is its result, whether or not it is its declared deliverable. Install declares such an agent
   `blocking`, so a dispatch of it always waits
   for its result. cratylus's extension gives the session that dispatched it only a notice in that
