@@ -1,0 +1,17 @@
+{
+  "id": "01M511D62TF98NBHJAA6TYXWHJ",
+  "at": "2026-10-16T00:22:19.482Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "attach",
+  "wording": "the operator joining the running session of whichever agent holds a gate, a delegate's included, to give its sign-off there and work with that agent directly, by the harness's own way of joining a session; each harness's way is projected for it, omp's natively.",
+  "builtFrom": [
+    "harness",
+    "projection"
+  ],
+  "reason": "The first version added what a harness without such a way would do, which the operator left as later work; it is no part of the meaning.",
+  "supersedes": [
+    "01M511CZMVDP9T0M9CKAE7FSC1"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "01M515CM2BWTFF7HH1A0TEPGHE",
+  "at": "2026-10-16T01:31:55.339Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0260",
+  "context": "delivery",
+  "title": "Attach on omp: gate holders dispatched blocking, held replies replaced by a waiting notice, the compaction gap left open",
+  "situation": "On omp a delegate's ending turn reaches its dispatcher as the task result, a background delivery or a relayed later turn; the gate requires the dispatcher to learn only that it waits on the operator, then the result (0258), and the operator joins by omp's Agent Hub.",
+  "decision": "(1) An agent declaring a sign-off right is projected as a blocking dispatch. (2) Its ending turn holds a gate when its reply is not its declared JSON deliverable; one with no JSON deliverable (the architect, whose handovers are the operator's) holds at every ending turn. (3) A held reply reaches the dispatcher only as a notice naming the agent and how the operator joins it (Agent Hub: Alt+A, select, Enter), on the task result, background deliveries and later turns the operator prompts; the delegate's later result or next gate is relayed to the dispatcher unless omp delivers it itself. (4) No compaction hook: one would switch off omp's background compaction for every cratylus session; so with omp's structured results on, a contract-failing later handover accepted after omp's retries can reach the dispatcher's model through compaction, an open shortfall against the gate's meaning.",
+  "consequences": "The forge and cratylus documentation describe attach on omp and the open shortfall; closing it is later work.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

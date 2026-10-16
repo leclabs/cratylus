@@ -1,0 +1,33 @@
+{
+  "id": "01M511E9EBXPCRZYAHMKWM6DMV",
+  "at": "2026-10-16T00:22:55.691Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "intent-based delegation",
+  "wording": "The practice cratylus ships for building against a design: each party passes intent down and takes back a result, deciding how within its own rights. The operator states intent and priorities and signs off at the gates where handovers reach it, the architect turns intent into stories, the lead breaks each story into tasks, builders hand over pull requests and reviewers review them, with effort and review sized to each story's risk; between gates the agents work without checking in, the record and reconstitution keep the meaning across sessions, and the check holds every merge. It names established practice rather than restating it: domain-driven design for meaning, GitHub flow, stage gates for sign-off, delegation of authority for work out of the operator's loop, code review sized to the risk, specification by example where it is needed, and orchestrator-workers for delegating.",
+  "builtFrom": [
+    "conceptual design",
+    "story",
+    "epic",
+    "task",
+    "review",
+    "handover",
+    "orchestrator-workers",
+    "decision rights",
+    "proportionality",
+    "reconstitution",
+    "check",
+    "release",
+    "roles",
+    "efficiency",
+    "semantic gap",
+    "gate",
+    "sign-off",
+    "delegated authority"
+  ],
+  "reason": "The practice gains divided authority: the operator signs off at gates and may delegate its sign-offs, which the charter names alongside the practices it already names.",
+  "supersedes": [
+    "01M50CY8XMFQZESCFRKM7YERGX"
+  ]
+}

@@ -57,7 +57,13 @@ import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
-import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import {
+  type Agent,
+  type Entry,
+  assignmentIn,
+  checkAssignment,
+  dimensionValueOf,
+} from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -260,8 +266,9 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * body, which IS the system prompt.
  *
  * **FRONT-MATTER, in this order:** `name`, `description`, `mark` (only with one),
- * `key: null`, `model`, `spawns: "*"`, `output` and `assignment` (only with a typed
- * handoff), `autoloadSkills` (only with skills). No `tools`: every agent keeps omp's
+ * `key: null`, `model`, `spawns: "*"`, `blocking: true` (only for a gate holder),
+ * `output` and `assignment` (only with a typed handoff), `autoloadSkills` (only with
+ * skills). No `tools`: every agent keeps omp's
  * default tools (decision 0081), and `spawns` says outright that it may dispatch
  * any agent (decision 0142), whatever omp would infer from its tools.
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
@@ -283,6 +290,12 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * (omp's own task dispatch checks a return against it), and the assignment
  * schema is {@link OMP_ASSIGNMENT_KEY}, which the extension shows with each
  * dispatch and launch of the agent, warning when the assignment given is incomplete.
+ *
+ * **A GATE HOLDER IS `blocking`.** An agent whose decision rights hold `sign-off` holds
+ * gates for the operator (decision 0250(3)). omp's own `blocking: true` runs its dispatch
+ * inline, never as a background job, so the turn it ends on comes back through the
+ * dispatcher's task result, where the cratylus extension shows a held one only as the
+ * notice that it waits on the operator ({@link ompCapabilityExtensions}).
  *
  * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
@@ -319,6 +332,11 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const model = [`@${a.name}`, ...(fallback === undefined ? [] : [fallback])];
   fm.push('key: null', `model: [${model.map(yamlString).join(', ')}]`);
   fm.push('spawns: "*"');
+  // A gate holder: its decision rights hold sign-off (an agent composed without
+  // decision rights holds none).
+  const rights = dimensionValueOf(a, 'decisionRights');
+  if (Array.isArray(rights) && rights.some((e: Entry) => e.slot === 'sign-off'))
+    fm.push('blocking: true');
   // The typed handoff: the deliverable as omp's own output schema, the assignment
   // where the cratylus extension reads it to show and check each dispatch and
   // launch. Each is one line of JSON, which YAML reads as the same object.
@@ -980,6 +998,74 @@ const SESSION_PLACEMENT: readonly string[] = [
  * ledger reads elapsed time from its entries. A failed send is warned of, and a
  * dispatch always goes ahead.
  *
+ * ATTACH: A GATE HELD BY A DELEGATE (decision 0250(3)). A delegate holds a gate when its
+ * declaration's decision rights hold `sign-off` and it ends its turn on a reply that ends
+ * with the sign-off it waits on, a current request to the operator: its closing sentence,
+ * read across line breaks, is a bidding starting "(Please) sign off …" or a question asking
+ * the operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could I
+ * have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?", each
+ * opening the sentence after at most "Please", "So", "Then", "And" or "Now"), whatever else
+ * it says; or a present wait on the operator's sign-off
+ * ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that
+ * the words governing it neither negate nor put in the past. A bare report holds nothing,
+ * as the agents' values have every gate reply end on its request. Every other
+ * reply is a result, whether or not it is the declared JSON
+ * deliverable, and reaches the dispatcher unchanged; a holder declaring no JSON deliverable
+ * is judged the same way. A cancelled run, or one failed by its provider or by omp, holds
+ * none. The
+ * dispatching session learns only that the delegate waits on the operator's sign-off and
+ * how the operator joins it, omp's Agent Hub (Alt+A, select the agent, Enter), and later
+ * its result:
+ *
+ *   - its DISPATCHED RUN comes back on the TASK RESULT, since a gate holder is declared
+ *     `blocking` ({@link agentToOmpMd}): a held run's `<task-result>` becomes the waiting
+ *     notice, and its details lose the reply (output, structured data, yield data, error,
+ *     recent output); every other result and the call's error state stay as omp gave them.
+ *   - each LATER RUN, one the operator prompts after joining it (or a peer wakes), is
+ *     judged by the delegate on what it said in that run alone (the messages from its
+ *     `agent_start`, outside the dispatched run omp's lifecycle names). omp hands the
+ *     dispatcher such a run itself only when its run monitor accepts a yield as the run's
+ *     result (whole or aborting; never one the yield tool rejected, nor an incremental
+ *     section) or the run answers the dispatcher's own message; otherwise the extension
+ *     does, from the delegate's session to its
+ *     dispatcher's (both run in one omp process, which shares this module's state): the
+ *     waiting notice for another gate, else its reply, as a follow-up message.
+ *   - a later run omp hands over itself reaches the dispatcher as a background delivery,
+ *     outside any task result: each turn of the dispatching session is given it with a
+ *     held job as the waiting notice (the `context` event). Its verdict is the delegate's
+ *     own on that run, taken from the delivery itself (omp's verdict on a structured
+ *     result, else the reply it carries) with the declaration the delegate runs as, so it
+ *     is bound to that result; it is kept once taken and, when held, recorded in the
+ *     session with the agent (`<bin>-gate-hold`).
+ *
+ * THE OPERATOR IS TOLD, in its own session, as soon as a gate waits on it: wherever a held
+ * reply is found, the main session's interface shows a notice naming the agent and how to
+ * join it (Agent Hub: Alt+A, select the agent, Enter), however deep the holder sits below
+ * other delegates. A dispatched run is judged as it ends (omp's lifecycle event, on all it
+ * said over every prompt omp gave it: the data of the last yield omp accepted, else its last
+ * words), since omp returns the task result only once every blocking item of the call has
+ * settled; the task result is a second look at the same run. A later run is judged at its
+ * `agent_end`, whoever started it, and a background delivery as above. It is omp's `notify`,
+ * a warning line on the operator's screen that no model reads, given once per gate, the
+ * gate known by the run it ends (a holder's runs are counted; the task result reports its
+ * latest dispatched run; a background delivery, the run it came from: the oldest run omp
+ * handed over itself whose reply the delivery carries), so a late report of an earlier run
+ * is never told twice nor silences a later gate.
+ *
+ * omp LIMITS ON ATTACH, held as omp gives them: with `task.structured` on, omp reminds a
+ * delegate that ends without its deliverable up to three times, the last forcing a yield;
+ * an isolated delegate is joinable only until omp parks it.
+ *
+ * A SHORTFALL AGAINST THE GATE'S MEANING, left open (decision 0258): "learns only" holds for
+ * whatever reaches the dispatching party's own context, compaction summaries its model later
+ * reads included. With `task.structured` on, a later handover that fails its contract and that
+ * omp accepts after its schema retries reaches the dispatching session's transcript, and
+ * compaction can carry it into what that session's model reads. Closing that would take a
+ * `session_before_compact` handler, which turns off omp's background compaction for every
+ * cratylus session. A run of a waiting delegate that the dispatcher's own message wakes is a
+ * use outside the gate's meaning, not a limit: the dispatching party takes no part in a gate
+ * held for the operator, so never messages a delegate waiting there.
+ *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
  * name resolves through omp's OWN agent discovery — `discoverAgents` from omp's
@@ -1012,20 +1098,24 @@ const SESSION_PLACEMENT: readonly string[] = [
  * The titles removed are notified once per launch.
  *
  * THE SESSION START. The first turn of a launch whose declared procedure holds
- * `reconstitution` carries a session-start note rendered from that value: read back
- * the design, open decisions and cuts in flight before any act. It holds only where
+ * `reconstitution` carries a session-start note rendered from that value: nothing is
+ * recorded or changed before the read-back, which carries the current design, then
+ * what is open, then the stories and tasks in flight; a ruling waits in it for the
+ * operator's sign-off, and a read-back held at a gate or called by the operator ends
+ * with the sign-off it waits on and ends the turn (0251, 0252). It holds only where
  * the launch starts a session with no conversation since its last compaction, and
  * again after the session is compacted; a resumed session continuing a
  * conversation reconstitutes nothing.
  * Every turn of a launch whose declared decision rights hold meaning (D) carries a
  * note rendered from that right: the meaning of the contexts it holds is its own,
  * the approval of their examples included, approved as they stand when they express
- * their meaning, and a decision whose grounds it holds is taken in the turn it holds
- * them (0086, 0090). Every turn of a launch whose memory keeps the records as its
- * source of truth under the honesty guardrail carries a note rendered from those
- * values: where things stand is what the records show, and what they do not record
- * is unknown. These hold what the agent's replies say by its own text, not by a
- * check on the reply (0106).
+ * their meaning, and a decision it owns whose grounds it holds is taken in the turn
+ * it holds them, or carried in the read-back for sign-off at a session's start or
+ * where the operator called one (0086, 0251). Every turn of a launch whose memory
+ * keeps the records as its source of truth under the honesty guardrail carries a
+ * note rendered from those values: where things stand is what the records show, and
+ * what they do not record is unknown. These hold what the agent's replies say by its
+ * own text, not by a check on the reply (0106).
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -1077,7 +1167,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// discovers, by `omp --agent <name>`, holding the whole declaration as a dispatched child',
         '// holds it: its text, model, effort, skills loaded at start, read summarisation, advisor',
         "// and pre-planning, and no default personality; the operator's own flags win. One value",
-        "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
+        "// omp's own dispatch drops is held as declared: `read-summarize: true` (on). A delegate",
+        '// holding a gate reaches the session that dispatched it only as a notice that it waits on',
+        "// the operator's sign-off, and how the operator joins it in omp's Agent Hub, then its result;",
+        "// the operator is told the same in its own session's interface as soon as the gate waits.",
         '//',
         '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
         "// installed command's own explanation, so a newer installed package changes the tools in",
@@ -1105,6 +1198,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'import { buildSkillPromptMessage, getActiveSkills } from "@oh-my-pi/pi-coding-agent/extensibility/skills";',
         'import { cfgPersonality, cfgPrewalkEnabled } from "@oh-my-pi/pi-coding-agent/session/settings";',
         'import { discoverAgents } from "@oh-my-pi/pi-coding-agent/task/discovery";',
+        'import { SUBAGENT_WARNING_MISSING_YIELD } from "@oh-my-pi/pi-coding-agent/task/executor";',
         'import { resolveAgentPrewalkDefault } from "@oh-my-pi/pi-coding-agent/task/prewalk";',
         'import {',
         '  cfgTaskAgentAdvisor,',
@@ -1140,6 +1234,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const EVAL_DISPATCH_WARNING = ${JSON.stringify(EVAL_DISPATCH_WARNING)};`,
         `const EVAL_DISPATCH = ${String(EVAL_DISPATCH)};`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
+        '// What a delegate holding a gate, or its later result, is handed to its dispatcher as; and the',
+        "// dispatcher's record of a background result held at a gate.",
+        `const ATTACH = ${JSON.stringify(`${CLI_BIN}-attach`)};`,
+        `const HELD = ${JSON.stringify(`${CLI_BIN}-gate-hold`)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
         '',
@@ -1318,15 +1416,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// What of a session the launch reads or sets.',
         'interface Session {',
         '  cwd: string;',
-        '  agent?: { kind: string; name?: string };',
+        '  agent?: { kind: string; name?: string; id?: string; parentId?: string };',
         '  model?: { provider: string; id: string };',
         '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
         '  ui: {',
         '    setStatus(key: string, text: string | undefined): void;',
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
         '  };',
-        "  // The session's entries on its current branch, as omp's session manager keeps them.",
-        '  sessionManager?: { getBranch?(): readonly { type?: string; message?: { role?: string } }[] };',
+        "  // The session's entries, on its current branch and whole, as omp's session manager keeps them.",
+        '  sessionManager?: {',
+        '    getBranch?(): readonly { type?: string; message?: { role?: string } }[];',
+        '    getEntries?(): readonly { type?: string; customType?: string; data?: { key?: unknown; agent?: unknown } }[];',
+        '  };',
         '}',
         '',
         '// Whether the session already holds a conversation since its last compaction: a resumed',
@@ -1553,26 +1654,29 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         '// The session-start note of a declaration whose procedure starts with reconstitution,',
-        '// rendered from that procedure value as its body states it; none for any other.',
+        '// rendered from that procedure value, and the scope its note gives it, as its body states',
+        '// them (0252: nothing is recorded or changed before the read-back; a read-back held or',
+        '// called ends the turn); none for any other.',
         'function reconstitutionNote(body: string): string | undefined {',
-        '  const value = /^- \\*\\*reconstitution\\*\\*(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
+        '  const value = /^- \\*\\*reconstitution\\*\\*(?: \\(([^)]*)\\))?(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
         '  if (value === null) return undefined;',
         '  return [',
         '    "# Session start: reconstitution",',
         '    "",',
-        '    `This session starts with reconstitution${value[1] ? ` (${value[1]})` : ""}.`,',
+        '    `This session starts with reconstitution${value[2] ? ` (${value[2]})` : ""}${value[1] ? `: ${value[1]}` : ""}.`,',
         "    `Read each touched context's overview and the delivered workflow overview (${COMMAND}:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.`,",
         '    "Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",',
-        '    "Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.",',
-        '    "Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.",',
-        '    "Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.",',
+        '    "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the ledger records them, in your own communication style.",',
+        '    "Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.",',
+        '    "A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.",',
         '  ].join("\\n");',
         '}',
         '',
         '// The per-turn note of a declaration whose decision rights hold meaning (D), rendered from',
         '// that right as the design holds it: the meaning of the contexts it holds is its own,',
-        '// the approval of their examples included (0086), and a decision whose grounds it holds is',
-        '// taken in the turn it holds them (0090); none for any other.',
+        '// the approval of their examples included (0086), and a decision it owns whose grounds it',
+        "// holds is taken in the turn it holds them, except that at a session's start or under a",
+        '// read-back the operator called the ruling waits for sign-off (0251); none for any other.',
         'function meaningNote(body: string): string | undefined {',
         '  if (!/^- meaning(?: \\([^)]*\\))?: \\*\\*D\\*\\*/m.test(declared(body, "decision-rights"))) return undefined;',
         '  return [',
@@ -1580,7 +1684,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "",',
         '    "The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.",',
         '    "Approval judges one thing: whether an example expresses its concepts\' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context\'s model its own; send back only an example that misses its meaning, naming the meaning it misses.",',
-        '    "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party\'s return or anyone\'s answer.",',
+        "    \"Settle on sight: a decision you own whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.\",",
         '  ].join("\\n");',
         '}',
         '',
@@ -1596,6 +1700,183 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "The journal, the ledger and your delegates\' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
         '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
         '  ].join("\\n");',
+        '}',
+        '',
+        "// ATTACH. A delegate holds a gate where its declaration's decision rights hold sign-off and it",
+        '// ends its turn on a reply that ends with the sign-off it waits on; every other reply is its',
+        '// result, whether or not it is its declared JSON deliverable. The session',
+        '// that dispatched it learns only that it waits on the operator and how the operator joins it,',
+        "// by omp's Agent Hub, and later its result: on the task result of its dispatch (a gate holder is",
+        '// declared blocking, so its dispatch always comes back there), and on each later turn the',
+        '// operator prompts in its session after joining it, whether the extension hands it over or omp',
+        '// does. Wherever a gate is found, the operator is told of it in its own session.',
+        '',
+        '// A declaration that holds gates: its decision rights hold sign-off.',
+        'function gated(declaration: AgentDefinition | undefined): declaration is AgentDefinition {',
+        '  return declaration !== undefined && /^- sign-off \\(/m.test(declared(declaration.systemPrompt, "decision-rights"));',
+        '}',
+        '',
+        "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on, a current",
+        '// request to the operator. Its closing sentence, read across line breaks, is a request whatever',
+        '// else it says when it is a bidding starting "(Please) sign off …" or a question asking the',
+        '// operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could I have/get',
+        '// your sign-off …?", "Will/Would/Can/Could you give your sign-off …?"); or it is a',
+        '// present wait on the operator\'s sign-off ("waiting on/for your sign-off",',
+        '// "awaiting your sign-off", "pending your sign-off") that the words governing it neither negate nor',
+        '// put in the past. Any other reply is a result, its declared JSON deliverable or not.',
+        'function holds(reply: string): boolean {',
+        '  const sentence = reply.replace(/\\s+/g, " ").trim().split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
+        '  if (/^\\W*(?:please\\s+)?sign[\\s-]?off\\s+(?:the|this|that|these|it|on|to|my|our|here|now|before)\\b/i.test(sentence))',
+        '    return true;',
+        '  // A request question opens the closing sentence, after at most a "Please", "So", "Then", "And" or',
+        '  // "Now" (and a comma).',
+        '  const opening = "^\\\\W*(?:(?:please|so|then|and|now),?\\\\s+)?";',
+        '  if (',
+        '    /\\?\\W*$/.test(sentence) &&',
+        '    [',
+        '      "(?:do|will|would|can|could)\\\\s+you\\\\s+(?:please\\\\s+)?sign[\\\\s-]?off\\\\b",',
+        '      "(?:do|may|can|could)\\\\s+i\\\\s+(?:please\\\\s+)?(?:have|get)\\\\s+your\\\\s+sign[\\\\s-]?off\\\\b",',
+        '      "(?:will|would|can|could)\\\\s+you\\\\s+(?:please\\\\s+)?give\\\\s+(?:me\\\\s+|us\\\\s+)?your\\\\s+sign[\\\\s-]?off\\\\b",',
+        '    ].some((request) => new RegExp(opening + request, "i").test(sentence))',
+        '  )',
+        '    return true;',
+        '  const wait =',
+        "    /(?:^|\\s)((?:\\S+\\s+){0,2})(?:waiting\\s+(?:on|for)|awaiting|pending)\\s+(?:your|the\\s+operator(?:'|’)s)\\s+sign[\\s-]?off\\b/i.exec(",
+        '      sentence,',
+        '    );',
+        '  return wait !== null && !/\\b(?:no|not|never|longer|was|were|had|been)\\b|n(?:\'|’)t\\b/i.test(wait[1] ?? "");',
+        '}',
+        '',
+        '// What a run replied: the data of the last yield omp accepted, else its last words.',
+        'function replyOf(messages: Said[], last: Said): string {',
+        '  const data = messages.filter(acceptedYield).at(-1)?.details?.data;',
+        '  return data === undefined ? textOf(last) : typeof data === "string" ? data : JSON.stringify(data);',
+        '}',
+        '',
+        '// A task run that failed or was cut short, which is no reply of its delegate: omp gives it an',
+        "// error, unless that error is the reply's own shortfall (no deliverable, or one failing its",
+        '// contract).',
+        'function failed(r: Record<string, unknown>): boolean {',
+        '  if (r.aborted === true) return true;',
+        '  return r.error !== undefined && r.error !== SUBAGENT_WARNING_MISSING_YIELD && verdictOf(r) !== "invalid";',
+        '}',
+        '',
+        "// omp's verdict on a run's structured output against its contract, where it gave one.",
+        'function verdictOf(r: Record<string, unknown>): unknown {',
+        '  const output = r.structuredOutput;',
+        '  return typeof output === "object" && output !== null && "status" in output ? output.status : undefined;',
+        '}',
+        '',
+        '// What the dispatching session is told of a delegate holding a gate: that it waits on the',
+        "// operator's sign-off, and how the operator joins its session, by omp's own Agent Hub.",
+        'function waiting(id: string, agent: string): string {',
+        '  return [',
+        '    `<task-result id="${id}" agent="${agent}" status="waiting on the operator">`,',
+        "    `${id} (${agent}) waits on the operator's sign-off, in its own session. The operator joins it in omp's Agent Hub: Alt+A, select ${id}, Enter. Its result reaches you once the operator answers.`,",
+        '    "</task-result>",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        '// Text matched literally inside a pattern.',
+        'function literal(text: string): string {',
+        '  return text.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");',
+        '}',
+        '',
+        "// A result as omp's task tool renders it: one envelope per run, by its id.",
+        'function envelopeOf(id: string): RegExp {',
+        '  return new RegExp(`<task-result id="${literal(id)}"[^>]*>[\\\\s\\\\S]*?</task-result>`);',
+        '}',
+        '',
+        "// One job's part of omp's background delivery of several, from its header to the next.",
+        'function jobOf(jobId: string): RegExp {',
+        '  return new RegExp(`── Job ${literal(jobId)}(?: \\\\([^\\\\n]*\\\\))? ──\\\\n([\\\\s\\\\S]*?)(?=\\\\n── Job |\\\\n</system-notice>)`);',
+        '}',
+        '',
+        "// A message of a session's conversation, as far as attach reads it.",
+        'interface Said {',
+        '  role?: string;',
+        '  customType?: string;',
+        '  timestamp?: number;',
+        '  stopReason?: string;',
+        '  toolName?: string;',
+        '  isError?: boolean;',
+        '  content?: string | { type: string; text?: string; name?: string }[];',
+        '  details?: {',
+        '    from?: unknown;',
+        '    jobs?: { jobId?: unknown; type?: unknown; status?: unknown; agentId?: string; schema?: { status?: unknown } }[];',
+        '    status?: unknown;',
+        '    type?: unknown;',
+        '    complete?: unknown;',
+        '    data?: unknown;',
+        '  };',
+        '}',
+        '',
+        "// A yield omp's run monitor accepts as a run's result, which has omp hand that run to the",
+        '// dispatcher itself: a submission the yield tool took (success or aborted, never a rejected one)',
+        '// that is whole: not an incremental section, unless it completes the batch or aborts.',
+        'function acceptedYield(m: Said): boolean {',
+        '  if (m.role !== "toolResult" || m.toolName !== "yield" || m.isError === true) return false;',
+        '  const { status, type, complete } = m.details ?? {};',
+        '  if (status !== "success" && status !== "aborted") return false;',
+        '  return !(Array.isArray(type) && type.length > 0) || complete === true || status === "aborted";',
+        '}',
+        '',
+        "// A message's text.",
+        'function textOf(m: Said): string {',
+        '  return typeof m.content === "string"',
+        '    ? m.content',
+        '    : (m.content ?? []).flatMap((c) => (c.type === "text" ? [c.text ?? ""] : [])).join("");',
+        '}',
+        '',
+        '// What attach keeps, shared by every session of this omp process, which runs each delegate in',
+        "// its own session beside the one that dispatched it: each live session's API by its agent's",
+        "// registry id, so a delegate's later turn reaches its dispatcher; the declaration each delegate",
+        '// runs as, by its registry id; the delegates whose dispatched run is in flight, with the run,',
+        '// where it runs and all it has said in it, any other run of theirs being one the operator (or a',
+        '// peer) prompted; and the verdict on each later result omp handed a session (the agent held at',
+        '// a gate, or none), kept once taken, since every turn reads it anew.',
+        'const sessionsById = new Map<string, ExtensionAPI>();',
+        'const declaredById = new Map<string, string>();',
+        'const dispatchedRuns = new Map<string, { run: string; cwd: string; messages: Said[] }>();',
+        'const verdicts = new Map<string, string | false>();',
+        '',
+        "// Each delegate's runs, so a gate is known by the run it ends: how many it has started, the",
+        '// latest dispatched one (which its task result reports), and the later runs omp hands over itself',
+        '// with what each replied, oldest first, each taken by the background delivery carrying that reply.',
+        'const runsStarted = new Map<string, number>();',
+        'const lastDispatched = new Map<string, string>();',
+        'const handedOver = new Map<string, { run: string; reply: string }[]>();',
+        'function started(id: string): string {',
+        '  const count = (runsStarted.get(id) ?? 0) + 1;',
+        '  runsStarted.set(id, count);',
+        '  return `${id}#${count}`;',
+        '}',
+        '',
+        "// ATTACH, to the operator: the main session's interface, where the operator works, and the gates",
+        '// it was told of. Each gate is told there as soon as one is found, whatever route found it and',
+        '// however deep the holder: the agent and how to join it, as a notice no model reads. Once per',
+        '// gate, known by the run it ends, so a late report of an earlier run never silences a later gate.',
+        'let operator: Session["ui"] | undefined;',
+        'const told = new Set<string>();',
+        'function tell(run: string, id: string, agent: string): void {',
+        '  if (told.has(run)) return;',
+        '  told.add(run);',
+        '  operator?.notify(',
+        "    `${id} (${agent}) waits on your sign-off, in its own session. Join it in omp's Agent Hub: Alt+A, select ${id}, Enter.`,",
+        '    "warning",',
+        '  );',
+        '}',
+        '',
+        "// The delegate's own verdict on its dispatched run, taken as that run ends (omp's lifecycle",
+        "// event), so the operator is told at once, not when the dispatch's other blocking items settle:",
+        '// its reply is the data of the last yield omp accepted, else its last words. The task result',
+        '// judges the same run again for its dispatcher, and tells the operator only of a gate not told.',
+        'async function runEnded(id: string, agent: string, run: { run: string; cwd: string; messages: Said[] }): Promise<void> {',
+        '  const last = run.messages.filter((m) => m.role === "assistant").at(-1);',
+        '  if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
+        '  const declaration = (await discoverAgents(run.cwd)).agents.find((a) => a.name === agent);',
+        '  if (!gated(declaration)) return;',
+        '  if (holds(replyOf(run.messages, last))) tell(run.run, id, declaration.name);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -1823,6 +2104,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (!conversed(ctx)) owe(declaration);',
         '  }',
         '  pi.on("session_start", async (_event, ctx) => {',
+        '    const self = (ctx as unknown as Session).agent;',
+        '    if (self?.id !== undefined) sessionsById.set(self.id, pi);',
+        '    if (self?.kind === "sub" && self.id !== undefined && self.name !== undefined) declaredById.set(self.id, self.name);',
+        '    if (self?.kind === "main") operator = (ctx as unknown as Session).ui;',
         '    warnReplaced(ctx as unknown as Session);',
         '    await warnSkew(ctx as unknown as Session);',
         '    return launch(ctx as unknown as Session, true);',
@@ -1992,21 +2277,221 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         '  // A settled dispatch returns each item it ran, with its tokens. The call is known by its',
         '  // id, whatever the tool carrying it is called.',
+        '  //',
+        '  // ATTACH, on the task result: a delegate holding a gate is given there only as the waiting',
+        "  // notice, in the content and in the details alike; every other result, and the call's error",
+        '  // state, pass as omp gave them.',
         '  pi.on("tool_result", async (event, ctx) => {',
-        '    const details = (event as { details?: { results?: unknown } }).details;',
-        '    const results = Array.isArray(details?.results) ? details.results : [];',
-        '    for (const raw of results) {',
-        '      const r = (raw ?? {}) as Record<string, unknown>;',
-        '      await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, ctx as unknown as Session);',
+        '    const session = ctx as unknown as Session;',
+        '    const given = event as { details?: { results?: unknown; progress?: unknown }; content?: unknown };',
+        '    const results = (Array.isArray(given.details?.results) ? given.details.results : []).map(',
+        '      (raw) => (raw ?? {}) as Record<string, unknown>,',
+        '    );',
+        '    for (const r of results) await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, session);',
+        '    const replied = results.filter((r) => !failed(r) && verdictOf(r) !== "valid");',
+        '    if (replied.length === 0) return undefined;',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const held = replied.filter((r) => {',
+        '      const declaration = agents.find((a) => a.name === r.agent);',
+        '      return gated(declaration) && holds(String(r.output ?? ""));',
+        '    });',
+        '    if (held.length === 0) return undefined;',
+        '    for (const r of held)',
+        '      tell(lastDispatched.get(String(r.id)) ?? `${String(r.id)}@${event.toolCallId}`, String(r.id), String(r.agent));',
+        '    const ids = held.map((r) => String(r.id));',
+        '    const parts = (Array.isArray(given.content) ? given.content : []) as { type: string; text?: string }[];',
+        '    let content = parts.map((part) => ({ ...part }));',
+        '    for (const r of held) {',
+        '      const notice = waiting(String(r.id), String(r.agent));',
+        '      const part = content.find((p) => p.type === "text" && envelopeOf(String(r.id)).test(p.text ?? ""));',
+        '      if (part !== undefined) part.text = (part.text ?? "").replace(envelopeOf(String(r.id)), () => notice);',
+        '      else {',
+        '        // Its envelope is not where omp renders it: nothing rendered is kept, so its reply cannot',
+        '        // pass; each other result is given as its own output.',
+        '        content = results.map((o) => ({',
+        '          type: "text",',
+        '          text: ids.includes(String(o.id))',
+        '            ? waiting(String(o.id), String(o.agent))',
+        '            : `<task-result id="${String(o.id)}" agent="${String(o.agent)}">\\n${String(o.output ?? o.error ?? "")}\\n</task-result>`,',
+        '        }));',
+        '        break;',
+        '      }',
         '    }',
-        '    return undefined;',
+        '    const progress = Array.isArray(given.details?.progress) ? given.details.progress : undefined;',
+        '    const details = {',
+        '      ...given.details,',
+        '      results: results.map((r) => {',
+        '        if (!ids.includes(String(r.id))) return r;',
+        '        const { structuredOutput: _data, extractedToolData: _yielded, stderr: _stderr, error: _error, ...kept } = r;',
+        '        return { ...kept, output: waiting(String(r.id), String(r.agent)) };',
+        '      }),',
+        '      ...(progress === undefined',
+        '        ? {}',
+        '        : {',
+        '            progress: progress.map((p: Record<string, unknown>) =>',
+        '              ids.includes(String(p.id)) ? { ...p, recentOutput: [] } : p,',
+        '            ),',
+        '          }),',
+        '    };',
+        '    return { content, details };',
         '  });',
-        "  // A background item settles outside its call: omp's own lifecycle event says so.",
+        "  // A background item settles outside its call: omp's own lifecycle event says so. It says too",
+        "  // when a delegate's dispatched run (the one a blocking dispatch waits on) starts and ends.",
         '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
         '  bus?.on?.("task:subagent:lifecycle", (data) => {',
         '    const e = (data ?? {}) as Record<string, unknown>;',
-        '    if (e.detached !== true || !["completed", "failed", "aborted"].includes(String(e.status))) return;',
-        '    void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
+        '    const id = typeof e.id === "string" ? e.id : undefined;',
+        '    if (e.status === "started" && e.detached !== true && id !== undefined) {',
+        '      const run = started(id);',
+        '      lastDispatched.set(id, run);',
+        '      dispatchedRuns.set(id, { run, cwd: "", messages: [] });',
+        '    }',
+        '    if (!["completed", "failed", "aborted"].includes(String(e.status))) return;',
+        '    const run = id === undefined || e.detached === true ? undefined : dispatchedRuns.get(id);',
+        '    if (id !== undefined && run !== undefined) {',
+        '      dispatchedRuns.delete(id);',
+        '      if (e.status !== "aborted") void runEnded(id, String(e.agent), run);',
+        '    }',
+        '    if (e.detached === true) void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
+        '  });',
+        '',
+        "  // ATTACH, in a delegate's session: its dispatched run, over every prompt omp gives it, holds all",
+        '  // it says there; each run it starts outside it is one the operator prompted after joining it (or',
+        '  // a peer woke), and holds the messages it adds, so what it said is read from that run alone,',
+        '  // never from earlier ones.',
+        '  let ongoing: { later: boolean; run?: string; messages: Said[] } | undefined;',
+        '  pi.on("agent_start", (_event, ctx) => {',
+        '    const session = ctx as unknown as Session;',
+        '    const self = session.agent;',
+        '    const dispatched = self?.id === undefined ? undefined : dispatchedRuns.get(self.id);',
+        '    if (dispatched !== undefined) dispatched.cwd = session.cwd;',
+        '    const later = self?.kind === "sub" && self.id !== undefined && dispatched === undefined;',
+        '    ongoing = {',
+        '      later,',
+        '      run: later && self?.id !== undefined ? started(self.id) : dispatched?.run,',
+        '      messages: dispatched?.messages ?? [],',
+        '    };',
+        '  });',
+        '  pi.on("message_end", (event) => {',
+        '    ongoing?.messages.push((event as { message: Said }).message);',
+        '  });',
+        "  // As such a run ends, the delegate's own verdict on it is taken, on what it said in that run,",
+        '  // and the operator told of a gate it holds. omp hands the dispatching session that run only',
+        "  // where its monitor accepts a yield as its result or the run answers the dispatcher's own",
+        '  // message; otherwise the extension does: the waiting notice for another gate, else its reply.',
+        '  // A yield the tool rejected, or an incremental section, is no such result.',
+        '  pi.on("agent_end", async (event, ctx) => {',
+        '    const current = ongoing;',
+        '    const session = ctx as unknown as Session;',
+        '    const self = session.agent;',
+        '    if (current?.later !== true || self?.id === undefined || (event as { willContinue?: boolean }).willContinue === true) return;',
+        '    const replies = current.messages.filter((m) => m.role === "assistant");',
+        '    const last = replies.at(-1);',
+        '    if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
+        '    const reply = replyOf(current.messages, last);',
+        '    // A run whose yield omp accepts, or that answers the dispatcher, reaches the dispatcher from omp,',
+        '    // as a background delivery known by its reply.',
+        '    const byOmp =',
+        '      current.messages.some(acceptedYield) ||',
+        '      current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId);',
+        '    if (byOmp && current.run !== undefined)',
+        '      handedOver.set(self.id, [...(handedOver.get(self.id) ?? []), { run: current.run, reply: reply.trim() }]);',
+        '    const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === self.name);',
+        '    if (!gated(declaration)) return;',
+        '    const held = holds(reply);',
+        '    if (held && current.run !== undefined) tell(current.run, self.id, declaration.name);',
+        '    if (byOmp) return;',
+        '    const dispatcher = self.parentId === undefined ? undefined : sessionsById.get(self.parentId);',
+        '    dispatcher?.sendMessage(',
+        '      {',
+        '        customType: ATTACH,',
+        '        content: held',
+        '          ? waiting(self.id, declaration.name)',
+        '          : `<task-result id="${self.id}" agent="${declaration.name}" status="completed">\\n<output>\\n${reply}\\n</output>\\n</task-result>`,',
+        '        display: true,',
+        '        details: { id: self.id, held },',
+        '      },',
+        '      { triggerTurn: true, deliverAs: "followUp" },',
+        '    );',
+        '  });',
+        '',
+        '  // ATTACH, on a later result omp hands over itself (a run that yields, or answers the',
+        "  // dispatcher's own message): it reaches the dispatching session as a background delivery",
+        '  // outside any task result, so each turn of that session is given it with a held job as the',
+        "  // waiting notice. The verdict is the delegate's own on that run, taken from the delivery itself",
+        "  // (omp's verdict on a structured result, else the reply it carries) with the declaration the",
+        '  // delegate runs as, so it is bound to that result alone; it is taken once and kept, a held one',
+        "  // in the session's own record too.",
+        '  pi.on("context", async (event, ctx) => {',
+        '    const session = ctx as unknown as Session;',
+        '    const messages = (event as { messages: Said[] }).messages;',
+        '    let agents: AgentDefinition[] | undefined;',
+        '    let recorded: Map<string, string> | undefined;',
+        '    let changed = false;',
+        '    const given: Said[] = [];',
+        '    for (const m of messages) {',
+        '      const jobs = m.role === "custom" && m.customType === "async-result" ? (m.details?.jobs ?? []) : [];',
+        '      const text = textOf(m);',
+        '      const held: { jobId: string; id: string; agent: string }[] = [];',
+        '      for (const job of jobs) {',
+        '        const id = job.agentId;',
+        '        if (job.type !== "task" || id === undefined) continue;',
+        '        const key = `${id}@${String(m.timestamp)}`;',
+        '        let verdict = verdicts.get(key);',
+        '        if (verdict === undefined) {',
+        '          recorded ??= new Map(',
+        '            (session.sessionManager?.getEntries?.() ?? []).flatMap((e) =>',
+        '              e.type === "custom" && e.customType === HELD && typeof e.data?.key === "string"',
+        '                ? [[e.data.key, String(e.data.agent ?? "")] as const]',
+        '                : [],',
+        '            ),',
+        '          );',
+        '          const name = recorded.get(key) ?? declaredById.get(id) ?? "";',
+        '          agents ??= (await discoverAgents(session.cwd)).agents;',
+        '          const declaration = agents.find((a) => a.name === name);',
+        '          const delivery =',
+        '            jobs.length === 1',
+        '              ? (/^<system-notice>\\n[^\\n]*\\n([\\s\\S]*)\\n<\\/system-notice>$/.exec(text)?.[1] ?? text)',
+        '              : (jobOf(String(job.jobId)).exec(text)?.[1] ?? text);',
+        '          const reply = /<output>\\n([\\s\\S]*?)\\n<\\/output>/.exec(delivery)?.[1] ?? delivery;',
+        '          const holding =',
+        '            recorded.has(key) ||',
+        '            (gated(declaration) && (job.schema !== undefined || job.status === "completed") && holds(reply));',
+        '          verdict = holding ? name : false;',
+        '          verdicts.set(key, verdict);',
+        '          // The run this delivery came from: the oldest one handed over whose reply it carries.',
+        '          const runs = handedOver.get(id) ?? [];',
+        '          const from = runs.findIndex((r) => r.reply !== "" && delivery.includes(r.reply));',
+        '          const run = from < 0 ? key : (runs.splice(from, 1)[0]?.run ?? key);',
+        '          if (holding && !recorded.has(key)) {',
+        '            pi.appendEntry(HELD, { key, agent: name });',
+        '            tell(run, id, name);',
+        '          }',
+        '        }',
+        '        if (verdict !== false) held.push({ jobId: String(job.jobId), id, agent: verdict });',
+        '      }',
+        '      if (held.length === 0) {',
+        '        given.push(m);',
+        '        continue;',
+        '      }',
+        '      changed = true;',
+        '      const notices = `<system-notice>\\n${held.map((h) => waiting(h.id, h.agent)).join("\\n\\n")}\\n</system-notice>`;',
+        '      let rewritten = jobs.length === 1 ? notices : text;',
+        '      for (const h of jobs.length === 1 ? [] : held) {',
+        '        if (!jobOf(h.jobId).test(rewritten)) {',
+        '          // Not where omp renders a job: nothing of the message is kept, so no reply can pass.',
+        '          rewritten = notices;',
+        '          break;',
+        '        }',
+        '        rewritten = rewritten.replace(jobOf(h.jobId), () => `── Job ${h.jobId} ──\\n${waiting(h.id, h.agent)}`);',
+        '      }',
+        '      given.push({ ...m, content: rewritten });',
+        '    }',
+        '    return changed ? { messages: given } : undefined;',
+        '  });',
+        '  pi.on("session_shutdown", (_event, ctx) => {',
+        '    const id = (ctx as unknown as Session).agent?.id;',
+        '    if (id !== undefined && sessionsById.get(id) === pi) sessionsById.delete(id);',
         '  });',
         '',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',

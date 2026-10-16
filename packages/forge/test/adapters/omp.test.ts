@@ -219,6 +219,22 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
   resolveAgentPrewalkDefault: (agent: { prewalk?: boolean | string }) =>
     agent.prewalk,
 }));
+// omp's own statement of a run that ended without its deliverable, as 18.10.2 words it.
+vi.mock('@oh-my-pi/pi-coding-agent/task/executor', () => ({
+  SUBAGENT_WARNING_MISSING_YIELD:
+    'SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.',
+}));
+// omp's output-contract validator, standing in for its JSON Schema check: an object holding
+// every field the contract requires satisfies it.
+vi.mock('@oh-my-pi/pi-coding-agent/tools/output-schema-validator', () => ({
+  buildOutputValidator: (schema: { required?: string[] }) => ({
+    validator: {
+      validate: (value: Record<string, unknown>) => ({
+        success: (schema.required ?? []).every((field) => field in value),
+      }),
+    },
+  }),
+}));
 vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
   getActiveSkills: () => omp.skills,
   buildSkillPromptMessage: async (
@@ -326,6 +342,24 @@ describe('omp agent definition', () => {
       'model',
       'spawns',
     ]);
+  });
+
+  it('declares a gate holder, one whose decision rights hold sign-off, blocking, and no other agent', () => {
+    const holder = agent({
+      decisionRights: [
+        { value: 'D ≜ decides', level: 'fixed', slot: 'realization' },
+        { value: 'R ≜ recommends', level: 'fixed', slot: 'sign-off' },
+      ],
+    });
+    expect(frontMatter(agentToOmpMd(holder, CTX)).blocking).toBe('true');
+    const other = agent({
+      decisionRights: [
+        { value: 'D ≜ decides', level: 'fixed', slot: 'realization' },
+      ],
+    });
+    expect(frontMatter(agentToOmpMd(other, CTX))).not.toHaveProperty(
+      'blocking',
+    );
   });
 
   it('names its own model role first, then its tier and effort, never a model (0111, 0112)', () => {
@@ -1872,6 +1906,894 @@ describe('omp capability interface', () => {
       }
     });
 
+    describe('attach: a delegate holding a gate reaches its dispatcher only as the waiting notice, then its result', () => {
+      type Answer =
+        | { content?: unknown; details?: unknown; isError?: boolean }
+        | undefined;
+      const MISSING_YIELD =
+        'SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.';
+      const READ_BACK =
+        'The plan: three tasks, one builder each. Sign off the plan to send it to be built.';
+      const DELIVERABLE = '{"story":"renewal","outcome":"merged"}';
+      /** A lead's return at a delegated grant's end state: its plan sign-off taken and recorded. */
+      const END_STATE =
+        'Read-back: the plan sign-off was delegated to me; I took it and recorded it. The grant’s end state is reached: renewal is planned, three tasks recorded.';
+      /** Closings that ask for, or wait on, the operator's sign-off: each holds a gate. */
+      const ASKING = [
+        READ_BACK,
+        'The plan: three tasks. Do you sign off the plan?',
+        'The plan is below.\n\n**Sign off the plan?**',
+        'The plan: three tasks.\n\nPlease sign off on this plan before\nI start the build.',
+        'The plan: three tasks. I am waiting for your sign-off before proceeding.',
+        'Please sign off the plan that was just presented.',
+        'Please sign off the plan without changing the scope.',
+        'The plan: three tasks. Do I have your sign-off to start the build?',
+        'The plan: three tasks. Could you give your sign-off on it?',
+        'The plan: three tasks. So, could you sign off the plan?',
+      ];
+      /** Returns that only report a sign-off, or say nothing of one: each is a result. */
+      const REPORTING = [
+        END_STATE,
+        'Plan sign-off taken and recorded.',
+        'Built renewal; two pull requests merged.',
+        'No additional sign-off is required.',
+        'I requested sign-off and recorded the approval.',
+        'What does sign-off mean in this story?',
+        'Who holds sign-off at this gate?',
+        'What does your sign-off mean in this story?',
+        'May I send it to the builders for your sign-off?',
+        'Where is the recorded reason for your sign-off?',
+        'Why do you sign off plans before implementation?',
+      ];
+      const CONTRACT = {
+        type: 'object',
+        properties: {
+          story: { type: 'string' },
+          outcome: { type: 'string' },
+        },
+        required: ['story', 'outcome'],
+      };
+      /** A lead whose decision rights hold sign-off, as projection writes the line, declaring
+       *  {@link CONTRACT} as its deliverable unless `delivers` is false. */
+      const GATED = (delivers = true) => ({
+        ...declare(
+          { name: 'lead', description: 'Holds a gate.' },
+          "# lead\n\n### decision-rights\n\n- realization (how the work is built): **D** — decides\n- sign-off (agreeing a handover serves its intent): **R** — puts its handovers up for it\n\n### memory\n\n- **working** — the session's own context",
+        ),
+        ...(delivers ? { output: CONTRACT } : {}),
+      });
+      /** A result as omp 18.10.2's task tool renders it. */
+      const envelope = (id: string, agent: string, output: string) =>
+        `<task-result id="${id}" agent="${agent}" status="completed" duration="2m">\n<output>\n${output}\n</output>\n</task-result>`;
+      const waiting = (id: string) =>
+        [
+          `<task-result id="${id}" agent="lead" status="waiting on the operator">`,
+          `${id} (lead) waits on the operator's sign-off, in its own session. The operator joins it in omp's Agent Hub: Alt+A, select ${id}, Enter. Its result reaches you once the operator answers.`,
+          '</task-result>',
+        ].join('\n');
+      const LEAD = {
+        index: 0,
+        id: 'Lead',
+        agent: 'lead',
+        exitCode: 0,
+        stderr: '',
+        output: READ_BACK,
+        tokens: 900,
+      };
+      const FORM = {
+        index: 1,
+        id: 'Form',
+        agent: 'builder',
+        exitCode: 0,
+        stderr: '',
+        output: 'built',
+      };
+      const said = (text: string) => ({
+        role: 'assistant',
+        stopReason: 'stop',
+        content: [{ type: 'text', text }],
+      });
+      const asked = (text: string) => ({ role: 'user', content: text });
+
+      /** The emitted module in a stand-in omp process: `bind` starts one session of it, as omp
+       *  binds a module's factory to each session, every session sharing the module's state;
+       *  `emit` sends one of omp's events on the process's bus. */
+      async function ompProcess() {
+        const factory = await emitted({
+          name: 'stand in',
+          purpose: 'p',
+          when: 'w',
+          verbs: [],
+        });
+        const bus = new Map<string, ((data: unknown) => void)[]>();
+        async function bind(
+          agent: { kind: string; name: string; id: string; parentId?: string },
+          entries: unknown[] = [],
+        ) {
+          const handlers = new Map<string, Handler>();
+          const sent: unknown[] = [];
+          const told: unknown[] = [];
+          await factory({
+            typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+            registerTool: () => {},
+            registerFlag: () => {},
+            getFlag: () => undefined,
+            on: (event: string, handler: Handler) =>
+              handlers.set(event, handler),
+            setModel: async () => {},
+            setThinkingLevel: () => {},
+            setActiveTools: async () => {},
+            sendMessage: (message: unknown, options: unknown) =>
+              sent.push([message, options]),
+            appendEntry: (customType: string, data: unknown) =>
+              entries.push({ type: 'custom', customType, data }),
+            events: {
+              on: (channel: string, fn: (data: unknown) => void) =>
+                bus.set(channel, [...(bus.get(channel) ?? []), fn]),
+            },
+          });
+          const ctx = {
+            cwd: '/the/session/cwd',
+            agent,
+            model: { provider: 'fixture', id: 'base' },
+            modelRegistry: {},
+            ui: {
+              setStatus: () => {},
+              notify: (message: unknown, type: unknown) =>
+                told.push([message, type]),
+            },
+            sessionManager: { getBranch: () => [], getEntries: () => entries },
+          };
+          const fire = async (event: string, payload: unknown) =>
+            handlers.get(event)?.(payload, ctx);
+          await fire('session_start', {});
+          return { fire, sent, entries, told };
+        }
+        const emit = (channel: string, data: unknown) => {
+          for (const fn of bus.get(channel) ?? []) fn(data);
+        };
+        return { bind, emit };
+      }
+      const MAIN = { kind: 'main', name: 'main', id: 'Main' };
+      const DELEGATE = {
+        kind: 'sub',
+        name: 'lead',
+        id: 'Lead',
+        parentId: 'Main',
+      };
+
+      /** A settled `task` call, and what the model is given of it once omp merges the
+       *  module's answer: each field the answer returns replaces the call's own. */
+      async function settle(event: Record<string, unknown>) {
+        const { bind } = await ompProcess();
+        const main = await bind(MAIN);
+        const answer = (await main.fire('tool_result', {
+          toolName: 'task',
+          toolCallId: 'call',
+          input: {},
+          ...event,
+        })) as Answer;
+        return {
+          answer,
+          given: {
+            content: answer?.content ?? event.content,
+            details: answer?.details ?? event.details,
+            isError: answer?.isError ?? event.isError,
+          },
+        };
+      }
+
+      it('gives a held reply as the waiting notice in the content and the details, every other result and the call’s error state as omp gave them', async () => {
+        omp.agents = [GATED(), BUILDER()];
+        const failure = 'Task execution failed: the isolation merge threw';
+        const progress = [
+          { index: 0, id: 'Lead', recentOutput: ['Sign off the plan'] },
+          { index: 1, id: 'Form', recentOutput: ['built'] },
+        ];
+        const results = [
+          LEAD,
+          FORM,
+          {
+            index: 2,
+            id: 'Gone',
+            agent: 'builder',
+            exitCode: 0,
+            stderr: '',
+            output: 'half',
+            error: failure,
+          },
+        ];
+        const { given } = await settle({
+          content: [
+            {
+              type: 'text',
+              text: `${envelope('Lead', 'lead', READ_BACK)}\n\n${envelope('Form', 'builder', 'built')}\n\n${failure}`,
+            },
+          ],
+          isError: true,
+          details: { results, progress, totalDurationMs: 7 },
+        });
+        expect(given).toEqual({
+          content: [
+            {
+              type: 'text',
+              text: `${waiting('Lead')}\n\n${envelope('Form', 'builder', 'built')}\n\n${failure}`,
+            },
+          ],
+          isError: true,
+          details: {
+            results: [
+              {
+                index: 0,
+                id: 'Lead',
+                agent: 'lead',
+                exitCode: 0,
+                tokens: 900,
+                output: waiting('Lead'),
+              },
+              results[1],
+              results[2],
+            ],
+            progress: [{ ...progress[0], recentOutput: [] }, progress[1]],
+            totalDurationMs: 7,
+          },
+        });
+        expect(JSON.stringify(given)).not.toContain('Sign off the plan');
+      });
+
+      /** Results a gate holder may return that pass as its result: deliverables, a grant's
+       *  end-state read-back, a reported sign-off, and other prose. */
+      const PASSING: Record<string, unknown>[] = [
+        { ...LEAD, output: DELIVERABLE },
+        { ...LEAD, output: `Done.\n\n\`\`\`json\n${DELIVERABLE}\n\`\`\`` },
+        {
+          ...LEAD,
+          output: DELIVERABLE,
+          structuredOutput: { status: 'valid', data: {} },
+        },
+        ...REPORTING.map((output) => ({ ...LEAD, output })),
+        { ...LEAD, output: '{"story":"renewal"}' },
+      ];
+      /** Results that end with the sign-off they wait on: each holds a gate. */
+      const HOLDING: Record<string, unknown>[] = [
+        ...ASKING.map((output) => ({ ...LEAD, output })),
+        {
+          ...LEAD,
+          output: `\`\`\`json\n{"story":"renewal"}\n\`\`\`\n${READ_BACK}`,
+        },
+        // Structured results: no deliverable given, and one failing the contract.
+        {
+          ...LEAD,
+          exitCode: 1,
+          stderr: MISSING_YIELD,
+          error: MISSING_YIELD,
+          output: `${MISSING_YIELD}\n\n${READ_BACK}`,
+        },
+        {
+          ...LEAD,
+          exitCode: 1,
+          error: 'schema_violation: missing required fields: outcome',
+          output: READ_BACK,
+          structuredOutput: { status: 'invalid', data: READ_BACK },
+        },
+      ];
+      const content = [
+        { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+      ];
+
+      it.each(PASSING.map((result) => [String(result.output), result]))(
+        'passes a reply not ending with the sign-off it waits on as its result: %s',
+        async (_output, result) => {
+          omp.agents = [GATED()];
+          expect(
+            (await settle({ content, details: { results: [result] } })).answer,
+          ).toBeUndefined();
+        },
+      );
+
+      it.each(HOLDING.map((result) => [String(result.output), result]))(
+        'holds a gate on a reply ending with the sign-off it waits on: %s',
+        async (_output, result) => {
+          omp.agents = [GATED()];
+          const { given } = await settle({
+            content,
+            details: { results: [result] },
+          });
+          expect(given.content).toEqual([
+            { type: 'text', text: waiting('Lead') },
+          ]);
+        },
+      );
+
+      it('holds no gate for a delegate without sign-off, nor for a cancelled or failed run', async () => {
+        const content = [
+          { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+        ];
+        omp.agents = [
+          {
+            ...declare(
+              { name: 'lead', description: 'Realizes.' },
+              'Realize the story.',
+            ),
+            output: CONTRACT,
+          },
+        ];
+        expect(
+          (await settle({ content, details: { results: [LEAD] } })).answer,
+        ).toBeUndefined();
+        omp.agents = [GATED()];
+        for (const result of [
+          { ...LEAD, aborted: true, error: 'Cancelled by caller' },
+          { ...LEAD, exitCode: 1, error: '[fixture/base] overloaded' },
+        ])
+          expect(
+            (await settle({ content, details: { results: [result] } })).answer,
+          ).toBeUndefined();
+      });
+
+      it('judges a holder declaring no JSON deliverable alike: held only where its reply ends with the sign-off it waits on', async () => {
+        omp.agents = [GATED(false)];
+        const { given } = await settle({
+          content: [
+            { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+          ],
+          details: { results: [LEAD] },
+        });
+        expect(given.content).toEqual([
+          { type: 'text', text: waiting('Lead') },
+        ]);
+        for (const output of [END_STATE, DELIVERABLE])
+          expect(
+            (
+              await settle({
+                content: [
+                  { type: 'text', text: envelope('Lead', 'lead', output) },
+                ],
+                details: { results: [{ ...LEAD, output }] },
+              })
+            ).answer,
+            output,
+          ).toBeUndefined();
+      });
+
+      /** omp's background delivery of `jobs`, one message of the dispatching session. */
+      const delivered = (
+        timestamp: number,
+        jobs: { id: string; text: string; schema?: unknown; status?: string }[],
+      ) => ({
+        role: 'custom',
+        customType: 'async-result',
+        timestamp,
+        content:
+          jobs.length === 1
+            ? `<system-notice>\nBackground job ${jobs[0]?.id} has completed. Resume your work using the result below.\n${jobs[0]?.text}\n</system-notice>`
+            : `<system-notice>\n${jobs.length} background jobs have completed. Resume your work using the results below.\n\n${jobs.map((j) => `── Job ${j.id} ──\n${j.text}`).join('\n')}\n</system-notice>`,
+        details: {
+          jobs: jobs.map((j) => ({
+            jobId: j.id,
+            type: 'task',
+            agentId: j.id,
+            status: j.status ?? 'completed',
+            ...(j.schema === undefined ? {} : { schema: j.schema }),
+          })),
+        },
+      });
+
+      it('gives a later result omp hands over, the reply alone of a turn the dispatcher woke, as the waiting notice when it holds a gate, and keeps that verdict', async () => {
+        omp.agents = [GATED(), BUILDER()];
+        const { bind } = await ompProcess();
+        const main = await bind(MAIN);
+        await bind(DELEGATE);
+        // omp relays a turn the dispatcher woke as its plain reply: no envelope names the agent.
+        const message = delivered(1, [{ id: 'Lead', text: READ_BACK }]);
+        const context = [asked('Build renewal.'), message];
+        const rewritten = [
+          context[0],
+          {
+            ...message,
+            content: `<system-notice>\n${waiting('Lead')}\n</system-notice>`,
+          },
+        ];
+        expect(await main.fire('context', { messages: context })).toEqual({
+          messages: rewritten,
+        });
+        expect(main.entries).toEqual([
+          {
+            type: 'custom',
+            customType: 'cratylus-gate-hold',
+            data: { key: 'Lead@1', agent: 'lead' },
+          },
+        ]);
+        expect(await main.fire('context', { messages: context })).toEqual({
+          messages: rewritten,
+        });
+        // A process that starts afresh reads the verdict from the session's record.
+        const again = await (await ompProcess()).bind(MAIN, main.entries);
+        expect(await again.fire('context', { messages: context })).toEqual({
+          messages: rewritten,
+        });
+        expect(again.entries).toHaveLength(1);
+        // The deliverable, and a failed turn, pass as omp gave them.
+        for (const passing of [
+          delivered(2, [{ id: 'Lead', text: DELIVERABLE }]),
+          delivered(4, [
+            { id: 'Lead', text: envelope('Lead', 'lead', END_STATE) },
+          ]),
+          delivered(3, [
+            {
+              id: 'Lead',
+              text: 'Wake turn failed: overloaded.',
+              status: 'failed',
+            },
+          ]),
+        ])
+          expect(
+            await main.fire('context', { messages: [passing] }),
+          ).toBeUndefined();
+      });
+
+      it('rewrites only the held jobs of a background delivery, and takes omp’s verdict on a structured one', async () => {
+        omp.agents = [GATED(), BUILDER()];
+        const { bind } = await ompProcess();
+        const main = await bind(MAIN);
+        await bind(DELEGATE);
+        const built = envelope('Form', 'builder', 'built');
+        const message = delivered(2, [
+          {
+            id: 'Lead',
+            text: envelope('Lead', 'lead', READ_BACK),
+            schema: { status: 'invalid', data: READ_BACK },
+          },
+          { id: 'Form', text: built },
+        ]);
+        const answer = (await main.fire('context', {
+          messages: [message],
+        })) as {
+          messages: { content: string }[];
+        };
+        expect(answer.messages[0]?.content).toBe(
+          `<system-notice>\n2 background jobs have completed. Resume your work using the results below.\n\n── Job Lead ──\n${waiting('Lead')}\n── Job Form ──\n${built}\n</system-notice>`,
+        );
+        // omp found the deliverable valid: it passes.
+        const valid = delivered(3, [
+          {
+            id: 'Lead',
+            text: envelope('Lead', 'lead', DELIVERABLE),
+            schema: { status: 'valid', data: {} },
+          },
+        ]);
+        expect(
+          await main.fire('context', { messages: [valid] }),
+        ).toBeUndefined();
+      });
+
+      it('hands the dispatcher each later turn the operator prompts, read from that run alone: another gate as the notice, the deliverable as the result', async () => {
+        omp.agents = [GATED()];
+        const { bind, emit } = await ompProcess();
+        const main = await bind(MAIN);
+        const lead = await bind(DELEGATE);
+        /** One run of the delegate: omp's events for it, its `agent_end` carrying the
+         *  whole session history, as omp's does. */
+        const history: unknown[] = [];
+        async function runs(...messages: unknown[]) {
+          await lead.fire('agent_start', {});
+          for (const message of messages) {
+            history.push(message);
+            await lead.fire('message_end', { message });
+          }
+          await lead.fire('agent_end', { messages: [...history] });
+        }
+        /** A run's yield call and the yield tool's answer to it, as omp records both. */
+        const yielded = (answer: Record<string, unknown>) => [
+          {
+            role: 'assistant',
+            stopReason: 'toolUse',
+            content: [{ type: 'toolCall', name: 'yield' }],
+          },
+          { role: 'toolResult', toolName: 'yield', ...answer },
+        ];
+        const fromDispatcher = { role: 'custom', details: { from: 'Main' } };
+        // Its dispatched run: the task result carries it, so nothing is sent.
+        emit('task:subagent:lifecycle', { id: 'Lead', status: 'started' });
+        await runs(asked('Realize renewal.'), said(READ_BACK));
+        emit('task:subagent:lifecycle', { id: 'Lead', status: 'completed' });
+        expect(main.sent).toEqual([]);
+        // A run the dispatcher's own message woke, and one whose yield omp's monitor
+        // accepts as its result, whole or aborting, reach it from omp.
+        await runs(fromDispatcher, said(READ_BACK));
+        await runs(
+          asked('Signed off.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'success', data: {} },
+          }),
+          said('Delivered.'),
+        );
+        await runs(
+          asked('Stop.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'aborted', error: 'stopped' },
+          }),
+          said('Stopped.'),
+        );
+        expect(main.sent).toEqual([]);
+        // A yield the tool rejected, and an incremental section, are no result omp hands
+        // over: the gate the run then stops at is the extension's to say.
+        await runs(
+          asked('Signed off.'),
+          ...yielded({
+            isError: true,
+            content: [{ type: 'text', text: 'schema_violation' }],
+          }),
+          said('The contract needs an outcome first. Sign off the plan again.'),
+        );
+        await runs(
+          asked('Report as you go.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'success', type: ['findings'], data: {} },
+          }),
+          said('First findings in. Sign off before I go on.'),
+        );
+        // Runs the operator prompts, after those earlier ones in the same history.
+        await runs(
+          asked('Use two builders.'),
+          said('Two builders now. Sign off the revised plan.'),
+        );
+        await runs(asked('Signed off.'), said(DELIVERABLE));
+        const options = { triggerTurn: true, deliverAs: 'followUp' };
+        const notice = [
+          {
+            customType: 'cratylus-attach',
+            content: waiting('Lead'),
+            display: true,
+            details: { id: 'Lead', held: true },
+          },
+          options,
+        ];
+        expect(main.sent).toEqual([
+          notice,
+          notice,
+          notice,
+          [
+            {
+              customType: 'cratylus-attach',
+              content: `<task-result id="Lead" agent="lead" status="completed">\n<output>\n${DELIVERABLE}\n</output>\n</task-result>`,
+              display: true,
+              details: { id: 'Lead', held: false },
+            },
+            options,
+          ],
+        ]);
+        expect(JSON.stringify(main.sent)).not.toContain('revised plan');
+      });
+
+      describe('the operator is told in its own session as soon as a gate waits on it, by every route, however deep the holder', () => {
+        /** What the operator's own session shows of a gate the agent `id` holds. */
+        const told = (id: string) => [
+          `${id} (lead) waits on your sign-off, in its own session. Join it in omp's Agent Hub: Alt+A, select ${id}, Enter.`,
+          'warning',
+        ];
+        /** One process: the operator's main session, a delegate of it that dispatched the lead,
+         *  and the lead, nested below both; what each interface showed as it started is cleared. */
+        async function nested() {
+          const process = await ompProcess();
+          const main = await process.bind(MAIN);
+          const arch = await process.bind({
+            kind: 'sub',
+            name: 'architect',
+            id: 'Arch',
+            parentId: 'Main',
+          });
+          const lead = await process.bind({ ...DELEGATE, parentId: 'Arch' });
+          for (const session of [main, arch, lead]) session.told.length = 0;
+          /** One run of the lead, as omp's events give it. */
+          async function runs(...messages: unknown[]) {
+            await lead.fire('agent_start', {});
+            for (const message of messages)
+              await lead.fire('message_end', { message });
+            await lead.fire('agent_end', { messages });
+          }
+          return { ...process, main, arch, lead, runs };
+        }
+        /** No session's model is given the operator's notice. */
+        const unread = (...sessions: { sent: unknown[] }[]) => {
+          for (const session of sessions)
+            expect(JSON.stringify(session.sent)).not.toContain('your sign-off');
+        };
+
+        it('on the task result of its dispatch, the dispatcher itself a delegate', async () => {
+          omp.agents = [GATED(), BUILDER()];
+          const { main, arch, lead } = await nested();
+          const result = (lead: Record<string, unknown>) =>
+            arch.fire('tool_result', {
+              toolName: 'task',
+              toolCallId: 'call',
+              input: {},
+              content: [
+                {
+                  type: 'text',
+                  text: `${envelope('Lead', 'lead', String(lead.output))}\n\n${envelope('Form', 'builder', 'built')}`,
+                },
+              ],
+              details: { results: [lead, FORM] },
+            });
+          const answer = await result(LEAD);
+          expect(JSON.stringify(answer)).not.toContain('your sign-off');
+          expect(main.told).toEqual([told('Lead')]);
+          expect([arch.told, lead.told]).toEqual([[], []]);
+          // Its deliverable, after another run, holds no gate: nothing more is told.
+          await lead.fire('agent_start', {});
+          await result({ ...LEAD, output: DELIVERABLE });
+          expect(main.told).toEqual([told('Lead')]);
+          unread(main, arch, lead);
+        });
+
+        it('as its dispatched run ends, while another blocking item of the same dispatch still runs', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, lead, bind, emit } = await nested();
+          const second = await bind({
+            ...DELEGATE,
+            id: 'Second',
+            parentId: 'Arch',
+          });
+          main.told.length = 0;
+          const lifecycle = (id: string, status: string) =>
+            emit('task:subagent:lifecycle', { id, agent: 'lead', status });
+          lifecycle('Lead', 'started');
+          lifecycle('Second', 'started');
+          // The lead's run over two prompts, omp's yield reminder the second: it stops on its read-back.
+          for (const message of [said('Planning.'), said(READ_BACK)]) {
+            await lead.fire('agent_start', {});
+            await lead.fire('message_end', { message });
+            await lead.fire('agent_end', { messages: [message] });
+          }
+          expect(main.told).toEqual([]);
+          // omp settles it (no yield: failed) before the other item ends, and before any task result.
+          lifecycle('Lead', 'failed');
+          await vi.waitFor(() => expect(main.told).toEqual([told('Lead')]));
+          // The other item gives its deliverable through a yield omp accepts: no gate.
+          await second.fire('agent_start', {});
+          for (const message of [
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: JSON.parse(DELIVERABLE) },
+            },
+            said('Delivered.'),
+          ])
+            await second.fire('message_end', { message });
+          await second.fire('agent_end', { messages: [] });
+          lifecycle('Second', 'completed');
+          // The task result once both have settled: the dispatcher is given the lead only as the
+          // waiting notice, the other item's deliverable holds no gate, and the operator is not
+          // told again.
+          const answer = (await arch.fire('tool_result', {
+            toolName: 'task',
+            toolCallId: 'call',
+            input: {},
+            content: [
+              {
+                type: 'text',
+                text: `${envelope('Lead', 'lead', READ_BACK)}\n\n${envelope('Second', 'lead', DELIVERABLE)}`,
+              },
+            ],
+            details: {
+              results: [
+                { ...LEAD, exitCode: 1, error: MISSING_YIELD },
+                {
+                  ...LEAD,
+                  index: 1,
+                  id: 'Second',
+                  output: DELIVERABLE,
+                  structuredOutput: { status: 'valid', data: {} },
+                },
+              ],
+            },
+          })) as { content: { text: string }[] };
+          expect(answer.content[0]?.text).toBe(
+            `${waiting('Lead')}\n\n${envelope('Second', 'lead', DELIVERABLE)}`,
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          unread(main, arch, lead, second);
+        });
+
+        it('as a later run whose yield omp accepts stops at a gate, before the dispatcher’s context hook runs', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, runs } = await nested();
+          const asking = 'Two builders now. Do you sign off the revised plan?';
+          await runs(
+            asked('Use two builders.'),
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: asking },
+            },
+            said('Yielded.'),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          // omp hands that run over itself; the extension sends nothing.
+          expect(arch.sent).toEqual([]);
+          // omp's delivery, once the dispatcher turns, tells nothing new.
+          await arch.fire('context', {
+            messages: [
+              delivered(5, [
+                { id: 'Lead', text: envelope('Lead', 'lead', asking) },
+              ]),
+            ],
+          });
+          expect(main.told).toEqual([told('Lead')]);
+        });
+
+        it('ties a delayed background delivery to the run it came from, after a later run holding no gate', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, runs } = await nested();
+          const asking = 'Two builders now. Do you sign off the revised plan?';
+          // R1 stops at a gate through a yield omp accepts: told at once.
+          await runs(
+            asked('Use two builders.'),
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: asking },
+            },
+            said('Yielded.'),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          // The operator signs off; R2 ends on a plain result.
+          await runs(asked('Signed off.'), said(END_STATE));
+          // R1's delivery arrives late: its gate was told already.
+          await arch.fire('context', {
+            messages: [
+              delivered(6, [
+                { id: 'Lead', text: envelope('Lead', 'lead', asking) },
+              ]),
+            ],
+          });
+          expect(main.told).toEqual([told('Lead')]);
+        });
+
+        it.each(ASKING)(
+          'tells of a gate whatever form its closing takes, across line breaks: %s',
+          async (closing) => {
+            omp.agents = [GATED()];
+            const { main, runs } = await nested();
+            await runs(asked('Plan renewal.'), said(closing));
+            expect(main.told).toEqual([told('Lead')]);
+          },
+        );
+
+        it.each(REPORTING)(
+          'tells of no gate for a sign-off only reported, and passes the reply on: %s',
+          async (closing) => {
+            omp.agents = [GATED()];
+            const { main, arch, runs } = await nested();
+            await runs(asked('Plan renewal.'), said(closing));
+            expect(main.told).toEqual([]);
+            expect(JSON.stringify(arch.sent)).toContain(
+              JSON.stringify(closing).slice(1, -1),
+            );
+          },
+        );
+
+        it('keeps telling of each new gate when the operator resumes a holder before its dispatch’s result arrives', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, lead, emit } = await nested();
+          emit('task:subagent:lifecycle', {
+            id: 'Lead',
+            agent: 'lead',
+            status: 'started',
+          });
+          await lead.fire('agent_start', {});
+          await lead.fire('message_end', { message: said(READ_BACK) });
+          await lead.fire('agent_end', { messages: [] });
+          emit('task:subagent:lifecycle', {
+            id: 'Lead',
+            agent: 'lead',
+            status: 'failed',
+          });
+          await vi.waitFor(() => expect(main.told).toEqual([told('Lead')]));
+          // The operator joins and prompts it while the dispatch's other items still run.
+          await lead.fire('agent_start', {});
+          await lead.fire('message_end', {
+            message: asked('Use two builders.'),
+          });
+          // The dispatch's result, reporting the first gate, arrives late: nothing new to tell.
+          await arch.fire('tool_result', {
+            toolName: 'task',
+            toolCallId: 'call',
+            input: {},
+            content: [
+              { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+            ],
+            details: { results: [LEAD] },
+          });
+          expect(main.told).toEqual([told('Lead')]);
+          // The resumed run stops at its own gate: told.
+          await lead.fire('message_end', {
+            message: said('Two builders now. Sign off the revised plan.'),
+          });
+          await lead.fire('agent_end', { messages: [] });
+          expect(main.told).toEqual([told('Lead'), told('Lead')]);
+        });
+
+        it('as each later run stops at a gate, its dispatcher’s message, a peer’s or the operator’s having started it', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, lead, runs } = await nested();
+          await runs(
+            { role: 'custom', details: { from: 'Arch' } },
+            said(READ_BACK),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          await runs(
+            { role: 'custom', details: { from: 'Peer' } },
+            said(READ_BACK),
+          );
+          await runs(
+            asked('Use two builders.'),
+            said('Two builders now. Sign off the revised plan.'),
+          );
+          await runs(asked('Signed off.'), said(DELIVERABLE));
+          await runs(asked('Carry it to the grant’s end.'), said(END_STATE));
+          expect(main.told).toEqual([told('Lead'), told('Lead'), told('Lead')]);
+          expect([arch.told, lead.told]).toEqual([[], []]);
+          // The end-state read-back reaches the dispatcher unchanged, as its result.
+          expect(JSON.stringify(arch.sent.at(-1))).toContain(
+            'end state is reached',
+          );
+          unread(main, arch, lead);
+        });
+
+        it('on a background delivery of a later result, once per gate', async () => {
+          omp.agents = [GATED(), BUILDER()];
+          const { main, arch, runs } = await nested();
+          const first = delivered(1, [{ id: 'Lead', text: READ_BACK }]);
+          await arch.fire('context', { messages: [first] });
+          await arch.fire('context', { messages: [first] });
+          expect(main.told).toEqual([told('Lead')]);
+          // A gate told as its run ended, then delivered: told once.
+          await runs(
+            { role: 'custom', details: { from: 'Arch' } },
+            said(READ_BACK),
+          );
+          await arch.fire('context', {
+            messages: [first, delivered(2, [{ id: 'Lead', text: READ_BACK }])],
+          });
+          expect(main.told).toEqual([told('Lead'), told('Lead')]);
+          unread(main, arch);
+          // A process started afresh reads the verdict from the record and tells nothing anew.
+          const again = await ompProcess();
+          const operator = await again.bind(MAIN);
+          const dispatcher = await again.bind(
+            { kind: 'sub', name: 'architect', id: 'Arch', parentId: 'Main' },
+            arch.entries,
+          );
+          operator.told.length = 0;
+          await dispatcher.fire('context', { messages: [first] });
+          expect(operator.told).toEqual([]);
+        });
+      });
+    });
+
     it('takes no other call for a dispatch: one carrying no agent and task is let through unread', async () => {
       omp.agents = [LEAD()];
       const session = await started();
@@ -1929,11 +2851,14 @@ describe('omp capability interface', () => {
       for (const line of [
         "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
         'Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.',
-        'Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.',
-        'Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.',
-        'Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.',
+        'Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the ledger records them, in your own communication style.',
+        'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
+        'A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
       ])
         expect(turns[0]).toContain(line);
+      // It no longer sends the agent on past the read-back in the same turn.
+      expect(turns[0]).not.toContain('in the same turn');
+      expect(turns[0]).not.toContain('pause for leave');
       expect(turns[1]).not.toContain('# Session start');
       // A declaration without it gets no note.
       omp.agents = [CARTOGRAPHER()];
@@ -1944,6 +2869,24 @@ describe('omp capability interface', () => {
           (await other.fire('before_agent_start')) as { systemPrompt: string[] }
         ).systemPrompt.join('\n'),
       ).not.toContain('# Session start');
+    });
+
+    it('carries the scope a reconstitution note gives it into the session-start note', async () => {
+      omp.agents = [
+        declare(
+          { name: 'architect', description: 'Holds the design.' },
+          '# architect\n\n### procedure\n\n- **reconstitution** (records and changes nothing before its read-back) — at every start, read back before acting',
+        ),
+      ];
+      const { fire } = await started('architect');
+      await fire('session_start');
+      expect(await fire('before_agent_start')).toMatchObject({
+        systemPrompt: expect.arrayContaining([
+          expect.stringContaining(
+            'This session starts with reconstitution (at every start, read back before acting): records and changes nothing before its read-back.',
+          ),
+        ]),
+      });
     });
 
     it('gives every turn of a launch that decides meaning, or keeps the records under honesty, a note of each', async () => {
@@ -1971,7 +2914,7 @@ describe('omp capability interface', () => {
           '# Meaning: yours',
           'The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.',
           "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
-          "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer.",
+          "Settle on sight: a decision you own whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
           '# The records',
           "The journal, the ledger and your delegates' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
           'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',

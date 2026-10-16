@@ -1,0 +1,18 @@
+{
+  "id": "01M511CZJYX7653HCCK1HMP6G7",
+  "at": "2026-10-16T00:22:12.830Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "gate",
+  "wording": "A point at a handover where the work stops for the operator's sign-off: a story's read-back, held by the architect; a story's plan read-back, held by the lead, which a task with no story skips unless the operator calls it; a pull request the operator reviews, held by the lead before it merges; release; a fork that is irreversible, about value or beyond the architect's competence; and any point the operator calls, stop included. A gate is held in the session of the party whose handover it is, which ends its turn there, its reply ending with the sign-off it waits on, until the operator answers; the operator joins that session, and the party that delegated the work learns only that it waits on the operator, and then the result. Pushing a branch or opening a pull request is never a gate, and between gates the agents work without checking in.",
+  "builtFrom": [
+    "sign-off",
+    "handover",
+    "read-back",
+    "pull request",
+    "release"
+  ],
+  "reason": "Divided authority needs the points where the operator's sign-off is due to be named, held by the party whose handover it is, and nowhere else, so agents neither run past them nor check in between them; a gate is the point, kept apart from the sign-off exercised there.",
+  "supersedes": []
+}

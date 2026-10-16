@@ -1,0 +1,12 @@
+{
+  "id": "01M511CRDSD9YRKMYRBH304235",
+  "at": "2026-10-16T00:22:05.497Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "sign-off",
+  "wording": "The operator's right, exercised at a gate, to agree that a handover serves its intent, so the work past that gate may go on: signing off a story's read-back starts the story; signing off a plan sends it to be built, the requirements the operator states there binding the lead and its recommendations the lead's to weigh; signing off a pull request lets it merge; signing off release makes the work available to the project's users. Only the operator holds it; anyone else exercises it only where delegated authority grants it, in the operator's place.",
+  "builtFrom": [],
+  "reason": "The operator and the architect stand in a client engagement with divided authority. The design gave the operator no right of its own between stating intent and release, so a fresh architect asked to read back before recording read back and recorded in the same turn. Sign-off is the operator's right, kept apart from the gate where it is exercised.",
+  "supersedes": []
+}

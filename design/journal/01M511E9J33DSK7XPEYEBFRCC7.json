@@ -1,0 +1,18 @@
+{
+  "id": "01M511E9J33DSK7XPEYEBFRCC7",
+  "at": "2026-10-16T00:22:55.811Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "drift",
+  "wording": "an agent's acts departing, over a session, from the stance and communication-style its profile states, known by its tells: asking what it could answer, handing back or holding open a decision it owns, options without a recommendation, transcribing instead of designing, descending below its stance, prescribing procedure a delegate already knows instead of intent, concepts and acceptance, and following procedure past its objective. The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift. The agent checks its acts against its tells every turn, and the operator notices drift in use, where the agent's text is revised.",
+  "builtFrom": [
+    "agent",
+    "profile",
+    "enforcement-level"
+  ],
+  "reason": "The holding-open and hand-back tells read waiting on the operator as drift, which pushed an architect past the operator's read-back; the tells are bounded to what the agent decides.",
+  "supersedes": [
+    "01M4W14MA3T0EMXA5JMT201QRQ"
+  ]
+}

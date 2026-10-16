@@ -1,0 +1,25 @@
+{
+  "id": "01M511E9CD1P931MF7YDACG53N",
+  "at": "2026-10-16T00:22:55.629Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "The agent that owns a story's realization, or a task with no story: it decides how the story is split into tasks and how many builders it takes, and holds the plan read-back as a gate, saying how the story will be built, which a task with no story skips unless the operator calls it. Once the plan is signed off it orchestrates the tasks, handing each to a builder and each pull request to a reviewer; when the story's risk warrants, it calls the check-writer and adds a second reviewer or the operator's review, which it holds as a gate before the pull request merges. It merges pull requests that pass review and every check, makes and records every technical decision within the operator's requirements, weighing its recommendations, and hands over the story's outcome, or a meaning question, never changing a concept or an example and never handling a held-out one.",
+  "builtFrom": [
+    "story",
+    "task",
+    "pull request",
+    "review",
+    "outcome",
+    "decision",
+    "check-writer",
+    "orchestrator-workers",
+    "gate",
+    "read-back"
+  ],
+  "reason": "Divided authority gives the lead two gates, the plan read-back and the operator's review of a pull request, where the operator adds its technical colour directly; held-out examples no longer pass through it.",
+  "supersedes": [
+    "01M50CYWZ9X1MMFCSY90XNF6QX"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "id": "01M511EZ2YDZCEG2G8BK4S2N8T",
+  "at": "2026-10-16T00:23:17.854Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0138",
+  "entry": "01M4QF20WRX32DG9BVK0DYMFJX",
+  "reason": "The plan to build contracts as a cut on its own branch, waiting on another model provider's quota, no longer stands; what it meant is stated by the context map and contract concepts, and contracts between contexts remain recommended work, as a story."
+}

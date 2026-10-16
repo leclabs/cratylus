@@ -1,0 +1,16 @@
+{
+  "id": "01M519J0TP024FGT1MXYBA1QQJ",
+  "at": "2026-10-16T02:44:46.550Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0261",
+  "context": "delivery",
+  "title": "Attach on omp: a gate is a reply closing on a request for the operator's sign-off, and the operator is told in its own session",
+  "situation": "The gate concept now tells the operator, in the session it works in, as soon as a gate waits on it, which party holds it and where to join it. The operator's trials found a delegated grant's end-state read-back rewritten into a false gate, because any reply that was not the JSON deliverable was treated as a hold.",
+  "decision": "(1) An agent declaring a sign-off right is projected as a blocking dispatch. (2) Its turn holds a gate only when the closing sentence of its reply asks for the operator's sign-off by one of three forms. It may be an imperative opening '(Please) sign off …'. It may be a question opening the sentence that asks the operator to give the sign-off: 'you sign off', 'I have/get your sign-off', 'you give your sign-off'. Or it may be a present wait on the operator's sign-off. Every other return reaches the delegating party unchanged, as its result, whatever its form. The detector reads the closing form the agents' values prescribe and is no general reading of English: an unusual phrasing of a request is a known limit. (3) When a turn ends holding a gate, the operator's own session shows, once per gate, which agent holds it and how to join it (Agent Hub: Alt+A, select, Enter), on a surface no model reads. This happens on every route: a dispatched run as it ends, a later run however it started, a background delivery, and a holder nested at any depth. The delegating party gets only the waiting notice, then the result. (4) No compaction hook is added, since one would switch off omp's background compaction for every cratylus session. So with omp's structured results on, a later handover that fails its contract and is accepted after omp's retries can still reach the delegating model through compaction. This is an open shortfall against the gate's meaning.",
+  "consequences": "The forge and cratylus documentation describe attach on omp, when and where the operator is told, and the open shortfall. Closing the shortfall, and a structural signal of a held gate in place of reading the closing sentence, are later work.",
+  "status": "accepted",
+  "supersedes": "0260",
+  "supersedesEntry": "01M515CM2BWTFF7HH1A0TEPGHE",
+  "decisionKind": "realization"
+}

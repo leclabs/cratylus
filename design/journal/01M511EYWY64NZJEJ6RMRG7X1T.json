@@ -1,0 +1,16 @@
+{
+  "id": "01M511EYWY64NZJEJ6RMRG7X1T",
+  "at": "2026-10-16T00:23:17.662Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0252",
+  "context": "workflow",
+  "title": "Read back before any change; a read-back held or called ends the turn",
+  "situation": "An earlier ruling judged the read-back only by its order relative to changes, which made it an ordering and never a handshake, so a read-back followed by a change in the same turn met it.",
+  "decision": "Reading the instructions, the prompt, the overviews, the journal and the ledger is reconstitution and is never held. At a session's start nothing is recorded or changed before the read-back, which carries the current design, then what is open, then the stories and tasks in flight. A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends its holder's turn until the operator answers; it is met only when no change precedes it and none follows it in the same turn.",
+  "consequences": "The reconstitution and read-back concepts state this.",
+  "status": "accepted",
+  "supersedes": "0105",
+  "supersedesEntry": "01M4NNZ9W5GK7CX6YPGFRK749Y",
+  "decisionKind": "meaning"
+}

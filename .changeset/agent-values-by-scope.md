@@ -1,0 +1,6 @@
+---
+"@cratylus/canon": minor
+"@cratylus/forge": minor
+---
+
+The architect's and lead's values hold by scope (sign-off-gates). Decision rights gain an optional `sign-off` slot, the operator's class of decision at its gates; the architect and lead state it as recommends, putting their handovers up for it and taking it only where delegated authority grants it. Both are principal over what each decides, human-in-the-loop at the operator's gates, human-on-the-loop between gates and at a gate whose sign-off is delegated, and mission-command between gates; each is decisive on the decisions it owns, its reply at a gate ending with the sign-off it waits on. The architect's optimize stops at the next gate; it rectifies every input, the operator's included, reading the restatement back where it differs; it records a change's design on that change's own branch; at session start it records and changes nothing before its read-back; and its story read-back is a gate the story starts on. The lead decides how a story is split and staffed and holds its plan read-back and the operator's review of a pull request as gates; pushing or opening a pull request is never one. The reviewer takes held-out examples directly from `design/held-out/`, never through the lead. The omp session-start note carries the scope a reconstitution note gives it.

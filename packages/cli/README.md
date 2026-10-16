@@ -265,6 +265,32 @@ and warns where it falls short; they are not the same, and this is what a user m
 - **Model, dispatch and tools.** On omp an agent's definition names its own model role,
   `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
+- **A gate held by a delegate (attach).** On omp, an agent whose decision rights hold sign-off
+  (the architect, the lead) holds a gate for your sign-off when it ends its turn on a reply that
+  ends with the sign-off it waits on: its closing sentence asks you for it now ("Please sign off
+  …", a question asking you to give it such as "Do you sign off …?" or "Can I have your sign-off
+  …?", or a
+  wait on it such as "I am waiting for your sign-off"). Any other question, or a sign-off only
+  reported, negated or past, holds nothing; any other reply
+  is its result, whether or not it is its declared deliverable. Install declares such an agent
+  `blocking`, so a dispatch of it always waits
+  for its result. cratylus's extension gives the session that dispatched it only a notice in that
+  agent's place: it waits on your sign-off, and you join it in omp's Agent Hub (Alt+A, select the
+  agent, Enter), where you answer it and work with it directly. Its reply is never passed up. omp
+  keeps the agent's session alive; each turn you prompt there reaches the dispatching session as
+  its result once it returns one, or as another such notice when it stops at another
+  gate. Every other result passes unchanged. You are told in the session you work in, as soon as
+  such an agent waits on you, however deep it sits below other agents: a warning line on your
+  screen, which no model reads, names the agent and how to join it (Alt+A, select it, Enter).
+  What omp limits: with `task.structured` on, omp
+  reminds an agent that ends without its deliverable up to three times, the last forcing it to
+  give one; an isolated agent can be joined only until omp parks it. One shortfall against the
+  gate's meaning is left open: with `task.structured` on, a later handover that fails its contract
+  and that omp accepts after its retries reaches the dispatching session's transcript, where
+  compaction can carry it into what that session's model reads. Closing it would turn off omp's
+  background compaction for every cratylus session. The dispatching session takes no part in a
+  gate held for you, so it never messages an agent waiting there; doing so is outside what a gate
+  means.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither starts that isolation from the bound plan's line. Building off the line is the agent's own

@@ -59,7 +59,7 @@ export function requireDefined<T>(value: T | undefined, label: string): T {
 export const camel = (name: string) =>
   name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
 
-// Decision 0070 and the drift concept, rebound under 0085 and 0090. Keep this expectation
+// Decision 0070 and the drift concept, rebound under 0085, 0090 and 0251. Keep this expectation
 // independent of canon so an omitted protocol or drift tell cannot pass.
 export const personaProtocol = `## Protocol
 
@@ -77,6 +77,8 @@ Drift tells (each = drift, never diligence):
 - **prescribing** -- telling a delegate procedure it already knows; an assignment carries intent, concepts and acceptance only;
 - **holding open** -- leaving an owned question open until someone asks; decide what you hold, on sight;
 - **procedure past objective** -- the ritual outliving what it serves: once its objective is met, any further step is drift; report the outcome and stop.
+
+The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift.
 
 Check: before ending a turn, read its acts against these tells. Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 
@@ -134,6 +136,14 @@ export const decisionSlots = [
   ['verdict', 'whether a pull request is approved'],
   ['release', 'making merged work available to its users'],
 ] as const;
+// Rulings 0250 and 0255(1): sign-off is the operator's class of decision; only the agents
+// that put their handovers up for it state it.
+export const signOffSlot = {
+  name: 'sign-off',
+  gloss:
+    "the operator's, at its gates: agreeing that a handover serves its intent",
+  optional: true,
+} as const;
 const slots = (...names: string[]) => names.map((name) => ({ name }));
 export const factors = {
   role: {
@@ -193,7 +203,10 @@ export const factors = {
     repertoire: 'fixed',
     level: 'fixed',
     projection: 'text',
-    slots: decisionSlots.map(([name, gloss]) => ({ name, gloss })),
+    slots: [
+      ...decisionSlots.map(([name, gloss]) => ({ name, gloss })),
+      signOffSlot,
+    ],
   },
   autonomy: {
     group: 'Authority',
@@ -537,16 +550,16 @@ const columns: Record<string, string[]> = {
   ],
   // Builder's unspecified classes are –; confirmed by the architect.
   'decision-rights': [
-    'I,R,D,–,–,–,R',
-    'I,I,I,D,D,I,I',
+    'I,R,D,–,–,–,R,R',
+    'I,I,I,D,D,I,I,R',
     '–,–,–,–,P,–,–',
     'I,I,I,I,I,D,I',
     'I,I,R,I,I,I,I',
     'I,I,I,I,D~its checks,I,I',
   ],
   autonomy: [
-    'principal,human-on-the-loop,mission-command',
-    'principal~in realization,human-on-the-loop,mission-command,handoff',
+    'principal,human-in-the-loop,human-on-the-loop,mission-command',
+    'principal,human-in-the-loop,human-on-the-loop,mission-command,handoff',
     'human-in-the-loop~of the lead,handoff',
     'principal~in its review,handoff',
     'handoff',
@@ -610,6 +623,73 @@ const columns: Record<string, string[]> = {
   ],
   evaluation: ['in-use', 'in-use', 'in-use', 'in-use', 'in-use', 'in-use'],
 };
+// Rulings 0250-0257: the architect's and lead's values hold by scope, and the reviewer takes
+// held-out examples where the architect keeps them. Each note is keyed by the slot an entry
+// fills, else by its anchor; notes too long for a column are stated here.
+const onGates = "at the operator's gates";
+const onTheLoop =
+  'between gates, and at a gate whose sign-off delegated authority grants it';
+const signOff =
+  'puts its handovers up for it; takes it only where delegated authority grants it';
+const heldOutDirect = 'directly from design/held-out/, never through the lead';
+const scoped: Partial<
+  Record<RoleName, Partial<Record<Factor, Record<string, string>>>>
+> = {
+  architect: {
+    role: {
+      architect:
+        "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded on that change's own branch",
+    },
+    objective: { 'stopping-rule': 'only up to the next gate' },
+    procedure: {
+      rectify:
+        "every input, the operator's included, its restatement read back where it differs; a requirement the operator states binds once understood",
+      reconstitution:
+        'at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight',
+    },
+    stance: { decisive: 'on the decisions it owns' },
+    'communication-style': {
+      ordering:
+        'never asking agreement to a decision it owns; at a gate the reply ends with the sign-off it waits on',
+    },
+    'decision-rights': { 'sign-off': signOff },
+    autonomy: {
+      principal: 'in meaning',
+      'human-in-the-loop': onGates,
+      'human-on-the-loop': onTheLoop,
+      'mission-command': 'between gates',
+    },
+    deliverable: {
+      'read-back':
+        "a story's, held as a gate: the story starts only on the operator's sign-off of it",
+    },
+  },
+  lead: {
+    procedure: {
+      'orchestrator-workers':
+        'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
+      'github-flow':
+        'a pull request the operator reviews merged only once the operator signs it off, a gate it holds; pushing a branch or opening a pull request is never a gate',
+    },
+    stance: {
+      decisive:
+        'on the decisions it owns; at a gate its reply ends with the sign-off it waits on',
+    },
+    'decision-rights': { 'sign-off': signOff },
+    autonomy: {
+      principal: 'in realization',
+      'human-in-the-loop': onGates,
+      'human-on-the-loop': onTheLoop,
+      'mission-command': 'between gates',
+    },
+  },
+  reviewer: {
+    'perception-scope': { 'held-out-examples': `taken ${heldOutDirect}` },
+    assignment: {
+      'review-request': `its held-out examples taken ${heldOutDirect}`,
+    },
+  },
+};
 export function roleVector(role: RoleName): Vector {
   const column = roleNames.indexOf(role);
   return Object.fromEntries(
@@ -623,19 +703,22 @@ export function roleVector(role: RoleName): Vector {
         text === ''
           ? []
           : text.split(',').map((item, index) => {
-              const [anchor, note] = item.split('~');
+              const [anchor, columnNote] = item.split('~');
+              const slot =
+                'slots' in meta
+                  ? requireDefined(meta.slots[index], `${factor} slot ${index}`)
+                      .name
+                  : undefined;
+              const note =
+                columnNote ??
+                scoped[role]?.[factor]?.[
+                  slot ?? requireDefined(anchor, `${role}.${factor} anchor`)
+                ];
               return entry(
                 factor,
                 requireDefined(anchor, `${role}.${factor} anchor`),
                 {
-                  ...('slots' in meta
-                    ? {
-                        slot: requireDefined(
-                          meta.slots[index],
-                          `${factor} slot ${index}`,
-                        ).name,
-                      }
-                    : {}),
+                  ...(slot === undefined ? {} : { slot }),
                   ...(note ? { note } : {}),
                   ...(role === 'architect' &&
                   factor === 'stance' &&
