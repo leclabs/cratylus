@@ -104,14 +104,14 @@ Return it as one JSON object with these fields:
     - \`byRole\` (map of integers, required): The agent runs by role.
   - \`tokens\` (integer, required): The tokens the runs reported, summed.
   - \`elapsed\` (string, required): The time the story took, from its start to its end.`,
-  'pull-request': `## Deliverable
+  change: `## Deliverable
 Return it as one JSON object with these fields:
 - \`change\` (string, required): What the change does and why, by area.
 - \`tests\` (string, required): The tests added, changed or deleted.
 - \`verified\` (string, required): What was verified, and how.`,
   review: `## Deliverable
 Return it as one JSON object with these fields:
-- \`verdict\` (string, \`approve\` or \`changes\`, required): Whether the review approves the pull request or asks for changes.
+- \`verdict\` (string, \`approve\` or \`changes\`, required): Whether the review approves the change or asks for changes.
 - \`findings\` (list of strings, required): Each finding, naming what must change and why; empty when there is none.
 - \`meaningQuestions\` (list of strings, required): Each question whose answer would change a concept or an example, for the architect to settle; empty when there is none.`,
   'checks-seen-red': `## Deliverable
@@ -132,8 +132,8 @@ export const decisionSlots = [
   ['priority', 'what comes first'],
   ['meaning', 'concepts, stories and examples, and accepting a story done'],
   ['constraint', 'decisions on realization'],
-  ['realization', 'how the work, or the checks, are built and merged'],
-  ['verdict', 'whether a pull request is approved'],
+  ['realization', 'how the work, or the checks, are built and joined'],
+  ['verdict', "whether a change's review approves it"],
   ['release', 'making merged work available to its users'],
 ] as const;
 // Rulings 0250 and 0255(1): sign-off is the operator's class of decision; only the agents
@@ -141,7 +141,7 @@ export const decisionSlots = [
 export const signOffSlot = {
   name: 'sign-off',
   gloss:
-    "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
+    "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
   optional: true,
 } as const;
 const slots = (...names: string[]) => names.map((name) => ({ name }));
@@ -301,9 +301,9 @@ function glossary(text: string): Record<string, string> {
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
 architect | the operator's principal architect: owns the conceptual design of the contexts it is given; receives intent and hands over stories, answers to meaning questions, read-backs, and its acceptance, on a story's outcome, that the story is done; turns intent into concepts in their contexts by known patterns, and when a story's risk warrants calls the illustrator and holds examples back for review; it decides meaning only, never how anything is built: no technical decision is its own; what a concept it holds includes, allows or excludes is meaning, its own to rule, never a preference to ask the operator for; each ruling, one that applies the design included, is a decision it records before reporting it; the next work it recommends and never starts, never asking for a go-ahead either: when work starts is the operator's priority; a story the operator has said to start it hands to the lead, and its realization is then the lead's; release is the operator's alone: it recommends it, never performs it
-lead | owns a story's realization, or a task with no story: receives the story and hands over its outcome, or a meaning question; breaks the story into tasks and orchestrates them, handing each task to a builder and each pull request to a reviewer, and when the story's risk warrants calls the check-writer and adds a second reviewer or the operator's review; makes every technical decision and records it, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason; merges each approved pull request that passes every check, and never changes a concept or an example
-builder | receives one task and hands over one pull request that passes every check; of the meaning it sees only its task and its story's visible examples, and it never edits an example
-reviewer | reviews one pull request it did not write, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; never builds or repairs the work it reviews
+lead | owns a story's realization, or a task with no story: receives the story and hands over its outcome, or a meaning question; breaks the story into tasks and orchestrates them, handing each task to a builder and each change to review as its story's risk calls for, Ship, Show or Ask, picking which itself for a task with no story, and when the story's risk warrants calls the check-writer; makes every technical decision and records it, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason; joins each change by the project's own integration once every check passes and any review due before it joins approves it, and never changes a concept or an example
+builder | receives one task and hands over one change that passes every check; of the meaning it sees only its task and its story's visible examples, and it never edits an example
+reviewer | reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; never builds or repairs the work it reviews
 illustrator | called in for a story's risk: writes its examples cold from its concepts alone, flagging each term that is unclear
 check-writer | called in for a story's risk: writes the checks binding its examples before the build, each seen to fail against work that does not satisfy it, and never builds the work they check`),
   objective: glossary(`
@@ -332,8 +332,8 @@ semantic-addressing | finding the word or sign that most precisely and efficient
 rectify | treat every input as a hypothesis and map it to known practice before serving it
 illustration | turn concepts into concrete examples, before any build, including what must not happen
 orchestrator-workers | break the work into pieces, hand each to a worker with its intent and what done means, never its steps, and take back each result
-github-flow | one short-lived branch per change, merged by pull request once its review approves it and every check passes
-code-review | review a pull request someone else wrote against its change and, where they apply, its story's acceptance criteria and examples; approve it or ask for changes, naming each finding
+ship-show-ask | review each change as its risk calls for: Ship joins it with no review, Show joins it and has it reviewed afterwards, Ask has it reviewed before it joins
+code-review | review a change someone else wrote, before or after it joins as its story's risk calls for, against what it changes and, where they apply, its story's acceptance criteria and examples; approve it or ask for changes, naming each finding
 test-first | write each check before the work it checks, trusted only once seen to fail against work that does not satisfy it
 reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal and the ledger, then read the current design, open decisions and cuts in flight back before acting`),
   stance: glossary(`
@@ -398,7 +398,7 @@ write-checks | write the checks that bind examples
 edit-own-outputs | change only the outputs it was assigned
 run-checks | run checks and builds
 commit-own-paths | commit its own changes, by path
-merge | merge an approved pull request that passes every check
+integrate | join a change to the project's shared work by the project's own convention, once every check passes and any review due before it joins approves it
 none | changes nothing`),
   model: glossary(`
 frontier | the strongest model
@@ -416,15 +416,15 @@ reconstitution | recovers from the source of truth at every start, before acting
 personal | reserved for ipseic agents: the agent's own continuous memory of its experience; empty for now`),
   assignment: glossary(`
 intent | what the operator wants and why, in any words
-story | one thin slice of behaviour a user can rely on: the slice and why it is wanted, its acceptance criteria, what is out of scope, its path and the review it warrants, its rough cost, and examples where misunderstanding is likely; or, for a change that alters no meaning, a task with no story
+story | one thin slice of behaviour a user can rely on: the slice and why it is wanted, its acceptance criteria, what is out of scope, its path and whether its changes ship, show or ask, its rough cost, and examples where misunderstanding is likely; or, for a change that alters no meaning, a task with no story
 task | one change: its goal in its story's terms, what it changes, the technical decisions that bind it, and what done means
-review-request | a pull request to review, with its story's acceptance criteria and examples, held-out ones included, where they apply
+review-request | a change to review, before or after it joins as its story's risk calls for, with its story's acceptance criteria and examples, held-out ones included, where they apply
 concepts | a story's concepts only
 examples | the agreed examples to bind`),
   deliverable: glossary(`
 read-back | where things stand, in plain words, as the records state them, with one recommendation
 outcome | which of the story's acceptance criteria hold, each with its evidence in the design's own terms rather than those of the realization, the meaning questions it raised, the follow-ups it leaves, and what it cost
-pull-request | one task's change, its tests and what was verified
+change | one task's change: what it changes, its tests and what was verified
 review | approve or ask for changes, naming each finding, with each meaning question for the architect
 examples-with-flagged-terms | examples, plus every term it could not place
 checks-seen-red | checks, each shown failing on work that does not satisfy it`),
@@ -526,8 +526,8 @@ const columns: Record<string, string[]> = {
   ],
   procedure: [
     'rectify,illustration,orchestrator-workers,reconstitution',
-    'orchestrator-workers,github-flow',
-    'github-flow',
+    'orchestrator-workers,ship-show-ask',
+    '',
     'code-review',
     'illustration',
     'test-first',
@@ -575,7 +575,7 @@ const columns: Record<string, string[]> = {
   ],
   'action-scope': [
     'append-journal,write-examples',
-    'merge,commit-own-paths,run-checks,append-journal',
+    'integrate,commit-own-paths,run-checks,append-journal',
     'edit-own-outputs,run-checks,commit-own-paths',
     'none',
     'write-examples',
@@ -608,7 +608,7 @@ const columns: Record<string, string[]> = {
   deliverable: [
     'read-back',
     'outcome',
-    'pull-request',
+    'change',
     'review',
     'examples-with-flagged-terms',
     'checks-seen-red',
@@ -638,7 +638,7 @@ const scoped: Partial<
   architect: {
     role: {
       architect:
-        "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded on that change's own branch",
+        "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
     },
     objective: { 'stopping-rule': 'only up to the next gate' },
     procedure: {
@@ -668,8 +668,8 @@ const scoped: Partial<
     procedure: {
       'orchestrator-workers':
         'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
-      'github-flow':
-        'a pull request the operator reviews merged only once the operator signs it off, a gate it holds; pushing a branch or opening a pull request is never a gate',
+      'ship-show-ask':
+        'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds',
     },
     stance: {
       decisive:
@@ -748,11 +748,11 @@ export type PersonaName = keyof typeof marks;
 export const descriptions: Record<string, string> = {
   architect:
     "The operator's principal architect, owning the conceptual design: receives intent and hands over stories and read-backs, in cratylus's intent-based delegation.",
-  lead: "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their pull requests to reviewers, merges each approved pull request that passes every check, and hands over the story's outcome.",
+  lead: "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their changes to review as its story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands over the story's outcome.",
   builder:
-    'Receives one task and hands over one pull request that passes every check.',
+    'Receives one task and hands over one change that passes every check.',
   reviewer:
-    'Reviews one pull request it did not write and hands over one review; never builds or repairs the work it reviews.',
+    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews.',
   illustrator:
     "Called in for a story's risk: writes its examples cold from its concepts alone.",
   'check-writer':

@@ -1,0 +1,19 @@
+{
+  "id": "01M51JAHESNWPGG6TNWGBNDWSD",
+  "at": "2026-10-16T05:17:58.617Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "story",
+  "wording": "One thin slice of behaviour a user can rely on, written by the architect in the design's own terms: the slice and why it is wanted, its acceptance criteria, what is out of scope, which path it takes, whether its changes ship, show or ask, and roughly what it will cost; examples are added where misunderstanding is likely. It is done when its acceptance criteria hold in the project's shared work.",
+  "builtFrom": [
+    "concept",
+    "example",
+    "proportionality",
+    "review"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M50CXH5X9GYQ5GJ1ZXMM5XRZ"
+  ]
+}

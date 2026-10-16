@@ -1,0 +1,19 @@
+{
+  "id": "01M51JAHJWYWQW26W39C2BEZ4J",
+  "at": "2026-10-16T05:17:58.748Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "concept journal",
+  "wording": "The project's append-only record of its design and decisions, kept with the project and starting empty: the current design and the open decisions are computed from it, the latest version of each concept or context description being current, and two versions superseding the same one compete until a later one supersedes both. With the ledger it is the project's one event-sourced record, the design stream beside the work stream; the examples are documents kept beside it. A change's entries travel with that change and join the project's shared work with it. It warns, never refuses, where a wording names an implementation, cites a decision, recounts history, or only extends the version it replaces.",
+  "builtFrom": [
+    "concept",
+    "bounded context",
+    "supersession",
+    "decision"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M511DQZBTF0G5H30KAEZMGR7"
+  ]
+}

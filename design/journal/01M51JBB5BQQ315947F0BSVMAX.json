@@ -1,0 +1,16 @@
+{
+  "id": "01M51JBB5BQQ315947F0BSVMAX",
+  "at": "2026-10-16T05:18:24.939Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0269",
+  "context": "workflow",
+  "title": "Divided authority: the operator signs off at gates, and only there",
+  "situation": "The operator: a gate is one of its hold points and nothing that is not one is a gate, so the design's statements of what is never a gate say nothing; and its gate on a pull request it reviews assumed pull requests. Restated whole from the decision it supersedes, with those parts changed.",
+  "decision": "(1) The operator and the architect stand in a client engagement with divided authority, each sovereign in its own domain. The operator decides intent, priority and release and holds sign-off, exercised at the gates and only there: a story's read-back (the architect's), a story's plan read-back (the lead's; a task with no story skips it unless the operator calls it), a change the operator has asked to review before it joins (the lead's), release, a fork that is irreversible, about value or beyond the architect's competence, and any gate the operator calls, stop included. (2) A story starts only when the operator signs off its read-back; nothing else counts as being told to start. (3) A gate is a hold point; at it, its holder, the party whose handover it is, interrupts with a request for the operator's sign-off, unless that sign-off is delegated. Between gates the agents work without checking in. (4) The architect decides meaning only and rectifies every input, the operator's included, restating it in established names and reading the restatement back where it differs; it disagrees with reasons. What binds of the operator's input, once understood, is its intent and its technical requirements; its wording of a concept is input to meaning, the architect's to rectify, never transcribed as a requirement. How a story is split into tasks and how many builders it takes is the lead's. (5) The operator may grant delegated authority over a scope, naming the sign-offs taken in its place, the limits it keeps and an end state; its read-back comes once, at the end state.",
+  "consequences": "The gate, sign-off and operator concepts state the gates; the delivered agents' text drops every statement of what is not a gate in the neutral-conventions story.",
+  "status": "accepted",
+  "supersedes": "0266",
+  "supersedesEntry": "01M51DAQDR3K5C1XJNFKNZADM0",
+  "decisionKind": "meaning"
+}

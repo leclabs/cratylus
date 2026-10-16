@@ -1,0 +1,16 @@
+{
+  "id": "01M51JAH2VX43JKJ5AVP78W8HS",
+  "at": "2026-10-16T05:17:58.235Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reviewer",
+  "wording": "The agent that reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; it never builds or repairs the work it reviews.",
+  "builtFrom": [
+    "review"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M50CXHQQKQE8MMNDHCKSTHXD"
+  ]
+}

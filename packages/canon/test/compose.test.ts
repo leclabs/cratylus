@@ -110,7 +110,7 @@ describe('typed handoffs', () => {
       deliverable: ['change', 'tests', 'verified'],
     });
     expect(required('reviewer')).toEqual({
-      assignment: ['pullRequest'],
+      assignment: ['change'],
       deliverable: ['verdict', 'findings', 'meaningQuestions'],
     });
     expect(required('checkWriter')).toEqual({

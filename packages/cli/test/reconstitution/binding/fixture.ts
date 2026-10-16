@@ -25,7 +25,7 @@ export const story = {
   ],
   outOfScope: [],
   path: 'plain',
-  review: 'One reviewer per pull request.',
+  review: 'Ask: each change reviewed before it joins.',
   cost: 'One task.',
   examples: ['film-production/1'],
   decisions: ['0081'],

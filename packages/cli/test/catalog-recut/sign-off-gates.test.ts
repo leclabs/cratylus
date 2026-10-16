@@ -30,14 +30,14 @@ const lineStarting = (lines: readonly string[] | undefined, prefix: string) =>
   );
 
 const signOffLine =
-  "- sign-off (the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
+  "- sign-off (the operator's, at its gates, which are a story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
 
 describe('sign-off-gates: agent values by scope', () => {
   it("sign-off is an optional decision-rights slot, the operator's class of decision", () => {
     expect(canon.MANIFEST['decision-rights']).toHaveProperty('slots.7', {
       name: 'sign-off',
       gloss:
-        "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
+        "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
       optional: true,
     });
   });
@@ -76,7 +76,7 @@ describe('sign-off-gates: agent values by scope', () => {
   it('the architect is decisive on what it owns and waits at its gates', () => {
     const lines = rendered('architect').architect;
     for (const prefix of [
-      "- **architect** (rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded on that change's own branch) — ",
+      "- **architect** (rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to) — ",
       '- stopping-rule: **optimize** (only up to the next gate) — ',
       "- **rectify** (every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed) — ",
       '- **reconstitution** (at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight) — ',
@@ -91,7 +91,7 @@ describe('sign-off-gates: agent values by scope', () => {
     const lines = rendered('lead').lead;
     for (const prefix of [
       '- **orchestrator-workers** (how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it) — ',
-      '- **github-flow** (a pull request the operator reviews merged only once the operator signs it off, a gate it holds; pushing a branch or opening a pull request is never a gate) — ',
+      '- **ship-show-ask** (the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds) — ',
       '- **decisive** (on the decisions it owns; at a gate its reply ends with the sign-off it waits on) — ',
     ])
       expect(lineStarting(lines, prefix), prefix).toHaveLength(1);

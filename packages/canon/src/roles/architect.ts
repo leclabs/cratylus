@@ -68,7 +68,7 @@ export const architectRole: RoleCell = {
     role: [
       {
         value: architect,
-        note: "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded on that change's own branch",
+        note: "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
       },
     ],
     objective: [

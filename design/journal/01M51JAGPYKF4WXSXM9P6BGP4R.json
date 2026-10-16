@@ -1,0 +1,21 @@
+{
+  "id": "01M51JAGPYKF4WXSXM9P6BGP4R",
+  "at": "2026-10-16T05:17:57.854Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "handover",
+  "wording": "What one party passes to another; each role is defined by what it receives and what it hands over, never by steps. A handover is a story, a task, a change, a review, an outcome or a read-back, and each states what it must contain, so one passed without a part shows what is missing.",
+  "builtFrom": [
+    "story",
+    "task",
+    "change",
+    "review",
+    "outcome",
+    "read-back"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M50CXHKC7D2ZVGGXK29ZT35H"
+  ]
+}

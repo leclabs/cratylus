@@ -1,6 +1,6 @@
-// The builder role: receives one task and hands over one pull request (workflow:
-// builder; agents 0243). It performs realization (P); every other decision class is –
-// (no part).
+// The builder role: receives one task and hands over one change (workflow: builder;
+// agents 0272). It performs realization (P); every other decision class is – (no
+// part). It names no procedure: how its change joins is the project's own (0268).
 
 import type { RoleCell } from '../compose.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
@@ -14,7 +14,7 @@ import { maintenance } from '../dimensions/communication-style/maintenance.js';
 import { plain } from '../dimensions/communication-style/plain.js';
 import { none } from '../dimensions/decision-rights/none.js';
 import { performs } from '../dimensions/decision-rights/performs.js';
-import { pullRequest } from '../dimensions/deliverable/pull-request.js';
+import { change } from '../dimensions/deliverable/change.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
 import { fixedAcceptanceCriteria } from '../dimensions/guardrails/fixed-acceptance-criteria.js';
@@ -27,7 +27,6 @@ import { satisfice } from '../dimensions/objective/satisfice.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { ownTask } from '../dimensions/perception-scope/own-task.js';
 import { work } from '../dimensions/perception-scope/work.js';
-import { githubFlow } from '../dimensions/procedure/github-flow.js';
 import { builder } from '../dimensions/role/builder.js';
 import { dry } from '../dimensions/stance/dry.js';
 import { scopeDiscipline } from '../dimensions/stance/scope-discipline.js';
@@ -36,7 +35,7 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 export const builderRole: RoleCell = {
   name: 'builder',
   description:
-    'Receives one task and hands over one pull request that passes every check.',
+    'Receives one task and hands over one change that passes every check.',
   mark: null,
   values: {
     role: [builder],
@@ -45,7 +44,7 @@ export const builderRole: RoleCell = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareEngineering],
-    procedure: [githubFlow],
+    procedure: [],
     stance: [scopeDiscipline, simplicity, dry],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -74,7 +73,7 @@ export const builderRole: RoleCell = {
     ],
     memory: [working],
     assignment: [task],
-    deliverable: [pullRequest],
+    deliverable: [change],
     guardrails: [honesty, fixedAcceptanceCriteria],
     evaluation: [inUse],
   },

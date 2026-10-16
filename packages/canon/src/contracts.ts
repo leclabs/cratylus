@@ -21,10 +21,10 @@ import { examples } from './dimensions/assignment/examples.js';
 import { reviewRequest } from './dimensions/assignment/review-request.js';
 import { story } from './dimensions/assignment/story.js';
 import { task } from './dimensions/assignment/task.js';
+import { change } from './dimensions/deliverable/change.js';
 import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
 import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
 import { outcome } from './dimensions/deliverable/outcome.js';
-import { pullRequest } from './dimensions/deliverable/pull-request.js';
 import { review } from './dimensions/deliverable/review.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
@@ -80,11 +80,11 @@ const storyForm = record(
     ),
     path: said(
       { type: 'string', enum: ['plain', 'scaled-up'] },
-      'The path the story takes: plain, broken into tasks each built by one builder and reviewed by one reviewer, or scaled up with specialists for its risk.',
+      'The path the story takes: plain, broken into tasks each built by one builder, or scaled up with specialists for its risk.',
     ),
     review: said(
       text,
-      "The review the story warrants: one reviewer per pull request, or a second reviewer or the operator's review where its risk calls for one.",
+      "How the story's changes are reviewed, as its risk picks: Ship (joined with no review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that gate.",
     ),
     cost: said(
       text,
@@ -138,21 +138,18 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
     reviewRequest,
     record(
       {
-        pullRequest: said(
-          text,
-          'The pull request to review, by its reference.',
-        ),
+        change: said(text, 'The change to review, by its reference.'),
         story: said(
           text,
-          'The story the pull request serves, by its name; absent for a task with no story.',
+          'The story the change serves, by its name; absent for a task with no story.',
         ),
         acceptanceCriteria: said(
           texts,
-          "The story's acceptance criteria the pull request is reviewed against, where they apply.",
+          "The story's acceptance criteria the change is reviewed against, where they apply.",
         ),
         examples: exampleRefs(
           texts,
-          'The examples the pull request is reviewed against, where they apply',
+          'The examples the change is reviewed against, where they apply',
         ),
       },
       ['story', 'acceptanceCriteria', 'examples'],
@@ -234,7 +231,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     ),
   ],
   [
-    pullRequest,
+    change,
     record({
       change: said(text, 'What the change does and why, by area.'),
       tests: said(text, 'The tests added, changed or deleted.'),
@@ -246,7 +243,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     record({
       verdict: said(
         { type: 'string', enum: ['approve', 'changes'] },
-        'Whether the review approves the pull request or asks for changes.',
+        'Whether the review approves the change or asks for changes.',
       ),
       findings: said(
         texts,

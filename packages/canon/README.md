@@ -66,12 +66,13 @@ warrants them. Each role is defined by what it receives and what it hands over, 
 - **architect** — the operator's principal architect, owning the conceptual design: receives intent,
   hands over stories, answers to meaning questions and read-backs; decides meaning only.
 - **lead** — owns a story's realization, or a task with no story: orchestrates its tasks to builders
-  and their pull requests to reviewers (orchestrator-workers), merges each approved pull request
-  that passes every check, and hands over the outcome.
-- **builder** — receives one task and hands over one pull request that passes every check.
-- **reviewer** — reviews one pull request it did not write, against the change and, where they
-  apply, its story's acceptance criteria and examples, held-out ones included; hands over one
-  review and never builds or repairs the work.
+  (orchestrator-workers) and their changes to review as its story's risk calls for (Ship, Show or
+  Ask), joins each change by the project's own integration once every check passes and any review
+  due before it joins approves it, and hands over the outcome.
+- **builder** — receives one task and hands over one change that passes every check.
+- **reviewer** — reviews one change it did not write, before or after it joins as its story's risk
+  calls for, against the change and, where they apply, its story's acceptance criteria and
+  examples, held-out ones included; hands over one review and never builds or repairs the work.
 - **illustrator** — writes a story's examples cold from its concepts alone, flagging unclear terms.
 - **check-writer** — writes the checks binding a story's examples, each seen failing before the build.
 
@@ -112,8 +113,8 @@ field, `[≥1]` a list that may not be empty):
 | Role         | Assignment                                                                                                                                                | Deliverable                                                        |
 | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | lead         | story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, path, review, cost, examples?, decisions?, contexts?}`, or a task with no story (as below) | outcome `{story, criteria[≥1], meaningQuestions, followUps, cost}` |
-| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                     | pull request `{change, tests, verified}`                           |
-| reviewer     | review request `{pullRequest, story?, acceptanceCriteria?, examples?}`                                                                                    | review `{verdict, findings, meaningQuestions}`                     |
+| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                     | change `{change, tests, verified}`                                 |
+| reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                                                         | review `{verdict, findings, meaningQuestions}`                     |
 | check-writer | examples `{story, examples[≥1]}`                                                                                                                          | checks seen red `{story, checks}`                                  |
 | illustrator  | concepts `{story, concepts[≥1]}`                                                                                                                          | examples with flagged terms `{examples, flaggedTerms}`             |
 

@@ -28,8 +28,9 @@ names them: `concepts`, `ledger` and `versionSkew`. A corpus's skill names one o
 | `versionSkew` | `report`                                                                                                                                                             |
 
 Every journal entry records who appended it (`by`: the agent making the call, named by the harness
-in `CRATYLUS_AGENT`, else git's user). History is held by review and the record, never a gate
-(decision 0143): the journal and the ledger are append-only because their verbs only append.
+in `CRATYLUS_AGENT`, else git's user). History is held by review, as each change's risk calls
+for, never by refusal (decision 0274): the journal and the ledger are append-only because their
+verbs only append.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in

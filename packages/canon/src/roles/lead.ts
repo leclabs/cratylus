@@ -1,13 +1,13 @@
 // The lead role: owns a story's realization, or a task with no story; orchestrates its
-// tasks to builders and their pull requests to reviewers, merges what is approved and
-// passes every check, and hands over the outcome (workflow: lead; agents 0243). Its
-// values hold by scope (0250-0257): decisive on the realization it owns, waiting at
-// the operator's gates.
+// tasks to builders and their changes to review as its story's risk calls for (Ship,
+// Show or Ask), joins each change by the project's own integration, and hands over the
+// outcome (workflow: lead; agents 0272; workflow 0267, 0268). Its values hold by scope
+// (0250-0257): decisive on the realization it owns, waiting at the operator's gates.
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
 import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
-import { merge } from '../dimensions/action-scope/merge.js';
+import { integrate } from '../dimensions/action-scope/integrate.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
 import { story } from '../dimensions/assignment/story.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
@@ -38,8 +38,8 @@ import { conceptJournal } from '../dimensions/perception-scope/concept-journal.j
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { reports } from '../dimensions/perception-scope/reports.js';
 import { work } from '../dimensions/perception-scope/work.js';
-import { githubFlow } from '../dimensions/procedure/github-flow.js';
 import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
+import { shipShowAsk } from '../dimensions/procedure/ship-show-ask.js';
 import { lead } from '../dimensions/role/lead.js';
 import { decisive } from '../dimensions/stance/decisive.js';
 import { proportionate } from '../dimensions/stance/proportionate.js';
@@ -49,7 +49,7 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 export const leadRole: RoleCell = {
   name: 'lead',
   description:
-    "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their pull requests to reviewers, merges each approved pull request that passes every check, and hands over the story's outcome.",
+    "Owns a story's realization, or a task with no story: orchestrates its tasks to builders and their changes to review as its story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands over the story's outcome.",
   mark: null,
   values: {
     role: [lead],
@@ -64,8 +64,8 @@ export const leadRole: RoleCell = {
         note: 'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
       },
       {
-        value: githubFlow,
-        note: 'a pull request the operator reviews merged only once the operator signs it off, a gate it holds; pushing a branch or opening a pull request is never a gate',
+        value: shipShowAsk,
+        note: 'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds',
       },
     ],
     stance: [
@@ -107,7 +107,7 @@ export const leadRole: RoleCell = {
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, work],
-    actionScope: [merge, commitOwnPaths, runChecks, appendJournal],
+    actionScope: [integrate, commitOwnPaths, runChecks, appendJournal],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
