@@ -1,0 +1,16 @@
+{
+  "id": "01M53BYT9387NT8XC4GMDZXWQW",
+  "at": "2026-10-16T22:05:11.843Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reviewer",
+  "wording": "The agent that reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; it never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.",
+  "builtFrom": [
+    "review"
+  ],
+  "reason": "The operator: where it calls its review of a change, its review is that change's review, held-out examples included; an agent reviewing it as well before the operator's review duplicated the review.",
+  "supersedes": [
+    "01M51JAH2VX43JKJ5AVP78W8HS"
+  ]
+}
