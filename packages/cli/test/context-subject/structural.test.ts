@@ -75,8 +75,12 @@ function current(
   for (const verb of ['state', 'design']) {
     const result = query(fixture.root, verb, '--context', 'workflow');
     expect(result.contexts).toMatchObject([
-      { name: 'workflow', subject, relation, competingDescriptions: [] },
+      { name: 'workflow', subject, relation },
     ]);
+    // The design state lists competing descriptions only when any compete.
+    if (verb === 'design')
+      expect(result.contexts[0]).toHaveProperty('competingDescriptions', []);
+    else expect(result.contexts[0]).not.toHaveProperty('competingDescriptions');
     expect(result.contexts).toHaveLength(1);
     for (const earlier of absent)
       expect(JSON.stringify(result)).not.toContain(earlier);

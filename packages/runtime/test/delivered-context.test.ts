@@ -217,7 +217,7 @@ it('workflow/1 — a library caller without delivered documents sees none and cr
     expect(answer).toMatchObject({ contexts: [] });
     expect(journalExists).toBe(false);
   }
-  for (const verb of ['design', 'state', 'overview'])
+  for (const verb of ['design', 'state'])
     noDelivery(command(verb), existsSync(join(root, 'design/journal')));
   // Prove both absence assertions reject the prohibited observations.
   expect(() =>

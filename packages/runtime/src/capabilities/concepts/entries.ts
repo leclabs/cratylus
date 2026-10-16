@@ -10,11 +10,12 @@
 // earlier kept in the journal. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
-// id, and its acceptance (`accept`), each classification of its kind
-// (`classify`) and its deprecation (`deprecate`) are entries of their own, so
-// the decision's record never changes. No verb writes the kind `efficiency`
-// any more: those entries, each a cut's effort figures, are read as recorded,
-// the latest for a cut being its figures, and shown only as history.
+// id and records realization, and its acceptance (`accept`) and its
+// deprecation (`deprecate`) are entries of their own, so the decision's record
+// never changes. No verb writes the kinds `classify` or `efficiency` any more:
+// a classification of a decision's kind and a cut's effort figures are read as
+// recorded, the latest classification governing a decision's kind and the
+// latest figures for a cut being its figures, and shown only as history.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -81,7 +82,8 @@ export interface RetireEntry extends Stamped {
 export type VersionEntry = WordedEntry | RetireEntry;
 
 /** What a decision is about: stating what the design means, or constraining
- *  how it is realized. */
+ *  how it is realized. Every decision recorded now is of realization; meaning
+ *  is read only on entries recorded before. */
 export const DECISION_KINDS = ['meaning', 'realization'] as const;
 export type DecisionKind = (typeof DECISION_KINDS)[number];
 
@@ -90,10 +92,11 @@ export type DecisionKind = (typeof DECISION_KINDS)[number];
  *  gave, which two branches may each give. `supersedes` is the superseded
  *  decision's name and `supersedesEntry` its entry (absent on entries written
  *  before names could be shared, which are read by their name alone).
- *  `decisionKind` is present only where the decision was recorded with its
- *  kind. `keeps`, the example files a decision kept, and `cut`, the cut it was
- *  recorded about, are no longer written; where an entry carries them they
- *  are read as recorded, and the decision's status is its own alone. */
+ *  `decisionKind` is `realization` on every decision recorded now, and absent
+ *  or as recorded on earlier entries. `keeps`, the example files a decision
+ *  kept, and `cut`, the cut it was recorded about, are no longer written;
+ *  where an entry carries them they are read as recorded, and the decision's
+ *  status is its own alone. */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;

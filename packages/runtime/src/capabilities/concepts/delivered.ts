@@ -22,8 +22,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { journalAt } from './journal.js';
-import { overviewOf } from './overview.js';
-import { Folded, type Meaning } from './views.js';
+import { Folded, type Meaning, designState } from './views.js';
 
 /** A context as a release delivers it: its provenance and its current design. */
 export interface DeliveredContext {
@@ -121,19 +120,10 @@ export function deliveredDesign(delivered: DeliveredContext) {
   };
 }
 
-/** The overview of `delivered`, as `overview` gives a context's, marked, its
- *  account saying first that it is the practice the project's agents work by,
- *  where it comes from, and that it is not the project's design and read-only;
- *  its relation told in its origin's context map, never the project's. */
-export function deliveredOverview(delivered: DeliveredContext) {
-  const overview = overviewOf(
-    deliveredDesign(delivered),
-    [],
-    `${delivered.origin}’s context map`,
-  );
+/** The design state of `delivered`, as `state` gives a context's, marked. */
+export function deliveredState(delivered: DeliveredContext) {
   return {
-    ...overview,
-    account: `The ${qualifiedName(delivered)} context is the practice this project’s agents work by, delivered by ${delivered.origin} at version ${delivered.version}. It is not part of this project’s design and has no place in its context map; it is read-only, read as delivered, never recorded into or changed through this project’s journal.\n\n${overview.account}`,
+    ...designState(deliveredDesign(delivered)),
     ...marksOf(delivered),
   };
 }
