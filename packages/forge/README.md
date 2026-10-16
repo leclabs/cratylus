@@ -195,11 +195,17 @@ omp process; and each later run omp hands over itself as a background delivery (
 job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
 recorded in the session when held). Every other result passes unchanged. Known omp limitations:
 with `task.structured` on, omp reminds a delegate without its deliverable up to three times, the
-last forcing a yield; an isolated delegate is joinable only until omp parks it; a held reply enters
-the dispatching session's own transcript, which its compaction reads, only where omp relays it
-itself (a run the dispatcher's own message woke, and with `task.structured` on a later yield omp
-accepts though it fails the contract); no `session_before_compact` handler covers that, since one
-turns off omp's background compaction for every session.
+last forcing a yield; an isolated delegate is joinable only until omp parks it.
+
+One shortfall against the gate's meaning is left open (decision 0258). "Learns only" holds for
+whatever reaches the dispatching party's own context, compaction summaries its model later reads
+included. With `task.structured` on, a later handover that fails its contract and that omp accepts
+after its schema retries reaches the dispatching session's transcript, and compaction can carry it
+into what that session's model reads. Closing it would take a `session_before_compact` handler,
+which turns off omp's background compaction for every cratylus session. A run of a waiting delegate
+woken by the dispatcher's own message is a use outside the gate's meaning, not a limit: the
+dispatching party takes no part in a gate held for the operator, so never messages a delegate
+waiting there.
 
 ## The harness adapter port
 

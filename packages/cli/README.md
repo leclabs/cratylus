@@ -277,10 +277,13 @@ and warns where it falls short; they are not the same, and this is what a user m
   its result once it gives its deliverable, or as another such notice when it stops at another
   gate. Every other result passes unchanged. What omp limits: with `task.structured` on, omp
   reminds an agent that ends without its deliverable up to three times, the last forcing it to
-  give one; an isolated agent can be joined only until omp parks it. And a held reply reaches the
-  dispatching session's own transcript, which you see and its compaction reads, only where omp
-  relays it itself: when the dispatching session messages an agent waiting at a gate, and, with
-  `task.structured` on, when omp accepts a later turn's deliverable that fails its contract.
+  give one; an isolated agent can be joined only until omp parks it. One shortfall against the
+  gate's meaning is left open: with `task.structured` on, a later handover that fails its contract
+  and that omp accepts after its retries reaches the dispatching session's transcript, where
+  compaction can carry it into what that session's model reads. Closing it would turn off omp's
+  background compaction for every cratylus session. The dispatching session takes no part in a
+  gate held for you, so it never messages an agent waiting there; doing so is outside what a gate
+  means.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither starts that isolation from the bound plan's line. Building off the line is the agent's own

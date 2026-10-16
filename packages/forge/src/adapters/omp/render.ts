@@ -1032,12 +1032,17 @@ const SESSION_PLACEMENT: readonly string[] = [
  *
  * omp LIMITS ON ATTACH, held as omp gives them: with `task.structured` on, omp reminds a
  * delegate that ends without its deliverable up to three times, the last forcing a yield;
- * an isolated delegate is joinable only until omp parks it. A held reply reaches the
- * dispatching session's own transcript (which its compaction reads, and the operator sees)
- * only where omp relays it natively: a run of a delegate waiting at a gate that the
- * dispatcher's own message woke, and, with `task.structured` on, a later run whose yield
- * omp accepts though it fails the contract. No `session_before_compact` handler covers it,
- * since registering one turns off omp's background compaction for every session.
+ * an isolated delegate is joinable only until omp parks it.
+ *
+ * A SHORTFALL AGAINST THE GATE'S MEANING, left open (decision 0258): "learns only" holds for
+ * whatever reaches the dispatching party's own context, compaction summaries its model later
+ * reads included. With `task.structured` on, a later handover that fails its contract and that
+ * omp accepts after its schema retries reaches the dispatching session's transcript, and
+ * compaction can carry it into what that session's model reads. Closing that would take a
+ * `session_before_compact` handler, which turns off omp's background compaction for every
+ * cratylus session. A run of a waiting delegate that the dispatcher's own message wakes is a
+ * use outside the gate's meaning, not a limit: the dispatching party takes no part in a gate
+ * held for the operator, so never messages a delegate waiting there.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
