@@ -1,0 +1,12 @@
+{
+  "id": "01M51D211583H7J6RFK3QV649K",
+  "at": "2026-10-16T03:45:56.773Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "delivery",
+  "name": "attach",
+  "reason": "A gate needs no joining to be answered: its request reaches the operator by construction. Joining an agent's session is the harness's own, and cratylus delivers nothing for it.",
+  "supersedes": [
+    "01M511D62TF98NBHJAA6TYXWHJ"
+  ]
+}
