@@ -90,7 +90,7 @@ const PROVISIONAL = /^provisional-/;
 
 /** The runtime's capability keyspace — the members of `CAPABILITIES`, parsed from
  *  `capability.ts` as text. Throws rather than returning `[]`, so a moved
- *  declaration is a LOUD failure and never a gate that silently quantifies over
+ *  declaration is a LOUD failure, never a check that silently quantifies over
  *  nothing. */
 function keyspace(src: string): string[] {
   const m = src.match(/export const CAPABILITIES = \[([^\]]+)\] as const/);

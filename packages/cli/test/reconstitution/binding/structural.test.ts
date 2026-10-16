@@ -154,14 +154,14 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     {
       role: 'reviewer',
       input: {
-        pullRequest: '#1',
+        change: '#1',
         story: 'film',
         acceptanceCriteria: [
           "The creative's approval of a finished film is recorded.",
         ],
         examples: ['film-production/1'],
       },
-      missing: 'pullRequest',
+      missing: 'change',
       output: { verdict: 'approve', findings: [], meaningQuestions: [] },
       missingReturn: 'verdict',
     },
@@ -297,7 +297,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     for (const hook of isolationHooks) {
       const answer = await hook(
         task('reviewer', {
-          pullRequest: '#1',
+          change: '#1',
           story: 'film',
           examples: ['film-production/1'],
         }),

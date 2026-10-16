@@ -35,7 +35,7 @@ const expertiseA: Expertise = 'software-engineering ≜ building software well';
 const stanceA: Stance = 'dry ≜ states each fact once';
 const actionScopeA: ActionScope = 'run-checks ≜ run checks and builds';
 const deliverableV: Deliverable =
-  'pull-request ≜ the change, its tests and what was verified';
+  'change ≜ the change, its tests and what was verified';
 
 const baseFixture: Agent = {
   name: 'fixture',
@@ -56,7 +56,7 @@ const baseFixture: Agent = {
     },
   ],
   expertise: [{ value: expertiseA, level: 'firm' }],
-  procedure: [{ value: 'github-flow ≜ one branch per change', level: 'firm' }],
+  procedure: [{ value: 'test-first ≜ checks before the build', level: 'firm' }],
   stance: [{ value: stanceA, level: 'firm' }],
   communicationStyle: [
     { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
