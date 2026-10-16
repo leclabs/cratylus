@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2J67VZ448YATN5P8JWQ3",
+  "at": "2026-10-16T23:34:37.511Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "work",
+  "reason": "Renamed work product, the most precise established name for this meaning; the concept continues under that name.",
+  "supersedes": [
+    "01M53CFFZ22EF04GM3GEB07WXM"
+  ]
+}

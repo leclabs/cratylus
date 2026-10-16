@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2J87JVDS55AGHPTB1JG0",
+  "at": "2026-10-16T23:34:37.575Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "agents",
+  "name": "drift",
+  "reason": "Renamed persona drift, the most precise established name for this meaning; the concept continues under that name.",
+  "supersedes": [
+    "01M53CFK0HQ9DJEJY8MBZTGV9X"
+  ]
+}

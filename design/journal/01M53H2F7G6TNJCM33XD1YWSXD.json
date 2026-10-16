@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2F7G6TNJCM33XD1YWSXD",
+  "at": "2026-10-16T23:34:34.480Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "implementation leakage",
+  "wording": "in a concept, a context's description or an example: naming an implementation, citing a decision, recounting history, or only extending the version it replaces",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names. Its meaning was carried inside the concept journal's wording; under its established name it returns to the design and stands on its own.",
+  "supersedes": [
+    "01M4VD23XM3PPE2QK6TV6M2KH1"
+  ]
+}

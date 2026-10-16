@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2FDPE7YXNP0JWQ45SVAY",
+  "at": "2026-10-16T23:34:34.678Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "identity",
+  "wording": "role, objective, expertise, procedure, stance and communication-style, with a name and any mark; the same however the agent starts; its text states only identity, in plain words saying why",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFJA66T3WK3S4PCKVM9E8"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "01M53H21ED72K5SG35657E7589",
+  "at": "2026-10-16T23:34:20.365Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "outcome",
+  "wording": "the lead's handoff when a user story or a task with no story ends: merged or dropped, each criterion with its evidence, meaning questions raised, follow-ups, cost against the rough cost; work ends only as it says, anything unfinished a follow-up",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFH9MADA98CC4YN9W4XDF"
+  ]
+}

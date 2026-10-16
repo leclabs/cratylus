@@ -1,0 +1,14 @@
+{
+  "id": "01M53H1ZFYEE5EFWKFM4F198H7",
+  "at": "2026-10-16T23:34:18.366Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "efficiency",
+  "wording": "the share of effort realizing the meaning: every agent run on a user story or task, however launched, by role, tokens and elapsed time as the harness records them, reported in its outcome against the story's rough cost; a run far beyond its size is stopped and reported, never pushed on",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFH3H7DGSJYHX0M1NJVMF"
+  ]
+}

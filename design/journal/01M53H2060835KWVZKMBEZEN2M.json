@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2060835KWVZKMBEZEN2M",
+  "at": "2026-10-16T23:34:19.072Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "workflow",
+  "name": "handoff",
+  "wording": "a user story, task, change, code review, outcome or read-back passed between parties, stating every part its form requires, so a missing part shows; parties are defined by what they receive and hand off, never by steps",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names. Named handoff, the established term, in place of handover.",
+  "supersedes": []
+}

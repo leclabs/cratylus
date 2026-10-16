@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2041S04BAT8M4CGS3VXE",
+  "at": "2026-10-16T23:34:19.009Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "task",
+  "wording": "one builder, one change: its goal in its user story's terms, what it changes, the decisions binding it, what done means; a change that preserves behaviour and alters no meaning (refactor, chore, docs, style) is a task with no story",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFH7MYXBTHRFCDWS14R3P"
+  ]
+}

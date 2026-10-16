@@ -1,0 +1,14 @@
+{
+  "id": "01M53H21MFXMW7JV6KYJGMGV2C",
+  "at": "2026-10-16T23:34:20.559Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "held-out example",
+  "wording": "withheld from builders by omission alone, kept with the design apart from the visible examples, used only in code review, its reviewer taking it directly; on a failure builders learn its concept and the general rule of the failed clause, never the case; an exposed one becomes visible and the illustrator replaces it cold; none where changes ship",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFG33RFMKGN353QNCV8KA"
+  ]
+}

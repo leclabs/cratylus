@@ -1,0 +1,14 @@
+{
+  "id": "01M53H20MANA3Q081EN2CHNYTT",
+  "at": "2026-10-16T23:34:19.530Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "owns the realization of a user story, or a task with no story: splits it into tasks and sizes the builders, orchestrates them, joins each change by integration, records each technical decision, hands off the outcome or a meaning question; never writes a change, changes a concept or example, or handles a held-out example",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFHQV9EXMTS3G1HDK4VHP"
+  ]
+}

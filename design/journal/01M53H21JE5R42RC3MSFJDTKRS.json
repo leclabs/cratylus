@@ -1,0 +1,14 @@
+{
+  "id": "01M53H21JE5R42RC3MSFJDTKRS",
+  "at": "2026-10-16T23:34:20.494Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "illustration",
+  "wording": "examples of a user story's concepts written cold by someone who didn't write the concepts, covering what must not happen as well as what must, flagging each term neither in the model nor plain industry usage; the architect confirms them and settles those terms before the build",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFHBMS435NC7EDE28SBXB"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2000ZWKJ38JQT9PGVRPY",
+  "at": "2026-10-16T23:34:18.880Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "workflow",
+  "name": "code review",
+  "wording": "of any change, not only code, by one non-author, against its acceptance criteria and examples; approves or names findings, never repairs; a contrived way around a check is a finding on that check, not the change; a doubt about meaning goes to the architect as a meaning question",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names. Named code review, the established term, in place of review.",
+  "supersedes": []
+}
