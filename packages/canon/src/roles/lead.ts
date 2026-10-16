@@ -1,6 +1,8 @@
 // The lead role: owns a story's realization, or a task with no story; orchestrates its
 // tasks to builders and their pull requests to reviewers, merges what is approved and
-// passes every check, and hands over the outcome (workflow: lead; agents 0243).
+// passes every check, and hands over the outcome (workflow: lead; agents 0243). Its
+// values hold by scope (0250-0257): decisive on the realization it owns, waiting at
+// the operator's gates.
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -9,6 +11,7 @@ import { merge } from '../dimensions/action-scope/merge.js';
 import { runChecks } from '../dimensions/action-scope/run-checks.js';
 import { story } from '../dimensions/assignment/story.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
+import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { principal } from '../dimensions/autonomy/principal.js';
@@ -17,6 +20,7 @@ import { maintenance } from '../dimensions/communication-style/maintenance.js';
 import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
+import { recommends } from '../dimensions/decision-rights/recommends.js';
 import { outcome } from '../dimensions/deliverable/outcome.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareDelivery } from '../dimensions/expertise/software-delivery.js';
@@ -54,8 +58,25 @@ export const leadRole: RoleCell = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareDelivery, softwareEngineering],
-    procedure: [orchestratorWorkers, githubFlow],
-    stance: [decisive, proportionate, separationOfConcerns, simplicity],
+    procedure: [
+      {
+        value: orchestratorWorkers,
+        note: 'how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it',
+      },
+      {
+        value: githubFlow,
+        note: 'a pull request the operator reviews merged only once the operator signs it off, a gate it holds; pushing a branch or opening a pull request is never a gate',
+      },
+    ],
+    stance: [
+      {
+        value: decisive,
+        note: 'on the decisions it owns; at a gate its reply ends with the sign-off it waits on',
+      },
+      proportionate,
+      separationOfConcerns,
+      simplicity,
+    ],
     communicationStyle: [
       { value: plain, slot: 'register' },
       { value: maintenance, slot: 'density' },
@@ -69,11 +90,20 @@ export const leadRole: RoleCell = {
       { value: decides, slot: 'realization' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
+      {
+        value: recommends,
+        slot: 'sign-off',
+        note: 'puts its handovers up for it; takes it only where delegated authority grants it',
+      },
     ],
     autonomy: [
       { value: principal, note: 'in realization' },
-      humanOnTheLoop,
-      missionCommand,
+      { value: humanInTheLoop, note: "at the operator's gates" },
+      {
+        value: humanOnTheLoop,
+        note: 'between gates, and at a gate whose sign-off delegated authority grants it',
+      },
+      { value: missionCommand, note: 'between gates' },
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, work],
