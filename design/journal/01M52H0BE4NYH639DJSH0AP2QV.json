@@ -1,0 +1,16 @@
+{
+  "id": "01M52H0BE4NYH639DJSH0AP2QV",
+  "at": "2026-10-16T14:14:10.628Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "capability",
+  "wording": "A programmatic thing an agent calls as a tool and the operator runs as a command, such as the concept journal; it explains itself, and reaches agents and the operator by its capability port.",
+  "builtFrom": [
+    "capability port"
+  ],
+  "reason": "The operator: retire the ledger. The concept journal is the capability cratylus delivers.",
+  "supersedes": [
+    "01M50CZADCWV3SBZDC300VKZPV"
+  ]
+}

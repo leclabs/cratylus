@@ -1,0 +1,13 @@
+{
+  "id": "01M52H0BA5GAR5V21GJHY4F7N8",
+  "at": "2026-10-16T14:14:10.501Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "workflow",
+  "subject": "the practice cratylus ships for handing work down by intent and taking back results that realize a design",
+  "relation": "practised on a user's own bounded contexts, which it never models; its agent roles are composed in the agents context, and the operator is a person; its capability, the concept journal, reaches a harness through delivery; cratylus's development practises it on cratylus itself, as any user would.",
+  "reason": "The operator: retire the ledger. The concept journal is the workflow's one capability.",
+  "supersedes": [
+    "01M50D1H2AYB8NVBMSVT2ZM0X5"
+  ]
+}

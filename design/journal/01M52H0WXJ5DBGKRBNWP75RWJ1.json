@@ -1,0 +1,16 @@
+{
+  "id": "01M52H0WXJ5DBGKRBNWP75RWJ1",
+  "at": "2026-10-16T14:14:28.530Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0287",
+  "context": "workflow",
+  "title": "Read back before any change; a read-back held or called ends the turn",
+  "situation": "The operator: retire the ledger. Restated whole from the decision it supersedes, with the work in flight read from version control and the lead's outcomes.",
+  "decision": "Reading the instructions, the prompt, the overviews and the journal, and seeing what work is in flight in the project's version control and the lead's outcomes, is reconstitution and is never held. At a session's start nothing is recorded or changed before the read-back, which carries the current design, then what is open, then the stories and tasks in flight. A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends its holder's turn until the operator answers; it is met only when no change precedes it and none follows it in the same turn.",
+  "consequences": "The reconstitution and read-back concepts state this.",
+  "status": "accepted",
+  "supersedes": "0252",
+  "supersedesEntry": "01M511EYWY64NZJEJ6RMRG7X1T",
+  "decisionKind": "meaning"
+}

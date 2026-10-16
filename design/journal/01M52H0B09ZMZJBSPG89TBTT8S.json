@@ -1,0 +1,19 @@
+{
+  "id": "01M52H0B09ZMZJBSPG89TBTT8S",
+  "at": "2026-10-16T14:14:10.185Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "A session, new or compacted, recovers the design, its decisions and what is open from the concept journal, and what work is in flight and how it ended from the project's version control and the lead's outcomes, never from memory or a conversation: it reads the overview of each context its work touches first, the delivered workflow included, then the detail it needs, and records and changes nothing before it has given the operator its read-back.",
+  "builtFrom": [
+    "concept journal",
+    "context overview",
+    "outcome",
+    "read-back"
+  ],
+  "reason": "The operator: retire the ledger. What work is in flight and how it ended is what the project's version control and the lead's outcomes show; a session recovers the work from there.",
+  "supersedes": [
+    "01M511DQXB06MP15Y1DD27A5Q9"
+  ]
+}
