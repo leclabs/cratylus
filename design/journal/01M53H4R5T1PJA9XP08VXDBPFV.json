@@ -1,0 +1,15 @@
+{
+  "id": "01M53H4R5T1PJA9XP08VXDBPFV",
+  "at": "2026-10-16T23:35:49.178Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0296",
+  "context": "workflow",
+  "title": "Delivered text names the restated concepts by their new names; identifiers stay",
+  "situation": "The architect renamed workflow, agents and delivery concepts to their established names. The delivered agent text, the assignment and deliverable forms, the harness notes, the journal's own explanations and the glosses the checks pin still speak of the old names.",
+  "decision": "(1) Every word the delivered text, forms, notes, explanations and command reference show a reader that names a renamed concept takes its new name, a value's own sign included; code identifiers, file names and the keys of the forms' fields stay as they are, unless a check binds a sign to its file. (2) Two builders on disjoint paths: the delivered agents and harness notes; the journal capability and its reference. (3) The branch's build is installed on this host before the operator's after-reading.",
+  "consequences": "The rendered agents and the journal's explanation read in the restated vocabulary; forms keep their shape, so nothing that fills them changes.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
