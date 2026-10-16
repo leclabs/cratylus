@@ -1,0 +1,16 @@
+{
+  "id": "01M51D2AK0GP13NCT9JS08B98M",
+  "at": "2026-10-16T03:46:06.560Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0262",
+  "context": "workflow",
+  "title": "A gate is an interrupt: a request for the operator's sign-off that ends its holder's turn, and nothing more",
+  "situation": "The operator, 2026-10-16: what sign-off-gates built for the gate is a bug. It detected gates by reading a reply's wording, told the operator apart from the request itself, and kept a gate's content from the party that delegated the work. A gate is a human-in-the-loop interrupt, and holds by construction without any of that.",
+  "decision": "A gate's holder ends its turn with a request for the operator's sign-off, and that is all a gate is. Whoever receives the request holds no sign-off, so it brings it to the operator; this follows from who holds what. A request passing through the delegating party on its way to the operator is no harm. Nothing detects a gate from a reply's wording, nothing announces a gate apart from the request itself, and nothing shields a gate's content from the delegating party. Joining an agent's session is the harness's own and needs nothing built.",
+  "consequences": "The gate and operator concepts state this, and attach leaves delivery. Whatever was built to detect, announce or shield a gate is removed, with the known limits recorded against it.",
+  "status": "accepted",
+  "supersedes": "0258",
+  "supersedesEntry": "01M514ZBVF8JY2TWX7BTTNSMG3",
+  "decisionKind": "meaning"
+}

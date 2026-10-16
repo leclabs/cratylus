@@ -1,0 +1,18 @@
+{
+  "id": "01M51DAQ9N8AV9N7BY68WN4DSB",
+  "at": "2026-10-16T03:50:41.717Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision rights",
+  "wording": "Who decides what, each party sovereign in its own domain and deciding nothing in another's: the operator decides what is wanted and why, its technical requirements included, its priorities and release, and holds sign-off, exercised at the gates; the architect decides meaning, stories and examples included, turning intent into known patterns and bringing the operator decisions already taken, never questions it can answer; the lead decides realization: every technical decision, how a story is split into tasks and how many builders it takes, and merging pull requests that pass review and every check, within the operator's requirements and weighing its recommendations. What binds of the operator's input, once understood, is its intent and its technical requirements; its wording of a concept is input to meaning, the architect's to rectify, never a requirement.",
+  "builtFrom": [
+    "meaning question",
+    "sign-off",
+    "gate"
+  ],
+  "reason": "A stated requirement was read as binding the operator's wording of a concept, so a concept was transcribed instead of rectified; what binds is the operator's intent and technical requirements, and its wording of a concept is input to meaning.",
+  "supersedes": [
+    "01M511DQQE6B1GJ98NKGHP3EPJ"
+  ]
+}

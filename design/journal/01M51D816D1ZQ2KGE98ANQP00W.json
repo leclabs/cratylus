@@ -1,0 +1,16 @@
+{
+  "id": "01M51D816D1ZQ2KGE98ANQP00W",
+  "at": "2026-10-16T03:49:13.549Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "interrupt",
+  "wording": "What a gate's holder does there when the sign-off is not delegated: it ends its turn with a request for the operator's sign-off, and goes on only once it has the operator's answer. Where delegated authority grants that sign-off, the holder takes it in the operator's place and does not interrupt.",
+  "builtFrom": [
+    "gate",
+    "sign-off",
+    "delegated authority"
+  ],
+  "reason": "The holder's request for sign-off is the human-in-the-loop interrupt of established agent practice, an act at a gate, kept apart from the gate, the hold point where it is made.",
+  "supersedes": []
+}

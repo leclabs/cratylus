@@ -1,0 +1,16 @@
+{
+  "id": "01M51D2AMZ14KD259VTQ0C4KVB",
+  "at": "2026-10-16T03:46:06.623Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0263",
+  "context": "workflow",
+  "title": "Divided authority: the operator signs off at gates, and only there",
+  "situation": "Restated whole from the decision it supersedes because its third part described the gate as held in the holder's session, joined by the operator, with the delegating party learning only that it waits; a gate is now an interrupt and nothing more.",
+  "decision": "(1) The operator and the architect stand in a client engagement with divided authority, each sovereign in its own domain. The operator decides intent, priority and release and holds sign-off, exercised at the gates and only there: a story's read-back (the architect's), a story's plan read-back (the lead's; a task with no story skips it unless the operator calls it), a pull request the operator reviews (the lead's, before it merges), release, a fork that is irreversible, about value or beyond the architect's competence, and any gate the operator calls, stop included. (2) A story starts only when the operator signs off its read-back; nothing else counts as being told to start. (3) A gate's holder, the party whose handover it is, ends its turn with a request for the operator's sign-off; whoever receives that request holds no sign-off and brings it to the operator. Pushing a branch or opening a pull request is never a gate; between gates the agents work without checking in. (4) The architect decides meaning only and rectifies every input, the operator's included, restating it in established names and reading the restatement back where it differs; it disagrees with reasons, and a requirement the operator states, once understood, binds. How a story is split into tasks and how many builders it takes is the lead's. (5) The operator may grant delegated authority over a scope, naming the sign-offs taken in its place, the limits it keeps and an end state; its read-back comes once, at the end state.",
+  "consequences": "The decision rights, operator, architect, lead, read-back, gate, sign-off, delegated authority and intent-based delegation concepts state this.",
+  "status": "accepted",
+  "supersedes": "0250",
+  "supersedesEntry": "01M511EYRZS5YN4TENK179JQR9",
+  "decisionKind": "meaning"
+}

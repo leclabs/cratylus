@@ -141,7 +141,7 @@ export const decisionSlots = [
 export const signOffSlot = {
   name: 'sign-off',
   gloss:
-    "the operator's, at its gates: agreeing that a handover serves its intent",
+    "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
   optional: true,
 } as const;
 const slots = (...names: string[]) => names.map((name) => ({ name }));
@@ -643,7 +643,7 @@ const scoped: Partial<
     objective: { 'stopping-rule': 'only up to the next gate' },
     procedure: {
       rectify:
-        "every input, the operator's included, its restatement read back where it differs; a requirement the operator states binds once understood",
+        "every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed",
       reconstitution:
         'at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight',
     },

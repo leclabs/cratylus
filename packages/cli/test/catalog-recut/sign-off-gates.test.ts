@@ -30,14 +30,14 @@ const lineStarting = (lines: readonly string[] | undefined, prefix: string) =>
   );
 
 const signOffLine =
-  "- sign-off (the operator's, at its gates: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
+  "- sign-off (the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
 
 describe('sign-off-gates: agent values by scope', () => {
   it("sign-off is an optional decision-rights slot, the operator's class of decision", () => {
     expect(canon.MANIFEST['decision-rights']).toHaveProperty('slots.7', {
       name: 'sign-off',
       gloss:
-        "the operator's, at its gates: agreeing that a handover serves its intent",
+        "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
       optional: true,
     });
   });
@@ -78,7 +78,7 @@ describe('sign-off-gates: agent values by scope', () => {
     for (const prefix of [
       "- **architect** (rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded on that change's own branch) — ",
       '- stopping-rule: **optimize** (only up to the next gate) — ',
-      "- **rectify** (every input, the operator's included, its restatement read back where it differs; a requirement the operator states binds once understood) — ",
+      "- **rectify** (every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed) — ",
       '- **reconstitution** (at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight) — ',
       '- **decisive** (on the decisions it owns) — ',
       '- ordering (the sequence a reply presents its content in): **bottom-line-up-front** (never asking agreement to a decision it owns; at a gate the reply ends with the sign-off it waits on) — ',
