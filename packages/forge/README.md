@@ -177,6 +177,16 @@ extension also records in the ledger, through `cratylus lifecycle`, a task call'
 when the item's assignment names a story or a task: the agent, its role, that story or task and the
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
 
+**Attach.** A delegate whose declaration's decision rights carry a `sign-off` line and whose task
+run ends on a reply that is not its declared deliverable (omp's missing-yield outcome, or output
+that fails its contract) holds a gate: the extension replaces that delegate's `<task-result>` in
+the dispatching session with a notice that it waits on the operator's sign-off and how the operator
+joins it, omp's Agent Hub (Alt+A, select the agent, Enter). Every other result passes unchanged.
+omp keeps the delegate's session alive, and its result reaches the dispatching session once it
+yields. Known omp limitations: omp reminds a delegate without its deliverable up to three times,
+the last forcing a yield; a background dispatch's result is delivered outside the task call and is
+not replaced; an isolated delegate is joinable only until omp parks it.
+
 ## The harness adapter port
 
 A harness adapter implements `HarnessAdapter` (`@cratylus/forge/harness-adapter`) and is selected by

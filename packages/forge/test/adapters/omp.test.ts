@@ -219,6 +219,11 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
   resolveAgentPrewalkDefault: (agent: { prewalk?: boolean | string }) =>
     agent.prewalk,
 }));
+// omp's own statement of a run that ended without its deliverable, as 18.10.2 words it.
+vi.mock('@oh-my-pi/pi-coding-agent/task/executor', () => ({
+  SUBAGENT_WARNING_MISSING_YIELD:
+    'SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.',
+}));
 vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
   getActiveSkills: () => omp.skills,
   buildSkillPromptMessage: async (
@@ -1870,6 +1875,152 @@ describe('omp capability interface', () => {
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
       }
+    });
+
+    describe('tells the delegating session only that a delegate holding a gate waits on the operator (attach)', () => {
+      const MISSING_YIELD =
+        'SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.';
+      const READ_BACK =
+        'The plan: three tasks, one builder each. Sign off the plan to send it to be built.';
+      /** A party whose decision rights hold sign-off, as projection writes the line. */
+      const GATED = (name: string) =>
+        declare(
+          { name, description: 'Holds a gate.' },
+          `# ${name}\n\n### decision-rights\n\n- realization (how the work is built): **D** — decides\n- sign-off (agreeing a handover serves its intent): **R** — puts its handovers up for it\n\n### memory\n\n- **working** — the session's own context`,
+        );
+      /** A result as omp 18.10.2's task tool renders it. */
+      const envelope = (
+        id: string,
+        agent: string,
+        status: string,
+        output: string,
+        error?: string,
+      ) =>
+        [
+          `<task-result id="${id}" agent="${agent}" status="${status}" duration="2m">`,
+          ...(error === undefined ? [] : [`<error>${error}</error>`]),
+          '<output>',
+          output,
+          '</output>',
+          '</task-result>',
+        ].join('\n');
+      const BUILT = envelope('Form', 'builder', 'completed', 'built');
+      const HELD = envelope(
+        'Lead.Plan',
+        'lead',
+        'failed (exit 1)',
+        `${MISSING_YIELD}\n\n${READ_BACK}`,
+        MISSING_YIELD,
+      );
+      const WAITING = [
+        '<task-result id="Lead.Plan" agent="lead" status="waiting on the operator">',
+        "Lead.Plan (lead) waits on the operator's sign-off, in its own session. The operator joins it in omp's Agent Hub: Alt+A, select Lead.Plan, Enter. Its result reaches you once the operator answers.",
+        '</task-result>',
+      ].join('\n');
+      const FORM = {
+        index: 1,
+        id: 'Form',
+        agent: 'builder',
+        exitCode: 0,
+        stderr: '',
+        output: 'built',
+      };
+      /** The module's answer to a settled `task` call returning `results`, rendered as `text`. */
+      async function settle(
+        results: Record<string, unknown>[],
+        text: string,
+        isError: boolean,
+      ) {
+        const session = await started();
+        await session.fire('session_start');
+        return session.fire('tool_result', 'main', {
+          toolName: 'task',
+          toolCallId: 'call',
+          input: {},
+          content: [{ type: 'text', text }],
+          isError,
+          details: { results },
+        });
+      }
+
+      it('replaces the reply of a sign-off holder that ended without its deliverable, and keeps every other result', async () => {
+        omp.agents = [GATED('lead'), BUILDER()];
+        const answer = await settle(
+          [
+            {
+              index: 0,
+              id: 'Lead.Plan',
+              agent: 'lead',
+              exitCode: 1,
+              stderr: MISSING_YIELD,
+              output: `${MISSING_YIELD}\n\n${READ_BACK}`,
+            },
+            FORM,
+          ],
+          `${HELD}\n\n${BUILT}`,
+          true,
+        );
+        expect(answer).toEqual({
+          content: [{ type: 'text', text: `${WAITING}\n\n${BUILT}` }],
+          isError: false,
+        });
+        expect(JSON.stringify(answer)).not.toContain('Sign off the plan');
+      });
+
+      it('replaces the reply of a sign-off holder whose reply fails its output contract', async () => {
+        omp.agents = [GATED('lead')];
+        const answer = await settle(
+          [
+            {
+              index: 0,
+              id: 'Lead.Plan',
+              agent: 'lead',
+              exitCode: 0,
+              stderr: '',
+              output: READ_BACK,
+              structuredOutput: { status: 'invalid', data: READ_BACK },
+            },
+          ],
+          envelope('Lead.Plan', 'lead', 'completed', READ_BACK),
+          false,
+        );
+        expect(answer).toEqual({
+          content: [{ type: 'text', text: WAITING }],
+          isError: false,
+        });
+      });
+
+      it('passes every other result unchanged: no sign-off, its deliverable, a cancelled or a failed run', async () => {
+        const held = {
+          index: 0,
+          id: 'Lead.Plan',
+          agent: 'lead',
+          exitCode: 1,
+          stderr: MISSING_YIELD,
+          output: READ_BACK,
+        };
+        // A delegate whose decision rights hold no sign-off holds no gate.
+        omp.agents = [LEAD()];
+        expect(await settle([held], HELD, true)).toBeUndefined();
+        omp.agents = [GATED('lead')];
+        for (const result of [
+          // Its declared deliverable.
+          {
+            ...held,
+            exitCode: 0,
+            stderr: '',
+            output: '{"story":"renewal"}',
+            structuredOutput: { status: 'valid', data: { story: 'renewal' } },
+          },
+          // Cancelled by its caller.
+          { ...held, aborted: true, stderr: 'Cancelled by caller' },
+          // Failed by its provider.
+          { ...held, stderr: '[fixture/base] overloaded' },
+        ])
+          expect(
+            await settle([result, FORM], `${HELD}\n\n${BUILT}`, true),
+          ).toBeUndefined();
+      });
     });
 
     it('takes no other call for a dispatch: one carrying no agent and task is let through unread', async () => {

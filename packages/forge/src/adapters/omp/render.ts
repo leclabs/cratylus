@@ -980,6 +980,23 @@ const SESSION_PLACEMENT: readonly string[] = [
  * ledger reads elapsed time from its entries. A failed send is warned of, and a
  * dispatch always goes ahead.
  *
+ * ATTACH: A GATE HELD BY A DELEGATE (decision 0250(3)). A delegate whose declaration's
+ * decision rights hold `sign-off` and whose dispatched run ends on a reply that is not its
+ * declared deliverable — it ended its turn without one (omp's missing-yield outcome) or
+ * what it gave fails its output contract — holds a gate. The delegating session's task
+ * result then carries, in that delegate's place, only that it waits on the operator's
+ * sign-off and how the operator joins it: omp's Agent Hub (Alt+A, select the agent,
+ * Enter), omp's own way of joining a session; nothing of the reply. Every other result,
+ * a cancelled or failed run included, passes unchanged. omp keeps a task delegate's
+ * session alive and idle after its run, and its answer to the operator's prompt reaches
+ * the delegating session as an async result once it yields its deliverable.
+ *
+ * omp LIMITS ON ATTACH, held as omp gives them: omp reminds a delegate that ends its turn
+ * without its deliverable up to three times, the last forcing a yield, so a hold reaches
+ * the delegating session only when the delegate declines each or yields what fails its
+ * contract; a background (`async`) dispatch delivers its result outside the task call, so
+ * its hold is not replaced; an isolated delegate is joinable only until omp parks it.
+ *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
  * name resolves through omp's OWN agent discovery — `discoverAgents` from omp's
@@ -1081,7 +1098,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// discovers, by `omp --agent <name>`, holding the whole declaration as a dispatched child',
         '// holds it: its text, model, effort, skills loaded at start, read summarisation, advisor',
         "// and pre-planning, and no default personality; the operator's own flags win. One value",
-        "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
+        "// omp's own dispatch drops is held as declared: `read-summarize: true` (on). A delegate",
+        '// holding a gate reaches the session that dispatched it only as a notice that it waits on',
+        "// the operator's sign-off, and how the operator joins it in omp's Agent Hub.",
         '//',
         '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
         "// installed command's own explanation, so a newer installed package changes the tools in",
@@ -1109,6 +1128,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'import { buildSkillPromptMessage, getActiveSkills } from "@oh-my-pi/pi-coding-agent/extensibility/skills";',
         'import { cfgPersonality, cfgPrewalkEnabled } from "@oh-my-pi/pi-coding-agent/session/settings";',
         'import { discoverAgents } from "@oh-my-pi/pi-coding-agent/task/discovery";',
+        'import { SUBAGENT_WARNING_MISSING_YIELD } from "@oh-my-pi/pi-coding-agent/task/executor";',
         'import { resolveAgentPrewalkDefault } from "@oh-my-pi/pi-coding-agent/task/prewalk";',
         'import {',
         '  cfgTaskAgentAdvisor,',
@@ -1604,6 +1624,31 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  ].join("\\n");',
         '}',
         '',
+        "// A delegate's reply that is not its declared deliverable: it ended its turn without one, or",
+        '// what it gave fails its output contract. A run cut short (cancelled, timed out) or failed by',
+        '// its provider is no reply of the delegate.',
+        'function offContract(r: Record<string, unknown>): boolean {',
+        '  if (r.aborted === true) return false;',
+        '  const output = r.structuredOutput as { status?: unknown } | undefined;',
+        '  return output?.status === "invalid" || r.stderr === SUBAGENT_WARNING_MISSING_YIELD;',
+        '}',
+        '',
+        '// What the delegating session is told of a delegate holding a gate: that it waits on the',
+        "// operator's sign-off, and how the operator joins its session, by omp's own Agent Hub.",
+        'function waiting(id: string, agent: string): string {',
+        '  return [',
+        '    `<task-result id="${id}" agent="${agent}" status="waiting on the operator">`,',
+        "    `${id} (${agent}) waits on the operator's sign-off, in its own session. The operator joins it in omp's Agent Hub: Alt+A, select ${id}, Enter. Its result reaches you once the operator answers.`,",
+        '    "</task-result>",',
+        '  ].join("\\n");',
+        '}',
+        '',
+        "// A result as omp's task tool renders it: one envelope per run, by its id.",
+        'function envelopeOf(id: string): RegExp {',
+        '  const literal = id.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");',
+        '  return new RegExp(`<task-result id="${literal}"[^>]*>[\\\\s\\\\S]*?</task-result>`);',
+        '}',
+        '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
         '// prose, then its body.',
         'function instructions({ name, description, systemPrompt }: AgentDefinition): string {',
@@ -1998,14 +2043,49 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         '  // A settled dispatch returns each item it ran, with its tokens. The call is known by its',
         '  // id, whatever the tool carrying it is called.',
+        '  //',
+        '  // A delegate holding a gate ends its turn on a reply that is not its declared deliverable,',
+        '  // its declaration holding sign-off. The delegating session learns only that it waits on the',
+        "  // operator and how the operator joins it; the reply stays in the delegate's session, where",
+        '  // the operator answers it. Every other result passes unchanged.',
         '  pi.on("tool_result", async (event, ctx) => {',
-        '    const details = (event as { details?: { results?: unknown } }).details;',
-        '    const results = Array.isArray(details?.results) ? details.results : [];',
-        '    for (const raw of results) {',
-        '      const r = (raw ?? {}) as Record<string, unknown>;',
-        '      await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, ctx as unknown as Session);',
+        '    const session = ctx as unknown as Session;',
+        '    const settled = event as { details?: { results?: unknown }; content?: unknown; isError?: boolean };',
+        '    const results = (Array.isArray(settled.details?.results) ? settled.details.results : []).map(',
+        '      (raw) => (raw ?? {}) as Record<string, unknown>,',
+        '    );',
+        '    for (const r of results) await returned(`${event.toolCallId}#${String(r.index)}`, r.tokens, session);',
+        '    const offered = results.filter(offContract);',
+        '    if (offered.length === 0) return undefined;',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const holding = offered.filter((r) => {',
+        '      // A declaration whose decision rights hold sign-off: its handovers are gates.',
+        '      const body = agents.find((a) => a.name === r.agent)?.systemPrompt;',
+        '      return body !== undefined && /^- sign-off \\(/m.test(declared(body, "decision-rights"));',
+        '    });',
+        '    if (holding.length === 0) return undefined;',
+        '    const others = results.filter((r) => !holding.includes(r));',
+        '    const parts = (Array.isArray(settled.content) ? settled.content : []) as { type: string; text?: string }[];',
+        '    let content = parts.map((part) => ({ ...part }));',
+        '    for (const r of holding) {',
+        '      const notice = waiting(String(r.id), String(r.agent));',
+        '      const part = content.find((p) => p.type === "text" && envelopeOf(String(r.id)).test(p.text ?? ""));',
+        '      if (part !== undefined) part.text = (part.text ?? "").replace(envelopeOf(String(r.id)), () => notice);',
+        '      else {',
+        '        // Its envelope is not where omp renders it: nothing of what was rendered is kept, so its',
+        '        // reply cannot pass; each other result is given as its own output.',
+        '        content = [',
+        '          ...holding.map((h) => ({ type: "text", text: waiting(String(h.id), String(h.agent)) })),',
+        '          ...others.map((o) => ({',
+        '            type: "text",',
+        '            text: `<task-result id="${String(o.id)}" agent="${String(o.agent)}">\\n${String(o.output ?? "")}\\n</task-result>`,',
+        '          })),',
+        '        ];',
+        '        break;',
+        '      }',
         '    }',
-        '    return undefined;',
+        '    const failed = others.some((r) => r.aborted === true || (typeof r.exitCode === "number" && r.exitCode !== 0));',
+        '    return { content, isError: settled.isError === true && failed };',
         '  });',
         "  // A background item settles outside its call: omp's own lifecycle event says so.",
         '  const bus = (pi as unknown as { events?: { on?(channel: string, fn: (data: unknown) => void): unknown } }).events;',
