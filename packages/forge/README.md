@@ -180,9 +180,15 @@ when the item's assignment names a story or a task: the agent, its role, that st
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
 
 **Attach.** A delegate whose declaration's decision rights carry a `sign-off` line holds a gate when
-its turn ends on a reply that is not its declared deliverable: not found valid by omp, and neither
-whole nor in one fenced block a JSON object satisfying its `output` (omp's own validator). One that
-declares no JSON deliverable holds a gate at every turn it ends. Such a declaration is projected
+its turn ends on a reply that ends with the sign-off it waits on, a current request to the operator:
+its closing sentence, read across line breaks, is a bidding starting "(Please) sign off …" or a
+question asking the operator to give it ("Do/Will/Would/Can/Could you sign off …?", "Do/May/Can/Could
+I have/get your sign-off …?", "Will/Would/Can/Could you give your sign-off …?", each opening the
+sentence after at most "Please", "So", "Then", "And" or "Now"), whatever else it says; any other
+question holds nothing; or a present wait on the operator's sign-off
+("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that the words
+governing it neither negate nor put in the past. A bare report holds nothing. Every other reply is a
+result, the declared JSON deliverable or not, whether or not the holder declares one. Such a declaration is projected
 `blocking: true`, so its dispatched run always comes back on the task result. The dispatching
 session learns only that it waits on the operator's sign-off and how the operator joins it, omp's
 Agent Hub (Alt+A, select the agent, Enter), and later its result: the task result (`tool_result`:
@@ -193,9 +199,15 @@ or an incremental section, or a run the dispatcher's own message woke), sent to 
 session through state the module shares across the sessions of one
 omp process; and each later run omp hands over itself as a background delivery (`context`: a held
 job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
-recorded in the session when held). Every other result passes unchanged. Known omp limitations:
-with `task.structured` on, omp reminds a delegate without its deliverable up to three times, the
-last forcing a yield; an isolated delegate is joinable only until omp parks it.
+recorded in the session when held). Every other result passes unchanged. Wherever a held reply is
+found, the operator is told in its own session as soon as the gate waits on it: the main session's
+interface (`notify`, a warning line no model reads) names the agent and how to join it (Agent Hub:
+Alt+A, select the agent, Enter), however deep the holder sits below other delegates, once per gate
+(known by the run it ends, so a late report of an earlier run never silences a later gate). A dispatched run is judged as it ends
+(`task:subagent:lifecycle`, on all it said over every prompt omp gave it), since omp returns the
+task result only once every blocking item of the call has settled. Known omp
+limitations: with `task.structured` on, omp reminds a delegate without its deliverable up to three
+times, the last forcing a yield; an isolated delegate is joinable only until omp parks it.
 
 One shortfall against the gate's meaning is left open (decision 0258). "Learns only" holds for
 whatever reaches the dispatching party's own context, compaction summaries its model later reads
