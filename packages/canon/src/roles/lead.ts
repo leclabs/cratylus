@@ -65,7 +65,7 @@ export const leadRole: RoleCell = {
       },
       {
         value: shipShowAsk,
-        note: 'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds',
+        note: 'the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a gate it holds',
       },
     ],
     stance: [

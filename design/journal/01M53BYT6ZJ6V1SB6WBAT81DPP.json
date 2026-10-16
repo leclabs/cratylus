@@ -1,0 +1,16 @@
+{
+  "id": "01M53BYT6ZJ6V1SB6WBAT81DPP",
+  "at": "2026-10-16T22:05:11.775Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "held-out example",
+  "wording": "An example the architect holds back from the builders when a story's risk warrants, kept with the design apart from the visible examples, where whoever reviews the story's changes, a reviewer or the operator, takes it from directly, so nothing about it passes through whoever runs the build. It is held back by omission alone, never named in a task or mentioned to a builder, since a prohibition would announce it. When one fails, builders learn the concept and the shortfall but not the case, and a case revealed to fix it becomes visible and is replaced by a new held-out one.",
+  "builtFrom": [
+    "example"
+  ],
+  "reason": "The operator: where it calls its review of a change, its review is that change's review, held-out examples included; an agent reviewing it as well before the operator's review duplicated the review.",
+  "supersedes": [
+    "01M511DR1E0Y9DFF2D9Y670C7V"
+  ]
+}

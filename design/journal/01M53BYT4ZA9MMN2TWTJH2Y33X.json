@@ -1,0 +1,26 @@
+{
+  "id": "01M53BYT4ZA9MMN2TWTJH2Y33X",
+  "at": "2026-10-16T22:05:11.711Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "lead",
+  "wording": "The agent that owns a story's realization, or a task with no story: it decides how the story is split into tasks and how many builders it takes, and holds the plan read-back as a gate, saying how the story will be built, which a task with no story skips unless the operator calls it. Once the plan is signed off it orchestrates the tasks, handing each to a builder and each change to review as its story's risk calls for, Ship, Show or Ask, picking which itself for a task with no story; when the story's risk warrants, it calls the check-writer. Where the operator has asked to review a change before it joins, it holds that review as a gate and has no agent review that change. It joins each change by the project's own integration, once every check passes and any review due before it joins approves it, makes and records every technical decision within the operator's requirements, weighing its recommendations, and hands over the story's outcome, or a meaning question, never changing a concept or an example and never handling a held-out one.",
+  "builtFrom": [
+    "story",
+    "task",
+    "change",
+    "review",
+    "integration",
+    "outcome",
+    "decision",
+    "check-writer",
+    "orchestrator-workers",
+    "gate",
+    "read-back"
+  ],
+  "reason": "The operator: where it calls its review of a change, its review is that change's review, held-out examples included; an agent reviewing it as well before the operator's review duplicated the review.",
+  "supersedes": [
+    "01M51JAGYVYRQGXQH792F7AASA"
+  ]
+}

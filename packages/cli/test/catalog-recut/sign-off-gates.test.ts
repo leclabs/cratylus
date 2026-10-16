@@ -91,10 +91,22 @@ describe('sign-off-gates: agent values by scope', () => {
     const lines = rendered('lead').lead;
     for (const prefix of [
       '- **orchestrator-workers** (how a story is split into tasks and how many builders it takes being its own; its plan read-back held as a gate, which a task with no story skips unless the operator calls it) — ',
-      '- **ship-show-ask** (the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, that change joins only once the operator signs it off, a gate it holds) — ',
+      '- **ship-show-ask** (the story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a gate it holds) — ',
       '- **decisive** (on the decisions it owns; at a gate its reply ends with the sign-off it waits on) — ',
     ])
       expect(lineStarting(lines, prefix), prefix).toHaveLength(1);
+  });
+
+  it('where the operator has asked to review a change, the lead has no agent review it and the reviewer never reviews it (0292)', () => {
+    const bodies = rendered('lead', 'reviewer');
+    const [leadLine] = lineStarting(bodies.lead, '- **lead** — ');
+    expect(leadLine).toContain(
+      "where the operator has asked to review a change before it joins, has no agent review that change and holds the operator's review as its gate;",
+    );
+    const [reviewerLine] = lineStarting(bodies.reviewer, '- **reviewer** — ');
+    expect(reviewerLine).toContain(
+      'never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself',
+    );
   });
 
   it('reviewers take held-out examples from design/held-out/ directly; the lead and builder never mention them', () => {
