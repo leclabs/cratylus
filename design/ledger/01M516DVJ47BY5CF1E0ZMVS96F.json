@@ -1,0 +1,11 @@
+{
+  "id": "01M516DVJ47BY5CF1E0ZMVS96F",
+  "at": "2026-10-16T01:50:04.356Z",
+  "kind": "dispatched",
+  "transition": "dispatched:toolu_01HuQjZXxcthVAu356bjoCnh/OperatorToldAtGate",
+  "call": "toolu_01HuQjZXxcthVAu356bjoCnh",
+  "agent": "OperatorToldAtGate",
+  "role": "builder",
+  "story": "sign-off-gates",
+  "task": "operator-told-at-gate"
+}
