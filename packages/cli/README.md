@@ -267,15 +267,19 @@ and warns where it falls short; they are not the same, and this is what a user m
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **A gate held by a delegate (attach).** On omp, when an agent you dispatch whose decision rights
   hold sign-off and who declares a deliverable ends its turn on a reply that is not that
-  deliverable, it is holding a gate for your sign-off. cratylus's extension gives the session that
-  dispatched it only a notice in that agent's place: it waits on your sign-off, and you join it in
-  omp's Agent Hub (Alt+A, select the agent, Enter), where you answer it and work with it directly.
-  Its reply is never passed up. omp keeps the agent's session alive, and its result reaches the
-  dispatching session once it delivers it. Every other result passes unchanged. What omp limits:
-  it reminds an agent that ends without its deliverable up to three times, the last forcing it to
-  give one, so a gate reaches you this way only when the agent holds through them or gives what
-  is not its deliverable; a background dispatch's result is not replaced; an isolated agent can
-  be joined only until omp parks it.
+  deliverable (a JSON object satisfying its declared output, given whole or in a fenced block), it
+  is holding a gate for your sign-off. cratylus's extension gives the session that dispatched it
+  only a notice in that agent's place: it waits on your sign-off, and you join it in omp's Agent
+  Hub (Alt+A, select the agent, Enter), where you answer it and work with it directly. Its reply is
+  never passed up, whether the dispatch waited for it or ran in the background. omp keeps the
+  agent's session alive; each turn you prompt there reaches the dispatching session as its result
+  once it gives its deliverable, or as another such notice when it stops at another gate. Every
+  other result passes unchanged. An agent that declares no deliverable cannot be told apart this
+  way and holds its gates in your own session: the architect does. What omp limits: with
+  `task.structured` on, omp reminds an agent that ends without its deliverable up to three times,
+  the last forcing it to give one; an isolated agent can be joined only until omp parks it; and
+  omp's own transcript of a background result keeps the reply, which you see in the dispatching
+  session and its compaction reads.
 - **An isolated agent's worktree.** An agent may declare a worktree of its own; none of the
   bundled agents does. On both harnesses the harness isolates such an agent by its own means, and
   neither starts that isolation from the bound plan's line. Building off the line is the agent's own

@@ -177,15 +177,20 @@ extension also records in the ledger, through `cratylus lifecycle`, a task call'
 when the item's assignment names a story or a task: the agent, its role, that story or task and the
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
 
-**Attach.** A delegate whose declaration's decision rights carry a `sign-off` line and whose task
-run ends on a reply that is not its declared deliverable (omp's missing-yield outcome, or output
-that fails its contract) holds a gate: the extension replaces that delegate's `<task-result>` in
-the dispatching session with a notice that it waits on the operator's sign-off and how the operator
-joins it, omp's Agent Hub (Alt+A, select the agent, Enter). Every other result passes unchanged.
-omp keeps the delegate's session alive, and its result reaches the dispatching session once it
-yields. Known omp limitations: omp reminds a delegate without its deliverable up to three times,
-the last forcing a yield; a background dispatch's result is delivered outside the task call and is
-not replaced; an isolated delegate is joinable only until omp parks it.
+**Attach.** A delegate whose declaration's decision rights carry a `sign-off` line and that declares
+a deliverable (`output`) holds a gate when its turn ends on a reply that is not that deliverable: not
+found valid by omp, and neither whole nor in one fenced block a JSON object satisfying the contract
+(omp's own validator). The dispatching session learns only that it waits on the operator's sign-off
+and how the operator joins it, omp's Agent Hub (Alt+A, select the agent, Enter), and later its
+result, on each path omp delivers by: the task result (`tool_result`: content and details), a
+background result (`context`: each turn is given the held job as the notice; the verdict is kept,
+and recorded in the session when held), and each later turn the operator prompts in the delegate's
+session, which omp hands over only when it yields or answers the dispatcher (`agent_end` in the
+delegate's session, sent to its dispatcher's through state the module shares across the sessions of
+one omp process). Every other result passes unchanged. A gate holder declaring no deliverable is not
+detected. Known omp limitations: with `task.structured` on, omp reminds a delegate without its
+deliverable up to three times, the last forcing a yield; an isolated delegate is joinable only until
+omp parks it; omp's transcript of a background delivery keeps the reply, which compaction reads.
 
 ## The harness adapter port
 
