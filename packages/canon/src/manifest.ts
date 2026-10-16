@@ -125,6 +125,12 @@ export const MANIFEST = {
       },
       { name: 'verdict', gloss: 'whether a pull request is approved' },
       { name: 'release', gloss: 'making merged work available to its users' },
+      {
+        name: 'sign-off',
+        gloss:
+          "the operator's, at its gates: agreeing that a handover serves its intent",
+        optional: true,
+      },
     ],
   },
   autonomy: {
