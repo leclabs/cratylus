@@ -1,5 +1,30 @@
 # @cratylus/runtime
 
+## 0.16.0
+
+### Minor Changes
+
+- f297ff5: The documents describe intent-based delegation. The repository's working conventions (`AGENTS.md`, the `repo-preamble` rule) follow Git flow's `dev`/`main` split, without release or hotfix branches: each change is made on a short-lived branch from `dev` and merged locally into `dev` once `pnpm check` passes on the merged result, and release, a pull request from `dev` into `main`, is the operator's. The runtime's README names its two capabilities, `concepts` and `versionSkew`; forge's README tells the omp extension's handover forms, warned when incomplete and never refused; the `cratylus` README's practice example is `intent-based-delegation`.
+- 7fe2da4: The concept journal states and serves only the live workflow.
+
+  `concepts decide` no longer takes `--cut`: a decision stands until a later decision supersedes it or a later `deprecate` entry deprecates it. `concepts leakage` reads every example file present, with or without `--history`.
+
+  Entries already recorded are read as they were written: a decision whose entry names a cut is read by its own status alone, and the recorded `cut` is shown only with `--history`. The `efficiency` entries recorded for cuts are past effort, shown by `concepts state` only with `--history`; no verb writes them.
+
+  Every verb's purpose, when and parameter text, and the `state` reading's legend, name the live workflow only.
+
+- d0350f9: Cratylus keeps no record of the work. What is in flight and how it ended is seen in the project's version control and the lead's outcomes; what it cost is what the harness records and the outcome reports. The concept journal is the project's one record of its own, and it holds the design alone.
+
+  Removed: the work package capability (`cratylus workPackage`, its verbs, its dependency graph, freeze, rounds, whole-check runs, integration and `record`) from `CAPABILITIES`, `RUNTIME_CAPABILITIES` and omp's offered tools, with nothing in its place, so the runtime's capabilities are `concepts` and `versionSkew`, and an installation upgraded from an earlier one no longer offers its tool; the harness-facing `cratylus lifecycle` command and `appendLifecycle`; the completion check (`cratylus completion-check`, its `post-commit` hook and `completionCheck`/`WATCHED`); the example substrate (`@cratylus/runtime/example-substrate`), which nothing live used; the `@dagrejs/graphlib` dependency; and the cut API the runtime barrel exported (`cutView`, `cutsInLedger`, `frozenCuts`, `foldCut`, `readCut` and their types). Nothing is migrated from the files the capability kept, and nothing reads them.
+
+  The concept journal's views read only the journal and the example files. The overview no longer tells work in flight (`cutsInFlight` and its line are gone), `define`, `supersede` and `retire` no longer warn of a freeze, and a decision recorded about a cut is read by its own status alone. `concepts state` gives a context's recorded cut `efficiency` only with `--history`.
+
+  The reconstitution procedure and the omp session-start and per-turn notes say a session sees the work in flight and how it ended in the project's version control and the lead's outcomes; the lead's outcome states its cost as the harness records it.
+
+### Patch Changes
+
+- 0611941: The delivered agents assume none of cratylus's own conventions (decisions 0267-0274). A task hands over a change: the builder's deliverable `pull-request` is now `change` (`change`, `tests`, `verified`), and the reviewer's review request takes `change` in place of `pullRequest`. How a change joins the project's shared work is the project's own convention: the `github-flow` procedure is deleted and the builder states no procedure; the lead's `merge` action is replaced by `integrate`, joining a change by the project's own convention once every check passes and any review due before it joins approves it. Review follows risk as Ship, Show or Ask: the lead's new `ship-show-ask` procedure says Ship joins a change with no review, Show joins it and has it reviewed afterwards, and Ask has it reviewed before it joins; the story states which its risk picks, and the lead picks by risk for a task with no story. There is no second reviewer. The reviewer reviews a change before or after it joins, and the story's `path` and `review` describe the plain or scaled-up path and Ship, Show or Ask. The operator's own review is a gate only on a change it has asked to review before it joins, which the sign-off and verdict glosses now say. The architect records a change's design with the change it belongs to. The runtime's README says history is held by review, never by refusal.
+
 ## 0.15.0
 
 ### Minor Changes

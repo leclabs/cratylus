@@ -1,5 +1,42 @@
 # @cratylus/invoke
 
+## 0.17.0
+
+### Minor Changes
+
+- f297ff5: The documents describe intent-based delegation. The repository's working conventions (`AGENTS.md`, the `repo-preamble` rule) follow Git flow's `dev`/`main` split, without release or hotfix branches: each change is made on a short-lived branch from `dev` and merged locally into `dev` once `pnpm check` passes on the merged result, and release, a pull request from `dev` into `main`, is the operator's. The runtime's README names its two capabilities, `concepts` and `versionSkew`; forge's README tells the omp extension's handover forms, warned when incomplete and never refused; the `cratylus` README's practice example is `intent-based-delegation`.
+- 7fe2da4: The concept journal states and serves only the live workflow.
+
+  `concepts decide` no longer takes `--cut`: a decision stands until a later decision supersedes it or a later `deprecate` entry deprecates it. `concepts leakage` reads every example file present, with or without `--history`.
+
+  Entries already recorded are read as they were written: a decision whose entry names a cut is read by its own status alone, and the recorded `cut` is shown only with `--history`. The `efficiency` entries recorded for cuts are past effort, shown by `concepts state` only with `--history`; no verb writes them.
+
+  Every verb's purpose, when and parameter text, and the `state` reading's legend, name the live workflow only.
+
+- d0350f9: Cratylus keeps no record of the work. What is in flight and how it ended is seen in the project's version control and the lead's outcomes; what it cost is what the harness records and the outcome reports. The concept journal is the project's one record of its own, and it holds the design alone.
+
+  Removed: the work package capability (`cratylus workPackage`, its verbs, its dependency graph, freeze, rounds, whole-check runs, integration and `record`) from `CAPABILITIES`, `RUNTIME_CAPABILITIES` and omp's offered tools, with nothing in its place, so the runtime's capabilities are `concepts` and `versionSkew`, and an installation upgraded from an earlier one no longer offers its tool; the harness-facing `cratylus lifecycle` command and `appendLifecycle`; the completion check (`cratylus completion-check`, its `post-commit` hook and `completionCheck`/`WATCHED`); the example substrate (`@cratylus/runtime/example-substrate`), which nothing live used; the `@dagrejs/graphlib` dependency; and the cut API the runtime barrel exported (`cutView`, `cutsInLedger`, `frozenCuts`, `foldCut`, `readCut` and their types). Nothing is migrated from the files the capability kept, and nothing reads them.
+
+  The concept journal's views read only the journal and the example files. The overview no longer tells work in flight (`cutsInFlight` and its line are gone), `define`, `supersede` and `retire` no longer warn of a freeze, and a decision recorded about a cut is read by its own status alone. `concepts state` gives a context's recorded cut `efficiency` only with `--history`.
+
+  The reconstitution procedure and the omp session-start and per-turn notes say a session sees the work in flight and how it ended in the project's version control and the lead's outcomes; the lead's outcome states its cost as the harness records it.
+
+### Patch Changes
+
+- Updated dependencies [7763b8f]
+- Updated dependencies [4a2d9e4]
+- Updated dependencies [f85330b]
+- Updated dependencies [f297ff5]
+- Updated dependencies [1147440]
+- Updated dependencies [0611941]
+- Updated dependencies [2297534]
+- Updated dependencies [7fe2da4]
+- Updated dependencies [df2780c]
+- Updated dependencies [d0350f9]
+  - @cratylus/canon@0.18.0
+  - @cratylus/forge@0.17.0
+  - @cratylus/runtime@0.16.0
+
 ## 0.16.0
 
 ### Minor Changes

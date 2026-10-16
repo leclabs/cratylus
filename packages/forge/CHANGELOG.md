@@ -1,5 +1,40 @@
 # @cratylus/forge
 
+## 0.17.0
+
+### Minor Changes
+
+- 7763b8f: The architect's and lead's values hold by scope (sign-off-gates). Decision rights gain an optional `sign-off` slot, the operator's class of decision at its gates, whose gloss names them: a story's read-back, a story's plan read-back, a change the operator has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate the operator calls. The architect and lead state it as recommends, putting their handovers up for it and taking it only where delegated authority grants it. Both are principal over what each decides, human-in-the-loop at the operator's gates, human-on-the-loop between gates and at a gate whose sign-off is delegated, and mission-command between gates; each is decisive on the decisions it owns. A gate is a hold point the work does not pass without the operator's sign-off; at one whose sign-off is not delegated, its holder's reply ends with the sign-off it waits on. The architect's optimize stops at the next gate; it rectifies every input, the operator's included, reading the restatement back where it differs, bound once it understands them by the operator's intent and technical requirements, and taking the operator's wording of a concept as input to meaning, never transcribed; it records a change's design with the change it belongs to; at session start it records and changes nothing before its read-back; and its story read-back is a gate the story starts on. The lead decides how a story is split and staffed and holds as gates its plan read-back and the operator's review of a change the operator has asked to review before it joins. The reviewer takes held-out examples directly from `design/held-out/`, never through the lead. The omp session-start note carries the scope a reconstitution note gives it.
+- 4a2d9e4: An assignment schema may state alternative forms at its top level (`anyOf`): `checkAssignment` passes an assignment that fits any one of them, and when none fits reports the problems of the closest form (the first, when no assignment is given). The omp extension's dispatch form shows each alternative. Canon's lead now takes a story or a task with no story without a false warning, its outcome naming the story or the task; the architect, whose handovers are a person's, carries no contract, so a launched architect is never told to answer in JSON. The check-writer no longer sees held-out examples, which are given only to reviewers, and nico is described by the corpus's concept space and the cold-decode oracle.
+- f297ff5: The documents describe intent-based delegation. The repository's working conventions (`AGENTS.md`, the `repo-preamble` rule) follow Git flow's `dev`/`main` split, without release or hotfix branches: each change is made on a short-lived branch from `dev` and merged locally into `dev` once `pnpm check` passes on the merged result, and release, a pull request from `dev` into `main`, is the operator's. The runtime's README names its two capabilities, `concepts` and `versionSkew`; forge's README tells the omp extension's handover forms, warned when incomplete and never refused; the `cratylus` README's practice example is `intent-based-delegation`.
+- 1147440: The omp extension no longer warns of skipped cut steps: the lead and builder dispatch warnings (cut record, branch checked out, work package readiness, unserved concepts, unowned or unchecked examples) are gone. It captures nothing of agent runs: no dispatch, return, verdict or report is sent anywhere, and a dispatch from `eval` code is warned only that its assignment is not shown or checked. It still checks each dispatch's assignment against its agent's form and still names the acting agent on every capability call. The misfit warning with the assignment form, version skew, agent launch and the session-start note are unchanged. omp's dispatch isolation now says it is made from the dispatcher's HEAD and not from the branch the work belongs on, which it must be moved onto before it is merged.
+
+  The shipped practice `example-driven-workflow` is renamed `intent-based-delegation`: select it with `--practices intent-based-delegation`.
+
+- df2780c: The architect and lead are no longer pushed past the operator's gates by what reaches them every turn (decisions 0251, 0252).
+
+  The omp session-start note says nothing is recorded or changed before the read-back, which carries the current design, then what is open, then the stories and tasks in flight; a ruling held now is carried in the read-back and recorded only once the operator signs off; and a read-back held at a gate or called by the operator ends with the sign-off it waits on and ends the turn. It no longer tells the agent to go on in the same turn or that the read-back is not a pause for leave. The meaning note's settle on sight covers only decisions the agent owns, and at a session's start, or where the operator has called a read-back before recording, carries the ruling in the read-back until the operator signs off.
+
+  Every agent's persona protocol bounds its drift tells: they concern only decisions the agent owns, and waiting at a gate for a sign-off it does not hold is never drift.
+
+- d0350f9: Cratylus keeps no record of the work. What is in flight and how it ended is seen in the project's version control and the lead's outcomes; what it cost is what the harness records and the outcome reports. The concept journal is the project's one record of its own, and it holds the design alone.
+
+  Removed: the work package capability (`cratylus workPackage`, its verbs, its dependency graph, freeze, rounds, whole-check runs, integration and `record`) from `CAPABILITIES`, `RUNTIME_CAPABILITIES` and omp's offered tools, with nothing in its place, so the runtime's capabilities are `concepts` and `versionSkew`, and an installation upgraded from an earlier one no longer offers its tool; the harness-facing `cratylus lifecycle` command and `appendLifecycle`; the completion check (`cratylus completion-check`, its `post-commit` hook and `completionCheck`/`WATCHED`); the example substrate (`@cratylus/runtime/example-substrate`), which nothing live used; the `@dagrejs/graphlib` dependency; and the cut API the runtime barrel exported (`cutView`, `cutsInLedger`, `frozenCuts`, `foldCut`, `readCut` and their types). Nothing is migrated from the files the capability kept, and nothing reads them.
+
+  The concept journal's views read only the journal and the example files. The overview no longer tells work in flight (`cutsInFlight` and its line are gone), `define`, `supersede` and `retire` no longer warn of a freeze, and a decision recorded about a cut is read by its own status alone. `concepts state` gives a context's recorded cut `efficiency` only with `--history`.
+
+  The reconstitution procedure and the omp session-start and per-turn notes say a session sees the work in flight and how it ended in the project's version control and the lead's outcomes; the lead's outcome states its cost as the harness records it.
+
+### Patch Changes
+
+- Updated dependencies [4a2d9e4]
+- Updated dependencies [f297ff5]
+- Updated dependencies [0611941]
+- Updated dependencies [7fe2da4]
+- Updated dependencies [d0350f9]
+  - @cratylus/schema@0.11.0
+  - @cratylus/runtime@0.16.0
+
 ## 0.16.2
 
 ### Patch Changes
