@@ -188,7 +188,9 @@ session learns only that it waits on the operator's sign-off and how the operato
 Agent Hub (Alt+A, select the agent, Enter), and later its result: the task result (`tool_result`:
 content and details); each later run the operator prompts in the delegate's session, judged on that
 run's own messages (`agent_start`/`message_end`/`agent_end`) and, where omp does not hand it over
-itself, sent to the dispatcher's session through state the module shares across the sessions of one
+itself (it does only for a run whose yield its monitor accepts as the result, never a rejected yield
+or an incremental section, or a run the dispatcher's own message woke), sent to the dispatcher's
+session through state the module shares across the sessions of one
 omp process; and each later run omp hands over itself as a background delivery (`context`: a held
 job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
 recorded in the session when held). Every other result passes unchanged. Known omp limitations:

@@ -1016,8 +1016,10 @@ const SESSION_PLACEMENT: readonly string[] = [
  *   - each LATER RUN, one the operator prompts after joining it (or a peer wakes), is
  *     judged by the delegate on what it said in that run alone (the messages from its
  *     `agent_start`, outside the dispatched run omp's lifecycle names). omp hands the
- *     dispatcher such a run itself only when it yields or answers the dispatcher's own
- *     message; otherwise the extension does, from the delegate's session to its
+ *     dispatcher such a run itself only when its run monitor accepts a yield as the run's
+ *     result (whole or aborting; never one the yield tool rejected, nor an incremental
+ *     section) or the run answers the dispatcher's own message; otherwise the extension
+ *     does, from the delegate's session to its
  *     dispatcher's (both run in one omp process, which shares this module's state): the
  *     waiting notice for another gate, else its reply, as a follow-up message.
  *   - a later run omp hands over itself reaches the dispatcher as a background delivery,
@@ -1756,11 +1758,26 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  customType?: string;',
         '  timestamp?: number;',
         '  stopReason?: string;',
+        '  toolName?: string;',
+        '  isError?: boolean;',
         '  content?: string | { type: string; text?: string; name?: string }[];',
         '  details?: {',
         '    from?: unknown;',
         '    jobs?: { jobId?: unknown; type?: unknown; status?: unknown; agentId?: string; schema?: { status?: unknown } }[];',
+        '    status?: unknown;',
+        '    type?: unknown;',
+        '    complete?: unknown;',
         '  };',
+        '}',
+        '',
+        "// A yield omp's run monitor accepts as a run's result, which has omp hand that run to the",
+        '// dispatcher itself: a submission the yield tool took (success or aborted, never a rejected one)',
+        '// that is whole: not an incremental section, unless it completes the batch or aborts.',
+        'function acceptedYield(m: Said): boolean {',
+        '  if (m.role !== "toolResult" || m.toolName !== "yield" || m.isError === true) return false;',
+        '  const { status, type, complete } = m.details ?? {};',
+        '  if (status !== "success" && status !== "aborted") return false;',
+        '  return !(Array.isArray(type) && type.length > 0) || complete === true || status === "aborted";',
         '}',
         '',
         "// A message's text.",
@@ -2259,9 +2276,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    ongoing?.messages.push((event as { message: Said }).message);',
         '  });',
         "  // As such a run ends, the delegate's own verdict on it is taken, on what it said in that run.",
-        '  // omp hands the dispatching session that run only where it yields its deliverable or answers the',
-        "  // dispatcher's own message; otherwise the extension does: the waiting notice for another gate,",
-        '  // else its reply.',
+        '  // omp hands the dispatching session that run only where its monitor accepts a yield as its',
+        "  // result or the run answers the dispatcher's own message; otherwise the extension does: the",
+        '  // waiting notice for another gate, else its reply. A yield the tool rejected, or an incremental',
+        '  // section, is no such result.',
         '  pi.on("agent_end", async (event, ctx) => {',
         '    const current = ongoing;',
         '    const session = ctx as unknown as Session;',
@@ -2270,7 +2288,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const replies = current.messages.filter((m) => m.role === "assistant");',
         '    const last = replies.at(-1);',
         '    if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
-        '    if (replies.some((m) => Array.isArray(m.content) && m.content.some((c) => c.type === "toolCall" && c.name === "yield"))) return;',
+        '    if (current.messages.some(acceptedYield)) return;',
         '    if (current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId)) return;',
         '    const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === self.name);',
         '    if (!gated(declaration)) return;',

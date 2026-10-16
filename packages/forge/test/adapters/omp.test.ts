@@ -2336,21 +2336,59 @@ describe('omp capability interface', () => {
           }
           await lead.fire('agent_end', { messages: [...history] });
         }
-        const yielding = {
-          role: 'assistant',
-          stopReason: 'stop',
-          content: [{ type: 'toolCall', name: 'yield' }],
-        };
+        /** A run's yield call and the yield tool's answer to it, as omp records both. */
+        const yielded = (answer: Record<string, unknown>) => [
+          {
+            role: 'assistant',
+            stopReason: 'toolUse',
+            content: [{ type: 'toolCall', name: 'yield' }],
+          },
+          { role: 'toolResult', toolName: 'yield', ...answer },
+        ];
         const fromDispatcher = { role: 'custom', details: { from: 'Main' } };
         // Its dispatched run: the task result carries it, so nothing is sent.
         emit('task:subagent:lifecycle', { id: 'Lead', status: 'started' });
         await runs(asked('Realize renewal.'), said(READ_BACK));
         emit('task:subagent:lifecycle', { id: 'Lead', status: 'completed' });
         expect(main.sent).toEqual([]);
-        // A run the dispatcher's own message woke, and one that yields, reach it from omp.
+        // A run the dispatcher's own message woke, and one whose yield omp's monitor
+        // accepts as its result, whole or aborting, reach it from omp.
         await runs(fromDispatcher, said(READ_BACK));
-        await runs(asked('Signed off.'), yielding);
+        await runs(
+          asked('Signed off.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'success', data: {} },
+          }),
+          said('Delivered.'),
+        );
+        await runs(
+          asked('Stop.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'aborted', error: 'stopped' },
+          }),
+          said('Stopped.'),
+        );
         expect(main.sent).toEqual([]);
+        // A yield the tool rejected, and an incremental section, are no result omp hands
+        // over: the gate the run then stops at is the extension's to say.
+        await runs(
+          asked('Signed off.'),
+          ...yielded({
+            isError: true,
+            content: [{ type: 'text', text: 'schema_violation' }],
+          }),
+          said('The contract needs an outcome first. Sign off the plan again.'),
+        );
+        await runs(
+          asked('Report as you go.'),
+          ...yielded({
+            isError: false,
+            details: { status: 'success', type: ['findings'], data: {} },
+          }),
+          said('First findings in. Sign off before I go on.'),
+        );
         // Runs the operator prompts, after those earlier ones in the same history.
         await runs(
           asked('Use two builders.'),
@@ -2358,16 +2396,19 @@ describe('omp capability interface', () => {
         );
         await runs(asked('Signed off.'), said(DELIVERABLE));
         const options = { triggerTurn: true, deliverAs: 'followUp' };
+        const notice = [
+          {
+            customType: 'cratylus-attach',
+            content: waiting('Lead'),
+            display: true,
+            details: { id: 'Lead', held: true },
+          },
+          options,
+        ];
         expect(main.sent).toEqual([
-          [
-            {
-              customType: 'cratylus-attach',
-              content: waiting('Lead'),
-              display: true,
-              details: { id: 'Lead', held: true },
-            },
-            options,
-          ],
+          notice,
+          notice,
+          notice,
           [
             {
               customType: 'cratylus-attach',
