@@ -68,11 +68,15 @@ warrants them. Each role is defined by what it receives and what it hands over, 
 - **lead** — owns a story's realization, or a task with no story: orchestrates its tasks to builders
   (orchestrator-workers) and their changes to review as its story's risk calls for (Ship, Show or
   Ask), joins each change by the project's own integration once every check passes and any review
-  due before it joins approves it, and hands over the outcome.
+  due before it joins approves it, and hands over the outcome. Where the operator has asked to
+  review a change before it joins, no agent reviews it: the operator's review is its review, and it
+  joins only on the operator's sign-off.
 - **builder** — receives one task and hands over one change that passes every check.
 - **reviewer** — reviews one change it did not write, before or after it joins as its story's risk
   calls for, against the change and, where they apply, its story's acceptance criteria and
-  examples, held-out ones included; hands over one review and never builds or repairs the work.
+  examples, held-out ones included; hands over one review and never builds or repairs the work. It
+  never reviews a change the operator has asked to review itself; the operator takes that change's
+  held-out examples directly from the design.
 - **illustrator** — writes a story's examples cold from its concepts alone, flagging unclear terms.
 - **check-writer** — writes the checks binding a story's examples, each seen failing before the build.
 
