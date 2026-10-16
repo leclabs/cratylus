@@ -267,14 +267,14 @@ and warns where it falls short; they are not the same, and this is what a user m
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 - **A gate held by a delegate (attach).** On omp, an agent whose decision rights hold sign-off
   (the architect, the lead) holds a gate for your sign-off when it ends its turn on a reply that
-  is not its declared deliverable (a JSON object satisfying its declared output, given whole or in
-  a fenced block); one that declares no such deliverable hands over to you alone, so holds one at
-  every turn it ends. Install declares such an agent `blocking`, so a dispatch of it always waits
+  ends with the sign-off it waits on: its closing sentence asks for your sign-off. Any other reply
+  is its result, whether or not it is its declared deliverable. Install declares such an agent
+  `blocking`, so a dispatch of it always waits
   for its result. cratylus's extension gives the session that dispatched it only a notice in that
   agent's place: it waits on your sign-off, and you join it in omp's Agent Hub (Alt+A, select the
   agent, Enter), where you answer it and work with it directly. Its reply is never passed up. omp
   keeps the agent's session alive; each turn you prompt there reaches the dispatching session as
-  its result once it gives its deliverable, or as another such notice when it stops at another
+  its result once it returns one, or as another such notice when it stops at another
   gate. Every other result passes unchanged. You are told in the session you work in, as soon as
   such an agent waits on you, however deep it sits below other agents: a warning line on your
   screen, which no model reads, names the agent and how to join it (Alt+A, select it, Enter).

@@ -180,9 +180,9 @@ when the item's assignment names a story or a task: the agent, its role, that st
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
 
 **Attach.** A delegate whose declaration's decision rights carry a `sign-off` line holds a gate when
-its turn ends on a reply that is not its declared deliverable: not found valid by omp, and neither
-whole nor in one fenced block a JSON object satisfying its `output` (omp's own validator). One that
-declares no JSON deliverable holds a gate at every turn it ends. Such a declaration is projected
+its turn ends on a reply that ends with the sign-off it waits on: its closing sentence asks for the
+operator's sign-off (a question about it, or the bidding "Sign off …"). Every other reply is a
+result, the declared JSON deliverable or not, whether or not the holder declares one. Such a declaration is projected
 `blocking: true`, so its dispatched run always comes back on the task result. The dispatching
 session learns only that it waits on the operator's sign-off and how the operator joins it, omp's
 Agent Hub (Alt+A, select the agent, Enter), and later its result: the task result (`tool_result`:

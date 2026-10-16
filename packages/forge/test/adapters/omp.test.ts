@@ -1915,6 +1915,9 @@ describe('omp capability interface', () => {
       const READ_BACK =
         'The plan: three tasks, one builder each. Sign off the plan to send it to be built.';
       const DELIVERABLE = '{"story":"renewal","outcome":"merged"}';
+      /** A lead's return at a delegated grant's end state: its plan sign-off taken and recorded. */
+      const END_STATE =
+        'Read-back: the plan sign-off was delegated to me; I took it and recorded it. The grant’s end state is reached: renewal is planned, three tasks recorded.';
       const CONTRACT = {
         type: 'object',
         properties: {
@@ -2111,43 +2114,35 @@ describe('omp capability interface', () => {
         expect(JSON.stringify(given)).not.toContain('Sign off the plan');
       });
 
-      it('takes a reply as the deliverable only when it holds a JSON object satisfying the contract, whole or fenced, or omp found it valid', async () => {
+      it('holds a gate only on a reply ending with the sign-off it waits on; any other reply, the deliverable or not, passes as its result', async () => {
         omp.agents = [GATED()];
         const content = [
           { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
         ];
-        for (const output of [
-          DELIVERABLE,
-          `Done.\n\n\`\`\`json\n${DELIVERABLE}\n\`\`\``,
+        for (const result of [
+          { ...LEAD, output: DELIVERABLE },
+          { ...LEAD, output: `Done.\n\n\`\`\`json\n${DELIVERABLE}\n\`\`\`` },
+          {
+            ...LEAD,
+            output: DELIVERABLE,
+            structuredOutput: { status: 'valid', data: {} },
+          },
+          // A grant's end-state read-back, and other prose: results, not gates.
+          { ...LEAD, output: END_STATE },
+          { ...LEAD, output: 'Built renewal; two pull requests merged.' },
+          { ...LEAD, output: '{"story":"renewal"}' },
         ])
           expect(
-            (
-              await settle({
-                content,
-                details: { results: [{ ...LEAD, output }] },
-              })
-            ).answer,
-            output,
+            (await settle({ content, details: { results: [result] } })).answer,
+            result.output,
           ).toBeUndefined();
-        expect(
-          (
-            await settle({
-              content,
-              details: {
-                results: [
-                  {
-                    ...LEAD,
-                    output: DELIVERABLE,
-                    structuredOutput: { status: 'valid', data: {} },
-                  },
-                ],
-              },
-            })
-          ).answer,
-        ).toBeUndefined();
         for (const result of [
-          // Prose, and a JSON object missing what the contract requires.
           LEAD,
+          {
+            ...LEAD,
+            output: 'The plan: three tasks. Do you sign off the plan?',
+          },
+          { ...LEAD, output: 'The plan is below.\n\n**Sign off the plan?**' },
           {
             ...LEAD,
             output: `\`\`\`json\n{"story":"renewal"}\n\`\`\`\n${READ_BACK}`,
@@ -2204,17 +2199,29 @@ describe('omp capability interface', () => {
           ).toBeUndefined();
       });
 
-      it('holds a gate at every turn a holder declaring no JSON deliverable ends, whatever it says', async () => {
+      it('judges a holder declaring no JSON deliverable alike: held only where its reply ends with the sign-off it waits on', async () => {
         omp.agents = [GATED(false)];
-        for (const output of [READ_BACK, DELIVERABLE]) {
-          const { given } = await settle({
-            content: [{ type: 'text', text: envelope('Lead', 'lead', output) }],
-            details: { results: [{ ...LEAD, output }] },
-          });
-          expect(given.content, output).toEqual([
-            { type: 'text', text: waiting('Lead') },
-          ]);
-        }
+        const { given } = await settle({
+          content: [
+            { type: 'text', text: envelope('Lead', 'lead', READ_BACK) },
+          ],
+          details: { results: [LEAD] },
+        });
+        expect(given.content).toEqual([
+          { type: 'text', text: waiting('Lead') },
+        ]);
+        for (const output of [END_STATE, DELIVERABLE])
+          expect(
+            (
+              await settle({
+                content: [
+                  { type: 'text', text: envelope('Lead', 'lead', output) },
+                ],
+                details: { results: [{ ...LEAD, output }] },
+              })
+            ).answer,
+            output,
+          ).toBeUndefined();
       });
 
       /** omp's background delivery of `jobs`, one message of the dispatching session. */
@@ -2277,6 +2284,9 @@ describe('omp capability interface', () => {
         // The deliverable, and a failed turn, pass as omp gave them.
         for (const passing of [
           delivered(2, [{ id: 'Lead', text: DELIVERABLE }]),
+          delivered(4, [
+            { id: 'Lead', text: envelope('Lead', 'lead', END_STATE) },
+          ]),
           delivered(3, [
             {
               id: 'Lead',
@@ -2580,8 +2590,13 @@ describe('omp capability interface', () => {
             said('Two builders now. Sign off the revised plan.'),
           );
           await runs(asked('Signed off.'), said(DELIVERABLE));
+          await runs(asked('Carry it to the grant’s end.'), said(END_STATE));
           expect(main.told).toEqual([told('Lead'), told('Lead'), told('Lead')]);
           expect([arch.told, lead.told]).toEqual([[], []]);
+          // The end-state read-back reaches the dispatcher unchanged, as its result.
+          expect(JSON.stringify(arch.sent.at(-1))).toContain(
+            'end state is reached',
+          );
           unread(main, arch, lead);
         });
 

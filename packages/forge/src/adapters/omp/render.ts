@@ -999,12 +999,13 @@ const SESSION_PLACEMENT: readonly string[] = [
  * dispatch always goes ahead.
  *
  * ATTACH: A GATE HELD BY A DELEGATE (decision 0250(3)). A delegate holds a gate when its
- * declaration's decision rights hold `sign-off` and it ends its turn on a reply that is not
- * its declared deliverable: a reply is the deliverable when omp found it valid, or when it
- * is, or holds in one fenced block, a JSON object satisfying the declared `output` (omp's
- * own validator; plain-text results, omp's default, carry no verdict). A holder declaring
- * no JSON deliverable hands over to the operator alone, so holds a gate at every turn it
- * ends. A cancelled run, or one failed by its provider or by omp, holds none. The
+ * declaration's decision rights hold `sign-off` and it ends its turn on a reply that ends
+ * with the sign-off it waits on: its closing sentence asks for the operator's sign-off (a
+ * question about it, or the bidding "Sign off …"), as the agents' values have every gate
+ * reply end. Every other reply is a result, whether or not it is the declared JSON
+ * deliverable, and reaches the dispatcher unchanged; a holder declaring no JSON deliverable
+ * is judged the same way. A cancelled run, or one failed by its provider or by omp, holds
+ * none. The
  * dispatching session learns only that the delegate waits on the operator's sign-off and
  * how the operator joins it, omp's Agent Hub (Alt+A, select the agent, Enter), and later
  * its result:
@@ -1196,7 +1197,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  cfgTaskPrewalk,',
         '} from "@oh-my-pi/pi-coding-agent/task/settings";',
         'import type { AgentDefinition } from "@oh-my-pi/pi-coding-agent/task/types";',
-        'import { buildOutputValidator } from "@oh-my-pi/pi-coding-agent/tools/output-schema-validator";',
         'import { cfgReadSummarizeEnabled } from "@oh-my-pi/pi-coding-agent/tools/settings";',
         'import { parseFrontmatter } from "@oh-my-pi/pi-utils";',
         '',
@@ -1693,8 +1693,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         "// ATTACH. A delegate holds a gate where its declaration's decision rights hold sign-off and it",
-        '// ends its turn on a reply that is not its declared deliverable; one that declares no JSON',
-        '// deliverable hands over to the operator alone, so holds one at every turn it ends. The session',
+        '// ends its turn on a reply that ends with the sign-off it waits on; every other reply is its',
+        '// result, whether or not it is its declared JSON deliverable. The session',
         '// that dispatched it learns only that it waits on the operator and how the operator joins it,',
         "// by omp's Agent Hub, and later its result: on the task result of its dispatch (a gate holder is",
         '// declared blocking, so its dispatch always comes back there), and on each later turn the',
@@ -1706,28 +1706,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return declaration !== undefined && /^- sign-off \\(/m.test(declared(declaration.systemPrompt, "decision-rights"));',
         '}',
         '',
-        '// Whether a reply is the deliverable a contract declares: a JSON object satisfying it, the whole',
-        '// reply or one fenced block of it. A contract omp cannot use fails nothing.',
-        'function delivers(reply: string, contract: unknown): boolean {',
-        '  const { validator, error } = buildOutputValidator(contract);',
-        '  if (error !== undefined) return true;',
-        '  const said = [reply, ...Array.from(reply.matchAll(/```[^\\n]*\\n([\\s\\S]*?)```/g), (m) => m[1] ?? "")];',
-        '  return said.some((text) => {',
-        '    let value: unknown;',
-        '    try {',
-        '      value = JSON.parse(text.trim());',
-        '    } catch {',
-        '      return false;',
-        '    }',
-        '    if (typeof value !== "object" || value === null || Array.isArray(value)) return false;',
-        '    return validator?.validate(value).success ?? true;',
-        '  });',
-        '}',
-        '',
-        "// Whether a gate holder's reply holds a gate: it declares no JSON deliverable, or the reply is",
-        '// not that deliverable.',
-        'function holds(declaration: AgentDefinition, reply: string): boolean {',
-        '  return declaration.output === undefined || !delivers(reply, declaration.output);',
+        "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on, its closing",
+        '// sentence asking for the operator\'s sign-off (a question about it, or the bidding "Sign off …").',
+        '// Every other reply is a result, its declared JSON deliverable or not.',
+        'function holds(reply: string): boolean {',
+        '  const closing = reply.split("\\n").filter((line) => line.trim() !== "").at(-1)?.trim() ?? "";',
+        '  const sentence = closing.split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
+        '  if (!/\\bsign(?:s|ed|ing)?[\\s-]?off\\b/i.test(sentence)) return false;',
+        '  return /\\?\\W*$/.test(sentence) || /^\\W*(?:please\\s+)?sign[\\s-]?off\\b/i.test(sentence);',
         '}',
         '',
         '// A task run that failed or was cut short, which is no reply of its delegate: omp gives it an',
@@ -1842,7 +1828,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const declaration = (await discoverAgents(run.cwd)).agents.find((a) => a.name === agent);',
         '  if (!gated(declaration)) return;',
         '  const data = run.messages.filter(acceptedYield).at(-1)?.details?.data;',
-        '  if (holds(declaration, data === undefined ? textOf(last) : JSON.stringify(data))) tell(id, declaration.name);',
+        '  if (holds(data === undefined ? textOf(last) : typeof data === "string" ? data : JSON.stringify(data)))',
+        '    tell(id, declaration.name);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -2259,7 +2246,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
         '    const held = replied.filter((r) => {',
         '      const declaration = agents.find((a) => a.name === r.agent);',
-        '      return gated(declaration) && holds(declaration, String(r.output ?? ""));',
+        '      return gated(declaration) && holds(String(r.output ?? ""));',
         '    });',
         '    if (held.length === 0) return undefined;',
         '    for (const r of held) tell(String(r.id), String(r.agent));',
@@ -2349,7 +2336,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === self.name);',
         '    if (!gated(declaration)) return;',
         '    const reply = textOf(last);',
-        '    const held = holds(declaration, reply);',
+        '    const held = holds(reply);',
         '    if (held) tell(self.id, declaration.name);',
         '    if (current.messages.some((m) => m.role === "custom" && m.details?.from === self.parentId)) return;',
         '    const dispatcher = self.parentId === undefined ? undefined : sessionsById.get(self.parentId);',
@@ -2400,16 +2387,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '          const name = recorded.get(key) ?? declaredById.get(id) ?? "";',
         '          agents ??= (await discoverAgents(session.cwd)).agents;',
         '          const declaration = agents.find((a) => a.name === name);',
-        '          const reply =',
+        '          const delivery =',
         '            jobs.length === 1',
         '              ? (/^<system-notice>\\n[^\\n]*\\n([\\s\\S]*)\\n<\\/system-notice>$/.exec(text)?.[1] ?? text)',
         '              : (jobOf(String(job.jobId)).exec(text)?.[1] ?? text);',
+        '          const reply = /<output>\\n([\\s\\S]*?)\\n<\\/output>/.exec(delivery)?.[1] ?? delivery;',
         '          const holding =',
         '            recorded.has(key) ||',
-        '            (gated(declaration) &&',
-        '              (job.schema !== undefined',
-        '                ? declaration.output === undefined || job.schema.status === "invalid"',
-        '                : job.status === "completed" && holds(declaration, reply)));',
+        '            (gated(declaration) && (job.schema !== undefined || job.status === "completed") && holds(reply));',
         '          verdict = holding ? name : false;',
         '          verdicts.set(key, verdict);',
         '          if (holding && !recorded.has(key)) {',
