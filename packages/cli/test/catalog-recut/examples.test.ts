@@ -394,7 +394,7 @@ describe('catalog re-cut: rulings 0084–0085', () => {
     }
   });
 
-  it('0085: reconstitution reads context overviews before detail and readback', () => {
+  it('0085: reconstitution reads the design state before standing decisions and readback', () => {
     const procedure = requireDefined(
       vectorOf(composedRole('architect')).procedure,
       'architect.procedure',

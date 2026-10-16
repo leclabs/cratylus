@@ -68,7 +68,7 @@ export const architectRole: RoleCell = {
     role: [
       {
         value: architect,
-        note: "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
+        note: "rulings of meaning recorded as concept versions with their reasons before they are reported, never as decisions, and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
       },
     ],
     objective: [
@@ -94,7 +94,7 @@ export const architectRole: RoleCell = {
       orchestratorWorkers,
       {
         value: reconstitution,
-        note: 'at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight',
+        note: 'at session start it records and changes nothing before its read-back, in plain words from the design state: the current design, then what is open, then the stories and tasks in flight',
       },
     ],
     // Decision 0052: the architect's decisiveness and elevation hold without exception.

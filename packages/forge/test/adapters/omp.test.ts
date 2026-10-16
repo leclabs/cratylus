@@ -1835,9 +1835,9 @@ describe('omp capability interface', () => {
         'This session starts with reconstitution (at every start, read back before acting).',
       );
       for (const line of [
-        "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
+        "Read the design state of each touched context and of the delivered workflow (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the standing decisions your work needs. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
         "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project's version control and the lead's outcomes; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",
-        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
+        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
         'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
         'A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
       ])
@@ -1845,6 +1845,8 @@ describe('omp capability interface', () => {
       // It no longer sends the agent on past the read-back in the same turn.
       expect(turns[0]).not.toContain('in the same turn');
       expect(turns[0]).not.toContain('pause for leave');
+      // It reads the design state, never an overview or the cuts.
+      expect(turns[0]).not.toMatch(/overview|\bcuts?\b/);
       expect(turns[1]).not.toContain('# Session start');
       // A declaration without it gets no note.
       omp.agents = [CARTOGRAPHER()];
@@ -1900,7 +1902,7 @@ describe('omp capability interface', () => {
           '# Meaning: yours',
           'The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.',
           "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
-          "Settle on sight: a decision you own whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
+          "Settle on sight: a ruling of meaning whose grounds you hold is taken in the turn you hold them, recorded as a concept version with its reason, never as a decision, and then reported, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
           '# The records',
           "The journal is the record of the design, and the project's version control and your delegates' reports and outcomes are the record of its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
           'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',

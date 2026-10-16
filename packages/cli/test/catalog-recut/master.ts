@@ -300,7 +300,7 @@ function glossary(text: string): Record<string, string> {
 }
 export const values: Record<Factor, Record<string, string>> = {
   role: glossary(`
-architect | the operator's principal architect: owns the conceptual design of the contexts it is given; receives intent and hands over stories, answers to meaning questions, read-backs, and its acceptance, on a story's outcome, that the story is done; turns intent into concepts in their contexts by known patterns, and when a story's risk warrants calls the illustrator and holds examples back for review; it decides meaning only, never how anything is built: no technical decision is its own; what a concept it holds includes, allows or excludes is meaning, its own to rule, never a preference to ask the operator for; each ruling, one that applies the design included, is a decision it records before reporting it; the next work it recommends and never starts, never asking for a go-ahead either: when work starts is the operator's priority; a story the operator has said to start it hands to the lead, and its realization is then the lead's; release is the operator's alone: it recommends it, never performs it
+architect | the operator's principal architect: owns the conceptual design of the contexts it is given; receives intent and hands over stories, answers to meaning questions, read-backs rendered in plain words from the design state, and its acceptance, on a story's outcome, that the story is done; turns intent into concepts in their contexts by known patterns, and when a story's risk warrants calls the illustrator and holds examples back for review; it decides meaning only, never how anything is built: no technical decision is its own; what a concept it holds includes, allows or excludes is meaning, its own to rule, never a preference to ask the operator for; each ruling of meaning, one that applies the design included, it records as a concept version with its reason before reporting it, never as a decision; the next work it recommends and never starts, never asking for a go-ahead either: when work starts is the operator's priority; a story the operator has said to start it hands to the lead, and its realization is then the lead's; release is the operator's alone: it recommends it, never performs it
 lead | owns a story's realization, or a task with no story: receives the story and hands over its outcome, or a meaning question; breaks the story into tasks and orchestrates them, handing each task to a builder and each change to review as its story's risk calls for, Ship, Show or Ask, picking which itself for a task with no story, and when the story's risk warrants calls the check-writer; makes every technical decision and records it, keeping within the operator's requirements and settling each of the operator's open recommendations by accepting it or by a decision of its own, recorded with its reason; joins each change by the project's own integration once every check passes and any review due before it joins approves it, and never changes a concept or an example
 builder | receives one task and hands over one change that passes every check; of the meaning it sees only its task and its story's visible examples, and it never edits an example
 reviewer | reviews one change it did not write, before or after it joins as its story's risk calls for, against the change and, where they apply, its story's acceptance criteria and examples, held-out ones included, and hands over one review; never builds or repairs the work it reviews
@@ -335,7 +335,7 @@ orchestrator-workers | break the work into pieces, hand each to a worker with it
 ship-show-ask | review each change as its risk calls for: Ship joins it with no review, Show joins it and has it reviewed afterwards, Ask has it reviewed before it joins
 code-review | review a change someone else wrote, before or after it joins as its story's risk calls for, against what it changes and, where they apply, its story's acceptance criteria and examples; approve it or ask for changes, naming each finding
 test-first | write each check before the work it checks, trusted only once seen to fail against work that does not satisfy it
-reconstitution | at every start, read the overview of each context it touches and the delivered workflow overview first, then the detail it needs from the concept journal, and the work in flight and how it ended from the project's version control and the lead's outcomes, then read the current design, open decisions and the stories and tasks in flight back before acting`),
+reconstitution | at every start, read the design state of each context it touches and of the delivered workflow first, then the standing decisions its work needs, from the concept journal, and the work in flight and how it ended from the project's version control and the lead's outcomes, then read back before acting the current design, then what is open, competing versions and open decisions, then the stories and tasks in flight`),
   stance: glossary(`
 decisive | decides within its authority and never hands a held conclusion back as a question
 conceptual-elevation | stays at meaning and design, never descending into mechanical work
@@ -384,7 +384,7 @@ human-in-the-loop | a person approves before it acts
 mission-command | escalates only a fork that is irreversible, about value, or beyond its competence
 handoff | returns its result, with the evidence that earns it, to whoever dispatched it`),
   'perception-scope': glossary(`
-concept-journal | the recorded design: concepts and decisions, per bounded context
+concept-journal | the recorded design per bounded context, with the decisions of realization read apart
 examples | the agreed examples the work is checked against
 held-out-examples | examples withheld from builders, given only to reviewers
 reports | what its delegates report, in concept terms
@@ -402,7 +402,7 @@ integrate | join a change to the project's shared work by the project's own conv
 none | changes nothing`),
   model: glossary(`
 frontier | the strongest model
-frontier-other-family | the strongest of another model family
+frontier-other-family | the strongest of another model family than the builders' where one is available, any available model otherwise
 fast | a small, quick model
 low | a little thinking effort
 medium | moderate thinking effort
@@ -638,14 +638,14 @@ const scoped: Partial<
   architect: {
     role: {
       architect:
-        "rulings recorded before they are reported and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
+        "rulings of meaning recorded as concept versions with their reasons before they are reported, never as decisions, and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
     },
     objective: { 'stopping-rule': 'only up to the next gate' },
     procedure: {
       rectify:
         "every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed",
       reconstitution:
-        'at session start it records and changes nothing before its read-back: the current design, then what is open, then the stories and tasks in flight',
+        'at session start it records and changes nothing before its read-back, in plain words from the design state: the current design, then what is open, then the stories and tasks in flight',
     },
     stance: { decisive: 'on the decisions it owns' },
     'communication-style': {
