@@ -1,0 +1,20 @@
+{
+  "id": "01M51D818EY31PHJPV5PZCY6YQ",
+  "at": "2026-10-16T03:49:13.614Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "operator",
+  "wording": "The person who states intent and its priorities, releases, and holds sign-off, exercised at the gates and only there: a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls, stop included. It is the client of the principal architect in an engagement where each is sovereign in its own domain. Between gates the agents work without checking in, and by delegated authority it may take itself out of the loop, its delegated sign-offs taken in its place.",
+  "builtFrom": [
+    "release",
+    "decision rights",
+    "sign-off",
+    "gate",
+    "delegated authority"
+  ],
+  "reason": "How a request for its sign-off reaches the operator needs no statement: it follows from sign-off being the operator's.",
+  "supersedes": [
+    "01M51D20Z5P7JN7ZQR1RA8RFXT"
+  ]
+}
