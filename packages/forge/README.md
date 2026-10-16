@@ -193,11 +193,13 @@ or an incremental section, or a run the dispatcher's own message woke), sent to 
 session through state the module shares across the sessions of one
 omp process; and each later run omp hands over itself as a background delivery (`context`: a held
 job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
-recorded in the session when held). Every other result passes unchanged. Wherever one of these
-routes finds a held reply, the operator is told in its own session as soon as the gate waits on it:
-the main session's interface (`notify`, a warning line no model reads) names the agent and how to
-join it (Agent Hub: Alt+A, select the agent, Enter), however deep the holder sits below other
-delegates, once per gate (a holder is told of again only after it starts another run). Known omp
+recorded in the session when held). Every other result passes unchanged. Wherever a held reply is
+found, the operator is told in its own session as soon as the gate waits on it: the main session's
+interface (`notify`, a warning line no model reads) names the agent and how to join it (Agent Hub:
+Alt+A, select the agent, Enter), however deep the holder sits below other delegates, once per gate
+(a holder is told of again only after it starts another run). A dispatched run is judged as it ends
+(`task:subagent:lifecycle`, on all it said over every prompt omp gave it), since omp returns the
+task result only once every blocking item of the call has settled. Known omp
 limitations: with `task.structured` on, omp reminds a delegate without its deliverable up to three
 times, the last forcing a yield; an isolated delegate is joinable only until omp parks it.
 

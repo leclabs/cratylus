@@ -1030,13 +1030,16 @@ const SESSION_PLACEMENT: readonly string[] = [
  *     is bound to that result; it is kept once taken and, when held, recorded in the
  *     session with the agent (`<bin>-gate-hold`).
  *
- * THE OPERATOR IS TOLD, in its own session, as soon as a gate waits on it: wherever one of
- * the routes above finds a held reply (the task result, a later run the extension hands
- * over or that the dispatcher's own message woke, a background delivery), the main session's
- * interface shows a notice naming the agent and how to join it (Agent Hub: Alt+A, select the
- * agent, Enter), however deep the holder sits below other delegates. It is omp's `notify`, a
- * warning line on the operator's screen that no model reads, given once per gate: a holder is
- * not told of again until it starts another run.
+ * THE OPERATOR IS TOLD, in its own session, as soon as a gate waits on it: wherever a held
+ * reply is found, the main session's interface shows a notice naming the agent and how to
+ * join it (Agent Hub: Alt+A, select the agent, Enter), however deep the holder sits below
+ * other delegates. A dispatched run is judged as it ends (omp's lifecycle event, on all it
+ * said over every prompt omp gave it: the data of the last yield omp accepted, else its last
+ * words), since omp returns the task result only once every blocking item of the call has
+ * settled; the task result is a second look at the same run. A later run is judged at its
+ * `agent_end`, whoever started it, and a background delivery as above. It is omp's `notify`,
+ * a warning line on the operator's screen that no model reads, given once per gate: a holder
+ * is not told of again until it starts another run.
  *
  * omp LIMITS ON ATTACH, held as omp gives them: with `task.structured` on, omp reminds a
  * delegate that ends without its deliverable up to three times, the last forcing a yield;
@@ -1781,6 +1784,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    status?: unknown;',
         '    type?: unknown;',
         '    complete?: unknown;',
+        '    data?: unknown;',
         '  };',
         '}',
         '',
@@ -1804,13 +1808,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// What attach keeps, shared by every session of this omp process, which runs each delegate in',
         "// its own session beside the one that dispatched it: each live session's API by its agent's",
         "// registry id, so a delegate's later turn reaches its dispatcher; the declaration each delegate",
-        '// runs as, by its registry id; the delegates whose dispatched run is in flight, any other run of',
-        '// theirs being one the operator (or a peer) prompted; and the verdict on each later result omp',
-        '// handed a session (the agent held at a gate, or none), kept once taken, since every turn',
-        '// reads it anew.',
+        '// runs as, by its registry id; the delegates whose dispatched run is in flight, with where each',
+        '// runs and all it has said in that run, any other run of theirs being one the operator (or a',
+        '// peer) prompted; and the verdict on each later result omp handed a session (the agent held at',
+        '// a gate, or none), kept once taken, since every turn reads it anew.',
         'const sessionsById = new Map<string, ExtensionAPI>();',
         'const declaredById = new Map<string, string>();',
-        'const dispatchedRuns = new Set<string>();',
+        'const dispatchedRuns = new Map<string, { cwd: string; messages: Said[] }>();',
         'const verdicts = new Map<string, string | false>();',
         '',
         "// ATTACH, to the operator: the main session's interface, where the operator works, and the gate",
@@ -1826,6 +1830,19 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    `${id} (${agent}) waits on your sign-off, in its own session. Join it in omp's Agent Hub: Alt+A, select ${id}, Enter.`,",
         '    "warning",',
         '  );',
+        '}',
+        '',
+        "// The delegate's own verdict on its dispatched run, taken as that run ends (omp's lifecycle",
+        "// event), so the operator is told at once, not when the dispatch's other blocking items settle:",
+        '// its reply is the data of the last yield omp accepted, else its last words. The task result',
+        '// judges the same run again for its dispatcher, and tells the operator only of a gate not told.',
+        'async function runEnded(id: string, agent: string, run: { cwd: string; messages: Said[] }): Promise<void> {',
+        '  const last = run.messages.filter((m) => m.role === "assistant").at(-1);',
+        '  if (last === undefined || last.stopReason === "error" || last.stopReason === "aborted") return;',
+        '  const declaration = (await discoverAgents(run.cwd)).agents.find((a) => a.name === agent);',
+        '  if (!gated(declaration)) return;',
+        '  const data = run.messages.filter(acceptedYield).at(-1)?.details?.data;',
+        '  if (holds(declaration, data === undefined ? textOf(last) : JSON.stringify(data))) tell(id, declaration.name);',
         '}',
         '',
         '// The declaration as the system prompt carries it: its front matter as one sentence of',
@@ -2289,20 +2306,28 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  bus?.on?.("task:subagent:lifecycle", (data) => {',
         '    const e = (data ?? {}) as Record<string, unknown>;',
         '    const id = typeof e.id === "string" ? e.id : undefined;',
-        '    if (e.status === "started" && e.detached !== true && id !== undefined) dispatchedRuns.add(id);',
+        '    if (e.status === "started" && e.detached !== true && id !== undefined) dispatchedRuns.set(id, { cwd: "", messages: [] });',
         '    if (!["completed", "failed", "aborted"].includes(String(e.status))) return;',
-        '    if (e.detached !== true && id !== undefined) dispatchedRuns.delete(id);',
+        '    const run = id === undefined || e.detached === true ? undefined : dispatchedRuns.get(id);',
+        '    if (id !== undefined && run !== undefined) {',
+        '      dispatchedRuns.delete(id);',
+        '      if (e.status !== "aborted") void runEnded(id, String(e.agent), run);',
+        '    }',
         '    if (e.detached === true) void returned(`${String(e.parentToolCallId)}#${String(e.index)}`, e.tokens);',
         '  });',
         '',
-        "  // ATTACH, in a delegate's session: each run it starts outside its dispatched run is one the",
-        '  // operator prompted after joining it (or a peer woke), and holds the messages it adds, so what it',
-        '  // said is read from that run alone, never from earlier ones.',
+        "  // ATTACH, in a delegate's session: its dispatched run, over every prompt omp gives it, holds all",
+        '  // it says there; each run it starts outside it is one the operator prompted after joining it (or',
+        '  // a peer woke), and holds the messages it adds, so what it said is read from that run alone,',
+        '  // never from earlier ones.',
         '  let ongoing: { later: boolean; messages: Said[] } | undefined;',
         '  pi.on("agent_start", (_event, ctx) => {',
-        '    const self = (ctx as unknown as Session).agent;',
+        '    const session = ctx as unknown as Session;',
+        '    const self = session.agent;',
         '    if (self?.id !== undefined) waitingOn.delete(self.id);',
-        '    ongoing = { later: self?.kind === "sub" && self.id !== undefined && !dispatchedRuns.has(self.id), messages: [] };',
+        '    const run = self?.id === undefined ? undefined : dispatchedRuns.get(self.id);',
+        '    if (run !== undefined) run.cwd = session.cwd;',
+        '    ongoing = { later: self?.kind === "sub" && self.id !== undefined && run === undefined, messages: run?.messages ?? [] };',
         '  });',
         '  pi.on("message_end", (event) => {',
         '    ongoing?.messages.push((event as { message: Said }).message);',

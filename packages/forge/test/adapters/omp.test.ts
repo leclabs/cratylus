@@ -2453,7 +2453,7 @@ describe('omp capability interface', () => {
               await lead.fire('message_end', { message });
             await lead.fire('agent_end', { messages });
           }
-          return { main, arch, lead, runs };
+          return { ...process, main, arch, lead, runs };
         }
         /** No session's model is given the operator's notice. */
         const unread = (...sessions: { sent: unknown[] }[]) => {
@@ -2486,6 +2486,81 @@ describe('omp capability interface', () => {
           await result({ ...LEAD, output: DELIVERABLE });
           expect(main.told).toEqual([told('Lead')]);
           unread(main, arch, lead);
+        });
+
+        it('as its dispatched run ends, while another blocking item of the same dispatch still runs', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, lead, bind, emit } = await nested();
+          const second = await bind({
+            ...DELEGATE,
+            id: 'Second',
+            parentId: 'Arch',
+          });
+          main.told.length = 0;
+          const lifecycle = (id: string, status: string) =>
+            emit('task:subagent:lifecycle', { id, agent: 'lead', status });
+          lifecycle('Lead', 'started');
+          lifecycle('Second', 'started');
+          // The lead's run over two prompts, omp's yield reminder the second: it stops on its read-back.
+          for (const message of [said('Planning.'), said(READ_BACK)]) {
+            await lead.fire('agent_start', {});
+            await lead.fire('message_end', { message });
+            await lead.fire('agent_end', { messages: [message] });
+          }
+          expect(main.told).toEqual([]);
+          // omp settles it (no yield: failed) before the other item ends, and before any task result.
+          lifecycle('Lead', 'failed');
+          await vi.waitFor(() => expect(main.told).toEqual([told('Lead')]));
+          // The other item gives its deliverable through a yield omp accepts: no gate.
+          await second.fire('agent_start', {});
+          for (const message of [
+            {
+              role: 'assistant',
+              stopReason: 'toolUse',
+              content: [{ type: 'toolCall', name: 'yield' }],
+            },
+            {
+              role: 'toolResult',
+              toolName: 'yield',
+              isError: false,
+              details: { status: 'success', data: JSON.parse(DELIVERABLE) },
+            },
+            said('Delivered.'),
+          ])
+            await second.fire('message_end', { message });
+          await second.fire('agent_end', { messages: [] });
+          lifecycle('Second', 'completed');
+          // The task result once both have settled: the dispatcher is given the lead only as the
+          // waiting notice, the other item's deliverable holds no gate, and the operator is not
+          // told again.
+          const answer = (await arch.fire('tool_result', {
+            toolName: 'task',
+            toolCallId: 'call',
+            input: {},
+            content: [
+              {
+                type: 'text',
+                text: `${envelope('Lead', 'lead', READ_BACK)}\n\n${envelope('Second', 'lead', DELIVERABLE)}`,
+              },
+            ],
+            details: {
+              results: [
+                { ...LEAD, exitCode: 1, error: MISSING_YIELD },
+                {
+                  ...LEAD,
+                  index: 1,
+                  id: 'Second',
+                  output: DELIVERABLE,
+                  structuredOutput: { status: 'valid', data: {} },
+                },
+              ],
+            },
+          })) as { content: { text: string }[] };
+          expect(answer.content[0]?.text).toBe(
+            `${waiting('Lead')}\n\n${envelope('Second', 'lead', DELIVERABLE)}`,
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          unread(main, arch, lead, second);
         });
 
         it('as each later run stops at a gate, its dispatcher’s message, a peer’s or the operator’s having started it', async () => {
