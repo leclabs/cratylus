@@ -1,8 +1,0 @@
-{
-  "id": "01M512FWGYMGYFPFDQTZ6JZRBC",
-  "at": "2026-10-16T00:41:16.574Z",
-  "kind": "task",
-  "transition": "task:per-turn-notes-bounded",
-  "task": "per-turn-notes-bounded",
-  "story": "sign-off-gates"
-}

@@ -1,11 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The CONTEXT OVERVIEW: one bounded context as a reader of it is first told
-// about it, computed from the concept journal and the ledger on every request
-// and never stored.
+// about it, computed from the concept journal on every request and never
+// stored.
 //
 // It gives the context's subject and its relation in the context map, its
-// cycles, open decisions and the work in flight on it, and
-// the whole as plain prose (`account`): the one place each live concept is told,
+// cycles and open decisions, and the whole as plain prose (`account`): the one place each live concept is told,
 // WHOLE BEFORE PARTS, so the overview gives each concept once.
 //
 // ORDER: first the concepts no other live concept is built from, in recorded
@@ -13,14 +12,8 @@
 // already-shown concept built from it, ties in recorded order; the concepts
 // reachable only through a cycle follow in recorded order, and each cycle is
 // named. Each concept appears once.
-//
-// WORK IN FLIGHT ON IT: each story in flight recorded with the context among
-// its contexts, or with none, which touches every context; and each task in
-// flight of a story that touches it. A task with no story changes no meaning,
-// so it touches no context.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Task, Work } from '../ledger/index.js';
 import type { ContextView, DecisionView, Meaning } from './views.js';
 
 /** One context's overview. */
@@ -31,11 +24,6 @@ export interface ContextOverview {
   readonly cycles: readonly (readonly string[])[];
   /** Each open decision by what it says, its title, and its id as a reference. */
   readonly openDecisions: readonly { title: string; id: string }[];
-  /** The stories and tasks in flight that touch it. */
-  readonly workInFlight: {
-    readonly stories: readonly { story: string }[];
-    readonly tasks: readonly { task: string; story: string }[];
-  };
   readonly account: string;
 }
 
@@ -116,14 +104,12 @@ const sentence = (text: string): string => {
   return /[.!?]$/.test(trimmed) ? trimmed : `${trimmed}.`;
 };
 
-/** The overview of `design`'s context, given every decision and the work the
- *  ledger records; `map` names the context map its relation is told in. */
+/** The overview of `design`'s context, given every decision; `map` names the context map its relation is told in. */
 export function overviewOf(
   design: Omit<ContextView, 'concepts'> & {
     readonly concepts: readonly Meaning[];
   },
   decisions: readonly DecisionView[],
-  work: Work,
   map = 'the context map',
 ): ContextOverview {
   const context = design.name;
@@ -131,22 +117,6 @@ export function overviewOf(
   const open = decisions
     .filter((d) => d.context === context && d.status === 'open')
     .map((d) => ({ title: d.title, id: d.id }));
-  const touched = (contexts: readonly string[] | undefined) =>
-    contexts === undefined || contexts.includes(context);
-  const storyContexts = new Map(work.stories.map((s) => [s.story, s.contexts]));
-  const inFlight = {
-    stories: work.stories
-      .filter((s) => s.ended === undefined && touched(s.contexts))
-      .map(({ story }) => ({ story })),
-    tasks: work.tasks
-      .filter(
-        (t): t is Task & { readonly story: string } =>
-          t.ended === undefined &&
-          t.story !== undefined &&
-          touched(storyContexts.get(t.story)),
-      )
-      .map(({ task, story }) => ({ task, story })),
-  };
 
   const opening =
     design.subject !== null
@@ -196,27 +166,16 @@ export function overviewOf(
       : `Still open, not settled meaning: ${open
           .map((d) => `“${d.title}” (decision ${d.id})`)
           .join('; ')}.`;
-  const working = [
-    ...inFlight.stories.map((s) => `the story ${s.story}`),
-    ...inFlight.tasks.map((t) => `the task ${t.task} of the story ${t.story}`),
-  ];
-  const workProse =
-    working.length === 0
-      ? 'No work is in flight.'
-      : `In flight: ${working.join('; ')}.`;
-
   return {
     context,
     subject: design.subject,
     relation: design.relation,
     cycles,
     openDecisions: open,
-    workInFlight: inFlight,
     account: [
       opening.join(' '),
       [...conceptProse, ...cycleProse, ...competingProse].join(' '),
       decisionProse,
-      workProse,
     ].join('\n\n'),
   };
 }

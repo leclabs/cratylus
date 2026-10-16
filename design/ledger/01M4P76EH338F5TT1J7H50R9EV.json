@@ -1,9 +1,0 @@
-{
-  "id": "01M4P76EH338F5TT1J7H50R9EV",
-  "at": "2026-10-11T19:31:51.459Z",
-  "kind": "dispatched",
-  "transition": "toolu_01MK7p46EacnjHLW7DDQVDkx/ReplyChecks/dispatched",
-  "cut": "meaning-roles",
-  "role": "check-writer",
-  "run": "toolu_01MK7p46EacnjHLW7DDQVDkx/ReplyChecks"
-}

@@ -165,7 +165,7 @@ describe("agents/5 — each delivered role starts with the harness's default too
       narrowedWithoutHarm(
         declared(
           { tools: ['read'] },
-          'Narrowed: the observed harm was a deleted ledger.',
+          'Narrowed: the observed harm was a deleted journal.',
         ),
       ),
     ).toBeUndefined();

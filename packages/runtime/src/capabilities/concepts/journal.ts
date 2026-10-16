@@ -43,10 +43,9 @@ export const JOURNAL_DIR = 'design/journal';
 /** An entry's file name: its id, then `.json`. */
 const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
 
-/** What a reading of a ledger read past, written by a newer runtime: each
+/** What a reading of the journal read past, written by a newer runtime: each
  *  kind it left uninterpreted, with how many entries of it, and each value it
- *  does not know of a known kind's field, with how many entries hold it. The
- *  concept journal and the ledger read past the same way. */
+ *  does not know of a known kind's field, with how many entries hold it. */
 export class ReadPast {
   readonly kinds = new Map<string, number>();
   /** By `<kind>.<field>`, each value with how many entries hold it. */
@@ -58,17 +57,6 @@ export class ReadPast {
     count(this.kinds, kind, 1);
     for (const [field, value] of newer)
       count(this.#held(`${kind}.${field}`), value, 1);
-  }
-
-  /** This and `other` together. */
-  with(other: ReadPast): ReadPast {
-    const both = new ReadPast();
-    for (const past of [this, other]) {
-      for (const [kind, n] of past.kinds) count(both.kinds, kind, n);
-      for (const [key, held] of past.values)
-        for (const [value, n] of held) count(both.#held(key), value, n);
-    }
-    return both;
   }
 
   /** The values counted for `key`, `<kind>.<field>`. */

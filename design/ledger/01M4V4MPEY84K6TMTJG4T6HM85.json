@@ -1,8 +1,0 @@
-{
-  "id": "01M4V4MPEY84K6TMTJG4T6HM85",
-  "at": "2026-10-13T17:23:24.766Z",
-  "kind": "integrate",
-  "transition": "integrate:ci-suite",
-  "cut": "ci-suite",
-  "agent": "Lance Caraccioli"
-}

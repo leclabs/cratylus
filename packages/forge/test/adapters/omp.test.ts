@@ -29,10 +29,7 @@ import {
   ompHarnessAdapter,
   ompRoleRouting,
 } from '../../src/adapters/omp/index.js';
-import {
-  OMP_CAPABILITY_TOOLS,
-  OMP_ESSENTIAL_CAPABILITIES,
-} from '../../src/adapters/omp/render.js';
+import { OMP_CAPABILITY_TOOLS } from '../../src/adapters/omp/render.js';
 import { SESSION_SCOPE } from '../../src/core/harness-adapter.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
@@ -695,8 +692,7 @@ describe('omp capability interface', () => {
       expect(tool?.approval({ verb: 'put' })).toBe('write');
     });
 
-    it('offers the ledger whole every turn, the concept journal as a device', async () => {
-      expect(OMP_ESSENTIAL_CAPABILITIES).toEqual(['ledger']);
+    it('offers every capability as a device', async () => {
       const tools = await load(EXPLANATION);
       expect(
         Object.fromEntries(
@@ -707,7 +703,6 @@ describe('omp capability interface', () => {
         ),
       ).toEqual({
         concepts: 'discoverable',
-        ledger: 'essential',
         versionSkew: 'discoverable',
       });
     });
@@ -1195,11 +1190,11 @@ describe('omp capability interface', () => {
       const { warnings, tools } = await started({
         projected: '2.4.0',
         command: '2.4.0',
-        explains: ['concepts'],
+        explains: [],
       });
-      expect(tools).toEqual(['stand_in_concepts', 'version_skew']);
+      expect(tools).toEqual(['version_skew']);
       expect(warnings[0]).toHaveLength(1);
-      expect(warnings[0]?.[0]).toMatch(/does not provide ledger /);
+      expect(warnings[0]?.[0]).toMatch(/does not provide concepts /);
     });
 
     it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
@@ -1213,7 +1208,7 @@ describe('omp capability interface', () => {
       for (const said of warnings) {
         expect(said).toHaveLength(1);
         expect(said[0]).toContain('runs the cratylus extension it loaded');
-        expect(said[0]).toContain('ledger capture');
+        expect(said[0]).toContain('dispatch checks');
         expect(said[0]).toMatch(/Restart omp/);
       }
     });
@@ -1593,7 +1588,7 @@ describe('omp capability interface', () => {
     it('warns of an eval call whose code dispatches a delegate, for a launched agent or a typed delegate, and lets it through', async () => {
       omp.agents = [CARTOGRAPHER(), LEAD()];
       const EVAL_DISPATCH_WARNING =
-        'dispatch from eval code: its assignment is not shown or checked and the ledger does not capture it; dispatch with the task tool to have both.';
+        'dispatch from eval code: its assignment is not shown or checked; dispatch with the task tool to have it checked.';
       /** Every `tool_call` handler of the module, in order, as omp's runner fires them;
        *  what the session was told, each handler's answer checked to refuse nothing. */
       const loaded = async (flag?: string) => {
@@ -1729,17 +1724,15 @@ describe('omp capability interface', () => {
         },
         'Build it.',
       );
-    /** The lifecycle events the stand-in command was sent, in order. */
-    const lifecycleSent = (calls: string) =>
+    /** The calls the stand-in command was sent, in order. */
+    const sent = (calls: string) =>
       readFileSync(calls, 'utf8')
         .trim()
         .split('\n')
         .filter((line) => line !== '')
-        .map((line) => JSON.parse(line) as string[])
-        .filter((args) => args[0] === 'lifecycle')
-        .map((args) => JSON.parse(args[1] ?? '') as Record<string, unknown>);
+        .map((line) => JSON.parse(line) as string[]);
 
-    it('checks and records a dispatch whatever the harness calls the tool that carries it', async () => {
+    it('checks a dispatch whatever the harness calls the tool that carries it, and sends nothing of it or its return', async () => {
       omp.agents = [LEAD(), BUILDER()];
       const cwd = mkdtempSync(join(tmpdir(), 'omp-dispatch-cwd-'));
       tmp.push(cwd);
@@ -1759,7 +1752,7 @@ describe('omp capability interface', () => {
             toolName,
           ).toBeUndefined();
           expect(session.did.notices, toolName).toHaveLength(1);
-          // A typed dispatch is recorded, and its settled return too.
+          // A typed dispatch, and its settled return, send the command nothing.
           writeFileSync(calls, '');
           await session.fire('tool_call', 'main', {
             toolName,
@@ -1779,94 +1772,9 @@ describe('omp capability interface', () => {
             toolCallId: `call-${toolName}`,
             details: { results: [{ index: 0, id: 'A', output: 'built' }] },
           });
-          expect(lifecycleSent(calls), toolName).toEqual([
-            {
-              kind: 'dispatched',
-              call: `call-${toolName}`,
-              agent: 'A',
-              role: 'builder',
-              task: 'renewal-form',
-            },
-            { kind: 'returned', call: `call-${toolName}`, agent: 'A' },
-          ]);
+          expect(sent(calls), toolName).toEqual([]);
           expect(session.did.notices, toolName).toHaveLength(1);
         }
-      } finally {
-        Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
-      }
-    });
-
-    it('sends the story and task an assignment names with the role, and the tokens the harness reports on return, and nothing for an item naming neither', async () => {
-      omp.agents = [LEAD(), BUILDER()];
-      const cwd = mkdtempSync(join(tmpdir(), 'omp-record-cwd-'));
-      tmp.push(cwd);
-      const calls = join(cwd, 'calls.jsonl');
-      writeFileSync(calls, '');
-      process.env.STAND_IN_CALLS = calls;
-      try {
-        const session = await started(undefined, cwd);
-        await session.fire('session_start');
-        expect(
-          await session.fire('tool_call', 'main', {
-            toolName: 'task',
-            toolCallId: 'batch',
-            input: {
-              context: 'Renewal of a library loan.',
-              tasks: [
-                {
-                  agent: 'lead',
-                  name: 'Lead',
-                  task: '```assignment\n{"story":"renewal","examples":["library/1"],"decisions":[]}\n```',
-                },
-                {
-                  agent: 'builder',
-                  name: 'Form',
-                  task: '```assignment\n{"task":"renewal-form","story":"renewal"}\n```',
-                },
-                // Naming neither story nor task: not sent, nor its return.
-                { agent: 'scout', task: 'Look around.' },
-              ],
-            },
-          }),
-        ).toBeUndefined();
-        await session.fire('tool_result', 'main', {
-          toolName: 'task',
-          toolCallId: 'batch',
-          details: {
-            results: [
-              { index: 0, id: 'Lead', tokens: 51234 },
-              { index: 1, id: 'Form', tokens: 18000 },
-              { index: 2, id: '2' },
-            ],
-          },
-        });
-        // The same return delivered again is sent once.
-        await session.fire('tool_result', 'main', {
-          toolName: 'task',
-          toolCallId: 'batch',
-          details: { results: [{ index: 1, id: 'Form', tokens: 18000 }] },
-        });
-        expect(lifecycleSent(calls)).toEqual([
-          {
-            kind: 'dispatched',
-            call: 'batch',
-            agent: 'Lead',
-            role: 'lead',
-            story: 'renewal',
-          },
-          {
-            kind: 'dispatched',
-            call: 'batch',
-            agent: 'Form',
-            role: 'builder',
-            story: 'renewal',
-            task: 'renewal-form',
-          },
-          { kind: 'returned', call: 'batch', agent: 'Lead', tokens: 51234 },
-          { kind: 'returned', call: 'batch', agent: 'Form', tokens: 18000 },
-        ]);
-        // Nothing is warned of: every assignment fits, and every send succeeded.
-        expect(session.did.notices).toEqual([]);
       } finally {
         Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
       }
@@ -1928,8 +1836,8 @@ describe('omp capability interface', () => {
       );
       for (const line of [
         "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
-        'Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.',
-        'Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the ledger records them, in your own communication style.',
+        "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project's version control and the lead's outcomes; the work itself — the project tree, source, tests — is not a source: never list, search or open it.",
+        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
         'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
         'A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
       ])
@@ -1994,7 +1902,7 @@ describe('omp capability interface', () => {
           "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
           "Settle on sight: a decision you own whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
           '# The records',
-          "The journal, the ledger and your delegates' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
+          "The journal is the record of the design, and the project's version control and your delegates' reports and outcomes are the record of its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
           'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',
         ])
           expect(prompt, `turn ${turn}`).toContain(line);

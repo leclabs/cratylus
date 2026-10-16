@@ -173,9 +173,7 @@ turns summarised reads on (omp's dispatch applies only `false`). One definition,
 to drift. Every turn carries the handover form of each agent that takes a typed one; a dispatch or
 launch whose assignment is incomplete, and an `eval` call whose code dispatches a delegate (`agent(…)`,
 `workpool(…)`, `tool.task`, `tool["task"]`), are each warned of and go ahead — never refused. The
-extension also records in the ledger, through `cratylus lifecycle`, a task call's dispatch and return
-when the item's assignment names a story or a task: the agent, its role, that story or task and the
-tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
+extension records nothing of a dispatch or its return.
 
 ## The harness adapter port
 

@@ -1,8 +1,0 @@
-{
-  "id": "01M516DVJ47BY5CF1E0ZMVS96E",
-  "at": "2026-10-16T01:50:04.356Z",
-  "kind": "task",
-  "transition": "task:operator-told-at-gate",
-  "task": "operator-told-at-gate",
-  "story": "sign-off-gates"
-}

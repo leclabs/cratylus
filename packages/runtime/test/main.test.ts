@@ -12,10 +12,6 @@ import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import {
-  VERBS as LEDGER,
-  dispatchLedger,
-} from '../src/capabilities/ledger/dispatch.js';
-import {
   VERBS as VERSION_SKEW,
   dispatchVersionSkew,
 } from '../src/capabilities/version-skew/index.js';
@@ -73,7 +69,6 @@ async function run(
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   concepts: CONCEPTS,
-  ledger: LEDGER,
   versionSkew: VERSION_SKEW,
 };
 
@@ -92,10 +87,7 @@ describe('the capability commands print their help from the declarations', () =>
     },
   );
 
-  it.each([
-    ['concepts', 'define', '<concept>'],
-    ['ledger', 'story', '<name>'],
-  ] as const)(
+  it.each([['concepts', 'define', '<concept>']] as const)(
     '%s %s --help documents its positional and every flag',
     async (c, verb, positional) => {
       const declared = SURFACES[c][
@@ -144,7 +136,6 @@ describe('the capability commands answer an undeclared verb with what to do', ()
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
     concepts: dispatchConcepts,
-    ledger: dispatchLedger,
     versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 
@@ -212,7 +203,6 @@ describe('the capability commands leave a verb’s flags to the verb’s own rea
 describe('the capability commands refuse a word the verb does not take', () => {
   const cases: [Capability, string, string[]][] = [
     ['concepts', 'history', ['c', 'extra']],
-    ['ledger', 'state', ['extra']],
   ];
 
   it.each(cases)(

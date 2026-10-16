@@ -1,8 +1,0 @@
-{
-  "id": "01M4NR1CV1ZYHMXP7K65CK0M4V",
-  "at": "2026-10-11T15:06:57.249Z",
-  "kind": "check",
-  "transition": "check:reconstitution:01M4NR1CTZY6G8AA47FA9WBP38",
-  "cut": "reconstitution",
-  "failures": []
-}

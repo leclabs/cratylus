@@ -1,7 +1,7 @@
 // The repository as the simplification checks read it: its tracked files, which of
 // them a scan for "the delivered project and this repository" covers, and their text.
 //
-// OUT OF EVERY SCAN: the design record (the journal, the ledger and the examples),
+// OUT OF EVERY SCAN: the design record (the journal and the examples),
 // which is the architect's history; release history (`CHANGELOG.md`, `.changeset/`),
 // which says what changed and so names what was removed; and these checks themselves,
 // whose patterns name what they look for. IN: everything else, the recorded-run code,
@@ -34,7 +34,7 @@ export function tracked(): string[] {
 /** Whether a scan of the delivered project and this repository covers `path`. */
 export function inScope(path: string): boolean {
   if (path.startsWith(CHECKS_DIR)) return false;
-  if (/^design\/(journal|ledger|examples)\//.test(path)) return false;
+  if (/^design\/(journal|examples)\//.test(path)) return false;
   if (/(^|\/)CHANGELOG\.md$/.test(path)) return false;
   if (path.startsWith('.changeset/')) return false;
   return true;

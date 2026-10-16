@@ -1,8 +1,0 @@
-{
-  "id": "01M51JXQGGX2535EZGY6YT7H0A",
-  "at": "2026-10-16T05:28:27.408Z",
-  "kind": "returned",
-  "transition": "returned:toolu_014oXgSJyXaPTTf5tpqoP5EV/GenericAgentsBuilder",
-  "call": "toolu_014oXgSJyXaPTTf5tpqoP5EV",
-  "agent": "GenericAgentsBuilder"
-}

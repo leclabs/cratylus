@@ -1,9 +1,0 @@
-{
-  "id": "01M4V97THAKXFFSVXY7NYQ7QPA",
-  "at": "2026-10-13T18:43:45.834Z",
-  "kind": "dispatched",
-  "transition": "toolu_016UtPzqQoFqGDmhUWs4AbBz/ChecksLead/dispatched",
-  "cut": "checks",
-  "role": "lead",
-  "run": "toolu_016UtPzqQoFqGDmhUWs4AbBz/ChecksLead"
-}

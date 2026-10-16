@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.15.0",
-  "description": "The per-host runtime: the built-in capabilities (concepts, ledger, versionSkew) and the host runtime config.",
+  "description": "The per-host runtime: the built-in capabilities (concepts, versionSkew) and the host runtime config.",
   "license": "MIT",
   "engines": {
     "node": ">=22"

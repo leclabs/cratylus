@@ -1,9 +1,0 @@
-{
-  "id": "01M4P7TWB7D79X5YWGEWM9G40M",
-  "at": "2026-10-11T19:43:00.967Z",
-  "kind": "returned",
-  "transition": "toolu_01MK7p46EacnjHLW7DDQVDkx/FreezeChecks/returned",
-  "cut": "meaning-roles",
-  "role": "check-writer",
-  "run": "toolu_01MK7p46EacnjHLW7DDQVDkx/FreezeChecks"
-}

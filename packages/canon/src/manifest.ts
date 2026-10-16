@@ -309,7 +309,6 @@ export type Evaluation = Value<'evaluation'>;
 // factor above), which is a different concept; one root would cover two.
 export const RUNTIME_CAPABILITIES = [
   'concepts',
-  'ledger',
   'versionSkew',
 ] as const satisfies readonly CapabilityName[];
 

@@ -4,8 +4,8 @@
 //   overview   the project's purpose first, then the practice its agents work
 //              by, delivered and shown apart from its design, then each of its
 //              own contexts told whole for a reader of it: subject and
-//              relation, concepts whole before parts, open decisions and the
-//              work in flight; what a session reads first to reconstitute
+//              relation, concepts whole before parts, and open decisions;
+//              what a session reads first to reconstitute
 //   state      the project's purpose first, then the delivered practice apart,
 //              then the whole state of each of its own contexts in one answer:
 //              the query a session reconstitutes its detail from
@@ -21,33 +21,28 @@
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
 //   retire     record a concept's retirement
-//   decide     record a decision, open or accepted, and optionally its kind and
-//              the example files it keeps standing
+//   decide     record a decision, open or accepted, and optionally its kind
 //   accept     record the acceptance of an open decision
 //   classify   record which kind a recorded decision is: meaning or realization
 //   deprecate  record that a standing decision no longer applies, with why
 //
 // WHAT STANDS. A decision stands while it is open or accepted, until a later
-// decision supersedes it or a later entry deprecates it. A story's example
-// files are history once the ledger records the story ended, merged or
-// dropped, unless a standing decision keeps them. Every query but `history`
-// reads only what stands: no retired concept, no reason a concept's version
-// was written, no superseded or deprecated decision, nor what a decision
-// superseded or the kinds recorded before its governing one, no example that
-// is history and no effort recorded for past work; `state`, `design`,
-// `decisions` and `leakage` add the history only when asked with `--history`.
-//
-// HISTORY READ AS RECORDED. Entries are never rewritten, so what earlier
-// workflows recorded is still read: a decision recorded about a cut stays
-// deprecated once the ledger's history records that cut integrated, an
-// example file written for a cut is history once that cut is integrated, and
-// the efficiency entries recorded for cuts are past effort, shown only with
+// decision supersedes it or a later entry deprecates it. Every example file
+// present is current. Every query but `history` reads only what stands: no
+// retired concept, no reason a concept's version was written, no superseded or
+// deprecated decision, nor what a decision superseded or the kinds recorded
+// before its governing one, and no effort recorded for past work; `state`,
+// `design`, `decisions` and `leakage` add the history only when asked with
 // `--history`.
 //
+// HISTORY READ AS RECORDED. Entries are never rewritten, so what earlier
+// workflows recorded is still read: a decision recorded about a cut, or naming
+// example files it keeps, is read by its own status alone, and the efficiency
+// entries recorded for cuts are past effort, shown only with `--history`.
+//
 // A query appends nothing and prints JSON; when it read past entries written by
-// a newer runtime, in the journal or, for `overview`, `state`, `decisions` and
-// `leakage`, the ledger, its answer also carries `uninterpreted`, saying what it
-// read past and how it was read.
+// a newer runtime in the journal, its answer also carries `uninterpreted`,
+// saying what it read past and how it was read.
 // An appending verb appends exactly one entry, stamped with who appended it, and
 // prints it as JSON; when what it recorded leaks implementation, or a concept's
 // or context's wording cites a decision by its number, recounts its history or
@@ -73,7 +68,6 @@ import {
   switchFlag,
   valueFlag,
 } from '../../verb-flags.js';
-import { workIn } from '../ledger/index.js';
 import { verbOf } from '../plan/argv.js';
 import {
   type DeliveredContext,
@@ -91,9 +85,8 @@ import {
   type DecisionKind,
   type WordedEntry,
 } from './entries.js';
-import { type Journal, type ReadPast, journalAt } from './journal.js';
+import { type Journal, journalAt } from './journal.js';
 import {
-  EXAMPLES_DIR,
   type Leak,
   type Passage,
   type Vocabulary,
@@ -154,8 +147,8 @@ export const VERBS = {
     concept: 'context overview',
     effect: 'reads',
     purpose:
-      'Tell the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts whole, worked out afresh from the recorded design and the ledger (the record of the work): its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), each by its title with its id as a reference, then the work in flight that touches it (the stories and tasks being built now), together as a plain prose account for a reader of that context',
-    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, before reading the detail it needs about its design and its decisions, and reading back the current design, open decisions and work in flight; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
+      'Tell the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts whole, worked out afresh from the recorded design: its subject and place in the context map first, then its live concepts each whole before the parts it is built from with its current meaning and any cycle among them named, then its open decisions that still stand (neither superseded nor deprecated), each by its title with its id as a reference, together as a plain prose account for a reader of that context',
+    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, before reading the detail it needs about its design and its decisions, and reading back the current design and open decisions; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -235,7 +228,7 @@ export const VERBS = {
     concept: 'concept journal',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept, standing decision and standing visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s wording and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it; a story’s examples are history once the story is done, merged or dropped, unless a standing decision keeps them',
+      'Show where realization shows through text that should state meaning: each live concept, standing decision and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s wording and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision recorded as constraining realization names what it constrains on purpose and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
     when: 'Before a design, its decisions or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak, and a decision of no recorded kind is inspected as stating meaning',
     positional: null,
     flags: {
@@ -243,7 +236,7 @@ export const VERBS = {
         'Only this bounded context’s concepts, decisions and examples; every context’s when left out',
       ),
       history: switchFlag(
-        'Also the history: decisions superseded or deprecated, and the examples of done stories no standing decision keeps',
+        'Also the history: decisions superseded or deprecated',
       ),
     },
   },
@@ -376,10 +369,6 @@ export const VERBS = {
         'What the decision is about: meaning, stating what the design means, or realization, constraining how it is realized; a decision recorded without it is inspected as stating meaning',
         { values: DECISION_KINDS },
       ),
-      keeps: valueFlag(
-        'An example file the decision keeps standing once its story is done, as <context>/<story>; repeat once per file',
-        { repeats: true },
-      ),
     },
   },
   accept: {
@@ -470,7 +459,7 @@ const READING = {
   'decisions.superseded':
     'given only when history is asked for: decisions a later decision replaced, each naming what superseded it',
   'decisions.deprecated':
-    'given only when history is asked for: decisions that no longer apply and have no replacement, each with why: the entry that deprecated it, with its reason, or the earlier piece of work it was recorded about, finished',
+    'given only when history is asked for: decisions that no longer apply and have no replacement, each with why: the entry that deprecated it, with its reason',
   'decisions.entry':
     'the decision’s identity; two decisions may share an id, and then each is referred to by its entry',
   efficiency:
@@ -481,7 +470,7 @@ const READING = {
  *  `from`, showing apart from its contexts the ones `delivered` holds, which the
  *  command reads from the installation it reaches and a library caller hands in
  *  or leaves out; returns what the verb prints as JSON, a reading with what it
- *  read past of the journal and of any other ledger it read. */
+ *  read past of the journal. */
 export function dispatchConcepts(
   argv: readonly string[],
   opts: {
@@ -503,27 +492,22 @@ export function dispatchConcepts(
       );
   }
   const journal = journalAt(opts.from ?? process.cwd(), refuse);
-  const ledgers: ReadPast[] = [];
-  const answer = answerOf(verb, args, journal, delivered, refuse, ledgers);
+  const answer = answerOf(verb, args, journal, delivered, refuse);
   const report =
-    VERBS[verb].effect === 'reads'
-      ? ledgers.reduce((all, one) => all.with(one), journal.readPast()).report()
-      : undefined;
+    VERBS[verb].effect === 'reads' ? journal.readPast().report() : undefined;
   return report === undefined
     ? answer
     : { ...(answer as object), uninterpreted: report };
 }
 
 /** What `verb`, given `args`, answers from `journal` and the contexts
- *  `delivered` holds; each other ledger it reads adds what it read past to
- *  `ledgers`. */
+ *  `delivered` holds. */
 function answerOf(
   verb: keyof typeof VERBS,
   args: Argv,
   journal: Journal,
   delivered: readonly DeliveredContext[],
   refuse: (message: string) => Error,
-  ledgers: ReadPast[],
 ): unknown {
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
@@ -592,21 +576,8 @@ function answerOf(
   };
   /** Whether history is asked for. */
   const history = args.flags.has('history');
-  /** What the ledger records, read once, what it read past kept for the
-   *  answer. */
-  let recordedWork: ReturnType<typeof workIn> | undefined;
-  const ledger = () => {
-    if (recordedWork === undefined) {
-      recordedWork = workIn(journal.root, refuse);
-      ledgers.push(recordedWork.readPast);
-    }
-    return recordedWork;
-  };
-  /** The cuts the ledger's history records integrated: a decision recorded
-   *  about one stays deprecated, and its example files stay history. */
-  const integratedCuts = () => ledger().integratedCuts;
-  /** Every decision, its status worked out from the cuts integrated. */
-  const decisionViews = () => folded.decisionViews(integratedCuts());
+  /** Every decision, with its status. */
+  const decisionViews = () => folded.decisionViews();
   /** `design` as shown: whole when history is asked for, else as it stands. */
   const shownDesign = <
     D extends {
@@ -734,7 +705,7 @@ function answerOf(
         ...folded.purpose(),
         ...practiceOf(covered.delivered.map(deliveredOverview)),
         contexts: covered.own.map((where) =>
-          overviewOf(folded.design(where), decisions, ledger().work),
+          overviewOf(folded.design(where), decisions),
         ),
       };
     }
@@ -796,36 +767,9 @@ function answerOf(
             ),
         ];
       });
-      /** The names whose example files are done: each story the ledger
-       *  records ended, merged or dropped, and each cut its history records
-       *  integrated. */
-      const done = new Set([
-        ...ledger()
-          .work.stories.filter((s) => s.ended !== undefined)
-          .map((s) => s.story),
-        ...integratedCuts(),
-      ]);
-      const kept = new Set(
-        decisions.filter(stands).flatMap((d) => d.keeps ?? []),
-      );
-      /** Whether `file`, an example file, is history: its story done and no
-       *  standing decision keeping it. */
-      const past = (file: string): boolean => {
-        const ref = file.slice(EXAMPLES_DIR.length + 1).replace(/\.md$/, '');
-        const [dir, story, ...deeper] = ref.split('/');
-        return (
-          dir !== undefined &&
-          story !== undefined &&
-          deeper.length === 0 &&
-          done.has(story) &&
-          !kept.has(ref)
-        );
-      };
       const examples = visibleExamples(journal.root)
         .filter(
-          (e) =>
-            (!args.flags.has('context') || covered.includes(e.context)) &&
-            (history || !past(e.file)),
+          (e) => !args.flags.has('context') || covered.includes(e.context),
         )
         .flatMap((e) =>
           warnings(
@@ -1049,12 +993,6 @@ function answerOf(
         throw refuse(
           `the kind is '${kind}'; a decision states meaning or constrains realization`,
         );
-      const keeps = args.flags.get('keeps');
-      const malformed = keeps?.find((k) => !/^[^/\s]+\/[^/\s]+$/.test(k));
-      if (malformed !== undefined)
-        throw refuse(
-          `the kept example file '${malformed}' is not one; name it as <context>/<story>`,
-        );
       if (folded.named.has(decisionId) || folded.decisions.has(decisionId))
         throw refuse(`the decision '${decisionId}' is already recorded`);
       const superseded = ref === undefined ? undefined : decisionOf(ref);
@@ -1073,7 +1011,6 @@ function answerOf(
             : (folded.decisions.get(superseded) as DecideEntry).decisionId,
         ...(superseded === undefined ? {} : { supersedesEntry: superseded }),
         ...(kind === undefined ? {} : { decisionKind: kind }),
-        ...(keeps === undefined ? {} : { keeps }),
       };
       const found =
         kind === 'realization'
@@ -1133,7 +1070,7 @@ function answerOf(
       const ref = read.named('decision');
       const reason = read.required('reason', 'why it no longer applies');
       const entry = decisionOf(ref);
-      const status = folded.status(entry, integratedCuts());
+      const status = folded.status(entry);
       if (status === 'superseded' || status === 'deprecated')
         throw refuse(
           `the decision '${ref}' is ${status}; only a standing decision is deprecated`,

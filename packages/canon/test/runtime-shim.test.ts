@@ -3,7 +3,7 @@
 // When a skill cell declares `runtime: {capability}`, projection emits a thin
 // `scripts/<capability>.mjs` shim forwarding to `cratylus <capability>`. This gate
 // pins the shim's shape and executable mode, read from a real projection of canon
-// with the shim-carrier fixture, whose cell declares `ledger`.
+// with the shim-carrier fixture, whose cell declares `versionSkew`.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -26,7 +26,7 @@ const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 /** A cell that declares a `runtime` capability — a shim carrier, and the witness
  *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
 const CELL = 'carrier';
-const CAPABILITY = 'ledger';
+const CAPABILITY = 'versionSkew';
 const CARRIER = join(canonRoot, 'test', 'fixtures', 'shim-carrier');
 
 const shimOf = (out: string): string =>

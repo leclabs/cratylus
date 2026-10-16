@@ -1,10 +1,9 @@
-// The concept journal and the ledger as an older runtime reads
-// them: entries of kinds it does not know, and journal entries of a known kind
-// holding a value it does not know, are read past and reported with every
-// reading, appending still works and leaves every entry as it was, and an entry
+// The concept journal as an older runtime reads it: entries of kinds it does
+// not know, and entries of a known kind holding a value it does not know, are
+// read past and reported with every reading, appending still works and leaves every entry as it was, and an entry
 // of a known kind it cannot read is refused by name. The command-line examples
 // (cli `test/delivery-journal`) bind the contract end to end; these hold it for
-// the library and for the ledger capability.
+// the library.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -19,7 +18,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
-import { dispatchLedger } from '../src/capabilities/ledger/dispatch.js';
 
 let sandbox: string;
 let repo: string;
@@ -238,44 +236,4 @@ it('shows the effort recorded for past work only as history, in a journal holdin
     (concepts('state') as { contexts: object[] }).contexts[0],
   ).not.toHaveProperty('efficiency');
   expect(files()).toEqual(before);
-});
-
-it('reads the ledger past a kind it does not know, and appends past it', () => {
-  const ledger = join(repo, 'design/ledger');
-  mkdirSync(ledger);
-  const ledgerEntry = (n: number, fields: Record<string, unknown>) =>
-    writeFileSync(
-      join(ledger, `${id(n)}.json`),
-      JSON.stringify({
-        id: id(n),
-        at: '2016-07-30T23:54:10.259Z',
-        transition: `fixture:${n}`,
-        ...fields,
-      }),
-    );
-  ledgerEntry(1, { kind: 'story', story: 'reader' });
-  ledgerEntry(3, { kind: 'end', story: 'reader', outcome: 'merged' });
-  const state = () =>
-    dispatchLedger(['state'], { from: repo }) as Record<string, unknown>;
-  const baseline = state();
-  expect(baseline).not.toHaveProperty('uninterpreted');
-  ledgerEntry(5, { kind: 'annotation', story: 'reader' });
-  const report = {
-    kinds: { annotation: 1 },
-    mayBeIncomplete: true,
-    reading: expect.any(String),
-  };
-  expect(state()).toEqual({ ...baseline, uninterpreted: report });
-  const bytes = readFileSync(join(ledger, `${id(5)}.json`), 'utf8');
-  const recorded = dispatchLedger(['task', 'reader-view'], { from: repo });
-  expect(recorded).not.toHaveProperty('uninterpreted');
-  expect(state()).toMatchObject({
-    inFlight: { tasks: [{ task: 'reader-view' }] },
-    uninterpreted: report,
-  });
-  expect(readFileSync(join(ledger, `${id(5)}.json`), 'utf8')).toBe(bytes);
-  known();
-  expect(concepts('overview', '--context', 'booking')).toMatchObject({
-    uninterpreted: report,
-  });
 });

@@ -91,11 +91,9 @@ export type DecisionKind = (typeof DECISION_KINDS)[number];
  *  decision's name and `supersedesEntry` its entry (absent on entries written
  *  before names could be shared, which are read by their name alone).
  *  `decisionKind` is present only where the decision was recorded with its
- *  kind, and `keeps` only where it keeps example files standing once their
- *  story is done, each as `<context>/<story>`. `cut`, the cut a decision was
- *  recorded about, is no longer written; where an entry carries it, the
- *  decision is deprecated once the ledger's history records that cut
- *  integrated. */
+ *  kind. `keeps`, the example files a decision kept, and `cut`, the cut it was
+ *  recorded about, are no longer written; where an entry carries them they
+ *  are read as recorded, and the decision's status is its own alone. */
 export interface DecideEntry extends Stamped {
   readonly kind: 'decide';
   readonly decisionId: string;

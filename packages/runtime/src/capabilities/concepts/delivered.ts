@@ -129,7 +129,6 @@ export function deliveredOverview(delivered: DeliveredContext) {
   const overview = overviewOf(
     deliveredDesign(delivered),
     [],
-    { stories: [], tasks: [] },
     `${delivered.origin}’s context map`,
   );
   return {

@@ -224,7 +224,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               'The time the story took, from its start to its end.',
             ),
           }),
-          'What the story cost, as the ledger records it.',
+          'What the story cost, as the harness records it.',
         ),
       }),
       "The lead's outcome of the story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.",

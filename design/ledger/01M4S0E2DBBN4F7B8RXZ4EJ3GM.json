@@ -1,9 +1,0 @@
-{
-  "id": "01M4S0E2DBBN4F7B8RXZ4EJ3GM",
-  "at": "2026-10-12T21:31:24.459Z",
-  "kind": "returned",
-  "transition": "toolu_01Gv9Ej68LKzaYHZzjce8t4p/SimplificationLead/returned",
-  "cut": "simplification",
-  "role": "lead",
-  "run": "toolu_01Gv9Ej68LKzaYHZzjce8t4p/SimplificationLead"
-}

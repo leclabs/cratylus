@@ -1,8 +1,0 @@
-{
-  "id": "01M51M9JZ6FGMDYP72DJ0SH7Q4",
-  "at": "2026-10-16T05:52:24.550Z",
-  "kind": "end",
-  "transition": "end:generic-delivered-agents",
-  "task": "generic-delivered-agents",
-  "outcome": "merged"
-}

@@ -1,9 +1,0 @@
-{
-  "id": "01M4VX18HHQPF5PN51R1YVTNDB",
-  "at": "2026-10-14T00:29:42.321Z",
-  "kind": "returned",
-  "transition": "toolu_01GN7mN1wxCC5VJU3LffBk75/WorkflowDeliveryChecks/returned",
-  "cut": "workflow-delivery",
-  "role": "check-writer",
-  "run": "toolu_01GN7mN1wxCC5VJU3LffBk75/WorkflowDeliveryChecks"
-}

@@ -1,8 +1,0 @@
-{
-  "id": "01M51DFE69BEWGYDMQCZ9K8365",
-  "at": "2026-10-16T03:53:16.233Z",
-  "kind": "returned",
-  "transition": "returned:toolu_01XYUzQ6sPiMmS8TJ69f9C1E/GateInterrupt",
-  "call": "toolu_01XYUzQ6sPiMmS8TJ69f9C1E",
-  "agent": "GateInterrupt"
-}

@@ -1,8 +1,0 @@
-{
-  "id": "01M512Z7KCGNHZNJPM22B56PZZ",
-  "at": "2026-10-16T00:49:39.436Z",
-  "kind": "returned",
-  "transition": "returned:toolu_01B5NUEU3UKqDzXXLwKwCvMQ/ReviewPerTurnNotes",
-  "call": "toolu_01B5NUEU3UKqDzXXLwKwCvMQ",
-  "agent": "ReviewPerTurnNotes"
-}

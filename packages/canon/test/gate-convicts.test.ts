@@ -295,11 +295,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // runs the leakage detector over text it supplies and the journal verbs in scratch git
   // repositories it builds itself; its leaking and plain passages ARE its fixtures.
   'runtime/leakage.test.ts': 'BEHAVIORAL',
-  // drives `dispatchLedger` and the lifecycle append over scratch git repositories
-  // it builds itself; its refused names, repeated events and other shapes, and its
-  // cut-era history entries, ARE its fixtures.
-  'runtime/ledger.test.ts': 'BEHAVIORAL',
-  // runs the pure context overview over designs, decisions and work it builds itself:
+  // runs the pure context overview over designs and decisions it builds itself:
   // whole before parts, named cycles, and the account told in that order.
   'runtime/overview/overview.test.ts': 'BEHAVIORAL',
   // drives `runCli` in a temporary git repository it builds itself; its refusals (a

@@ -1,8 +1,0 @@
-{
-  "id": "01M512FWHK2048N8P7B1E8DQE5",
-  "at": "2026-10-16T00:41:16.595Z",
-  "kind": "task",
-  "transition": "task:conventions-under-gates",
-  "task": "conventions-under-gates",
-  "story": "sign-off-gates"
-}

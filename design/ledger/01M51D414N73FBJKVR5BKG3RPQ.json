@@ -1,7 +1,0 @@
-{
-  "id": "01M51D414N73FBJKVR5BKG3RPQ",
-  "at": "2026-10-16T03:47:02.421Z",
-  "kind": "task",
-  "transition": "task:gate-interrupt",
-  "task": "gate-interrupt"
-}

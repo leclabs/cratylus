@@ -1,8 +1,0 @@
-{
-  "id": "01M5137J19BJA4FX0HYVYP60TV",
-  "at": "2026-10-16T00:54:12.265Z",
-  "kind": "end",
-  "transition": "end:agent-values-by-scope",
-  "task": "agent-values-by-scope",
-  "outcome": "merged"
-}

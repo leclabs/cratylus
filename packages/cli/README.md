@@ -295,7 +295,7 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report` reports both at any time, and so does the `version_skew` tool in omp, which the installation itself carries: it is offered whatever command the capabilities reach, and reports the installation's recorded version beside the command's own `--version`. The root's `installation.json` names the version that projected it too. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
-omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks and its ledger capture included. Those know a dispatch by what it carries, the agent and task of each item, never by what the harness calls its dispatch tool.
+omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks included. Those know a dispatch by what it carries, the agent and task of each item, never by what the harness calls its dispatch tool.
 
 ## Taking it away again
 
@@ -305,7 +305,7 @@ cratylus uninstall --harness omp --dry-run       # the same report, nothing writ
 cratylus uninstall --harness omp --home <dir>    # another user's installation
 ```
 
-`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; and every reference into it, found from where it points rather than from the root's record, so none is left dangling when you have edited or removed the root or its record: each link in `~/.omp/plugins/node_modules` that points into the root, and each dependency entry in `~/.omp/plugins/package.json` that names it (the file too where install created it and nothing else is in it). It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included, and so does your status line, shown or hidden as you answered: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, your own entries on those same surfaces included, and what was left is named, with why. Your projects' journals, ledgers and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
+`cratylus uninstall --harness omp` removes the owned root, whole, edits and additions inside it included; and every reference into it, found from where it points rather than from the root's record, so none is left dangling when you have edited or removed the root or its record: each link in `~/.omp/plugins/node_modules` that points into the root, and each dependency entry in `~/.omp/plugins/package.json` that names it (the file too where install created it and nothing else is in it). It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included, and so does your status line, shown or hidden as you answered: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, your own entries on those same surfaces included, and what was left is named, with why. Your projects' journals and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
 
 ## Exit codes and streams
 
@@ -359,12 +359,11 @@ cratylus uninstall [options]
 
 ## Capabilities
 
-A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `concepts`, `ledger` and `versionSkew`:
+A capability is a command whose verbs a deployed skill calls back into. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's built-in capabilities are `concepts` and `versionSkew`:
 
 ```sh
 cratylus concepts state
 cratylus concepts supersede 'reservation expiry' --context booking --wording '…' --reason '…'
-cratylus ledger state
 ```
 
 ### `cratylus concepts`
@@ -373,13 +372,13 @@ The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `de
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal (and, for `overview`, `state`, `decisions` and `leakage`, the same ledger). A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal and example files. A refusal is one line on stderr, exit 1, and appends nothing.
 
 **The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `overview` and `state` show it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
 
-**What stands.** A decision stands while it is open or accepted, until a later decision supersedes it or a later entry deprecates it: `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. A story's example files (`design/examples/<context>/<story>.md`) are history once the ledger records the story ended, merged or dropped, unless a standing decision keeps them (`decide --keeps <context>/<story>`). Entries recorded by earlier workflows are read as recorded: a decision whose entry names a cut stays deprecated, and that cut's example files history, once the ledger's history records the cut integrated, and the `efficiency` entries recorded for cuts are past effort. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `title`, `kind`, `id` and `entry` (their whole text is `decisions`'); `overview` tells only standing open ones and the stories and tasks in flight; and `leakage` reads only standing decisions and examples. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`, or, for a decision recorded about a cut, the integrated `cut`), each decision's `supersedes`, `kinds` and recorded `cut`, the examples that are history, and on `state` the past effort recorded, as `efficiency`. Every view shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references; `overview`'s account tells an open one as `“<title>” (decision <id>)`.
+**What stands.** A decision stands while it is open or accepted, until a later decision supersedes it or a later entry deprecates it: `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. Every example file present (`design/examples/<context>/<story>.md`) is current. Entries recorded by earlier workflows are read as recorded: a decision whose entry names a cut or example files it keeps is read by its own status alone, and the `efficiency` entries recorded for cuts are past effort. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `title`, `kind`, `id` and `entry` (their whole text is `decisions`'); `overview` tells only standing open ones; and `leakage` reads only standing decisions, and every example. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`), each decision's `supersedes`, `kinds` and recorded `cut`, and on `state` the past effort recorded, as `efficiency`. Every view shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references; `overview`'s account tells an open one as `“<title>” (decision <id>)`.
 
-`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the standing numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by its title, context and id, an example by file and number, a context's description by context and `field`, `subject` or `relation`), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and, with `--history`, its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. A live concept's wording and a context's current subject and relation, which state only what holds now, are also warned where they cite a decision by its number (rule `cites a decision`), recount their history, what changed or what something used to be or no longer is (`recounts history`), or only extend the version they replace, keeping its wording whole and adding to it (`only extends the version it replaces`, the words being what was added). When what `context`, `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by its title, context and id, an example by file and number, a context's description by context and `field`, `subject` or `relation`), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and, with `--history`, its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. A live concept's wording and a context's current subject and relation, which state only what holds now, are also warned where they cite a decision by its number (rule `cites a decision`), recount their history, what changed or what something used to be or no longer is (`recounts history`), or only extend the version they replace, keeping its wording whole and adding to it (`only extends the version it replaces`, the words being what was added). When what `context`, `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
 
 What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `classify` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
@@ -528,7 +527,6 @@ cratylus concepts decide [options] <id>
 | `--status <value>`       |
 | `--supersedes <value>`   |
 | `--kind <value>`         |
-| `--keeps <value>`        |
 
 #### `cratylus concepts accept`
 
@@ -560,50 +558,6 @@ cratylus concepts deprecate [options] <id>
 | Flag               |
 | ------------------ |
 | `--reason <value>` |
-
-### `cratylus ledger`
-
-The record of a project's work. Its verbs are `state`, `story`, `task` and `end`.
-
-As with the concept journal, what the capability and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime: `cratylus ledger --help` and `cratylus ledger <verb> --help` print them, and `cratylus ledger --explain` and `cratylus ledger <verb> --explain` print the same explanation as JSON. The entries below name only each verb's usage and the flags it takes.
-
-The ledger is kept in `design/ledger/`, tracked and versioned with the branch: one JSON file per entry, named by a ULID, created exclusively and never modified, moved or deleted, so a branch's entries arrive elsewhere only with its merge. A dispatch and its return reach it only from the harness's own agent events, through the harness binding; a dispatch naming a story or task not yet recorded records it in flight. `state` tells each story and task in flight and each ended, merged or dropped, with its agent runs by role, its tokens and its elapsed time, worked out from the entries' own timestamps.
-
-#### `cratylus ledger state`
-
-```sh
-cratylus ledger state [options]
-```
-
-#### `cratylus ledger story`
-
-```sh
-cratylus ledger story [options] <name>
-```
-
-| Flag                |
-| ------------------- |
-| `--context <value>` |
-
-#### `cratylus ledger task`
-
-```sh
-cratylus ledger task [options] <name>
-```
-
-| Flag              |
-| ----------------- |
-| `--story <value>` |
-
-#### `cratylus ledger end`
-
-```sh
-cratylus ledger end [options] <name>
-```
-
-| Flag                |
-| ------------------- |
-| `--outcome <value>` |
 
 ### `cratylus versionSkew`
 

@@ -1,9 +1,0 @@
-{
-  "id": "01M4V9BFHEYKJ4YTVKJ6DTMDPE",
-  "at": "2026-10-13T18:45:45.646Z",
-  "kind": "returned",
-  "transition": "toolu_016UtPzqQoFqGDmhUWs4AbBz/ChecksLead/returned",
-  "cut": "checks",
-  "role": "lead",
-  "run": "toolu_016UtPzqQoFqGDmhUWs4AbBz/ChecksLead"
-}
