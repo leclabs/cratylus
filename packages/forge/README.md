@@ -180,8 +180,9 @@ when the item's assignment names a story or a task: the agent, its role, that st
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
 
 **Attach.** A delegate whose declaration's decision rights carry a `sign-off` line holds a gate when
-its turn ends on a reply that ends with the sign-off it waits on: its closing sentence asks for the
-operator's sign-off (a question about it, or the bidding "Sign off …"). Every other reply is a
+its turn ends on a reply that ends with the sign-off it waits on: its closing sentence, read across
+line breaks, asks for or waits on the operator's sign-off in any form (a question, "Please sign off
+…", "I am waiting for your sign-off …"); a sign-off only reported (taken, recorded) holds nothing. Every other reply is a
 result, the declared JSON deliverable or not, whether or not the holder declares one. Such a declaration is projected
 `blocking: true`, so its dispatched run always comes back on the task result. The dispatching
 session learns only that it waits on the operator's sign-off and how the operator joins it, omp's
@@ -197,7 +198,7 @@ recorded in the session when held). Every other result passes unchanged. Whereve
 found, the operator is told in its own session as soon as the gate waits on it: the main session's
 interface (`notify`, a warning line no model reads) names the agent and how to join it (Agent Hub:
 Alt+A, select the agent, Enter), however deep the holder sits below other delegates, once per gate
-(a holder is told of again only after it starts another run). A dispatched run is judged as it ends
+(known by the run it ends, so a late report of an earlier run never silences a later gate). A dispatched run is judged as it ends
 (`task:subagent:lifecycle`, on all it said over every prompt omp gave it), since omp returns the
 task result only once every blocking item of the call has settled. Known omp
 limitations: with `task.structured` on, omp reminds a delegate without its deliverable up to three
