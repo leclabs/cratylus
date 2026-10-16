@@ -1929,11 +1929,14 @@ describe('omp capability interface', () => {
       for (const line of [
         "Read each touched context's overview and the delivered workflow overview (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the detail you need of its design and of its cuts. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
         'Your sources are the journal, the ledger and the example files the design names; the work itself — the project tree, source, tests — is not a source: never list, search or open it.',
-        'Before any act (no dispatch, no journal append, no edit before it), tell the operator, in visible text rather than only in your thinking, the records as they stand now: the current design, each open decision named as open, and each cut in flight as the ledger records it, in your own communication style.',
-        'Say nothing to the operator before the readback. Its bottom line is the state of the records; a decision you take now comes after it, as its own topic.',
-        'Then do what the operator asked in the same turn, and settle what you hold, on sight. The readback is not a pause for leave.',
+        'Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking, the records as they stand now: first the current design, then what is open, each open decision named as open, then the stories and tasks in flight as the ledger records them, in your own communication style.',
+        'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
+        'A read-back held at a gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
       ])
         expect(turns[0]).toContain(line);
+      // It no longer sends the agent on past the read-back in the same turn.
+      expect(turns[0]).not.toContain('in the same turn');
+      expect(turns[0]).not.toContain('pause for leave');
       expect(turns[1]).not.toContain('# Session start');
       // A declaration without it gets no note.
       omp.agents = [CARTOGRAPHER()];
@@ -1971,7 +1974,7 @@ describe('omp capability interface', () => {
           '# Meaning: yours',
           'The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.',
           "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
-          "Settle on sight: a decision whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer.",
+          "Settle on sight: a decision you own whose grounds you hold is taken in the turn you hold them and reported with its reason, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
           '# The records',
           "The journal, the ledger and your delegates' reports are the record of the design and its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
           'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',

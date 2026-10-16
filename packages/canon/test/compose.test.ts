@@ -177,6 +177,9 @@ describe('the architect', () => {
       'procedure past objective',
     ])
       expect(architect.persistence).toContain(`**${tell}**`);
+    expect(architect.persistence).toContain(
+      'The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift.',
+    );
     for (const [name, agent] of Object.entries(agents))
       expect(agent.persistence, name).toBe(architect.persistence);
   });

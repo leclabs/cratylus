@@ -39,8 +39,10 @@ function wholeBeforeDetail(text: string): void {
   );
   expect(lower).toMatch(/current design/);
   expect(lower).toMatch(/open decisions?/);
-  expect(lower).toMatch(/cuts? in flight/);
-  expect(lower).toMatch(/before (?:any act|acting)/);
+  expect(lower).toMatch(/(?:cuts?|stories and tasks) in flight/);
+  expect(lower).toMatch(
+    /before (?:any act|acting)|recorded or changed before the read-back/,
+  );
 }
 
 it('workflow/7, workflow/8 — every composed holder reads delivered and touched context overviews before detail and readback', () => {
