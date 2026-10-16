@@ -1,6 +1,7 @@
 // The reviewer role: reviews one pull request it did not write and hands over one
 // review, never building or repairing the work (workflow: reviewer; agents 0243). It
-// runs on another model family than the builders where one is available (0225, 0244).
+// runs on another model family than the builders where one is available (0225, 0244),
+// and takes held-out examples directly from where the architect keeps them (0254).
 
 import type { RoleCell } from '../compose.js';
 import { none } from '../dimensions/action-scope/none.js';
@@ -64,14 +65,27 @@ export const reviewerRole: RoleCell = {
       { value: input, slot: 'release' },
     ],
     autonomy: [{ value: principal, note: 'in its review' }, handoff],
-    perceptionScope: [conceptJournal, examples, heldOutExamples, work],
+    perceptionScope: [
+      conceptJournal,
+      examples,
+      {
+        value: heldOutExamples,
+        note: 'taken directly from design/held-out/, never through the lead',
+      },
+      work,
+    ],
     actionScope: [none],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },
       { value: xhigh, slot: 'effort' },
     ],
     memory: [sourceOfTruth, working],
-    assignment: [reviewRequest],
+    assignment: [
+      {
+        value: reviewRequest,
+        note: 'its held-out examples taken directly from design/held-out/, never through the lead',
+      },
+    ],
     deliverable: [review],
     guardrails: [honesty, noImplementation, neverRepairs],
     evaluation: [inUse],

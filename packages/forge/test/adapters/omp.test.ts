@@ -1946,6 +1946,24 @@ describe('omp capability interface', () => {
       ).not.toContain('# Session start');
     });
 
+    it('carries the scope a reconstitution note gives it into the session-start note', async () => {
+      omp.agents = [
+        declare(
+          { name: 'architect', description: 'Holds the design.' },
+          '# architect\n\n### procedure\n\n- **reconstitution** (records and changes nothing before its read-back) — at every start, read back before acting',
+        ),
+      ];
+      const { fire } = await started('architect');
+      await fire('session_start');
+      expect(await fire('before_agent_start')).toMatchObject({
+        systemPrompt: expect.arrayContaining([
+          expect.stringContaining(
+            'This session starts with reconstitution (at every start, read back before acting): records and changes nothing before its read-back.',
+          ),
+        ]),
+      });
+    });
+
     it('gives every turn of a launch that decides meaning, or keeps the records under honesty, a note of each', async () => {
       omp.agents = [
         declare(
