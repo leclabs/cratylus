@@ -59,6 +59,13 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/settings', () => ({
 vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
   resolveAgentPrewalkDefault: (a: Record<string, unknown>) => a.prewalk,
 }));
+vi.mock('@oh-my-pi/pi-coding-agent/task/executor', () => ({
+  SUBAGENT_WARNING_MISSING_YIELD:
+    'SYSTEM WARNING: Subagent exited without calling yield tool after 3 reminders.',
+}));
+vi.mock('@oh-my-pi/pi-coding-agent/tools/output-schema-validator', () => ({
+  buildOutputValidator: () => ({}),
+}));
 vi.mock('@oh-my-pi/pi-coding-agent/config/model-resolver', () => ({
   DEFAULT_PREWALK_TARGET: '@smol',
   resolveAgentModelSelection: () => ({ patterns: ['fixture/base'] }),

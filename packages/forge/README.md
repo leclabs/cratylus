@@ -115,7 +115,9 @@ description, then one section per factor group in catalog order, each value as i
 marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and model are never
 text. On OMP the definition's front matter carries `model: "@<name>"`, the model role named for the
 agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch any agent
-(decision 0142). `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
+(decision 0142). `key: null` reserves the key of an ipseic agent. `blocking: true` marks a gate
+holder, an agent whose decision rights hold sign-off, so its dispatch waits for it (see Attach
+below). The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
 its own role.
 
@@ -176,6 +178,34 @@ launch whose assignment is incomplete, and an `eval` call whose code dispatches 
 extension also records in the ledger, through `cratylus lifecycle`, a task call's dispatch and return
 when the item's assignment names a story or a task: the agent, its role, that story or task and the
 tokens the return reports. Nothing else is recorded, and a dispatch from `eval` code is not.
+
+**Attach.** A delegate whose declaration's decision rights carry a `sign-off` line holds a gate when
+its turn ends on a reply that is not its declared deliverable: not found valid by omp, and neither
+whole nor in one fenced block a JSON object satisfying its `output` (omp's own validator). One that
+declares no JSON deliverable holds a gate at every turn it ends. Such a declaration is projected
+`blocking: true`, so its dispatched run always comes back on the task result. The dispatching
+session learns only that it waits on the operator's sign-off and how the operator joins it, omp's
+Agent Hub (Alt+A, select the agent, Enter), and later its result: the task result (`tool_result`:
+content and details); each later run the operator prompts in the delegate's session, judged on that
+run's own messages (`agent_start`/`message_end`/`agent_end`) and, where omp does not hand it over
+itself (it does only for a run whose yield its monitor accepts as the result, never a rejected yield
+or an incremental section, or a run the dispatcher's own message woke), sent to the dispatcher's
+session through state the module shares across the sessions of one
+omp process; and each later run omp hands over itself as a background delivery (`context`: a held
+job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
+recorded in the session when held). Every other result passes unchanged. Known omp limitations:
+with `task.structured` on, omp reminds a delegate without its deliverable up to three times, the
+last forcing a yield; an isolated delegate is joinable only until omp parks it.
+
+One shortfall against the gate's meaning is left open (decision 0258). "Learns only" holds for
+whatever reaches the dispatching party's own context, compaction summaries its model later reads
+included. With `task.structured` on, a later handover that fails its contract and that omp accepts
+after its schema retries reaches the dispatching session's transcript, and compaction can carry it
+into what that session's model reads. Closing it would take a `session_before_compact` handler,
+which turns off omp's background compaction for every cratylus session. A run of a waiting delegate
+woken by the dispatcher's own message is a use outside the gate's meaning, not a limit: the
+dispatching party takes no part in a gate held for the operator, so never messages a delegate
+waiting there.
 
 ## The harness adapter port
 
