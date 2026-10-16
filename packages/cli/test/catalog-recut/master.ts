@@ -141,7 +141,7 @@ export const decisionSlots = [
 export const signOffSlot = {
   name: 'sign-off',
   gloss:
-    "the operator's, at its gates: agreeing that a handover serves its intent",
+    "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
   optional: true,
 } as const;
 const slots = (...names: string[]) => names.map((name) => ({ name }));

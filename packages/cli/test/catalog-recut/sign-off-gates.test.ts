@@ -30,14 +30,14 @@ const lineStarting = (lines: readonly string[] | undefined, prefix: string) =>
   );
 
 const signOffLine =
-  "- sign-off (the operator's, at its gates: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
+  "- sign-off (the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent): **R** (puts its handovers up for it; takes it only where delegated authority grants it) — recommends (fixed)";
 
 describe('sign-off-gates: agent values by scope', () => {
   it("sign-off is an optional decision-rights slot, the operator's class of decision", () => {
     expect(canon.MANIFEST['decision-rights']).toHaveProperty('slots.7', {
       name: 'sign-off',
       gloss:
-        "the operator's, at its gates: agreeing that a handover serves its intent",
+        "the operator's, at its gates, which are a story's read-back, a story's plan read-back, a pull request it reviews, release, a fork that is irreversible, about value or beyond the architect's competence, and any gate it calls: agreeing that a handover serves its intent",
       optional: true,
     });
   });
