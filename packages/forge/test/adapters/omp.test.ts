@@ -1927,6 +1927,7 @@ describe('omp capability interface', () => {
         'The plan: three tasks. I am waiting for your sign-off before proceeding.',
         'Please sign off the plan that was just presented.',
         'Please sign off the plan without changing the scope.',
+        'The plan: three tasks. Do I have your sign-off to start the build?',
       ];
       /** Returns that only report a sign-off, or say nothing of one: each is a result. */
       const REPORTING = [
@@ -1935,6 +1936,8 @@ describe('omp capability interface', () => {
         'Built renewal; two pull requests merged.',
         'No additional sign-off is required.',
         'I requested sign-off and recorded the approval.',
+        'What does sign-off mean in this story?',
+        'Who holds sign-off at this gate?',
       ];
       const CONTRACT = {
         type: 'object',

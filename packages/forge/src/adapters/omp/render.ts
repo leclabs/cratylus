@@ -1002,7 +1002,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  * declaration's decision rights hold `sign-off` and it ends its turn on a reply that ends
  * with the sign-off it waits on, a current request to the operator: its closing sentence,
  * read across line breaks, is a bidding starting "(Please) sign off …" or a question asking
- * for the sign-off, whatever else it says; or a present wait on the operator's sign-off
+ * the operator to give it ("Do/Will/Would/Can/Could you sign off …?", "… your sign-off?"),
+ * whatever else it says; or a present wait on the operator's sign-off
  * ("waiting on/for your sign-off", "awaiting your sign-off", "pending your sign-off") that
  * the words governing it neither negate nor put in the past. A bare report holds nothing,
  * as the agents' values have every gate reply end on its request. Every other
@@ -1715,15 +1716,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         "// Whether a gate holder's reply holds a gate: it ends with the sign-off it waits on, a current",
         '// request to the operator. Its closing sentence, read across line breaks, is a request whatever',
-        '// else it says when it is a bidding starting "(Please) sign off …" or a question asking for the',
-        '// sign-off; or it is a present wait on the operator\'s sign-off ("waiting on/for your sign-off",',
+        '// else it says when it is a bidding starting "(Please) sign off …" or a question asking the',
+        '// operator to give it ("Do/Will/Would/Can/Could you sign off …?", "… your sign-off?"); or it is a',
+        '// present wait on the operator\'s sign-off ("waiting on/for your sign-off",',
         '// "awaiting your sign-off", "pending your sign-off") that the words governing it neither negate nor',
         '// put in the past. Any other reply is a result, its declared JSON deliverable or not.',
         'function holds(reply: string): boolean {',
         '  const sentence = reply.replace(/\\s+/g, " ").trim().split(/(?<=[.!?])\\s+/).at(-1) ?? "";',
         '  if (/^\\W*(?:please\\s+)?sign[\\s-]?off\\s+(?:the|this|that|these|it|on|to|my|our|here|now|before)\\b/i.test(sentence))',
         '    return true;',
-        '  if (/\\?\\W*$/.test(sentence) && /\\bsign[\\s-]?off\\b/i.test(sentence)) return true;',
+        '  if (',
+        '    /\\?\\W*$/.test(sentence) &&',
+        '    /\\b(?:(?:do|will|would|can|could)\\s+you\\s+(?:please\\s+)?sign[\\s-]?off|your\\s+sign[\\s-]?off)\\b/i.test(sentence)',
+        '  )',
+        '    return true;',
         '  const wait =',
         "    /(?:^|\\s)((?:\\S+\\s+){0,2})(?:waiting\\s+(?:on|for)|awaiting|pending)\\s+(?:your|the\\s+operator(?:'|’)s)\\s+sign[\\s-]?off\\b/i.exec(",
         '      sentence,',
