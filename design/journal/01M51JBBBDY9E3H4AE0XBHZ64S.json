@@ -1,0 +1,9 @@
+{
+  "id": "01M51JBBBDY9E3H4AE0XBHZ64S",
+  "at": "2026-10-16T05:18:25.133Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0222",
+  "entry": "01M50D030SSMCMM58H677ZVDD1",
+  "reason": "The workflow's concepts now state the practice it charted, and its convention-bound parts, GitHub flow, a pull request per task with one review and a second reviewer for risk, no longer hold: how a change joins is the project's own and review follows risk as Ship, Show or Ask."
+}

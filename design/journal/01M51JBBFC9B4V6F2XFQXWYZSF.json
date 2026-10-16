@@ -1,0 +1,16 @@
+{
+  "id": "01M51JBBFC9B4V6F2XFQXWYZSF",
+  "at": "2026-10-16T05:18:25.260Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0273",
+  "context": "development",
+  "title": "Cratylus's branching, commit and push conventions",
+  "situation": "The operator restated cratylus's working conventions: Git flow's dev/main split in place of GitHub flow with a pull request per task into dev.",
+  "decision": "Cratylus follows Git flow's dev/main split, without release or hotfix branches. Each change is made on a short-lived branch from dev and merged locally into dev once the one check passes on the merged result. Release is a pull request from dev into main, and it is the operator's. Nothing is committed to main directly. Commit autonomously at natural boundaries between gates, never past one; pushing a branch needs no say-so. Commit only your own paths, by name; never amend or rewrite shared history.",
+  "consequences": "The repository's working conventions already state this; the history concept follows.",
+  "status": "accepted",
+  "supersedes": "0256",
+  "supersedesEntry": "01M511F9NYHGDX85NPXMR00A5G",
+  "decisionKind": "realization"
+}

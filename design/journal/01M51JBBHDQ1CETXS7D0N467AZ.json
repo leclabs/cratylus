@@ -1,0 +1,16 @@
+{
+  "id": "01M51JBBHDQ1CETXS7D0N467AZ",
+  "at": "2026-10-16T05:18:25.325Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0274",
+  "context": "development",
+  "title": "The project's history is controlled by review, not by refusal",
+  "situation": "A gate is one of the operator's hold points; the decision this supersedes used the word for a mechanism that refuses a change, and said the history changes by pull request, which cratylus's convention no longer does for every change. Restated whole without those.",
+  "decision": "In the development context the history is controlled by review, as each change's risk calls for, and no hook, CI step or command refuses a change to the history. In the product, the journal is append-only because its tool offers only appending verbs, by construction, and an agent working in the workflow reaches it only through that tool; the product ships nothing that refuses a change to its users' history either.",
+  "consequences": "The history concept states this.",
+  "status": "accepted",
+  "supersedes": "0153",
+  "supersedesEntry": "01M4V93100RAPXH1NMFCJKMR8D",
+  "decisionKind": "meaning"
+}

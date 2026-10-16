@@ -1,0 +1,14 @@
+{
+  "id": "01M51JBBK96CR6BMFVBJV5AF0A",
+  "at": "2026-10-16T05:18:25.385Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "development",
+  "name": "history",
+  "wording": "the repository's record of every change to cratylus, its design records included; a change joins it under cratylus's own convention, and review, as the change's risk calls for, is the only control on it: a change that rewrites, snapshots or corrects the history is a developer's or the operator's decision, reviewed like any other, and nothing mechanical refuses it.",
+  "builtFrom": [],
+  "reason": "The operator restated cratylus's convention: a change's branch merges locally into dev once the check passes, so the history no longer changes only by pull request, and review follows each change's risk.",
+  "supersedes": [
+    "01M4V930Y2V13PCHM7FD7057JV"
+  ]
+}

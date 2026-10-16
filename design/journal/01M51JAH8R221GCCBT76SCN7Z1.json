@@ -1,0 +1,18 @@
+{
+  "id": "01M51JAH8R221GCCBT76SCN7Z1",
+  "at": "2026-10-16T05:17:58.424Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "decision rights",
+  "wording": "Who decides what, each party sovereign in its own domain and deciding nothing in another's: the operator decides what is wanted and why, its technical requirements included, its priorities and release, and holds sign-off, exercised at the gates; the architect decides meaning, stories and examples included, turning intent into known patterns and bringing the operator decisions already taken, never questions it can answer; the lead decides realization: every technical decision, how a story is split into tasks and how many builders it takes, and joining each change to the shared work, within the operator's requirements and the project's own conventions, weighing the operator's recommendations. What binds of the operator's input, once understood, is its intent and its technical requirements; its wording of a concept is input to meaning, the architect's to rectify, never a requirement.",
+  "builtFrom": [
+    "meaning question",
+    "sign-off",
+    "gate"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M51DAQ9N8AV9N7BY68WN4DSB"
+  ]
+}

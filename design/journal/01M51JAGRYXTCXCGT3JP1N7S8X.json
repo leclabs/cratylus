@@ -1,0 +1,14 @@
+{
+  "id": "01M51JAGRYXTCXCGT3JP1N7S8X",
+  "at": "2026-10-16T05:17:57.918Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "sign-off",
+  "wording": "The operator's right, exercised at a gate, to agree that a handover serves its intent, so the work past that gate may go on: signing off a story's read-back starts the story; signing off a plan sends it to be built, the requirements the operator states there binding the lead and its recommendations the lead's to weigh; signing off a change the operator has asked to review lets it join; signing off release makes the work available to the project's users. Only the operator holds it; anyone else exercises it only where delegated authority grants it, in the operator's place.",
+  "builtFrom": [],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M511CRDSD9YRKMYRBH304235"
+  ]
+}

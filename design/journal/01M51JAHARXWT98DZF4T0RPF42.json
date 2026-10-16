@@ -1,0 +1,34 @@
+{
+  "id": "01M51JAHARXWT98DZF4T0RPF42",
+  "at": "2026-10-16T05:17:58.488Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "intent-based delegation",
+  "wording": "The practice cratylus ships for building against a design: each party passes intent down and takes back a result, deciding how within its own rights. The operator states intent and priorities and signs off at the gates where handovers reach it, the architect turns intent into stories, the lead breaks each story into tasks, builders hand over changes, and review follows each story's risk, with effort sized to it; between gates the agents work without checking in, the record and reconstitution keep the meaning across sessions, and the check holds every change before it joins. It is generic over a project's conventions: how a change joins the shared work is the project's own. It names established practice rather than restating it: domain-driven design for meaning, stage gates for sign-off, delegation of authority for work out of the operator's loop, Ship, Show, Ask for review, specification by example where it is needed, and orchestrator-workers for delegating.",
+  "builtFrom": [
+    "conceptual design",
+    "story",
+    "epic",
+    "task",
+    "review",
+    "handover",
+    "orchestrator-workers",
+    "decision rights",
+    "proportionality",
+    "reconstitution",
+    "check",
+    "release",
+    "integration",
+    "roles",
+    "efficiency",
+    "semantic gap",
+    "gate",
+    "sign-off",
+    "delegated authority"
+  ],
+  "reason": "The operator: what cratylus delivers assumed one convention, GitHub flow with a branch and a pull request per task, and review of every change whatever its risk; it is generic over a project's conventions, and review follows risk as Ship, Show or Ask.",
+  "supersedes": [
+    "01M511E9EBXPCRZYAHMKWM6DMV"
+  ]
+}
