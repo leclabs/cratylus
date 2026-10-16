@@ -1982,6 +1982,7 @@ describe('omp capability interface', () => {
         ) {
           const handlers = new Map<string, Handler>();
           const sent: unknown[] = [];
+          const told: unknown[] = [];
           await factory({
             typebox: { Type: { Unsafe: (schema: unknown) => schema } },
             registerTool: () => {},
@@ -2006,13 +2007,17 @@ describe('omp capability interface', () => {
             agent,
             model: { provider: 'fixture', id: 'base' },
             modelRegistry: {},
-            ui: { setStatus: () => {}, notify: () => {} },
+            ui: {
+              setStatus: () => {},
+              notify: (message: unknown, type: unknown) =>
+                told.push([message, type]),
+            },
             sessionManager: { getBranch: () => [], getEntries: () => entries },
           };
           const fire = async (event: string, payload: unknown) =>
             handlers.get(event)?.(payload, ctx);
           await fire('session_start', {});
-          return { fire, sent, entries };
+          return { fire, sent, entries, told };
         }
         const emit = (channel: string, data: unknown) => {
           for (const fn of bus.get(channel) ?? []) fn(data);
@@ -2420,6 +2425,119 @@ describe('omp capability interface', () => {
           ],
         ]);
         expect(JSON.stringify(main.sent)).not.toContain('revised plan');
+      });
+
+      describe('the operator is told in its own session as soon as a gate waits on it, by every route, however deep the holder', () => {
+        /** What the operator's own session shows of a gate the agent `id` holds. */
+        const told = (id: string) => [
+          `${id} (lead) waits on your sign-off, in its own session. Join it in omp's Agent Hub: Alt+A, select ${id}, Enter.`,
+          'warning',
+        ];
+        /** One process: the operator's main session, a delegate of it that dispatched the lead,
+         *  and the lead, nested below both; what each interface showed as it started is cleared. */
+        async function nested() {
+          const process = await ompProcess();
+          const main = await process.bind(MAIN);
+          const arch = await process.bind({
+            kind: 'sub',
+            name: 'architect',
+            id: 'Arch',
+            parentId: 'Main',
+          });
+          const lead = await process.bind({ ...DELEGATE, parentId: 'Arch' });
+          for (const session of [main, arch, lead]) session.told.length = 0;
+          /** One run of the lead, as omp's events give it. */
+          async function runs(...messages: unknown[]) {
+            await lead.fire('agent_start', {});
+            for (const message of messages)
+              await lead.fire('message_end', { message });
+            await lead.fire('agent_end', { messages });
+          }
+          return { main, arch, lead, runs };
+        }
+        /** No session's model is given the operator's notice. */
+        const unread = (...sessions: { sent: unknown[] }[]) => {
+          for (const session of sessions)
+            expect(JSON.stringify(session.sent)).not.toContain('your sign-off');
+        };
+
+        it('on the task result of its dispatch, the dispatcher itself a delegate', async () => {
+          omp.agents = [GATED(), BUILDER()];
+          const { main, arch, lead } = await nested();
+          const result = (lead: Record<string, unknown>) =>
+            arch.fire('tool_result', {
+              toolName: 'task',
+              toolCallId: 'call',
+              input: {},
+              content: [
+                {
+                  type: 'text',
+                  text: `${envelope('Lead', 'lead', String(lead.output))}\n\n${envelope('Form', 'builder', 'built')}`,
+                },
+              ],
+              details: { results: [lead, FORM] },
+            });
+          const answer = await result(LEAD);
+          expect(JSON.stringify(answer)).not.toContain('your sign-off');
+          expect(main.told).toEqual([told('Lead')]);
+          expect([arch.told, lead.told]).toEqual([[], []]);
+          // Its deliverable, after another run, holds no gate: nothing more is told.
+          await lead.fire('agent_start', {});
+          await result({ ...LEAD, output: DELIVERABLE });
+          expect(main.told).toEqual([told('Lead')]);
+          unread(main, arch, lead);
+        });
+
+        it('as each later run stops at a gate, its dispatcher’s message, a peer’s or the operator’s having started it', async () => {
+          omp.agents = [GATED()];
+          const { main, arch, lead, runs } = await nested();
+          await runs(
+            { role: 'custom', details: { from: 'Arch' } },
+            said(READ_BACK),
+          );
+          expect(main.told).toEqual([told('Lead')]);
+          await runs(
+            { role: 'custom', details: { from: 'Peer' } },
+            said(READ_BACK),
+          );
+          await runs(
+            asked('Use two builders.'),
+            said('Two builders now. Sign off the revised plan.'),
+          );
+          await runs(asked('Signed off.'), said(DELIVERABLE));
+          expect(main.told).toEqual([told('Lead'), told('Lead'), told('Lead')]);
+          expect([arch.told, lead.told]).toEqual([[], []]);
+          unread(main, arch, lead);
+        });
+
+        it('on a background delivery of a later result, once per gate', async () => {
+          omp.agents = [GATED(), BUILDER()];
+          const { main, arch, runs } = await nested();
+          const first = delivered(1, [{ id: 'Lead', text: READ_BACK }]);
+          await arch.fire('context', { messages: [first] });
+          await arch.fire('context', { messages: [first] });
+          expect(main.told).toEqual([told('Lead')]);
+          // A gate told as its run ended, then delivered: told once.
+          await runs(
+            { role: 'custom', details: { from: 'Arch' } },
+            said(READ_BACK),
+          );
+          await arch.fire('context', {
+            messages: [first, delivered(2, [{ id: 'Lead', text: READ_BACK }])],
+          });
+          expect(main.told).toEqual([told('Lead'), told('Lead')]);
+          unread(main, arch);
+          // A process started afresh reads the verdict from the record and tells nothing anew.
+          const again = await ompProcess();
+          const operator = await again.bind(MAIN);
+          const dispatcher = await again.bind(
+            { kind: 'sub', name: 'architect', id: 'Arch', parentId: 'Main' },
+            arch.entries,
+          );
+          operator.told.length = 0;
+          await dispatcher.fire('context', { messages: [first] });
+          expect(operator.told).toEqual([]);
+        });
       });
     });
 

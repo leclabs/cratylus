@@ -193,9 +193,13 @@ or an incremental section, or a run the dispatcher's own message woke), sent to 
 session through state the module shares across the sessions of one
 omp process; and each later run omp hands over itself as a background delivery (`context`: a held
 job is given as the notice, its verdict taken from the delivery and the declaration, kept, and
-recorded in the session when held). Every other result passes unchanged. Known omp limitations:
-with `task.structured` on, omp reminds a delegate without its deliverable up to three times, the
-last forcing a yield; an isolated delegate is joinable only until omp parks it.
+recorded in the session when held). Every other result passes unchanged. Wherever one of these
+routes finds a held reply, the operator is told in its own session as soon as the gate waits on it:
+the main session's interface (`notify`, a warning line no model reads) names the agent and how to
+join it (Agent Hub: Alt+A, select the agent, Enter), however deep the holder sits below other
+delegates, once per gate (a holder is told of again only after it starts another run). Known omp
+limitations: with `task.structured` on, omp reminds a delegate without its deliverable up to three
+times, the last forcing a yield; an isolated delegate is joinable only until omp parks it.
 
 One shortfall against the gate's meaning is left open (decision 0258). "Learns only" holds for
 whatever reaches the dispatching party's own context, compaction summaries its model later reads

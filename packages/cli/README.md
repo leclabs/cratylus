@@ -275,7 +275,10 @@ and warns where it falls short; they are not the same, and this is what a user m
   agent, Enter), where you answer it and work with it directly. Its reply is never passed up. omp
   keeps the agent's session alive; each turn you prompt there reaches the dispatching session as
   its result once it gives its deliverable, or as another such notice when it stops at another
-  gate. Every other result passes unchanged. What omp limits: with `task.structured` on, omp
+  gate. Every other result passes unchanged. You are told in the session you work in, as soon as
+  such an agent waits on you, however deep it sits below other agents: a warning line on your
+  screen, which no model reads, names the agent and how to join it (Alt+A, select it, Enter).
+  What omp limits: with `task.structured` on, omp
   reminds an agent that ends without its deliverable up to three times, the last forcing it to
   give one; an isolated agent can be joined only until omp parks it. One shortfall against the
   gate's meaning is left open: with `task.structured` on, a later handover that fails its contract
