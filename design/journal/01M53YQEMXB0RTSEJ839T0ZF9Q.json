@@ -1,0 +1,14 @@
+{
+  "id": "01M53YQEMXB0RTSEJ839T0ZF9Q",
+  "at": "2026-10-17T03:33:13.501Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "persona",
+  "wording": "a named agent over one role, chosen for the expertise a project needs, above all its contexts and their industry; states only its overrides and extensions of the role, never restating it: overrides the role's single values, its objective included, extends its sets, may narrow but never widen reach, never removes a guardrail; the generic role serves where none fits",
+  "builtFrom": [],
+  "reason": "A persona's departure from its role was being called its residue, one sign for two concepts: the residue is the workflow's, between a concept's meaning and what its name invokes in its context; what a persona states over its role is its overrides and extensions.",
+  "supersedes": [
+    "01M53PPWPWQN9XRQ9R5M5BX24R"
+  ]
+}
