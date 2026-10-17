@@ -3,7 +3,7 @@
 //
 //   state      the design state, for a model to read: the project's purpose,
 //              the delivered practice apart, then each of its own contexts'
-//              subject, relation, live concepts each as `name ≜ differentia`, and
+//              subject, relation, live concepts each as `name ≜ residue`, and
 //              competing versions; what a session reads first to reconstitute
 //   design     the delivered practice apart, then the current design of each of
 //              the project's own contexts, each concept with its parts
@@ -131,7 +131,7 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design state, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ differentia”, and the competing versions none has settled, each such a line or “name retired”; nothing else: decisions, the concepts each is built from, why each version was written, earlier versions and retired concepts are read apart',
+      'Read the design state, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ residue”, and the competing versions none has settled, each such a line or “name retired”; nothing else: decisions, the concepts each is built from, why each version was written, earlier versions and retired concepts are read apart',
     when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
     positional: null,
     flags: {
@@ -196,7 +196,7 @@ export const VERBS = {
     concept: 'event-sourced conceptual model',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept’s differentia and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s differentia and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
+      'Show where realization shows through text that should state meaning: each live concept’s residue and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s residue and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
     when: 'Before a design or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
     positional: null,
     flags: {
@@ -257,7 +257,7 @@ export const VERBS = {
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'The concept’s differentia: what it means that its name, as read in its bounded context, does not already say, in the context’s own words, naming no implementation, decision or history',
+        'The concept’s residue: what it means that its name, as read in its bounded context, does not invoke, and what its name invokes that it does not have, each stated once, in the context’s own words, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why the concept is defined', { required: true }),
@@ -276,7 +276,7 @@ export const VERBS = {
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'The concept’s differentia now, restated whole: what it means that its name, as read in its bounded context, does not already say, in the context’s own words, naming no implementation, decision or history',
+        'The concept’s residue now, restated whole: what it means that its name, as read in its bounded context, does not invoke, and what its name invokes that it does not have, each stated once, in the context’s own words, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why its meaning changes', { required: true }),
@@ -772,7 +772,7 @@ function answerOf(
     case 'supersede': {
       const name = read.named('concept');
       const where = context();
-      const wording = read.required('wording', 'the differentia');
+      const wording = read.required('wording', 'the residue');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
       if (verb === 'define' && folded.versions(where, name).length > 0)
