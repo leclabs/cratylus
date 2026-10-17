@@ -1,0 +1,14 @@
+{
+  "id": "01M53MAVESY8BNVQGW36N28ARK",
+  "at": "2026-10-17T00:31:34.873Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "a session, new or compacted, recovering from records, never memory: the conceptual model of the contexts it touches, the delivered workflow's included, and the decisions its work needs; the work in flight from version control and outcomes; nothing recorded or changed before its read-back",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it.",
+  "supersedes": [
+    "01M53H1ZDW94S9DAM4DR7DT9F1"
+  ]
+}

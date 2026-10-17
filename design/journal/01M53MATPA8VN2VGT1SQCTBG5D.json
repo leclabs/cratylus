@@ -1,0 +1,12 @@
+{
+  "id": "01M53MATPA8VN2VGT1SQCTBG5D",
+  "at": "2026-10-17T00:31:34.090Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "workflow",
+  "name": "brownfield adoption",
+  "wording": "of the workflow: earlier records, the product and its documents are evidence for the conceptual model, never the model; the earlier record is replaced, never migrated",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it. Named brownfield adoption, the more precise established name, in place of adoption.",
+  "supersedes": []
+}
