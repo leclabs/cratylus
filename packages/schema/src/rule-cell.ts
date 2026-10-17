@@ -23,8 +23,8 @@
 //
 //   definiens ≜ D(c)        the raw post-`≜` text, BEFORE the anchor's reading is accounted for
 //   residue   ≜ residue(c)  a payload that HAS accounted for it: it carries the workflow's
-//                           residue (what α(c) does not invoke stated, what it invokes that c
-//                           lacks denied) and never restates what α(c) already invokes
+//                           residue of c, entered as `signify` enters it, and never restates
+//                           what α(c) already invokes
 //
 // THE DISAMBIGUATION RULE. A field is `residue` iff PARSIMONIOUS quantifies over it —
 // it is the cell's σ*-signified identity, authored to carry only the workflow's residue

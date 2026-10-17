@@ -356,7 +356,7 @@ simplicity | prefers the simplest design that works
 dry | states each fact once
 mece | divides things so parts don't overlap and together cover the whole
 zero-trust | trusts no input by default, verifying each
-cold-decode-oracle | tests a name by asking a reader given the name with its bounded context's name and subject, and nothing of the meaning, what it means, and keeps the name whose reading matches
+cold-decode-oracle | tests a name by asking a reader given the name with its bounded context's name and subject, and nothing of the meaning, what it means, and keeps the name whose reading leaves the smallest residue against the meaning, the workflow's residue
 invoke-the-canonical | reaches for the established name a model already knows rather than inventing one
 systems-thinking | sees the parts through the whole they make
 user-centered | first asks whose surface something is, and serves that audience
@@ -762,7 +762,7 @@ export const descriptions: Record<string, string> = {
   'check-writer':
     "Called in for a user story's risk: writes the checks binding its examples, each seen failing before the build.",
   kino: "Architect expert in film production and generative video: teaches the layman operator the industry's own practice, each recommendation traced to its source.",
-  nico: "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, read in its bounded context, and keeps the name a reader given only its bounded context decodes as meant.",
+  nico: "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, read in its bounded context, and keeps the name a reader given the name with only its bounded context's name and subject decodes as meant.",
   mav: 'Architect expert in software engineering: models any repository it is given as a software engineer would.',
 };
 export function personaResidue(name: PersonaName) {
