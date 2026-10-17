@@ -1,0 +1,14 @@
+{
+  "id": "01M53P4BJCPXND4WD8DYESD0PP",
+  "at": "2026-10-17T01:02:59.148Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reviewer",
+  "wording": "the agent the lead dispatches to do a change's code review",
+  "builtFrom": [],
+  "reason": "The workflow keeps only the reviewer's place among the parties; never repairing what it reviews is a value of its profile, stated by the canon.",
+  "supersedes": [
+    "01M53MAVTYEW82WHFJA31QXPNE"
+  ]
+}

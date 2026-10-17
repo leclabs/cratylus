@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5HJXBVECQXJ75HCTV2C6",
+  "at": "2026-10-17T01:03:38.077Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "persona drift",
+  "wording": "shows as acts breaching its profile's stance and communication-style",
+  "builtFrom": [],
+  "reason": "A delivered agent's values have one source, the canon that composes it: its drift's tells, its sycophantic face and the hold-point exception are the agent's own text. The concept keeps only what the name doesn't say: which values drift is measured against and how it shows.",
+  "supersedes": [
+    "01M53MAWKVBDSP3DGX07B4TWMG"
+  ]
+}

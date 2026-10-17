@@ -1,0 +1,14 @@
+{
+  "id": "01M53P4ZYVB7XRYQSFBE149WWB",
+  "at": "2026-10-17T01:03:20.027Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "orchestrator-workers",
+  "wording": "the architect orchestrates user stories, the lead a story's tasks",
+  "builtFrom": [],
+  "reason": "That a worker receives intent and what done means, never steps, is intent-based delegation itself, stated there once.",
+  "supersedes": [
+    "01M53H2081GSRW794ZC8CC3CHV"
+  ]
+}

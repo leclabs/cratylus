@@ -1,0 +1,14 @@
+{
+  "id": "01M53P4BC6X1DWCQ9YA9R16X1F",
+  "at": "2026-10-17T01:02:58.950Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "builder",
+  "wording": "receives one task from the lead and hands back its change",
+  "builtFrom": [],
+  "reason": "The workflow keeps only the builder's place among the parties; what a change carries is the change's, and what the builder never sees is the held-out example's.",
+  "supersedes": [
+    "01M53MAW99245JSPEH8E6Y14CK"
+  ]
+}

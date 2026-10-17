@@ -1,0 +1,12 @@
+{
+  "id": "01M53P4B5YBS091NTFKR4DCC01",
+  "at": "2026-10-17T01:02:58.750Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "differentia",
+  "reason": "Its name brings a genus the concept denies; the concept is residue, defined as the symmetric difference.",
+  "supersedes": [
+    "01M53MATRB3YDWWGV7BRZ39VFX"
+  ]
+}

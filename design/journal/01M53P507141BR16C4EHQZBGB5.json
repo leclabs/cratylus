@@ -1,0 +1,14 @@
+{
+  "id": "01M53P507141BR16C4EHQZBGB5",
+  "at": "2026-10-17T01:03:20.289Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "Ship/Show/Ask",
+  "wording": "picked per change by its user story's risk, or by the lead for a task with no story; the operator's review before a change joins is Ask, the operator its reviewer; no other mode",
+  "builtFrom": [],
+  "reason": "There being one reviewer belongs to code review and is stated there once.",
+  "supersedes": [
+    "01M53MAVPYGBM26BKQH8158NRR"
+  ]
+}

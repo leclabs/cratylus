@@ -1,0 +1,14 @@
+{
+  "id": "01M53P500X2BE8295WX5CHR3VV",
+  "at": "2026-10-17T01:03:20.093Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "illustration",
+  "wording": "a user story's examples written cold by someone who didn't write its concepts, flagging each term neither in the conceptual model nor plain industry usage, the examples doubling as the test that the concepts carry their meaning; the architect confirms them and settles those terms before the build",
+  "builtFrom": [],
+  "reason": "What the illustrator's examples test is a fact about illustration, stated here once now the illustrator keeps only its place among the parties.",
+  "supersedes": [
+    "01M53MAX4202Z1B3Z03BGRQNG6"
+  ]
+}

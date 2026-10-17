@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5HCX285V3NCNC4DDC6E0",
+  "at": "2026-10-17T01:03:37.885Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "event-sourced conceptual model",
+  "wording": "its events: versions of the purpose, each bounded context's description and each concept, each with its reason; its projections: the conceptual model and the history; kept with the project, starting empty, its events joining with the change they belong to; never the work; nothing in it refuses a change to the project's version history; an event a reader doesn't know is read past and reported, never refusing the rest",
+  "builtFrom": [],
+  "reason": "Its name invokes events of the conceptual model, not decisions, so where decisions are kept is stated once in decision. The design held that the record is kept with the project and starts empty, that an older reader reads past what it doesn't know and says so, and that nothing shipped refuses a change to the users' history; the restated concept had dropped these.",
+  "supersedes": [
+    "01M53MATJ5JH5TTCKRDJFQ9S46"
+  ]
+}
