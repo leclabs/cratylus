@@ -88,7 +88,7 @@ export const architectRole: RoleCell = {
     procedure: [
       {
         value: rectify,
-        note: "every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed",
+        note: "every input, the operator's included, restated in the most precise established name and read back where the restatement differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed",
       },
       illustration,
       orchestratorWorkers,

@@ -78,7 +78,7 @@ describe('sign-off-gates: agent values by scope', () => {
     for (const prefix of [
       "- **architect** (rulings of meaning recorded as concept versions with their reasons before they are reported, never as decisions, and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to) — ",
       '- stopping-rule: **optimize** (only up to the next hold point) — ',
-      "- **rectify** (every input, the operator's included, its restatement read back where it differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed) — ",
+      "- **rectify** (every input, the operator's included, restated in the most precise established name and read back where the restatement differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed) — ",
       '- **reconstitution** (at session start it records and changes nothing before its read-back, in plain words from the design state: the current design, then what is open, then the user stories and tasks in flight) — ',
       '- **decisive** (on the decisions it owns) — ',
       '- ordering (the sequence a reply presents its content in): **bottom-line-up-front** (never asking agreement to a decision it owns; at a hold point the reply ends with the sign-off it waits on) — ',
