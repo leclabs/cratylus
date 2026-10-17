@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1200" height="470" fill="#fbfaf7"/>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- Panel A: narrow in -->
+  <text x="40" y="48" font-size="24" font-weight="700" fill="#111">Narrow in on what you mean</text>
+  <text x="40" y="76" font-size="15" fill="#555">the model proposes, the person judges, round after round</text>
+  <rect x="40" y="100" width="540" height="340" rx="14" fill="#fff" stroke="#ddd"/>
+
+  <!-- 1 describe (person) -->
+  <rect x="60" y="116" width="160" height="50" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="140" y="137" font-size="13" fill="#1e3a8a" text-anchor="middle">1 · describe the concept</text>
+  <text x="140" y="155" font-size="13" fill="#1e3a8a" text-anchor="middle">you mean, roughly</text>
+
+  <!-- 2 infer (model) -->
+  <rect x="70" y="238" width="160" height="54" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="150" y="261" font-size="13" fill="#7c2d12" text-anchor="middle">2 · infer the concepts</text>
+  <text x="150" y="279" font-size="13" fill="#7c2d12" text-anchor="middle">most likely meant</text>
+
+  <!-- 3 offer candidates (model) -->
+  <rect x="240" y="150" width="160" height="54" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="320" y="173" font-size="13" fill="#7c2d12" text-anchor="middle">3 · offer candidates</text>
+  <text x="320" y="191" font-size="12" fill="#9a3412" text-anchor="middle">term · domain · meaning</text>
+
+  <!-- 4 ask (model) -->
+  <rect x="400" y="238" width="160" height="54" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="480" y="261" font-size="13" fill="#7c2d12" text-anchor="middle">4 · ask what best</text>
+  <text x="480" y="279" font-size="13" fill="#7c2d12" text-anchor="middle">tells them apart</text>
+
+  <!-- 5 answer (person) -->
+  <rect x="240" y="326" width="160" height="54" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="320" y="349" font-size="13" fill="#1e3a8a" text-anchor="middle">5 · pick, reject</text>
+  <text x="320" y="367" font-size="13" fill="#1e3a8a" text-anchor="middle">or correct</text>
+
+  <text x="320" y="262" font-size="13" font-style="italic" fill="#9ca3af" text-anchor="middle">round after</text>
+  <text x="320" y="279" font-size="13" font-style="italic" fill="#9ca3af" text-anchor="middle">round</text>
+
+  <g fill="none" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arrow)">
+    <path d="M145,166 L150,236"/>
+    <path d="M200,238 C205,200 215,180 238,178"/>
+    <path d="M400,178 C440,180 470,200 478,236"/>
+    <path d="M478,292 C470,330 440,352 402,353"/>
+    <path d="M240,353 C190,352 160,330 152,294"/>
+  </g>
+  <text x="120" y="352" font-size="12" fill="#6b7280" text-anchor="middle">not yet:</text>
+  <text x="120" y="368" font-size="12" fill="#6b7280" text-anchor="middle">narrow in</text>
+
+  <!-- exit: the meaning is exact -->
+  <path d="M320,380 L320,414 L610,414 L610,390 L668,390" fill="none" stroke="#065f46" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <text x="332" y="406" font-size="12" font-weight="700" fill="#065f46">6 · one candidate means exactly what you mean</text>
+
+  <!-- Panel B: confirm the term, cold -->
+  <text x="640" y="48" font-size="24" font-weight="700" fill="#111">Confirm the term, cold</text>
+  <text x="640" y="76" font-size="15" fill="#555">a fresh model must read the term back as its meaning</text>
+  <rect x="640" y="100" width="520" height="340" rx="14" fill="#fff" stroke="#ddd"/>
+
+  <!-- legend -->
+  <rect x="664" y="120" width="14" height="14" rx="3" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="686" y="132" font-size="13" fill="#333">the person</text>
+  <rect x="780" y="120" width="14" height="14" rx="3" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="802" y="132" font-size="13" fill="#333">the model</text>
+  <rect x="890" y="120" width="14" height="14" rx="3" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+  <text x="912" y="132" font-size="13" fill="#333">a fresh model that has seen none of it</text>
+
+  <!-- two judges -->
+  <text x="664" y="166" font-size="13" fill="#555">the person judges the meaning;</text>
+  <text x="664" y="184" font-size="13" fill="#555">only a fresh model can judge the term</text>
+
+  <!-- 7 fresh read -->
+  <rect x="670" y="358" width="160" height="64" rx="10" fill="#ccfbf1" stroke="#0d9488" stroke-width="2"/>
+  <text x="750" y="378" font-size="13" fill="#134e4a" text-anchor="middle">7 · given only the term</text>
+  <text x="750" y="395" font-size="13" fill="#134e4a" text-anchor="middle">and its domain,</text>
+  <text x="750" y="412" font-size="13" fill="#134e4a" text-anchor="middle">say what it means</text>
+
+  <!-- check -->
+  <polygon points="940,348 1015,390 940,432 865,390" fill="#fff" stroke="#0d9488" stroke-width="2"/>
+  <text x="940" y="387" font-size="12" fill="#134e4a" text-anchor="middle">matches the</text>
+  <text x="940" y="403" font-size="12" fill="#134e4a" text-anchor="middle">meaning?</text>
+
+  <!-- another term (model) -->
+  <rect x="860" y="222" width="160" height="54" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/>
+  <text x="940" y="245" font-size="13" fill="#7c2d12" text-anchor="middle">offer another term for</text>
+  <text x="940" y="263" font-size="13" fill="#7c2d12" text-anchor="middle">the same meaning</text>
+
+  <!-- settled -->
+  <rect x="1038" y="356" width="112" height="68" rx="34" fill="#d1fae5" stroke="#065f46" stroke-width="2"/>
+  <text x="1094" y="377" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">settled</text>
+  <text x="1094" y="394" font-size="11" fill="#065f46" text-anchor="middle">term · domain</text>
+  <text x="1094" y="410" font-size="11" fill="#065f46" text-anchor="middle">missing / spurious</text>
+
+  <g fill="none" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arrow)">
+    <path d="M830,390 L863,390"/>
+    <path d="M940,348 L940,278"/>
+    <path d="M860,249 L750,249 L750,356"/>
+  </g>
+  <path d="M1015,390 L1036,390" fill="none" stroke="#065f46" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <text x="950" y="318" font-size="12" font-weight="700" fill="#b91c1c">no</text>
+  <text x="1026" y="380" font-size="12" font-weight="700" fill="#065f46" text-anchor="middle">yes</text>
+</svg>
