@@ -149,7 +149,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
   'canon/cell-gloss-census.test.ts': 'GATE',
-  // BEHAVIORAL: drives `holder`/`persona` with the role cells and residues it states
+  // BEHAVIORAL: drives `holder`/`persona` with the role cells and overrides it states
   // itself; its refused composition (a persona removing `none`) is its own negative case.
   'canon/compose.test.ts': 'BEHAVIORAL',
   'canon/cratylism.test.ts': 'GATE',

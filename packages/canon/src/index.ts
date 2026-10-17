@@ -28,8 +28,8 @@ import { PLUMBING, PRACTICES } from './practices.js';
 export {
   CompositionRefusal,
   holder,
+  type Overrides,
   persona,
-  type Residue,
   type RoleCell,
   type Stated,
 } from './compose.js';
