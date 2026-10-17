@@ -1,0 +1,14 @@
+{
+  "id": "01M53Q5JJS9T574NXETAT1H77P",
+  "at": "2026-10-17T01:21:07.673Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "install",
+  "wording": "per agent harness and user, across projects, under the owned root, recording the projecting version; idempotent; asks only what it isn't told, a tier's model included, never choosing one in the operator's place, and names each tier left unbound as the operator's next step",
+  "builtFrom": [],
+  "reason": "Comparing the readings: the design held that install asks for a tier's model, never chooses it, and names each unbound tier as the operator's next step; observable to the operator, it is meaning, not only a decision.",
+  "supersedes": [
+    "01M53MAX02RQZQ8WF0C0FNXGVF"
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "id": "01M53Q5J4Q7VCT67HTRB0MYWJD",
+  "at": "2026-10-17T01:21:07.223Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "interrupt",
+  "wording": "at a hold point its holder, the party whose handoff it is, ends its turn with a sign-off request and resumes only on the operator's answer; under delegation of authority it takes the sign-off instead; the request alone marks it: nothing detects one from a reply's wording or announces it apart, and nothing hides its content from whoever delegated the work",
+  "builtFrom": [],
+  "reason": "Comparing the readings: the design held that a hold point is known by its request alone, never detected from wording or announced apart, and never hidden from the delegator; the restated concepts had dropped it.",
+  "supersedes": [
+    "01M53MAVCQ93DMY89D5B6K2TH4"
+  ]
+}
