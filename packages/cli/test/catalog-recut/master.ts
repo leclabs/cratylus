@@ -385,6 +385,7 @@ principal | holds final authority within its remit
 human-on-the-loop | acts on its own; a person oversees and can intervene
 human-in-the-loop | a person approves before it acts
 mission-command | escalates only a fork that is irreversible, about value, or beyond its competence
+management-by-exception | in PRINCE2's sense: work runs within its tolerance, the user story's rough cost, and a forecast past it is raised to the level above, never pushed on
 handoff | returns its result, with the evidence that earns it, to whoever dispatched it`),
   'perception-scope': glossary(`
 concept-journal | the recorded design per bounded context, with the decisions of realization read apart
@@ -562,7 +563,7 @@ const columns: Record<string, string[]> = {
   ],
   autonomy: [
     'principal,human-in-the-loop,human-on-the-loop,mission-command',
-    'principal,human-in-the-loop,human-on-the-loop,mission-command,handoff',
+    'principal,human-in-the-loop,human-on-the-loop,mission-command,management-by-exception,handoff',
     'human-in-the-loop~of the lead,handoff',
     'principal~in its code review,handoff',
     'handoff',

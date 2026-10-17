@@ -13,6 +13,7 @@ import { userStory } from '../dimensions/assignment/user-story.js';
 import { handoff } from '../dimensions/autonomy/handoff.js';
 import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
+import { managementByException } from '../dimensions/autonomy/management-by-exception.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { principal } from '../dimensions/autonomy/principal.js';
 import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
@@ -104,6 +105,7 @@ export const leadRole: RoleCell = {
         note: 'between hold points, and at one whose sign-off delegation of authority grants it',
       },
       { value: missionCommand, note: 'between hold points' },
+      managementByException,
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, workProduct],
