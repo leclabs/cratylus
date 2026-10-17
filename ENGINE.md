@@ -27,14 +27,14 @@ Role       ≜ (DimensionName → ℘(entry)) ⟨NAMED ∧ TOTAL : a value for E
 entry      ≜ ⟨value, level⟩ ⟨level ∈ {advisory, firm, fixed} ∪ {—} : enforcement-level is an ATTRIBUTE of every value held, ¬ a value of its own ; unstated ⇒ the factor's default @ manifest⟩
 generic-holder ≜ holder(Role) : the agent NAMED for its Role (architect · lead · builder · reviewer · illustrator · check-writer) ⟨carries nothing beyond the Role : its name and description are the Role's ; no mark ; declares ∅⟩
              ⟨holder REFUSES a Role missing a factor, a scalar without exactly one value, a slot not filled exactly once, ∨ empty guardrails⟩
-persona    ≜ persona(Role, residue) : an agent named as an individual (kino · nico · mav) ⟨holds one Role and DECLARES its residue over it : its own description and mark at least, any factor value besides⟩
+persona    ≜ persona(Role, overrides) : an agent named as an individual (kino · nico · mav) ⟨holds one Role and DECLARES its overrides and extensions of it, never restating it : its own description and mark at least, any factor value besides⟩
 holds      : agent → Role ⟨SINGULAR : a Role is the contract a PEER dispatches against ∧ ∄ dispatcher that can reason about a union of Roles⟩
-declares   : agent → (DimensionName ⇸ ℘(entry)) ⟨what a persona states over the Role : its residue ; ¬ bounded in size ; ∅ for a generic-holder⟩
+declares   : agent → (DimensionName ⇸ ℘(entry)) ⟨what a persona states over the Role : its overrides and extensions ; ¬ bounded in size ; ∅ for a generic-holder⟩
 select     : agent → (DimensionName → ℘(entry)) ; select(a) = holds(a) ⊕ declares(a)   -- the fold runs @ select ∴ the emitted Target is FLAT
 ⊕ ⊨ arity @ manifest ⟨scalar ⇒ declares(a) if STATED ⟨OVERRIDE⟩, else holds(a) ; slots ⇒ each stated slot OVERRIDES its own ; set ⇒ holds(a) then declares(a) ⟨EXTEND ; restating a held value changes only its level ∨ note⟩ ; Reach ⇒ a persona may only NARROW it⟩
 role ∉ dom(declares) ⇒ contract(holds(a)) ¬ overridable ⟨∄ field a persona may state ∴ inviolable BY CONSTRUCTION, ¬ by a marking⟩
 mark ∉ dom(⊕) ⟨identity, ¬ folded : a generic-holder has none, a persona's is its own⟩
-             ⟨⊕ REFUSES, never silently ignores, naming what it refused : a residue that WIDENS Reach ⟨a perception-scope, action-scope ∨ handoff the Role does not hold⟩, removes a guardrail ∨ lowers its level, removes any other set's value, ∨ names a factor ∉ catalog ; a persona with no mark, ∨ whose mark is its Role's⟩
+             ⟨⊕ REFUSES, never silently ignores, naming what it refused : overrides that WIDEN Reach ⟨a perception-scope, action-scope ∨ handoff the Role does not hold⟩, remove a guardrail ∨ lower its level, remove any other set's value, ∨ name a factor ∉ catalog ; a persona with no mark, ∨ whose mark is its Role's⟩
 compose    : (DimensionName → ℘(entry)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
              ⟨Reach ⟨perception-scope · action-scope · handoffs⟩ ∧ model are BINDINGS, ¬ text : realize compiles them to the harness's tool, dispatch ∧ model-role settings ; a level is rendered only where fixed⟩
 realize    : cell × harness-adapter ⇀ harness-mechanism ⟨realizes MODEL's `mechanism` ; keyed on the CELL, ¬ on ActivationMode alone⟩

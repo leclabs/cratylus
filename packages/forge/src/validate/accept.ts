@@ -12,8 +12,8 @@
 // legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle rulings (does the
 // fragment / anchor, read with its bounded context's name and subject and nothing of
 // its intent, decode to intent under LLM-priors? the oracle's script sends the
-// fragment alone, without its context's name and subject); the static witness is
-// their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
+// fragment with its context's name and subject, which the caller names); the static
+// witness is their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
 // The five structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·ENFORCED·REGENERABLE)
 // are fully static. ENFORCED and REGENERABLE are GLOBAL rather than per-cell — a cell
 // cannot witness its own projection — so both are folded in by the caller. The

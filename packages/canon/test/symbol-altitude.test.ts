@@ -4,10 +4,11 @@
 // `signify` declares `α : C ↣ Names` injective within each bounded context and states
 // `α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`. This gate checks this corpus's own
 // cells, which are all read in one context, so the law binds across every cell.
-// The symbol-probe gate keys every obligation `${cell}␟${symbol}` — PER CELL — so a sign
-// assigned concept A in one cell and concept B in another round-trips green in BOTH while
-// the pair violates injectivity. The blind spot is the KEY, not the rubric: no per-item
-// check can establish an across-item invariant, however green every item is.
+// The symbol-probe gate keys every obligation `${κ.name}␟${κ.subject}␟${cell}␟${symbol}` —
+// PER CELL — so a sign assigned concept A in one cell and concept B in another round-trips
+// green in BOTH while the pair violates injectivity. The blind spot is the KEY, not the
+// rubric: no per-item check can establish an across-item invariant, however green every
+// item is.
 //
 // This is the `altitude` law — a sign taken at another altitude IN THE SAME CORPUS is still
 // a collision. It is not hypothetical: authoring `register-relative-decode` in this corpus
@@ -31,6 +32,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
+import { corpusContext } from '../tooling/cold-oracle/policy.js';
 import {
   type ProbeObligation,
   divergentSymbols,
@@ -105,7 +107,7 @@ async function liveObligations(): Promise<ProbeObligation[]> {
     for (const v of Object.values(mod)) {
       const skill = v as Skill | undefined;
       if (!skill?.formalBlock) continue;
-      out.push(...obligationsOf(skill.name, skill.formalBlock));
+      out.push(...obligationsOf(corpusContext, skill.name, skill.formalBlock));
     }
   }
   return out;
@@ -149,21 +151,51 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
   // and every assertion above would still be green.
   it('CONVICTS a synthetic collision and acquits a synthetic agreement', () => {
     const collide: ProbeObligation[] = [
-      { cell: 'alpha', symbol: 'W', assignedConcept: 'a weight' },
-      { cell: 'beta', symbol: 'W', assignedConcept: 'a window' },
+      {
+        context: corpusContext,
+        cell: 'alpha',
+        symbol: 'W',
+        assignedConcept: 'a weight',
+      },
+      {
+        context: corpusContext,
+        cell: 'beta',
+        symbol: 'W',
+        assignedConcept: 'a window',
+      },
     ];
     expect(divergentSymbols(collide).map((d) => d.symbol)).toEqual(['W']);
 
     const agree: ProbeObligation[] = [
-      { cell: 'alpha', symbol: 'W', assignedConcept: 'a weight' },
-      { cell: 'beta', symbol: 'W', assignedConcept: 'a weight' },
+      {
+        context: corpusContext,
+        cell: 'alpha',
+        symbol: 'W',
+        assignedConcept: 'a weight',
+      },
+      {
+        context: corpusContext,
+        cell: 'beta',
+        symbol: 'W',
+        assignedConcept: 'a weight',
+      },
     ];
     expect(divergentSymbols(agree)).toEqual([]);
 
     // One cell restating a symbol is not divergence either.
     const oneCell: ProbeObligation[] = [
-      { cell: 'alpha', symbol: 'W', assignedConcept: 'a weight' },
-      { cell: 'alpha', symbol: 'W', assignedConcept: 'a window' },
+      {
+        context: corpusContext,
+        cell: 'alpha',
+        symbol: 'W',
+        assignedConcept: 'a weight',
+      },
+      {
+        context: corpusContext,
+        cell: 'alpha',
+        symbol: 'W',
+        assignedConcept: 'a window',
+      },
     ];
     expect(divergentSymbols(oneCell)).toEqual([]);
   });

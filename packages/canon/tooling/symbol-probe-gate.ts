@@ -2,20 +2,23 @@
 // SYMBOLS gate (`test/symbols.test.ts`) binds DECODABILITY (every fence glyph is a declared
 // register member), this gate binds SIGNIFICATION: every symbol a skill's formal block
 // DECLARES must round-trip — the concept the reader's priors circumscribe for the symbol
-// (`concept_R(w)`, probe.ts) must be the concept the block ASSIGNS it (its σ* target, the
-// declaration gloss). A mis-signified symbol — priors circumscribing a DIFFERENT concept
-// than assigned — FAILS. Formal blocks thereby become the symbolic-σ* regression suite.
+// read in its bounded context κ (`concept_R(w, κ)`, probe.ts) must be the concept the block
+// ASSIGNS it (its σ* target, the declaration gloss). A mis-signified symbol — priors
+// circumscribing a DIFFERENT concept than assigned — FAILS. Formal blocks thereby become the
+// symbolic-σ* regression suite.
 //
 // INDEPENDENT-LEG HONESTY (the load-bearing design constraint). The round-trip's semantic
-// leg — `concept_R(w) = intended C` at reader=LLM — is an LLM judgment. This module does
+// leg — `concept_R(w, κ) = intended C` at reader=LLM — is an LLM judgment. This module does
 // NOT fake a deterministic oracle over that semantic equality. It splits the round-trip:
 //
 //   • DETERMINISTIC leg (here, mechanized): extract each declaration into a ProbeObligation
-//     ⟨cell, symbol, assignedConcept⟩ (the σ*-regression rows), and ROUTE recorded probe
-//     readouts to a verdict. Pure, total, tested.
-//   • JUDGMENT leg (external, documented): the readout — `probe(w) = ⟨fired_R(w) ·
-//     concept_R(w)⟩` plus the match verdict — is produced by an agent probing the symbol
-//     at reader=LLM, then RECORDED into the ProbeLedger. The gate never computes it.
+//     ⟨context, cell, symbol, assignedConcept⟩ (the σ*-regression rows), and ROUTE recorded
+//     probe readouts to a verdict. Pure, total, tested.
+//   • JUDGMENT leg (external, documented): the readout — `probe(w, κ) = ⟨fired_R(w, κ) ·
+//     concept_R(w, κ)⟩` plus the match verdict — is produced by an agent probing the symbol
+//     at reader=LLM, given κ's name and subject, then RECORDED into the ProbeLedger with κ.
+//     The gate never computes it, and a readout recorded in another context discharges
+//     nothing.
 //
 // The honesty pivot is the third verdict: a symbol with NO recorded readout is `needs-probe`
 // — it does NOT pass. An un-probed symbol cannot canonize. That is what keeps the gate from
@@ -23,13 +26,22 @@
 // check, never swallowed into a pass.
 
 import { OPERATORS } from '../src/operator-lexicon.js';
+import type { corpusContext } from './cold-oracle/policy.js';
+
+/** A bounded context a symbol is read in, its name and subject: the shape of the corpus
+ *  context `./cold-oracle/policy.ts` declares (forge's `BoundedContext`). */
+type BoundedContext = typeof corpusContext;
 
 /**
  * A round-trip obligation extracted from one declaration line: the block ASSIGNS
- * `symbol` the concept `assignedConcept` (its gloss / σ* target). The gate's question:
- * does `concept_R(symbol)` at reader=LLM circumscribe exactly `assignedConcept`?
+ * `symbol` the concept `assignedConcept` (its gloss / σ* target), read in `context`. The
+ * gate's question: does `concept_R(symbol, κ)` at reader=LLM circumscribe exactly
+ * `assignedConcept`?
  */
 export interface ProbeObligation {
+  /** κ — the bounded context the symbol is read in (the corpus context for this corpus's
+   *  own cells, `corpusContext`). */
+  readonly context: BoundedContext;
   /** the cell whose formal block declared the symbol (e.g. `probe`, `signify`). */
   readonly cell: string;
   /** the declared signifier under probe (`w` in probe.ts): `σ*`, `circ`, `fired_R`, … */
@@ -39,38 +51,48 @@ export interface ProbeObligation {
 }
 
 /**
- * A recorded probe of a symbol at reader=LLM — the JUDGMENT leg's product, authored by an
- * agent, NEVER computed here. `probe(w) = ⟨fired_R(w) · concept_R(w)⟩` plus the round-trip
- * verdict. `matchesAssignment` is the agent's call that `concept_R(symbol)` circumscribes
- * the obligation's `assignedConcept` (precise-circumscription: covers it, reaches nothing
- * beyond). `firedPriors` / `circumscribes` carry the evidence for a human/agent auditor.
+ * A recorded probe of a symbol at reader=LLM, in a bounded context — the JUDGMENT leg's
+ * product, authored by an agent, NEVER computed here. `probe(w, κ) = ⟨fired_R(w, κ) ·
+ * concept_R(w, κ)⟩` plus the round-trip verdict. `matchesAssignment` is the agent's call
+ * that `concept_R(symbol, κ)` circumscribes the obligation's `assignedConcept`
+ * (precise-circumscription: covers it, reaches nothing beyond). `firedPriors` /
+ * `circumscribes` carry the evidence for a human/agent auditor.
  */
 export interface ProbeReadout {
+  /** κ — the bounded context the symbol was read in; it discharges only an obligation in
+   *  the same context. */
+  readonly context: BoundedContext;
   readonly cell: string;
   readonly symbol: string;
-  /** `fired_R(symbol)` — the latent priors the token evokes, as an agent reported them. */
+  /** `fired_R(symbol, κ)` — the latent priors the token evokes in κ, as an agent reported them. */
   readonly firedPriors: string;
-  /** `concept_R(symbol)` — the concept those priors circumscribe. */
+  /** `concept_R(symbol, κ)` — the concept those priors circumscribe. */
   readonly circumscribes: string;
   /** the round-trip verdict: does `circumscribes` = the block's `assignedConcept`? */
   readonly matchesAssignment: boolean;
 }
 
-/** Recorded agent probes, keyed `${cell}␟${symbol}`. The judgment leg's ledger. */
+/** Recorded agent probes, keyed `${κ.name}␟${κ.subject}␟${cell}␟${symbol}`. The judgment
+ *  leg's ledger. */
 export type ProbeLedger = ReadonlyMap<string, ProbeReadout>;
 
 export type RoundTripVerdict = 'pass' | 'fail' | 'needs-probe';
 
 const KEY_SEP = '␟';
-export function ledgerKey(cell: string, symbol: string): string {
-  return `${cell}${KEY_SEP}${symbol}`;
+/** The ledger key of a probe: its context (name and subject), its cell and its symbol. */
+export function ledgerKey(
+  context: BoundedContext,
+  cell: string,
+  symbol: string,
+): string {
+  return [context.name, context.subject, cell, symbol].join(KEY_SEP);
 }
 
 /** Build a ledger from recorded readouts (last write wins on a duplicate key). */
 export function ledgerOf(readouts: readonly ProbeReadout[]): ProbeLedger {
   const m = new Map<string, ProbeReadout>();
   for (const r of readouts) {
-    m.set(ledgerKey(r.cell, r.symbol), r);
+    m.set(ledgerKey(r.context, r.cell, r.symbol), r);
   }
   return m;
 }
@@ -162,8 +184,10 @@ export function declarationsRegion(formalBlock: string): string {
     .join('\n');
 }
 
-/** Every ProbeObligation a cell's formal block raises (its fresh-symbol bindings, by form). */
+/** Every ProbeObligation a cell's formal block raises (its fresh-symbol bindings, by form),
+ *  each read in `context`. */
 export function obligationsOf(
+  context: BoundedContext,
   cell: string,
   formalBlock: string,
 ): ProbeObligation[] {
@@ -178,7 +202,12 @@ export function obligationsOf(
       continue; // one obligation per distinct symbol per cell
     }
     seen.add(d.symbol);
-    out.push({ cell, symbol: d.symbol, assignedConcept: d.assignedConcept });
+    out.push({
+      context,
+      cell,
+      symbol: d.symbol,
+      assignedConcept: d.assignedConcept,
+    });
   }
   return out;
 }
@@ -186,16 +215,17 @@ export function obligationsOf(
 // ── Round-trip routing — the gate ───────────────────────────────────────────────
 
 /**
- * The round-trip verdict for one obligation against the ledger. NO recorded readout ⇒
- * `needs-probe` (the honesty pivot: an un-probed symbol does NOT pass — canonization is
- * owed an agent probe). A recorded readout routes to `pass` / `fail` by its
+ * The round-trip verdict for one obligation against the ledger. NO recorded readout in the
+ * obligation's context ⇒ `needs-probe` (the honesty pivot: an un-probed symbol does NOT
+ * pass — canonization is owed an agent probe; a readout recorded for another context is
+ * no probe of this one). A recorded readout routes to `pass` / `fail` by its
  * `matchesAssignment` — the agent's judgment, never recomputed here.
  */
 export function roundTrip(
   ob: ProbeObligation,
   ledger: ProbeLedger,
 ): RoundTripVerdict {
-  const r = ledger.get(ledgerKey(ob.cell, ob.symbol));
+  const r = ledger.get(ledgerKey(ob.context, ob.cell, ob.symbol));
   if (!r) {
     return 'needs-probe';
   }
@@ -248,7 +278,7 @@ export function symbolProbeGate(
 
 /** A one-line manifest row for the owed-probe report (the σ*-regression suite surface). */
 export function manifestRow(ob: ProbeObligation, v: RoundTripVerdict): string {
-  return `${v.toUpperCase().padEnd(11)} ${ob.cell} :: ${ob.symbol} — assigned: ${ob.assignedConcept}`;
+  return `${v.toUpperCase().padEnd(11)} ${ob.context.name} :: ${ob.cell} :: ${ob.symbol} — assigned: ${ob.assignedConcept}`;
 }
 
 /** True when `symbol` is a declared register operator (its concept is the lexicon `sense`,
@@ -263,10 +293,10 @@ export function isLexiconOperator(symbol: string): boolean {
 // law: `α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`. One name ⇔ one concept WITHIN A
 // CONTEXT; this gate checks this corpus's own cells, which are all read in one context,
 // so across them the law binds every cell. But `ledgerKey` is
-// `${cell}␟${symbol}` — per cell — so a sign assigned concept A in one cell and concept B
-// in another raises two independent obligations, each of which round-trips green ALONE
-// while the pair violates injectivity. The blind spot is the KEY, not the rubric: no
-// per-item check can establish an across-item invariant.
+// `${κ.name}␟${κ.subject}␟${cell}␟${symbol}` — per cell — so a sign assigned concept A in
+// one cell and concept B in another raises two independent obligations, each of which
+// round-trips green ALONE while the pair violates injectivity. The blind spot is the KEY,
+// not the rubric: no per-item check can establish an across-item invariant.
 //
 // This is the mechanizable half only. Whether a divergence is a genuine COLLISION or a
 // deliberate cross-cell REFERENCE (probe re-declaring `dec` with a short gloss and an

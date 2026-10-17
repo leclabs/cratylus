@@ -32,7 +32,7 @@ export const repo = fileURLToPath(new URL('../../../..', import.meta.url));
 export const canon = canonExports as unknown as {
   MANIFEST: Record<string, unknown>;
   holder(cell: unknown): Record<string, unknown>;
-  persona(cell: unknown, residue: unknown): Record<string, unknown>;
+  persona(cell: unknown, overrides: unknown): Record<string, unknown>;
   CompositionRefusal: new (...args: never[]) => Error;
   [name: string]: unknown;
 };
@@ -221,8 +221,8 @@ try {
     },
   };
 }
-export function candidateSource(role: string, residue: unknown) {
-  return `import { persona, ${camel(role)}Role } from '@cratylus/canon';\nexport const candidate = persona(${camel(role)}Role, ${JSON.stringify(residue)});\n`;
+export function candidateSource(role: string, overrides: unknown) {
+  return `import { persona, ${camel(role)}Role } from '@cratylus/canon';\nexport const candidate = persona(${camel(role)}Role, ${JSON.stringify(overrides)});\n`;
 }
 /** A composition refused as malformed: the public refusal, naming each of `names`. */
 export function expectRefusal(result: CompositionResult, ...names: string[]) {

@@ -21,8 +21,9 @@
 //   (c) NO-DIVERGENCE — the committed target == the source cell's bytes, byte-for-
 //       byte (`regenerateTargets --check` finds zero drift). A hand-edit fails here.
 //
-// The BLIND cold-oracle leg (SIGNIFIED/COLD-BLIND as a live decode) is the architect's
-// canon review, gated off the hermetic floor exactly as in `reader-density.test.ts`.
+// The BLIND cold-oracle leg (SIGNIFIED/COLD-BLIND as a live decode, each cell read in the
+// corpus context, `corpusContext`) is the architect's canon review, gated off the
+// hermetic floor exactly as in `reader-density.test.ts`.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';

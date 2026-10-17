@@ -8,8 +8,8 @@
 //                workflow`) for the concept  (α = σ*)
 //
 // MODEL's cold read gives the fragment with its bounded context's name and subject and
-// nothing of its intent; the isolation script this driver wraps sends the fragment
-// text alone, without its context's name and subject.
+// nothing of its intent; the isolation script this driver wraps sends the fragment with
+// that context's name and subject (`DecodeOpts.context`), which every caller names.
 //
 // ISOLATION IS THE INVARIANT. A subagent is NOT cold (it inherits session context
 // + the local agent-registry aliases); only this process-level isolation yields a
@@ -34,18 +34,34 @@
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 
+/** A bounded context a sign is read in: its name and its subject. */
+export interface BoundedContext {
+  readonly name: string;
+  readonly subject: string;
+}
+
 export interface DecodeOpts {
   /** the isolation script that runs the cold, priors-only decode (injected corpus asset). */
   readonly scriptPath: string;
+  /** the bounded context the text is read in — sent to the reader with the text. */
+  readonly context: BoundedContext;
   /** model to pin for reproducibility (default: the script's default). */
   readonly model?: string;
   /** hard cap in ms (default 120_000). */
   readonly timeoutMs?: number;
 }
 
-/** decode_cold(text) — the isolated, priors-only cold read of a fragment. */
+/** decode_cold(text, κ) — the isolated, priors-only cold read of a fragment in its context. */
 export function decodeCold(text: string, opts: DecodeOpts): string {
-  const args = ['--raw', '--text', text];
+  const args = [
+    '--raw',
+    '--context-name',
+    opts.context.name,
+    '--context-subject',
+    opts.context.subject,
+    '--text',
+    text,
+  ];
   if (opts.model) {
     args.push('--model', opts.model);
   }
@@ -74,9 +90,10 @@ export interface NonceControl {
 
 /**
  * The positive control: coin a fresh nonce (no generic prior, no registry entry)
- * and decode it cold. `isolated` ⇔ it comes back as an unknown/coined term — the
- * proof that NO corpus/registry gloss leaked into the reader. A false here means
- * the cold-oracle is warm (the whole gate is void), so the caller asserts it.
+ * and decode it cold in the caller's bounded context. `isolated` ⇔ it comes back as
+ * an unknown/coined term — the proof that NO corpus/registry gloss leaked into the
+ * reader. A false here means the cold-oracle is warm (the whole gate is void), so the
+ * caller asserts it.
  */
 export function nonceControl(opts: NonceControlOpts): NonceControl {
   // hex-with-a-vowel-cluster: pronounceable enough to look like a term, yet has

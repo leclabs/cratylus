@@ -92,7 +92,7 @@ kino, nico and mav are personas over the architect role, each named for its expe
 production and generative video, nico the corpus and latent lexicography, mav software
 engineering). The architect role owns the conceptual model of every context it is given, the
 corpus included; a persona brings its expertise and owns nothing its role does not.
-Each is `persona(architectRole, residue)`:
+Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
 after the role's, and restating one the role holds changes only its enforcement level or note. It

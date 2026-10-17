@@ -23,7 +23,7 @@ import {
   factorNames,
   factors,
   marks,
-  personaResidue,
+  personaOverrides,
   personaVector,
   requireDefined,
   retired,
@@ -44,15 +44,15 @@ function fixture(source?: string, name?: string) {
 }
 function composedPersona(name: PersonaName) {
   expect(canon.persona, 'canon exports persona').toBeTypeOf('function');
-  const residue = personaResidue(name);
-  // The residue states values and slots; firmness must come from catalog defaults.
+  const overrides = personaOverrides(name);
+  // The overrides state values and slots; firmness must come from catalog defaults.
   const stated = Object.fromEntries(
-    Object.entries(residue.values).map(([field, entries]) => [
+    Object.entries(overrides.values).map(([field, entries]) => [
       field,
       entries.map(({ level: _level, ...entry }) => entry),
     ]),
   );
-  return canon.persona(canon.architectRole, { ...residue, values: stated });
+  return canon.persona(canon.architectRole, { ...overrides, values: stated });
 }
 const candidateIdentity = {
   name: 'candidate',
@@ -125,7 +125,7 @@ describe('catalog re-cut: the visible examples', () => {
     );
   });
 
-  it('example 4: kino and mav carry only their specified residue and their own marks', () => {
+  it('example 4: kino and mav carry only their specified overrides and extensions and their own marks', () => {
     const f = fixture();
     f.projectCanon();
     for (const name of ['kino', 'mav'] as const) {
@@ -215,7 +215,7 @@ describe('catalog re-cut: the visible examples', () => {
       'no-implementation',
     ]) {
       for (const level of ['firm', 'advisory', null, 'remove'] as const) {
-        const residue =
+        const overrides =
           level === 'remove'
             ? { removes: { guardrails: [body('guardrails', guardrail)] } }
             : {
@@ -224,7 +224,7 @@ describe('catalog re-cut: the visible examples', () => {
                 },
               };
         const f = fixture(
-          candidateSource('architect', { ...candidateIdentity, ...residue }),
+          candidateSource('architect', { ...candidateIdentity, ...overrides }),
         );
         const composed = f.compose();
         expect(

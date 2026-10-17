@@ -430,9 +430,11 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 //   accept(a) ⇔ Universal(a) ∧ (agent ⇒ COMPOSED(a))
 //   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
 // decided by the BLIND priors-only cold-oracle — a LIVE authority (gated below,
-// `COLD_ORACLE_LIVE=1`) over an always-on STATIC floor (`tooling/cold-oracle/
-// accept.ts`). NON-VACUOUS: one seeded defect per leg, each convicted — and MECE
-// (each seed trips ONLY its leg). Green over one live already-conformant cell.
+// `COLD_ORACLE_LIVE=1`), reading each of this corpus's cells in the corpus context
+// (`corpusContext`, `tooling/cold-oracle/policy.ts`), over an always-on STATIC floor
+// (`tooling/cold-oracle/accept.ts`). NON-VACUOUS: one seeded defect per leg, each
+// convicted — and MECE (each seed trips ONLY its leg). Green over one live
+// already-conformant cell.
 
 /** A self-sufficient, parsimonious body — clean on every non-target leg. */
 const clean = 'toward the minimal residue.';

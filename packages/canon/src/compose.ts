@@ -4,9 +4,9 @@
 // A role is a full default vector: one stated list per factor, every factor
 // present (`roles/<role>.ts`). Its generic holder is that vector made an agent:
 // each stated value becomes an `Entry` carrying its enforcement level (the
-// factor's default unless stated). A persona is the residue over a role: its own
-// mark, single values that replace the role's, set values that extend the role's,
-// and values it removes. Everything it does not state is the role's.
+// factor's default unless stated). A persona states its overrides and extensions of a
+// role: its own mark, single values that replace the role's, set values that extend the
+// role's, and values it removes. Everything it does not state is the role's.
 //
 // Composition REFUSES a malformed persona (master design §2): one that states the
 // role, names an unknown factor or slot, removes a value its role does not hold, or
@@ -63,8 +63,8 @@ export interface RoleCell {
   };
 }
 
-/** A persona: what it states over its role, by field; everything else is the role's. */
-export interface Residue {
+/** A persona: its overrides and extensions of its role, by field; everything else is the role's. */
+export interface Overrides {
   readonly name: string;
   readonly description: string;
   readonly mark: Mark;
@@ -236,19 +236,19 @@ export function holder(cell: RoleCell): Agent {
   );
 }
 
-/** A persona over a role: the role's vector, then the residue's precedence. */
-export function persona(over: RoleCell, residue: Residue): Agent {
-  const who = `persona ${residue.name}`;
-  if (!residue.mark) refuse(`${who} carries no mark`);
+/** A persona over a role: the role's vector, then the persona's overrides and extensions. */
+export function persona(over: RoleCell, overrides: Overrides): Agent {
+  const who = `persona ${overrides.name}`;
+  if (!overrides.mark) refuse(`${who} carries no mark`);
   if (
     over.mark &&
-    over.mark.emoji === residue.mark.emoji &&
-    over.mark.hue === residue.mark.hue
+    over.mark.emoji === overrides.mark.emoji &&
+    over.mark.hue === overrides.mark.hue
   )
     refuse(`${who} carries its role ${over.name}'s own mark`);
   const vector = vectorOfCell(over);
 
-  for (const [field, stated] of Object.entries(residue.values ?? {})) {
+  for (const [field, stated] of Object.entries(overrides.values ?? {})) {
     const held = heldFactor(field, who);
     const { factor, meta } = held;
     if (factor === 'role')
@@ -312,7 +312,7 @@ export function persona(over: RoleCell, residue: Residue): Agent {
     }
   }
 
-  for (const [field, removed] of Object.entries(residue.removes ?? {})) {
+  for (const [field, removed] of Object.entries(overrides.removes ?? {})) {
     const { factor, meta } = heldFactor(field, who);
     const entries = vector[field] as Entry[];
     for (const value of removed) {
@@ -334,9 +334,9 @@ export function persona(over: RoleCell, residue: Residue): Agent {
 
   return agentOf(
     {
-      name: residue.name,
-      description: residue.description,
-      mark: residue.mark,
+      name: overrides.name,
+      description: overrides.description,
+      mark: overrides.mark,
       holds: over.name,
     },
     vector,

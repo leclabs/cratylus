@@ -765,7 +765,7 @@ export const descriptions: Record<string, string> = {
   nico: "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, read in its bounded context, and keeps the name a reader given the name with only its bounded context's name and subject decodes as meant.",
   mav: 'Architect expert in software engineering: models any repository it is given as a software engineer would.',
 };
-export function personaResidue(name: PersonaName) {
+export function personaOverrides(name: PersonaName) {
   const additions: Record<PersonaName, Vector> = {
     kino: {
       expertise: ['film-production', 'generative-video'].map((a) =>
@@ -810,21 +810,21 @@ export function personaResidue(name: PersonaName) {
 }
 export function personaVector(name: PersonaName): Vector {
   const vector = roleVector('architect');
-  const residue = personaResidue(name).values;
+  const overrides = personaOverrides(name).values;
   // Enumerated coordinates, not an implementation of composition precedence.
   requireDefined(vector.expertise, 'architect.expertise').push(
-    ...requireDefined(residue.expertise, `${name}.expertise`),
+    ...requireDefined(overrides.expertise, `${name}.expertise`),
   );
-  if (residue.stance)
-    requireDefined(vector.stance, 'architect.stance').push(...residue.stance);
+  if (overrides.stance)
+    requireDefined(vector.stance, 'architect.stance').push(...overrides.stance);
   if (name === 'nico')
-    vector.objective = requireDefined(residue.objective, 'nico.objective');
+    vector.objective = requireDefined(overrides.objective, 'nico.objective');
   const communicationStyle = requireDefined(
     vector.communicationStyle,
     'architect.communicationStyle',
   );
   const replacement = requireDefined(
-    residue.communicationStyle?.[0],
+    overrides.communicationStyle?.[0],
     `${name}.communicationStyle replacement`,
   );
   if (name === 'kino') communicationStyle[2] = replacement;
