@@ -1,7 +1,7 @@
 # @cratylus/canon
 
 The **meaning** concern of [cratylus](../../README.md) — the canonical corpus of discovered
-optimal-signifiers, authored as typed TypeScript.
+optimal-signifiers, each read in its concept's bounded context, authored as typed TypeScript.
 
 The discipline is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
@@ -154,8 +154,9 @@ and an agent carries it once, in plain words, as the `cratylism` stance of the r
 that role states it. A cell that does not use it
 never holds a host's own authored surfaces to this corpus's naming axiom. The axiom is scoped: the
 cold-decode oracle decides signs only for the corpus's core agent factor names and values, the
-terminology it was built to discover. Every other term is the industry's own, used as the industry
-understands it, and no consumer surface is held to the oracle. It is intrinsic to those cells'
+terminology it was built to discover, reading each sign in its bounded context and judging it by the
+workflow's residue. Every other term is the industry's own, used as the industry understands it, and
+no consumer surface is held to the oracle. It is intrinsic to those cells'
 projected bytes, so it survives deployment into a foreign repository rather than depending on
 ambient context.
 

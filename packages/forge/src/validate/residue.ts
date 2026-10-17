@@ -120,8 +120,9 @@ function grammarOf(policy: Policy): Grammar {
 
 /**
  * Well-formed σ* anchor — kebab, admitting a CASED proper-noun sign (`ReAct`, `Endsley`,
- * `Auftragstaktik`, `LLM`): a proper noun IS the fittest sign for a concept the lowercase
- * form collides on. Connectives are still caught case-insensitively, so prose still fails.
+ * `Auftragstaktik`, `LLM`): a proper noun IS the sign with the smallest residue, in its
+ * context, for a concept the lowercase form collides on. Connectives are still caught
+ * case-insensitively, so prose still fails.
  */
 const ANCHOR = /^[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$/;
 /**

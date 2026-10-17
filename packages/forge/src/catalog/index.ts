@@ -219,7 +219,8 @@ export interface PluginFragmentRoot {
  * and it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
  * plugins sharing it collapses all three at once — indistinguishable ids, provenance
  * that names the wrong plugin, and the per-plugin σ* invariant — each plugin names each
- * concept its LOCALLY fittest anchor, unique within its OWN catalog and nowhere wider —
+ * concept its LOCAL σ*, the anchor with the smallest residue in its context, unique within
+ * its OWN catalog and nowhere wider —
  * holding only by accident. There is no degraded-but-useful reading of the result to warn about.
  *
  * NOT `NamespaceCollisionError`. "Collision" is already spoken for in this module, with

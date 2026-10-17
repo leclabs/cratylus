@@ -5,8 +5,9 @@
 [`Cratylism`](./packages/canon/src/genus/prime-principle.ts)
 
 Its scope is the corpus's core agent dimension names and values: the cold-decode oracle decides signs only
-for them, the terminology it was built to discover. Every other term is the industry's own, used as the
-industry understands it, and nothing cratylus ships holds a consumer's own surfaces to the oracle.
+for them, the terminology it was built to discover, reading each sign in its bounded context and judging it
+by the workflow's residue. Every other term is the industry's own, used as the industry understands it, and
+nothing cratylus ships holds a consumer's own surfaces to the oracle.
 
 ## High Altitude Mental Model:
 

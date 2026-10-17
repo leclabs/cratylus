@@ -77,9 +77,10 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   c: 'REFERENCE',
   // `A` PAID 2026-07-27 — was a three-way COLLISION. signify used it ONCE for the
   // assigned-anchor set while introspect and create-agent used it 5× each for the AGENT.
-  // signify renamed to `Anchors`, built from its own declared `anchor` — a disambiguation
-  // out of existing vocabulary, not a coinage. What remains is introspect↔create-agent,
-  // both meaning the agent in question: a REFERENCE, not a collision.
+  // signify renamed to `Anchors` (now its set of anchor-in-context pairs), built from its own
+  // declared `anchor` — a disambiguation out of existing vocabulary, not a coinage. What
+  // remains is introspect↔create-agent, both meaning the agent in question: a REFERENCE, not
+  // a collision.
   A: 'REFERENCE',
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────

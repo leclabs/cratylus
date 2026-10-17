@@ -12,7 +12,8 @@ export const cratylism =
  * as the first section of a SKILL.md, set as `preamble` on exactly the skills
  * whose laws apply it: those that name concepts by anchor, optimal sign or cold
  * decode. The axiom's scope is the corpus's core agent factor names and
- * values, the terminology the cold-decode oracle was built to discover; every
+ * values, the terminology the cold-decode oracle was built to discover, each
+ * sign read in its bounded context and judged by the workflow's residue; every
  * other term is the industry's own, and no consumer surface is held to the
  * oracle. An agent carries the principle through its held role's stance
  * (`cratylism`, in plain words), never through this block. The apex seed: the

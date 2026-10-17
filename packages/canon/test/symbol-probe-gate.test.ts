@@ -89,8 +89,8 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
   // ── ACCEPTANCE 3: a correctly-signified reference symbol PASSES ────────────────
   // σ* and circ, from the LIVE signify.ts obligations, with recorded probe readouts
   // whose `concept_R(w, κ)` circumscribes the assigned gloss (cold-verified by mav's cold-read,
-  // `.scratchpad/signify-review-jul-22/…verdict.md` claim A: σ* routes to the fittest
-  // symbolic sign by density — `argmin |n|` — and circ ⇔ fired(n, κ(c))=D(c)).
+  // `.scratchpad/signify-review-jul-22/…verdict.md` claim A: σ* routes to the sign with the
+  // smallest residue in its context, density `|n|` breaking a tie — and circ ⇔ fired(n, κ(c))=D(c)).
   it('PASSES a correctly-signified reference symbol (σ*, circ)', async () => {
     const signify = (await loadSkills()).find((s) => s.name === 'signify');
     expect(signify).toBeDefined();
@@ -112,7 +112,7 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
         firedPriors:
           'σ (the chosen/summed one) + star (the optimum, the best); the distinguished-best selector over a domain',
         circumscribes:
-          'the density-optimal fittest sign a concept maps to — argmin over circumscribing names',
+          'the sign with the smallest residue a concept maps to in its context — argmin over circumscribing names',
         matchesAssignment: true,
       },
       {
@@ -139,13 +139,14 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
   });
 
   // ── ACCEPTANCE 2: a mis-signified symbol FAILS ────────────────────────────────
-  // Fixture block ASSIGNS σ* the WRONG concept ("the longest, least-fit name"). An agent
-  // probing σ* circumscribes the OPPOSITE (the fittest/shortest sign). Priors circumscribe
-  // a DIFFERENT concept than assigned ⇒ the round-trip verdict is `fail`. (Falsifier: were
-  // this a pass, the gate would be vacuous — a mis-signification would canonize.)
+  // Fixture block ASSIGNS σ* the WRONG concept ("the longest, largest-residue name"). An agent
+  // probing σ* circumscribes the OPPOSITE (the sign with the smallest residue in its context).
+  // Priors circumscribe a DIFFERENT concept than assigned ⇒ the round-trip verdict is `fail`.
+  // (Falsifier: were this a pass, the gate would be vacuous — a mis-signification would
+  // canonize.)
   it('FAILS a mis-signified symbol (priors circumscribe a different concept)', () => {
     const poisoned = `DECLARATIONS
-  σ*   — the LONGEST, least-fit, most verbose name a concept could take
+  σ*   — the LONGEST, largest-residue, most verbose name a concept could take
 
 LAWS
   σ*(c) ≜ argmax over names`;
@@ -162,9 +163,10 @@ LAWS
       symbol: 'σ*',
       firedPriors:
         'σ + star = the optimum / the distinguished BEST — a minimizer, never a maximizer',
-      circumscribes: 'the fittest / shortest sign for a concept',
-      // The agent's judgment: the circumscribed concept (fittest/shortest) is NOT the
-      // assigned concept (longest/least-fit). Recorded, never recomputed here.
+      circumscribes:
+        'the sign with the smallest residue for a concept in its context',
+      // The agent's judgment: the circumscribed concept (smallest residue) is NOT the
+      // assigned concept (longest/largest residue). Recorded, never recomputed here.
       matchesAssignment: false,
     };
     const ledger = ledgerOf([recorded]);
@@ -185,21 +187,23 @@ LAWS
       context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
-      assignedConcept: 'the fittest / shortest sign for a concept',
+      assignedConcept:
+        'the sign with the smallest residue for a concept in its context',
     };
     const bad: ProbeObligation = {
       context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
-      assignedConcept: 'the longest / least-fit name for a concept',
+      assignedConcept: 'the longest / largest-residue name for a concept',
     };
-    // One recorded probe: σ*'s priors circumscribe the fittest sign.
+    // One recorded probe: σ*'s priors circumscribe the sign with the smallest residue.
     const probeOf = (matches: boolean): ProbeReadout => ({
       context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
       firedPriors: 'σ + star = the optimum',
-      circumscribes: 'the fittest / shortest sign for a concept',
+      circumscribes:
+        'the sign with the smallest residue for a concept in its context',
       matchesAssignment: matches,
     });
     expect(roundTrip(good, ledgerOf([probeOf(true)]))).toBe('pass');
@@ -212,14 +216,16 @@ LAWS
       context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
-      assignedConcept: 'the fittest / shortest sign for a concept',
+      assignedConcept:
+        'the sign with the smallest residue for a concept in its context',
     };
     const readout = (context: ProbeReadout['context']): ProbeReadout => ({
       context,
       cell: 'c',
       symbol: 'σ*',
       firedPriors: 'σ + star = the optimum',
-      circumscribes: 'the fittest / shortest sign for a concept',
+      circumscribes:
+        'the sign with the smallest residue for a concept in its context',
       matchesAssignment: true,
     });
     const otherName = { ...corpusContext, name: 'booking' };
