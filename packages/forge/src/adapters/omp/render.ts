@@ -286,8 +286,8 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * ({@link ompCapabilityExtensions}).
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
- * may not contain `: ` — `nico`'s description does ("its conceptual architecture
- * and canon: dimension catalogs"), which makes the document a scanner error.
+ * may not contain `: ` — every persona's description does ("Architect expert in
+ * software engineering: models …"), which makes the document a scanner error.
  * omp survives that by falling back to a naive `key: value` line parser and
  * logging a warning on every discovery pass, so the defect is invisible right up
  * until a description grows a `#` or a newline and the fallback loses it too.
