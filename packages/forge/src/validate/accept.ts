@@ -172,7 +172,10 @@ export interface LegVerdict {
 
 // ── shared lexis ──────────────────────────────────────────────────────────────
 
-/** Well-formed sign: shortlex kebab (σ* is a well-formed fittest sign). */
+/**
+ * Well-formed sign: shortlex kebab (σ* is a well-formed sign, the one with the
+ * smallest residue in its context).
+ */
 const KEBAB = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 
 /**
@@ -234,9 +237,10 @@ export function canonical(
 
 /**
  * SIGNIFIED — α(c)=σ*(c). Static FLOOR: α is a well-formed sign (shortlex kebab);
- * a sign that is not even well-formed is provably ≠ σ* (σ* is a well-formed
- * fittest sign). The σ* circumscription itself — do the anchor's fired priors
- * pick out exactly this concept? — is the live oracle's ruling (`oracle.ts`),
+ * a sign that is not even well-formed is provably ≠ σ* (σ* is a well-formed sign,
+ * the one with the smallest residue in its context). The σ* circumscription
+ * itself — do the anchor's fired priors pick out exactly this concept? — is the
+ * live oracle's ruling (`oracle.ts`),
  * empirically anchored by the nonce positive control (a sign firing NO
  * circumscribing prior cannot be σ*). NB: |home(α)|>1 is PARTITIONED's leg (one
  * concept, many homes), NOT an injectivity failure here (which is two distinct

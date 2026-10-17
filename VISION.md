@@ -2,7 +2,7 @@
 
 > **Author semantics once. Realize behavior everywhere.**
 
-Discover, validate, and canonize the optimal-signifiers already recognized by foundation models, then compose those anchors into reproducible specifications for agents, skills, and other runtime artifacts.
+Discover, validate, and canonize the optimal-signifier foundation models already recognize for each concept in its bounded context, then compose those anchors into reproducible specifications for agents, skills, and other runtime artifacts.
 
 The practice has a name: **latent lexicography** — the descriptive lexicography of a foundation
 model's latent vocabulary. **Cratylus** is its instrument, and this repository is that instrument's
@@ -17,7 +17,7 @@ As prompts and contexts evolve through iterative refinement, they accumulate amb
 
 Larger context windows, stronger reasoning models, memory, and auxiliary tooling may alleviate some of these symptoms, but they do not address the root cause: meaning is still conveyed by description, in a medium that admits misinterpretation.
 
-This project takes the opposite route - discovering and canonizing the optimal-signifiers a foundation model already recognizes, so intent is **addressed** rather than **described**.
+This project takes the opposite route - discovering and canonizing the optimal-signifiers a foundation model already recognizes, each in its concept's bounded context, so intent is **addressed** rather than **described**.
 
 ## Thesis
 
@@ -64,9 +64,9 @@ This vision rests on three related inversions.
 
 ### Ontological Inversion
 
-The conventional view treats the foundation model primarily as an inference engine that receives instructions. Our approach inverts this by assuming that foundation models have already encoded high fidelity representations of the concepts we want to express and optimal-signifiers which invoke them. By using the optimal-signifiers, we can invoke the intended concepts precisely, minimizing ambiguity and maximizing the reliability of the model's response.
+The conventional view treats the foundation model primarily as an inference engine that receives instructions. Our approach inverts this by assuming that foundation models have already encoded high fidelity representations of the concepts we want to express and, for each concept in its bounded context, the optimal-signifier which invokes it. By using those optimal-signifiers, we can invoke the intended concepts precisely, minimizing ambiguity and maximizing the reliability of the model's response.
 
-The model is therefore treated as the semantic source of truth for concepts and their optimal-signifiers; a shared semantic vocabulary.
+The model is therefore treated as the semantic source of truth for concepts and their optimal-signifiers, each in its context; a shared semantic vocabulary.
 
 ### Epistemic Inversion
 
@@ -173,7 +173,7 @@ This architecture is compatible with a **Cratylist** account of naming, drawn fr
 
 This is an engineering constraint, not a claim that all language has one objectively correct name. Within a declared model population, target concept, and validation method, naming is treated as a fact to investigate rather than a preference to settle.
 
-The constraint is scoped to the corpus's own terminology. It holds the **core agent dimension names and values** — the terms this project exists to discover — to a cold decode, and every other term is the industry's own, used as the industry understands it. Nothing this project ships holds a consumer's own surfaces to that test.
+The constraint is scoped to the corpus's own terminology. It holds the **core agent dimension names and values** — the terms this project exists to discover — to a cold decode that reads each in its bounded context and judges it by the workflow's residue, and every other term is the industry's own, used as the industry understands it. Nothing this project ships holds a consumer's own surfaces to that test.
 
 Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: the canon admits those names and values only once a cold decode against model priors, reading each name in its bounded context, has recovered the concept each one names, while a term outside them is taken as the industry uses it.
 
@@ -188,7 +188,7 @@ This project does not seek to:
 - assume that one anchor is universal across all models; or
 - create another general-purpose programming language.
 
-It seeks to discover, validate, canonize, and compose optimal-signifiers that foundation models already interpret consistently, then realize those semantics across deployment environments without making runtime prose the source of truth.
+It seeks to discover, validate, canonize, and compose the optimal-signifiers, each in its bounded context, that foundation models already interpret consistently, then realize those semantics across deployment environments without making runtime prose the source of truth.
 
 ## Relationship to the Model
 
@@ -196,6 +196,6 @@ This document explains **why** the project exists.
 
 [`MODEL.md`](./MODEL.md) defines **what** exists.
 
-[`ENGINE.md`](./ENGINE.md) defines **how** optimal-signifiers are discovered, validated, canonized, composed, projected, and deployed.
+[`ENGINE.md`](./ENGINE.md) defines **how** optimal-signifiers, each in its context, are discovered, validated, canonized, composed, projected, and deployed.
 
-[`CANON.md`](./CANON.md) introduces these documents. The canonical corpus itself — the validated library of optimal-signifiers and compositions — is the `@cratylus/canon` package, and [`ARCHITECTURE.md`](./ARCHITECTURE.md) says what each package is for.
+[`CANON.md`](./CANON.md) introduces these documents. The canonical corpus itself — the validated library of optimal-signifiers, each in its context, and compositions — is the `@cratylus/canon` package, and [`ARCHITECTURE.md`](./ARCHITECTURE.md) says what each package is for.

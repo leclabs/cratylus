@@ -54,7 +54,7 @@ coalesce(cᵢ, cⱼ)  ⇔  α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ∧ D(c�
 cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ) ∨ (α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) <_lex κ(cⱼ)) ⟨a tie on the anchor broken by context name⟩
 ≺ ≜ shortlex over (C, <_N)
 
-c ∉ dom(α) ⇒ c ∉ Anchors :
+c ∉ dom(α) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Anchors assigned c :
     c is no core agent dimension name or value ⇒ c is the industry's own term, used as the industry understands it ⇒ exclude, logged
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the partition was wrong ↦ conceptualize

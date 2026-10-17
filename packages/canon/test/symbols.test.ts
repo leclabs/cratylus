@@ -14,10 +14,11 @@
 // module (the single home; DRY) — read directly, never a markdown projection.
 //
 // CONTRACT (llm-native): this gate is a decodability REGISTRY, not an expression cap.
-// When it rejects the FITTEST sign for a concept, the remedy is to DECLARE that sign
-// (add it to `operator-lexicon`, cold-verify its decode) — NEVER to degrade the sign to
-// a weaker already-declared one (a substitute is no longer the σ* the authoring seam owes;
-// see `formalize`). The gate binds decodability; it does not cap the fittest sign.
+// When it rejects the sign with the smallest residue for a concept in its context, the
+// remedy is to DECLARE that sign (add it to `operator-lexicon`, cold-verify its decode) —
+// NEVER to degrade the sign to a weaker already-declared one (a substitute is no longer the
+// σ* the authoring seam owes; see `formalize`). The gate binds decodability; it does not cap
+// that sign.
 //
 // NON-VACUOUS: an injected undeclared glyph inside a fence is caught; the live corpus
 // passes. Both halves are asserted below.

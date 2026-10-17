@@ -44,7 +44,7 @@ COMPOSED(a) : ir(a)=⟨S_on⟩_{on∈dom catalog, arity(on)≠attribute} ∧ ∀
              fits(S, scalar) ⇔ |S|=1 ; fits(S, slots) ⇔ each slot filled exactly once ; fits(S, set) ⇔ |S|≥0, ≥1 where the factor is required
 
 Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ ENFORCED ∧ REGENERABLE
-  terminology ≜ the corpus's core agent dimension names and values ⟨⊂ Corpus ; the terms the cold-decode oracle was built to discover⟩
+  terminology ≜ the corpus's core agent dimension names and values ⟨⊂ Corpus ; the terms the cold-decode oracle was built to discover, each read in its κ and judged by residue @ workflow⟩
                 ⟨every other term is the industry's own, used as the industry understands it, ∉ terminology ∧ ∉ the oracle⟩
                 ⟨nothing the corpus ships holds a consumer's own surfaces to the oracle⟩
   CANONICAL   : ∀c∈concepts(a): ¬orphan(c) ∧ ¬private(c) ∧ ¬palimpsest(c)

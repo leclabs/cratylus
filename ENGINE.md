@@ -17,7 +17,7 @@ intake     : yield(Execution) → discover ⟨the feedback edge⟩ ; ∄ intake 
 author     : Intent → cell
 normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
-             ⟨the cold-decode oracle decides signs only for the corpus's core agent dimension names and values (MODEL's terminology) ; every other term is the industry's own, used as the industry understands it, ∉ verify ∧ ∉ the oracle⟩
+             ⟨the cold-decode oracle decides signs only for the corpus's core agent dimension names and values (MODEL's terminology), each read in its bounded context κ and judged by residue @ workflow ; every other term is the industry's own, used as the industry understands it, ∉ verify ∧ ∉ the oracle⟩
              ⟨nothing cratylus ships holds a consumer's own surfaces to it⟩
 signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w, κ) = α⁻¹(w, κ)  -- probe round-trip @ reader=LLM, w read in its bounded context κ (MODEL) ; α injective within each κ ⇒ α⁻¹(w, κ) = the concept w is assigned in κ ; w a symbol this corpus's own skills declare
 canonizable(skill) ⇒ ∀ w ∈ declared(skill) : signify-verify(w)                    -- skill of THIS corpus ; one obligation per declared symbol ; the gate routes RECORDED probe readouts to pass ∨ fail, and a symbol with none is owed, ¬ passed
