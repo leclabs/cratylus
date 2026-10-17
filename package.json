@@ -21,7 +21,7 @@
     "test": "turbo run test",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
+    "format": "biome format --write . && prettier --write \"**/*.md\"",
     "typecheck": "turbo run typecheck",
     "typecheck:test": "turbo run typecheck:test",
     "canon:project": "pnpm canon:project:omp",
