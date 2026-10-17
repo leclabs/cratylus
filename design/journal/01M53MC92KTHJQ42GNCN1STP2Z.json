@@ -1,0 +1,15 @@
+{
+  "id": "01M53MC92KTHJQ42GNCN1STP2Z",
+  "at": "2026-10-17T00:32:21.587Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0297",
+  "context": "workflow",
+  "title": "The journal's reader reads past entry kinds it does not know",
+  "situation": "The architect restated the concepts as name and differentia and cut implementation from them; this behaviour, which the concepts carried before, is recorded here so it stays bound.",
+  "decision": "A reading of the concept journal reads past every entry, and every value of a known kind, that this runtime does not know, works out its answer from the rest, and reports what it read past and that the answer may be incomplete; it never refuses the whole journal for them. Appending still works on such a journal, and no entry is rewritten or removed.",
+  "consequences": "An older runtime reads a journal a newer one wrote; the report says what it could not interpret.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}
