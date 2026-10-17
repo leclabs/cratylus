@@ -1,0 +1,9 @@
+{
+  "id": "01M53S4S4DQ322922MGXEGE3MJ",
+  "at": "2026-10-17T01:55:38.765Z",
+  "by": "lead",
+  "kind": "deprecate",
+  "decisionId": "0296",
+  "entry": "01M53H4R5T1PJA9XP08VXDBPFV",
+  "reason": "The design-state story has ended; the renamed concepts are named in delivered text, which now states it."
+}
