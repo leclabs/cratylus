@@ -1,12 +1,12 @@
 // SYMBOL-PROBE gate — the per-symbol `probe` round-trip lifecycle success-gate. ADDITIVE
 // sibling of `symbols.test.ts`: that gate binds DECODABILITY (every fence glyph is a
 // declared register member); this one binds SIGNIFICATION (every DECLARED symbol
-// round-trips — `concept_R(symbol)` at reader=LLM circumscribes the concept its block
-// ASSIGNS it, its σ* target). A mis-signified symbol FAILS; the formal blocks are thereby
-// the symbolic-σ* regression suite. Wired into the lifecycle: ENGINE.md `verify` /
-// `stage-invariant`, CANON.md §Signification-gate.
+// round-trips — `concept_R(symbol, κ)` at reader=LLM, read in its bounded context κ,
+// circumscribes the concept its block ASSIGNS it, its σ* target). A mis-signified symbol
+// FAILS; the formal blocks are thereby the symbolic-σ* regression suite. Wired into the
+// lifecycle: ENGINE.md `verify` / `stage-invariant`, CANON.md §Signification-gate.
 //
-// INDEPENDENT-LEG HONESTY. The round-trip's semantic leg (`concept_R(w) = intended C`) is
+// INDEPENDENT-LEG HONESTY. The round-trip's semantic leg (`concept_R(w, κ) = intended C`) is
 // an LLM judgment; this suite does NOT fake a deterministic oracle over it. It tests the
 // DETERMINISTIC leg (obligation extraction + verdict routing) and the FAILURE SURFACE with
 // RECORDED probe readouts (the judgment leg, authored by an agent, supplied as data). The
@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
+import { corpusContext } from '../tooling/cold-oracle/policy.js';
 import {
   type ProbeObligation,
   type ProbeReadout,
@@ -43,7 +44,7 @@ async function loadSkills(): Promise<Skill[]> {
 async function corpusManifest(): Promise<ProbeObligation[]> {
   const rows: ProbeObligation[] = [];
   for (const s of await loadSkills()) {
-    rows.push(...obligationsOf(s.name, s.formalBlock));
+    rows.push(...obligationsOf(corpusContext, s.name, s.formalBlock));
   }
   return rows;
 }
@@ -57,6 +58,8 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
     for (const ob of manifest) {
       expect(ob.cell).not.toBe('');
       expect(ob.symbol).not.toBe('');
+      // Every obligation is read in the corpus context, this corpus's cells' context.
+      expect(ob.context).toEqual(corpusContext);
       // Every symbol carries an ASSIGNED concept — the σ* target to round-trip against.
       // A blank gloss would make the round-trip undefined; the extractor forbids it.
       expect(ob.assignedConcept, `${ob.cell}::${ob.symbol}`).not.toBe('');
@@ -85,13 +88,17 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
 
   // ── ACCEPTANCE 3: a correctly-signified reference symbol PASSES ────────────────
   // σ* and circ, from the LIVE signify.ts obligations, with recorded probe readouts
-  // whose `concept_R` circumscribes the assigned gloss (cold-verified by mav's cold-read,
+  // whose `concept_R(w, κ)` circumscribes the assigned gloss (cold-verified by mav's cold-read,
   // `.scratchpad/signify-review-jul-22/…verdict.md` claim A: σ* routes to the fittest
   // symbolic sign by density — `argmin |n|` — and circ ⇔ fired(n, κ(c))=D(c)).
   it('PASSES a correctly-signified reference symbol (σ*, circ)', async () => {
     const signify = (await loadSkills()).find((s) => s.name === 'signify');
     expect(signify).toBeDefined();
-    const obs = obligationsOf('signify', (signify as Skill).formalBlock);
+    const obs = obligationsOf(
+      corpusContext,
+      'signify',
+      (signify as Skill).formalBlock,
+    );
     const sigmaStar = obs.find((o) => o.symbol === 'σ*');
     const circ = obs.find((o) => o.symbol.startsWith('circ'));
     expect(sigmaStar, 'signify declares σ*').toBeDefined();
@@ -99,6 +106,7 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
 
     const ledger = ledgerOf([
       {
+        context: corpusContext,
         cell: 'signify',
         symbol: (sigmaStar as ProbeObligation).symbol,
         firedPriors:
@@ -108,6 +116,7 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
         matchesAssignment: true,
       },
       {
+        context: corpusContext,
         cell: 'signify',
         symbol: (circ as ProbeObligation).symbol,
         firedPriors:
@@ -140,7 +149,7 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
 
 LAWS
   σ*(c) ≜ argmax over names`;
-    const obs = obligationsOf('fixture-poison', poisoned);
+    const obs = obligationsOf(corpusContext, 'fixture-poison', poisoned);
     const misSignified = obs.find((o) => o.symbol === 'σ*');
     expect(misSignified, 'fixture declares σ*').toBeDefined();
     expect((misSignified as ProbeObligation).assignedConcept).toContain(
@@ -148,6 +157,7 @@ LAWS
     );
 
     const recorded: ProbeReadout = {
+      context: corpusContext,
       cell: 'fixture-poison',
       symbol: 'σ*',
       firedPriors:
@@ -172,17 +182,20 @@ LAWS
   // ── The gate DISCRIMINATES: same symbol, right gloss passes / wrong gloss fails ─
   it('discriminates a correct vs a mis-signified assignment of the same symbol', () => {
     const good: ProbeObligation = {
+      context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
       assignedConcept: 'the fittest / shortest sign for a concept',
     };
     const bad: ProbeObligation = {
+      context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
       assignedConcept: 'the longest / least-fit name for a concept',
     };
     // One recorded probe: σ*'s priors circumscribe the fittest sign.
     const probeOf = (matches: boolean): ProbeReadout => ({
+      context: corpusContext,
       cell: 'c',
       symbol: 'σ*',
       firedPriors: 'σ + star = the optimum',
@@ -191,5 +204,33 @@ LAWS
     });
     expect(roundTrip(good, ledgerOf([probeOf(true)]))).toBe('pass');
     expect(roundTrip(bad, ledgerOf([probeOf(false)]))).toBe('fail');
+  });
+
+  // ── CONTEXT: a readout recorded in another bounded context discharges nothing ──
+  it('routes an obligation to needs-probe when its readout was recorded in another context', () => {
+    const ob: ProbeObligation = {
+      context: corpusContext,
+      cell: 'c',
+      symbol: 'σ*',
+      assignedConcept: 'the fittest / shortest sign for a concept',
+    };
+    const readout = (context: ProbeReadout['context']): ProbeReadout => ({
+      context,
+      cell: 'c',
+      symbol: 'σ*',
+      firedPriors: 'σ + star = the optimum',
+      circumscribes: 'the fittest / shortest sign for a concept',
+      matchesAssignment: true,
+    });
+    const otherName = { ...corpusContext, name: 'booking' };
+    const otherSubject = {
+      ...corpusContext,
+      subject: 'hotel room reservations',
+    };
+    expect(roundTrip(ob, ledgerOf([readout(otherName)]))).toBe('needs-probe');
+    expect(roundTrip(ob, ledgerOf([readout(otherSubject)]))).toBe(
+      'needs-probe',
+    );
+    expect(roundTrip(ob, ledgerOf([readout(corpusContext)]))).toBe('pass');
   });
 });

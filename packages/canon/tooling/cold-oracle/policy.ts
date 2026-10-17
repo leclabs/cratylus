@@ -2,13 +2,28 @@
 // (`@cratylus/forge/validate`) consumes by injection. The engine declares the
 // `Policy` SHAPE; THIS module is canon's canon supplying the DATA — the
 // specific tokens THIS corpus treats as palimpsest, THIS corpus's operator
-// lexicon, and the language THIS corpus's cold reader answers in. Injected at
-// every call site (`universalCell(cell, homes, canonPolicy)`,
-// `admissibleSingleLine(payload, canonPolicy)`, `./oracle.ts`), never baked
-// into the engine.
+// lexicon, the language THIS corpus's cold reader answers in, and the bounded
+// context THIS corpus's own cells are read in. Injected at every call site
+// (`universalCell(cell, homes, canonPolicy)`, `admissibleSingleLine(payload,
+// canonPolicy)`, `./oracle.ts`), never baked into the engine.
 
-import type { Policy, RegisterPolicy } from '@cratylus/forge/validate';
+import type {
+  BoundedContext,
+  Policy,
+  RegisterPolicy,
+} from '@cratylus/forge/validate';
 import { OPERATORS, RESIDUE_OPERATORS } from '../../src/operator-lexicon.js';
+
+/**
+ * The bounded context the corpus's own cells are read in: a cold read of one of them
+ * gives the reader the sign with this context's name and subject, and a probe readout
+ * recorded for one is recorded in it.
+ */
+export const corpusContext: BoundedContext = {
+  name: 'corpus',
+  subject:
+    'the agent semantics cratylus ships, written once in signs a model reads as meant',
+};
 
 const PALIMPSEST_TOKENS: ReadonlyArray<readonly [string, RegExp]> = [
   ['conatus', /\bconatus\b/i],

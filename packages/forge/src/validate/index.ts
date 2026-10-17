@@ -4,7 +4,8 @@
 // Universal floor (`accept.ts`), the σ*-residue predicate (`residue.ts`), and the live
 // blind cold-oracle driver (`oracle.ts`). Every corpus-specific datum the algorithm
 // reads — the palimpsest token table, the operator lexicon, the isolation script's repo
-// path — is INJECTED (`policy.ts` declares the SHAPE); the DATA lives in the corpus.
+// path, the bounded context a cold read is given — is INJECTED (`policy.ts` declares the
+// SHAPE, `oracle.ts` the `BoundedContext`); the DATA lives in the corpus.
 // This module carries NO corpus doctrine — no specific palimpsest tokens, no operator
 // glyphs.
 //
