@@ -1,5 +1,39 @@
 # @cratylus/forge
 
+## 0.17.1
+
+### Patch Changes
+
+- 95f122e: The delivered agents reconstitute from the design state (decision 0294). The `reconstitution` procedure reads the design state of each context it touches and of the delivered workflow first, then the standing decisions its work needs, then the work in flight from the project's version control and the lead's outcomes, and reads back the current design, then what is open (competing versions and open decisions), then the stories and tasks in flight. The `concept-journal` perception scope is the recorded design per bounded context, with decisions of realization read apart. The architect settles each meaning question on sight, records each ruling of meaning, one applying the design included, as a concept version with its reason before reporting it, never as a decision, works from the records and its delegates' returns, never from the built work, and renders its read-backs in plain words from the design state.
+
+  The omp session-start note names the design state of each touched context and of the delivered workflow, then the standing decisions, never an overview or cuts; its read-back is rendered in plain words from the design state. The per-turn meaning note says a ruling of meaning is recorded as a concept version with its reason, never as a decision.
+
+  The `frontier-other-family` model value keeps its fallback (decision 0244): the strongest of another model family than the builders' where one is available, any available model otherwise. The omp `--agent` flag starts the session as the agent definition omp discovers by that name.
+
+  The delivered agents, their assignment and deliverable forms and the omp harness notes name the restated concepts by their established names (decision 0296): user story, code review, handoff, hold point, delegation of authority, conceptual model, work product, agent harness, agent definition, persona drift and version history. Four values take the new sign as their own: the assignment `story` is now `user-story`, the deliverable `review` is now `code-review`, the perception scope `work` is now `work-product` and the stance `proportionate` is now `tailoring`; the forms' field keys are unchanged.
+
+  The delivered text names the residue (decision 0302): the `signify` skill's `residue(c)` is the symmetric difference between a concept's meaning and what its anchor fires, what the anchor doesn't fire stated in the body and what it fires that the concept lacks entering the body denied. The delivered agents carry the values the workflow's role concepts no longer state: the `conceptual-integrity` objective is named in Brooks's sense; the architect's `rectify` restates every input, the operator's included, in the most precise established name and reads it back where the restatement differs; the lead never writes a change itself; the builder writes the tests its change needs.
+
+  The lead holds management by exception as its own autonomy value (decision 0303): the new `management-by-exception` value, in PRINCE2's sense, runs work within its tolerance, the user story's rough cost, and raises a forecast past it to the level above, never pushing on; no other agent carries it.
+
+- 0fb5973: The concept journal gives the design state alone (decision 0294). `cratylus concepts state` answers only `purpose` (and `competingPurposes` while they compete), the delivered `practice` apart, and per context its `name`, `subject`, `relation`, `competingDescriptions` only when any, `concepts`, each live concept as one line `"<name> ≜ <residue>"`, and `competing`, `[{ "name", "versions" }]`, each version such a line or `"<name> retired"`. It no longer carries the `reading` legend, decisions, `builtFrom`, reasons or recorded effort, and takes no `--history`.
+
+  `concepts overview` is gone, with its prose account, and is refused as an unknown verb; read `state` instead. `concepts design` is unchanged: each context's live concepts with their wording and `builtFrom`, and with `--history` the retired concepts and reasons.
+
+  Decisions record realization only. `concepts decide` takes no `--kind` and marks every new decision `"decisionKind": "realization"`; `concepts classify` is gone and refused as an unknown verb. Standing decisions are read with `concepts decisions` alone. `concepts leakage` inspects concept wordings, context descriptions and examples, never a decision, and takes no `--history`; `decide` never carries `warnings`.
+
+  The effort recorded for past work (`efficiency`) is read with a context's own history: `concepts history --context <name>` without a concept carries it. Entries already recorded, decisions with a kind, classifications and efficiency entries, are still read as recorded; `decisions --history` keeps each decision's `kinds`.
+
+  The journal's explanation and every verb's purpose speak of the design state: a session reads the design state of the delivered practice and of each context its work touches first, then the standing decisions its work needs.
+
+  The capabilities speak of the concepts by their established names (decision 0296). `concepts state` and `concepts design` act on the `conceptual model` (no longer `conceptual design`), and the journal's summary, `when` and the `design` purpose say conceptual model; the version skew summary, and the help of `install`, `uninstall`, `project` and `deploy`, say agent harness. The `cratylus` and `@cratylus/runtime` READMEs follow: agent harness, agent definition, code review, version history, and `design/examples/<context>/<user-story>.md`. Every verb of every capability acts on a concept live in cratylus's own journal.
+
+  The journal's explanation follows the restated concepts (decision 0296): `concepts leakage` and `concepts purpose` act on the `event-sourced conceptual model`, while the capability keeps its name, `concept journal`. The right side of `name ≜ …` is the concept's residue (decision 0302), what the concept means that its name, read in its bounded context, does not invoke and what the name invokes that the concept does not have: the journal's summary, the `state` and `leakage` purposes, the `--wording` description of `define` and `supersede`, the refusal of a missing `--wording` and both READMEs say so; the `--wording` flag and the `wording` field keep their names.
+
+- 09a8b23: The projection log names a tool definition by its established name (decision 0296): projecting now logs each emitted tool definition as `EMIT tool definition <path>`, formerly `EMIT capability interface <path>`.
+- Updated dependencies [0fb5973]
+  - @cratylus/runtime@0.17.0
+
 ## 0.17.0
 
 ### Minor Changes
