@@ -1,0 +1,9 @@
+{
+  "id": "01M53S4S6BGR3Y7DEXX91NV1BP",
+  "at": "2026-10-17T01:55:38.827Z",
+  "by": "lead",
+  "kind": "deprecate",
+  "decisionId": "0302",
+  "entry": "01M53PATRJA2EFN3QX965EBF3X",
+  "reason": "The design-state story has ended; the residue is named in delivered text and the values are carried by the composed agents, which now state them."
+}
