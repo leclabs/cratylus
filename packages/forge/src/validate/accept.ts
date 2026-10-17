@@ -57,7 +57,7 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
  * `ARCHITECTURE.md`, "Where the two disagree, the source is wrong." For a ground
  * enumeration `G` and a source enumeration `S` purporting to realize it:
  *
- *   S ⊂ G  — REFINEMENT. LEGAL. The source under-realizes; the residue is a known
+ *   S ⊂ G  — REFINEMENT. LEGAL. The source under-realizes; the remainder is a known
  *            gap, and a gap is nameable, schedulable, convictable.
  *   S ⊃ G  — DEFECT, ALWAYS. A source member with no ground peer is a concept
  *            admitted with NO HOME IN GROUND: unconvictable by construction,

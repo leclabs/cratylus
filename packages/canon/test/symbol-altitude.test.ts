@@ -1,6 +1,9 @@
-// GATE — one sign, one concept, CORPUS-WIDE. The injectivity leg no per-cell check can reach.
+// GATE — one sign, one concept, within this corpus's one bounded context. The injectivity
+// leg no per-cell check can reach.
 //
-// `signify` declares `α : C ↣ Names` injective and states `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`.
+// `signify` declares `α : C ↣ Names` injective within each bounded context and states
+// `α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`. This gate checks this corpus's own
+// cells, which are all read in one context, so the law binds across every cell.
 // The symbol-probe gate keys every obligation `${cell}␟${symbol}` — PER CELL — so a sign
 // assigned concept A in one cell and concept B in another round-trips green in BOTH while
 // the pair violates injectivity. The blind spot is the KEY, not the rubric: no per-item

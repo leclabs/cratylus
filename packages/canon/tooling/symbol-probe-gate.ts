@@ -259,8 +259,10 @@ export function isLexiconOperator(symbol: string): boolean {
 
 // ── Cross-cell divergence — the injectivity leg the per-cell key cannot see ──────
 //
-// `signify` declares `α : C ↣ Names` INJECTIVE, and states the law: `α(cᵢ) = α(cⱼ) ⇒
-// D(cᵢ) = D(cⱼ)`. One name ⇔ one concept, CORPUS-WIDE. But `ledgerKey` is
+// `signify` declares `α : C ↣ Names` INJECTIVE within each bounded context, and states the
+// law: `α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`. One name ⇔ one concept WITHIN A
+// CONTEXT; this gate checks this corpus's own cells, which are all read in one context,
+// so across them the law binds every cell. But `ledgerKey` is
 // `${cell}␟${symbol}` — per cell — so a sign assigned concept A in one cell and concept B
 // in another raises two independent obligations, each of which round-trips green ALONE
 // while the pair violates injectivity. The blind spot is the KEY, not the rubric: no

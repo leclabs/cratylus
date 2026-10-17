@@ -43,5 +43,6 @@ computes it. A skill canonizes only when every symbol it declares has a recorded
 Nothing in the repository records a readout for the live corpus, so every declared symbol is owed today:
 `symbol-probe-gate.test.ts` pins that the live corpus routes entirely to needs-probe, and convicts a
 mis-signified symbol on fixtures that supply readouts. The same gate detects a symbol assigned different
-concepts by different cells, the injectivity `signify` states; `symbol-altitude.test.ts` holds the recorded
+concepts by different cells, the injectivity within one bounded context `signify` states (the corpus's own
+cells are read in one context); `symbol-altitude.test.ts` holds the recorded
 judgment on each such divergence.

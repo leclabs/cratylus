@@ -101,7 +101,7 @@ residue is ∅ is the ideal**. Every other anchor is an approximation with its s
 is why the residue is recorded rather than explained away.
 
 So an anchor is not canonical because it is elegant, memorable, or preferred by its author. It earns
-canonical status through evidence: it cold-decodes to the intended concept, preserves the required
+canonical status through evidence: a cold decode, reading it in its bounded context, recovers the intended concept, it preserves the required
 distinctions, composes without collision, and stays stable across the models and runtimes for which
 it claims validity.
 

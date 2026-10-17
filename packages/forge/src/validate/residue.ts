@@ -17,7 +17,8 @@
 // DECIDABLE PREDICATE (two shapes, one leg):
 //
 //   SINGLE-LINE (dimension value residue · skill `description`) admissible ⇔
-//       ∅  (empty — the anchor α fully fires the concept, residue=∅),  OR
+//       ∅  (empty — the anchor α, read in its context, invokes the concept and nothing
+//          else, so the workflow's residue is ∅),  OR
 //       a σ* EXPRESSION: a symbol/anchor (shortlex kebab, opt. application `f(args)`),
 //       or the declared value-algebra operators applied over such terms. The admitted
 //       operators are the INJECTED corpus operator lexicon (`policy.residueOperators` /
