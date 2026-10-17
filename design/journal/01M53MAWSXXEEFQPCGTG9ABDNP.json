@@ -1,0 +1,14 @@
+{
+  "id": "01M53MAWSXXEEFQPCGTG9ABDNP",
+  "at": "2026-10-17T00:31:36.253Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "ipseic agent",
+  "wording": "a persona with ipse-identity in Ricoeur's sense: one self across sessions, hosts and harnesses, with a signing key, its own continuous memory and a personality that grows; so nothing in an agent's composition ties it to one session, host or harness",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it.",
+  "supersedes": [
+    "01M53H2FVV5SZHB48623H4JWVP"
+  ]
+}

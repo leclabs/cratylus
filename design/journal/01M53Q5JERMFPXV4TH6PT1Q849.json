@@ -1,0 +1,14 @@
+{
+  "id": "01M53Q5JERMFPXV4TH6PT1Q849",
+  "at": "2026-10-17T01:21:07.544Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "agent launch",
+  "wording": "a session started as any agent definition, with the identity, model and effort it has when dispatched, inside the agent harness, never by an outside wrapper; it shows its name and mark",
+  "builtFrom": [],
+  "reason": "Comparing the readings: the design held that an agent started directly keeps the model and effort it has when dispatched, which the restated concepts had dropped.",
+  "supersedes": [
+    "01M53MAWY19ZW7M6R9JPFZ1WZ0"
+  ]
+}

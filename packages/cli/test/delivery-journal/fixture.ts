@@ -132,7 +132,6 @@ export function query(
 }
 
 export const views = [
-  ['overview', '--context', 'workflow'],
   ['state'],
   ['design', '--context', 'workflow'],
   ['history', 'reservation', '--context', 'workflow'],

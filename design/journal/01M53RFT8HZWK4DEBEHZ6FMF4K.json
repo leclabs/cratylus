@@ -1,0 +1,14 @@
+{
+  "id": "01M53RFT8HZWK4DEBEHZ6FMF4K",
+  "at": "2026-10-17T01:44:11.793Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "user story",
+  "wording": "the architect's, not a product owner's, in the conceptual model's terms, no template or points; adds out of scope, its tailoring, Ship/Show/Ask, rough cost and examples; done when its acceptance criteria hold in merged work",
+  "builtFrom": [],
+  "reason": "Which bounded contexts a story may span follows from the bounded context's and context map's own rules; stated here it was stated twice.",
+  "supersedes": [
+    "01M53P50B39APTGQMCC868N01D"
+  ]
+}

@@ -26,7 +26,7 @@ export const PRACTICES: readonly Practice[] = [
   {
     name: 'intent-based-delegation',
     description:
-      "Build against a design by intent-based delegation: the architect, lead, builder and reviewer, the illustrator and check-writer called in for a story's risk, and the personas kino, nico and mav over the architect.",
+      "Build against a design by intent-based delegation: the architect, lead, builder and reviewer, the illustrator and check-writer called in for a user story's risk, and the personas kino, nico and mav over the architect.",
     agents: [
       'architect',
       'lead',

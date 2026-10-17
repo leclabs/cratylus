@@ -190,7 +190,7 @@ describe('catalog re-cut: the visible examples', () => {
       narrowed.mark.emoji,
     );
     for (const [factor, anchor] of [
-      ['perception-scope', 'work'],
+      ['perception-scope', 'work-product'],
       ['action-scope', 'edit-own-outputs'],
     ] as const) {
       const wider = fixture(
@@ -394,7 +394,7 @@ describe('catalog re-cut: rulings 0084–0085', () => {
     }
   });
 
-  it('0085: reconstitution reads context overviews before detail and readback', () => {
+  it('0085: reconstitution reads the design state before standing decisions and readback', () => {
     const procedure = requireDefined(
       vectorOf(composedRole('architect')).procedure,
       'architect.procedure',

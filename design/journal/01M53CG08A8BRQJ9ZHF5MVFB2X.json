@@ -1,0 +1,9 @@
+{
+  "id": "01M53CG08A8BRQJ9ZHF5MVFB2X",
+  "at": "2026-10-16T22:14:35.018Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0154",
+  "entry": "01M4V9311VD7AG6XT2N84FKM0Y",
+  "reason": "Meaning is recorded only in concepts: check: 'the same locally and in CI with nothing before or after it'; 'It needs only what the repository declares, installed by ordinary package management, and checks nothing else a machine has installed'; 'none starts a harness or an agent or calls a model'; 'how well agents work in a harness is judged in use, never by it' now state it."
+}

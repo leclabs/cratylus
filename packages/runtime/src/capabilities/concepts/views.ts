@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The VIEWS computed from the concept journal: the current design of each
-// bounded context, a concept's history, a context's own history, and the
-// decisions with their status.
+// The VIEWS computed from the concept journal: the design state and the
+// current design of each bounded context, a concept's history, a context's
+// own history, and the decisions with their status.
 // Each is a pure function of the entries in append order: no clock, no
 // randomness, so the same journal answers the same every time.
 //
@@ -30,17 +30,19 @@
 // decision STANDS; a superseded or deprecated one is history. Entries are
 // read as recorded: a decision recorded about a cut is read by its own status
 // alone.
-// Its KIND, stating meaning or constraining realization, is the latest one
-// recorded for it, on the decision itself or by a classification after it;
-// it has none until one is recorded.
+// Its KIND is the latest one recorded for it, on the decision itself or by a
+// classification after it; every decision recorded now is of realization,
+// and earlier entries are read as recorded, a decision of none having none.
 //
 // Past EFFORT: the efficiency entries recorded for cuts, each cut's latest
-// entry of its context holding its figures; history only.
+// entry of its context holding its figures; read with the context's history.
 //
-// WHAT STANDS of a design or a decision is what a view shows unless history is
-// asked for: a design without its retired concepts or the reason each live
-// concept's current version was written, a decision without the decisions it
-// replaced or the kinds recorded for it before the governing one.
+// The DESIGN STATE of a context is its description and its live and competing
+// concepts, each a line `name ≜ residue`; nothing else. WHAT STANDS of a
+// design or a decision is what a view shows unless history is asked for: a
+// design without its retired concepts or the reason each live concept's
+// current version was written, a decision without the decisions it replaced
+// or the kinds recorded for it before the governing one.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
@@ -192,6 +194,36 @@ export function standingDesign<
       name,
       wording,
       builtFrom,
+    })),
+  };
+}
+
+/** The design state of `design`'s context, for a model to read: its subject
+ *  and relation, its competing descriptions only when any, its live concepts
+ *  each as one line `name ≜ residue`, and each concept's competing versions
+ *  as such lines, a retirement among them as `name retired`; nothing else. */
+export function designState({
+  name,
+  subject,
+  relation,
+  competingDescriptions,
+  concepts,
+  competing,
+}: Pick<
+  ContextView,
+  'name' | 'subject' | 'relation' | 'competingDescriptions' | 'competing'
+> & { readonly concepts: readonly Meaning[] }) {
+  return {
+    name,
+    subject,
+    relation,
+    ...(competingDescriptions.length === 0 ? {} : { competingDescriptions }),
+    concepts: concepts.map((c) => `${c.name} ≜ ${c.wording}`),
+    competing: competing.map((c) => ({
+      name: c.name,
+      versions: c.versions.map((v) =>
+        'wording' in v ? `${c.name} ≜ ${v.wording}` : `${c.name} retired`,
+      ),
     })),
   };
 }

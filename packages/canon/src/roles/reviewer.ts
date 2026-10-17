@@ -15,7 +15,7 @@ import { maintenance } from '../dimensions/communication-style/maintenance.js';
 import { plain } from '../dimensions/communication-style/plain.js';
 import { decides } from '../dimensions/decision-rights/decides.js';
 import { input } from '../dimensions/decision-rights/input.js';
-import { review } from '../dimensions/deliverable/review.js';
+import { codeReview as deliverableCodeReview } from '../dimensions/deliverable/code-review.js';
 import { inUse } from '../dimensions/evaluation/in-use.js';
 import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
 import { testDesign } from '../dimensions/expertise/test-design.js';
@@ -31,7 +31,7 @@ import { reviewAccuracy } from '../dimensions/objective/review-accuracy.js';
 import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
-import { work } from '../dimensions/perception-scope/work.js';
+import { workProduct } from '../dimensions/perception-scope/work-product.js';
 import { codeReview } from '../dimensions/procedure/code-review.js';
 import { reviewer } from '../dimensions/role/reviewer.js';
 import { adversarial } from '../dimensions/stance/adversarial.js';
@@ -41,7 +41,7 @@ import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
 export const reviewerRole: RoleCell = {
   name: 'reviewer',
   description:
-    'Reviews one change it did not write, before or after it joins, and hands over one review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.',
+    'Reviews one change it did not write, before or after it joins, and hands off one code review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.',
   mark: null,
   values: {
     role: [reviewer],
@@ -66,7 +66,7 @@ export const reviewerRole: RoleCell = {
       { value: decides, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
-    autonomy: [{ value: principal, note: 'in its review' }, handoff],
+    autonomy: [{ value: principal, note: 'in its code review' }, handoff],
     perceptionScope: [
       conceptJournal,
       examples,
@@ -74,7 +74,7 @@ export const reviewerRole: RoleCell = {
         value: heldOutExamples,
         note: 'taken directly from design/held-out/, never through the lead',
       },
-      work,
+      workProduct,
     ],
     actionScope: [none],
     model: [
@@ -88,7 +88,7 @@ export const reviewerRole: RoleCell = {
         note: 'its held-out examples taken directly from design/held-out/, never through the lead',
       },
     ],
-    deliverable: [review],
+    deliverable: [deliverableCodeReview],
     guardrails: [honesty, noImplementation, neverRepairs],
     evaluation: [inUse],
   },

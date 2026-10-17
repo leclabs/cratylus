@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2J0DG3GQ14GVK6CVEPD2",
+  "at": "2026-10-16T23:34:37.325Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "handover",
+  "reason": "Renamed handoff, the most precise established name for this meaning; the concept continues under that name.",
+  "supersedes": [
+    "01M53CFGD7BKRNN237KNCHNFCG"
+  ]
+}

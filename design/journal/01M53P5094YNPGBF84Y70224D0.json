@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5094YNPGBF84Y70224D0",
+  "at": "2026-10-17T01:03:20.356Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "held-out example",
+  "wording": "withheld from builders by omission alone, kept with the design, used only in code review, its reviewer taking it directly, so a user story shipped with no code review has none; a failure reaches builders as its concept, never its case; once exposed it becomes visible and is replaced cold",
+  "builtFrom": [],
+  "reason": "The design held that a story shipped without code review has no held-out examples, and the restated concept had dropped it.",
+  "supersedes": [
+    "01M53MAVX01P8V3TTDQZRQ3AE3"
+  ]
+}

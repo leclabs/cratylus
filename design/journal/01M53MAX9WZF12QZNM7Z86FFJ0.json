@@ -1,0 +1,12 @@
+{
+  "id": "01M53MAX9WZF12QZNM7Z86FFJ0",
+  "at": "2026-10-17T00:31:36.764Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "approval gate",
+  "reason": "Renamed hold point, the more precise established name; the concept continues under that name.",
+  "supersedes": [
+    "01M53H20C4YAQ5JE84ZQBCGDG7"
+  ]
+}

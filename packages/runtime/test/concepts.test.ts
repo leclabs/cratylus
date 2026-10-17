@@ -346,8 +346,8 @@ describe('the concept journal as a library', () => {
     );
   });
 
-  it('records a decision’s kind on it or by classification, the latest governing', () => {
-    const decide = (id: string, ...kind: string[]) =>
+  it('records every new decision as realization, takes no kind, and reads recorded kinds as history', () => {
+    const decide = (id: string, ...more: string[]) =>
       concepts(
         'decide',
         id,
@@ -363,7 +363,7 @@ describe('the concept journal as a library', () => {
         'C',
         '--status',
         'open',
-        ...kind,
+        ...more,
       ) as { id: string };
     refused(
       [
@@ -382,65 +382,63 @@ describe('the concept journal as a library', () => {
         '--status',
         'open',
         '--kind',
-        'other',
+        'meaning',
       ],
-      /^concepts decide: the kind is 'other'/,
-    );
-    const told = decide('told', '--kind', 'meaning');
-    const untold = decide('untold');
-    refused(
-      ['classify', 'absent', '--kind', 'meaning'],
-      /^concepts classify: /,
-    );
-    refused(['classify', 'untold'], /^concepts classify: give the kind/);
-    refused(
-      ['classify', 'untold', '--kind', 'both'],
-      /^concepts classify: the kind is 'both'/,
+      /^concepts decide: it does not take --kind/,
     );
     refused(
-      ['classify', 'untold', '--kind', 'meaning', '--reason', ' '],
-      /^concepts classify: the reason is empty/,
+      ['classify', 'x', '--kind', 'meaning'],
+      /^concepts: unknown verb 'classify'/,
     );
-    refused(
-      ['classify', 'told', '--kind', 'realization'],
-      /^concepts classify: .*already recorded as meaning; give --reason/,
-    );
-    const first = concepts('classify', 'untold', '--kind', 'realization') as {
-      id: string;
-    };
-    expect(first).toMatchObject({
-      kind: 'classify',
-      decisionId: 'untold',
-      entry: untold.id,
+    const recorded = decide('recorded');
+    expect(recorded).toMatchObject({
+      kind: 'decide',
       decisionKind: 'realization',
     });
-    expect(first).not.toHaveProperty('reason');
-    refused(
-      ['classify', 'untold', '--kind', 'meaning'],
-      /^concepts classify: .*already recorded as realization; give --reason/,
-    );
-    const again = concepts(
-      'classify',
-      told.id,
-      '--kind',
-      'realization',
-      '--reason',
-      'It constrains.',
-    ) as { id: string };
+    // Entries recorded before: a decision of meaning, then its classification.
+    const dir = join(repo, 'design/journal');
+    const write = (id: string, body: object) =>
+      writeFileSync(
+        join(dir, `${id}.json`),
+        JSON.stringify({ id, at: '2026-01-01T00:00:00.000Z', ...body }),
+      );
+    write('01A00000000000000000000001', {
+      kind: 'decide',
+      decisionId: 'told',
+      context: 'booking',
+      title: 'T',
+      situation: 'S',
+      decision: 'D',
+      consequences: 'C',
+      status: 'open',
+      supersedes: null,
+      decisionKind: 'meaning',
+    });
+    write('01A00000000000000000000002', {
+      kind: 'classify',
+      decisionId: 'told',
+      entry: '01A00000000000000000000001',
+      decisionKind: 'realization',
+      reason: 'It constrains.',
+    });
     expect(concepts('decisions', '--history')).toMatchObject({
       decisions: [
         {
           id: 'told',
           kind: 'realization',
           kinds: [
-            { entry: told.id, kind: 'meaning' },
-            { entry: again.id, kind: 'realization', reason: 'It constrains.' },
+            { entry: '01A00000000000000000000001', kind: 'meaning' },
+            {
+              entry: '01A00000000000000000000002',
+              kind: 'realization',
+              reason: 'It constrains.',
+            },
           ],
         },
         {
-          id: 'untold',
+          id: 'recorded',
           kind: 'realization',
-          kinds: [{ entry: first.id, kind: 'realization' }],
+          kinds: [{ entry: recorded.id, kind: 'realization' }],
         },
       ],
     });
@@ -488,7 +486,7 @@ describe('the concept journal as a library', () => {
     });
   });
 
-  it('computes the overview from the journal alone, appending nothing', () => {
+  it('reads the design state from the journal alone, appending nothing', () => {
     concepts(
       'define',
       'hold',
@@ -499,32 +497,60 @@ describe('the concept journal as a library', () => {
       '--reason',
       'First.',
     );
-    concepts('context', 'other', '--subject', 'Other.');
-    const overview = () =>
-      concepts('overview', '--context', 'booking') as {
-        contexts: { context: string; account: string }[];
-      };
-    const before = journal();
-    expect(overview()).toMatchObject({
-      contexts: [{ context: 'booking', subject: 'Booking.' }],
-    });
-    expect(overview().contexts[0]).not.toHaveProperty('workInFlight');
-    expect(overview().contexts[0]?.account).toContain(
-      'Hold means: A seat kept aside.',
+    concepts(
+      'define',
+      'seat',
+      '--context',
+      'booking',
+      '--wording',
+      'A place.',
+      '--reason',
+      'First.',
     );
-    expect(overview().contexts[0]?.account).not.toContain('flight');
+    concepts('retire', 'seat', '--context', 'booking', '--reason', 'Gone.');
+    concepts(
+      'decide',
+      'd',
+      '--context',
+      'booking',
+      '--title',
+      'T',
+      '--situation',
+      'S',
+      '--decision',
+      'D',
+      '--consequences',
+      'C',
+      '--status',
+      'open',
+    );
+    concepts('context', 'other', '--subject', 'Other.');
+    const before = journal();
+    expect(concepts('state', '--context', 'booking')).toEqual({
+      purpose: null,
+      contexts: [
+        {
+          name: 'booking',
+          subject: 'Booking.',
+          relation: '',
+          concepts: ['hold ≜ A seat kept aside.'],
+          competing: [],
+        },
+      ],
+    });
     expect(journal()).toEqual(before);
-    expect(concepts('overview')).toMatchObject({
-      contexts: [{ context: 'booking' }, { context: 'other' }],
+    expect(concepts('state')).toMatchObject({
+      contexts: [{ name: 'booking' }, { name: 'other' }],
     });
     refused(
-      ['overview', '--context', 'absent'],
-      /^concepts overview: the journal has no bounded context 'absent'/,
+      ['state', '--history'],
+      /^concepts state: it does not take --history/,
     );
+    refused(['overview'], /^concepts: unknown verb 'overview'/);
   });
 
   it('records the project’s purpose, changes it only with a reason, and shows it first', () => {
-    expect(Object.keys(concepts('overview') as object)[0]).toBe('purpose');
+    expect(Object.keys(concepts('state') as object)[0]).toBe('purpose');
     expect(concepts('state')).toMatchObject({ purpose: null });
     refused(
       ['purpose', '--statement', 'Seats.', '--reason', 'Why.'],
@@ -541,11 +567,9 @@ describe('the concept journal as a library', () => {
     expect(
       concepts('purpose', '--statement', 'Book and pay.', '--reason', 'Pay.'),
     ).toMatchObject({ kind: 'purpose', supersedes: [first.id] });
-    for (const view of ['overview', 'state']) {
-      const answer = concepts(view) as Record<string, unknown>;
-      expect(Object.keys(answer)[0]).toBe('purpose');
-      expect(answer.purpose).toBe('Book and pay.');
-    }
+    const answer = concepts('state') as Record<string, unknown>;
+    expect(Object.keys(answer)[0]).toBe('purpose');
+    expect(answer.purpose).toBe('Book and pay.');
   });
 
   it('reports purposes recorded differently on merged branches as competing until one settles them', () => {
@@ -565,13 +589,13 @@ describe('the concept journal as a library', () => {
         }),
       );
     }
-    expect(concepts('overview')).toMatchObject({
+    expect(concepts('state')).toMatchObject({
       purpose: null,
       competingPurposes: ['Book seats.', 'Sell seats.'],
     });
     concepts('purpose', '--statement', 'Book seats.', '--reason', 'Settle.');
-    expect(concepts('overview')).toMatchObject({ purpose: 'Book seats.' });
-    expect(concepts('overview')).not.toHaveProperty('competingPurposes');
+    expect(concepts('state')).toMatchObject({ purpose: 'Book seats.' });
+    expect(concepts('state')).not.toHaveProperty('competingPurposes');
   });
 
   it('shows only standing decisions, history when asked, and every example file', () => {
@@ -687,31 +711,10 @@ describe('the concept journal as a library', () => {
     expect(decisions('--history').find((d) => d.id === 'about')?.cut).toBe(
       'stalls',
     );
-    expect(concepts('state')).toMatchObject({
-      contexts: [
-        {
-          decisions: {
-            accepted: [
-              { id: 'about', title: 'about title', kind: null },
-              { id: 'keeper', title: 'keeper title', keeps: ['booking/seats'] },
-              { id: 'new', title: 'new title', kind: null },
-            ],
-            open: [],
-          },
-        },
-      ],
-    });
-    const state = concepts('state', '--history') as {
-      contexts: { decisions: Record<string, { id: string }[]> }[];
-    };
-    expect(state.contexts[0]?.decisions.deprecated?.map((d) => d.id)).toEqual([
-      'rule',
-    ]);
-    expect(state.contexts[0]?.decisions.superseded?.map((d) => d.id)).toEqual([
-      'old',
-    ]);
+    // Standing decisions are read with the decisions reading alone.
+    expect(JSON.stringify(concepts('state'))).not.toContain('title');
 
-    // Every example file present is current, read with or without history.
+    // Every example file present is current.
     mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
     for (const [story, call] of [
       ['seats', 'holdSeat'],
@@ -721,21 +724,18 @@ describe('the concept journal as a library', () => {
         join(repo, 'design/examples/booking', `${story}.md`),
         `1. (hold) Given one, when held, then \`${call}()\` runs.\n`,
       );
-    const files = (...flags: string[]) => {
-      const answer = concepts('leakage', ...flags) as {
-        warnings: { passage: { kind: string; file?: string } }[];
-      };
-      return answer.warnings
+    const answer = concepts('leakage') as {
+      warnings: { passage: { kind: string; file?: string } }[];
+    };
+    expect(
+      answer.warnings
         .filter((w) => w.passage.kind === 'example')
         .map((w) => w.passage.file)
-        .sort();
-    };
-    const all = [
+        .sort(),
+    ).toEqual([
       'design/examples/booking/rows.md',
       'design/examples/booking/seats.md',
-    ];
-    expect(files()).toEqual(all);
-    expect(files('--history')).toEqual(all);
+    ]);
   });
 });
 

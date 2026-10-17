@@ -1,0 +1,9 @@
+{
+  "id": "01M53CG06DGG9VKDS1EZM48ZTQ",
+  "at": "2026-10-16T22:14:34.957Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0220",
+  "entry": "01M4YHKM7HE3N5H5H91ZJQGYNE",
+  "reason": "Meaning is recorded only in concepts: delivered context ('never part of a project's design: shown apart from the project's contexts, still read first by a fresh session, never in the project's context map'). Clause 'decisions are shown by what they say first, their number only as a reference' is a value: packages/runtime/src/capabilities/concepts/dispatch.ts:456,458, the delivered state reading 'each by its title first, then its kind, its id and entry as references'; also dispatch.ts:15 'decisions  the decisions with their status, each by its title first' now state it."
+}

@@ -64,8 +64,8 @@ c ∉ dom(α) ⇒ c ∉ Anchors :
 ¬circ(n, cᵢ) ⇒ evidence about fired(n), ¬ about cᵢ ⟨fired : Names → ℘(D) reads n ALONE⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
-∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩
+residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) } ∪ { d ∈ fired(α(c)) | d ∉ D(c) }
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩ ⟨d ∈ residue(c) ∩ D(c) stated ; d ∈ residue(c) ∧ d ∉ D(c) stated denied⟩
 residue(c) = ∅ ⇒ c enters as α(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 

@@ -1,0 +1,12 @@
+{
+  "id": "01M53H2G5YBATEPFG8E88PWCXQ",
+  "at": "2026-10-16T23:34:35.454Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "agents",
+  "name": "persona drift",
+  "wording": "over a session, acts departing from the profile's stance and communication-style, known by tells: asking what it could answer; handing back or holding open a decision it owns; options without a recommendation; transcribing; descending; prescribing procedure to a delegate; procedure past its objective; never waiting at a gate it doesn't hold, nor settling an owned decision it has the grounds for; checked by the agent every turn, noticed by the operator in use",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names. Named persona drift, the established term, in place of drift.",
+  "supersedes": []
+}

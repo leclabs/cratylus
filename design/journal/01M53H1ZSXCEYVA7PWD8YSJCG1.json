@@ -1,0 +1,14 @@
+{
+  "id": "01M53H1ZSXCEYVA7PWD8YSJCG1",
+  "at": "2026-10-16T23:34:18.685Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "check",
+  "wording": "deterministic; every check runs on every change before it joins, and all must pass; one binding an example binds only what that example fixes, adequate when it rejects the plausible failures the example names; delegates to a capability that defines correctness; never judges an agent's behaviour, which is judged in use",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFG55QF80WQAKZNS2VVB4"
+  ]
+}

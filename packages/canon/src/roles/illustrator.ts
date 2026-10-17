@@ -28,7 +28,7 @@ import { mece } from '../dimensions/stance/mece.js';
 export const illustratorRole: RoleCell = {
   name: 'illustrator',
   description:
-    "Called in for a story's risk: writes its examples cold from its concepts alone.",
+    "Called in for a user story's risk: writes its examples cold from its concepts alone.",
   mark: null,
   values: {
     role: [illustrator],
@@ -55,7 +55,7 @@ export const illustratorRole: RoleCell = {
     ],
     autonomy: [handoff],
     perceptionScope: [
-      { value: conceptJournal, note: "the story's concepts only" },
+      { value: conceptJournal, note: "the user story's concepts only" },
     ],
     actionScope: [writeExamples],
     model: [

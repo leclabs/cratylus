@@ -20,7 +20,7 @@ slots           ≜ exactly one value per named slot(o) ⟨in slot order⟩
 attribute       ≜ no field on A ⟨its values are attributes of the values A holds⟩
 projection      : O → { text, binding }
 text            ≜ rendered into A's Target ⟨\`##\` group(o) · \`###\` o · one line per entry⟩
-binding         ≜ never text ⟨compiled to the harness's tool · dispatch · model-role settings⟩
+binding         ≜ never text ⟨compiled to the agent harness's tool · dispatch · model-role settings⟩
 level           ≜ the enforcement-level factor's values { advisory, firm, fixed } ⟨arity attribute⟩
 default(o)      ≜ o's level @ catalog ⟨∅ ⇒ none applies⟩
 entry(o, v)     ≜ ⟨ v, level, slot ⟨arity slots⟩, note ⟨a qualifier the design states⟩ ⟩

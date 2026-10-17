@@ -1,0 +1,14 @@
+{
+  "id": "01M53H1ZQXRPJ66YP1QG2CMZX1",
+  "at": "2026-10-16T23:34:18.621Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "integration",
+  "wording": "by the project's own conventions (branching, pull requests, who joins, when), which the workflow never names; a change joins only once every check passes and any review due before joining approves it",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFGN7J0AFF0TG198TAEHK"
+  ]
+}

@@ -240,7 +240,9 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       warning.split('\n').find((line) => line.includes('is missing')),
       'never the parts of the story it is not',
     ).not.toContain('slice');
-    expect(warning).toMatch(/in any one of these forms:\n {2}1\. A story\./);
+    expect(warning).toMatch(
+      /in any one of these forms:\n {2}1\. A user story\./,
+    );
     expect(warning).toContain('2. A task with no story');
     expect(warning).toContain('`acceptanceCriteria` (list of strings');
     expect(warning).toContain('`done` (string, required)');

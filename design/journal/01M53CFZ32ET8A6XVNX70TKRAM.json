@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFZ32ET8A6XVNX70TKRAM",
+  "at": "2026-10-16T22:14:33.826Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0100",
+  "entry": "01M4NE8P94JECY1B61VNC8064P",
+  "reason": "Meaning is recorded only in concepts and the delivered values: it is stated by the delivered value's own text (packages/canon/src/dimensions/communication-style/bottom-line-up-front.ts)."
+}

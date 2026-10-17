@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // LEAKAGE, a reading of the concept journal: realization showing through text
-// that should state meaning. A concept's wording, a decision or a visible
-// example that names code, files, commands, flags, identifiers, tools or
-// libraries instead of what must hold.
+// that should state meaning. A concept's wording or a visible example that
+// names code, files, commands, flags, identifiers, tools or libraries instead
+// of what must hold.
 //
 // Detection is lexical, in the manner of requirements smells: each rule below
 // finds the narrowest span that leaks (a tool's name, a command and its
@@ -15,9 +15,8 @@
 // a command, a quotation in code type or a flag that holds it still leaks.
 // An ordinary English word is a leak only used as a command.
 //
-// Leakage warns only where realization replaces meaning: a decision recorded
-// as constraining realization names what it constrains on purpose, and is
-// never inspected; one stating meaning, or of no recorded kind, is.
+// Leakage warns only where realization replaces meaning: a decision records
+// realization, naming what it constrains on purpose, and is never inspected.
 //
 // A wording, a concept's or a context's description, states only what holds
 // now: it is also warned where it cites a decision by its number, recounts its
@@ -35,20 +34,14 @@ import { join, relative, sep } from 'node:path';
 /** Where the visible examples are, relative to the top of the repository. */
 export const EXAMPLES_DIR = 'design/examples';
 
-/** The passage a warning names: a live concept, a decision by its title with
- *  its id as a reference, a visible example by its file (relative to the
- *  repository) and number, or one field of a context's current description. */
+/** The passage a warning names: a live concept, a visible example by its file
+ *  (relative to the repository) and number, or one field of a context's
+ *  current description. */
 export type Passage =
   | {
       readonly kind: 'concept';
       readonly context: string;
       readonly name: string;
-    }
-  | {
-      readonly kind: 'decision';
-      readonly title: string;
-      readonly context: string;
-      readonly id: string;
     }
   | {
       readonly kind: 'example';

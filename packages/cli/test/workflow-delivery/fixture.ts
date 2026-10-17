@@ -15,15 +15,13 @@ export interface Delivered {
   concepts: { name: string; wording: string; builtFrom: string[] }[];
 }
 export interface ContextView {
-  name?: string;
-  context?: string;
+  name: string;
   subject: string;
   relation: string;
-  /** Absent from an overview, which tells each concept only in its account. */
-  concepts?: { name: string; wording: string; builtFrom: string[] }[];
+  /** Each concept whole in the design, one line `name ≜ wording` in the state. */
+  concepts: Delivered['concepts'] | string[];
   delivered?: Pick<Delivered, 'origin' | 'version' | 'context' | 'identity'>;
   readOnly?: boolean;
-  account?: string;
   decisions?: { accepted: unknown[]; open: unknown[] };
   efficiency?: unknown[];
   retired?: unknown[];
@@ -106,7 +104,7 @@ export function assertDelivered(
 ): void {
   expect(context, `${verb} includes the delivered context`).toBeDefined();
   expect(context).toMatchObject({
-    [verb === 'overview' ? 'context' : 'name']: qualified,
+    name: qualified,
     delivered: {
       origin: value.origin,
       version: value.version,
@@ -117,20 +115,14 @@ export function assertDelivered(
     subject: value.subject,
     relation: value.relation,
   });
-  if (verb === 'overview') {
-    for (const c of value.concepts)
-      expect(context!.account).toContain(
-        `${c.name[0]!.toUpperCase()}${c.name.slice(1)} means: ${c.wording}`,
-      );
-    expect(context!.account).toMatch(/delivered/i);
-    expect(context!.account).toMatch(/read.only/i);
-    expect(context!.account).toMatch(/practice this project.s agents work by/);
-    expect(context!.account).toMatch(/not part of this project.s design/);
-    expect(context!.account).not.toMatch(/In the context map/);
-  } else
+  if (verb === 'state')
+    expect(context!.concepts).toEqual(
+      value.concepts.map((c) => `${c.name} ≜ ${c.wording}`),
+    );
+  else
     expect(
-      context!
-        .concepts!.map(({ name, wording, builtFrom }) => ({
+      (context!.concepts as Delivered['concepts'])
+        .map(({ name, wording, builtFrom }) => ({
           name,
           wording,
           builtFrom,
@@ -143,11 +135,13 @@ export function assertDelivered(
     expect(context).not.toHaveProperty('retired');
   }
 }
-/** Expects `view` to give `wording` as its first concept's meaning: in its
- *  concepts, or in its account for an overview, which has no concepts. */
+/** Expects `view` to give `wording` as its first concept's meaning: whole in
+ *  the design, after `≜` on its line in the state. */
 export function expectMeaning(view: ContextView, wording: string): void {
-  if (view.concepts === undefined) expect(view.account).toContain(wording);
-  else expect(view.concepts[0]!.wording).toBe(wording);
+  const [first] = view.concepts;
+  expect(
+    typeof first === 'string' ? first.split(' ≜ ')[1] : first?.wording,
+  ).toBe(wording);
 }
 export function ownSource(h: Host, name = 'workflow'): void {
   // Same identity, a different branch's current meaning; names do not decide ownership.
@@ -174,14 +168,10 @@ export function ownSource(h: Host, name = 'workflow'): void {
   );
 }
 
-export function assertSourceView(
-  answer: ContextView[],
-  verb: string,
-  name: string,
-): void {
+export function assertSourceView(answer: ContextView[], name: string): void {
   expect(answer).toHaveLength(1);
   expect(answer[0]).toMatchObject({
-    [verb === 'overview' ? 'context' : 'name']: name,
+    name,
     subject: 'The local source subject.',
   });
   expect(answer[0]).not.toHaveProperty('delivered');

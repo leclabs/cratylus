@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5HGZSX7ER67G41M7MGXH",
+  "at": "2026-10-17T01:03:38.015Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "brownfield adoption",
+  "wording": "of the workflow: the conceptual model is established from the operator's statement of what the product is for, earlier records, the product and its documents being evidence, never the model, and read back before it is recorded; leads then review the work product against it, and user stories follow from what they find; the earlier record is replaced, never migrated",
+  "builtFrom": [],
+  "reason": "The design held how adoption on a project with existing work proceeds: model from the product's purpose, read back before recording, then the work reviewed against it; the restated concept had dropped all but the evidence rule.",
+  "supersedes": [
+    "01M53MATPA8VN2VGT1SQCTBG5D"
+  ]
+}

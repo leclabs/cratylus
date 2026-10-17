@@ -67,9 +67,10 @@ afterEach(() => {
   repository.dispose();
 });
 
-it('example 8: inspection locates leakage in concepts, decisions and visible examples', () => {
-  // Binds “a concept that names a file location”, “a decision that names a command”,
-  // “an example that requires a named library” and “each ... warning naming its passage”.
+it('example 8: inspection locates leakage in concepts and visible examples, never a decision', () => {
+  // Binds “a concept that names a file location”, “an example that requires a
+  // named library” and “each ... warning naming its passage”; a decision
+  // records realization and is never inspected.
   define('plan', 'The plan is kept in design/journal/.');
   concepts(...decisionArgs);
   const file = 'design/examples/workflow/readiness.md';
@@ -85,7 +86,6 @@ it('example 8: inspection locates leakage in concepts, decisions and visible exa
   };
   for (const [passage, words] of [
     [{ kind: 'concept', context, name: 'plan' }, 'design/journal/'],
-    [{ kind: 'decision', context, id: 'readiness' }, 'pnpm test'],
     [{ kind: 'example', file, number: 1 }, 'zod'],
   ] as const) {
     expect(answer.warnings).toEqual(
@@ -97,6 +97,7 @@ it('example 8: inspection locates leakage in concepts, decisions and visible exa
       ]),
     );
   }
+  expect(answer.warnings.map((w) => w.passage.kind)).not.toContain('decision');
 });
 
 it.each(['define', 'decide'] as const)(
@@ -133,15 +134,16 @@ it.each(['define', 'decide'] as const)(
         ]),
       });
     }
-    expect(answer.warnings).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          words: expect.stringContaining(
-            verb === 'define' ? 'design/journal/' : 'pnpm test',
-          ),
-        }),
-      ]),
-    );
+    // A concept's leak is shown; a decision records realization, never warned.
+    if (verb === 'define')
+      expect(answer.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            words: expect.stringContaining('design/journal/'),
+          }),
+        ]),
+      );
+    else expect(answer).not.toHaveProperty('warnings');
   },
 );
 

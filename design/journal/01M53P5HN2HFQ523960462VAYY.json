@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5HN2HFQ523960462VAYY",
+  "at": "2026-10-17T01:03:38.146Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "binding",
+  "wording": "a profile's form on one agent harness: model and effort via its model role, reach as tool settings, procedure as skills, assignment and deliverable as typed contracts, an assignment that doesn't fit warned of, never refused; only the binding differs across harnesses",
+  "builtFrom": [],
+  "reason": "That an incomplete assignment is warned of and never refused is observable to whoever dispatches, so it is meaning, and the restated concepts had left it only to a decision.",
+  "supersedes": [
+    "01M53MAWVZV6V675Y62TX6X6FA"
+  ]
+}

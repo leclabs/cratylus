@@ -26,7 +26,7 @@ import { correctness } from '../dimensions/objective/correctness.js';
 import { satisfice } from '../dimensions/objective/satisfice.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
 import { ownTask } from '../dimensions/perception-scope/own-task.js';
-import { work } from '../dimensions/perception-scope/work.js';
+import { workProduct } from '../dimensions/perception-scope/work-product.js';
 import { builder } from '../dimensions/role/builder.js';
 import { dry } from '../dimensions/stance/dry.js';
 import { scopeDiscipline } from '../dimensions/stance/scope-discipline.js';
@@ -35,7 +35,7 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 export const builderRole: RoleCell = {
   name: 'builder',
   description:
-    'Receives one task and hands over one change that passes every check.',
+    'Receives one task and hands off one change that passes every check.',
   mark: null,
   values: {
     role: [builder],
@@ -63,8 +63,8 @@ export const builderRole: RoleCell = {
     autonomy: [{ value: humanInTheLoop, note: 'of the lead' }, handoff],
     perceptionScope: [
       ownTask,
-      { value: examples, note: "its story's visible ones" },
-      work,
+      { value: examples, note: "its user story's visible ones" },
+      workProduct,
     ],
     actionScope: [editOwnOutputs, runChecks, commitOwnPaths],
     model: [

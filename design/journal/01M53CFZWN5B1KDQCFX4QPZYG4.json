@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFZWN5B1KDQCFX4QPZYG4",
+  "at": "2026-10-16T22:14:34.645Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0255",
+  "entry": "01M511F9M3KRE8C6638C7PYYB5",
+  "reason": "Meaning is recorded only in concepts: (1)-(2) authority; (3) drift ('The tells concern only decisions the agent owns: waiting at a gate … is never drift') + value notes in packages/canon/src/roles/architect.ts (decisive 'on the decisions it owns'; ordering note 'at a gate the reply ends with the sign-off it waits on'); (4) value packages/canon/src/roles/architect.ts optimize note 'only up to the next gate'; (6) folded into reach ('this reaches only tools, never the agent's own values') now state it."
+}

@@ -26,7 +26,7 @@ import { optimize } from '../dimensions/objective/optimize.js';
 import { testValidity } from '../dimensions/objective/test-validity.js';
 import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
 import { examples } from '../dimensions/perception-scope/examples.js';
-import { work } from '../dimensions/perception-scope/work.js';
+import { workProduct } from '../dimensions/perception-scope/work-product.js';
 import { testFirst } from '../dimensions/procedure/test-first.js';
 import { checkWriter } from '../dimensions/role/check-writer.js';
 import { adversarial } from '../dimensions/stance/adversarial.js';
@@ -35,7 +35,7 @@ import { simplicity } from '../dimensions/stance/simplicity.js';
 export const checkWriterRole: RoleCell = {
   name: 'check-writer',
   description:
-    "Called in for a story's risk: writes the checks binding its examples, each seen failing before the build.",
+    "Called in for a user story's risk: writes the checks binding its examples, each seen failing before the build.",
   mark: null,
   values: {
     role: [checkWriter],
@@ -61,7 +61,7 @@ export const checkWriterRole: RoleCell = {
       { value: input, slot: 'release' },
     ],
     autonomy: [handoff],
-    perceptionScope: [conceptJournal, examples, work],
+    perceptionScope: [conceptJournal, examples, workProduct],
     actionScope: [writeChecks, runChecks, commitOwnPaths],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },

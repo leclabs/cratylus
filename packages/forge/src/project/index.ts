@@ -1047,7 +1047,7 @@ export async function projectPluginSet(
         s.filename,
       );
       files.push({ path, content: s.content });
-      log(`EMIT capability interface ${path}`);
+      log(`EMIT tool definition ${path}`);
     }
   }
   for (const { capability, text } of prose) {

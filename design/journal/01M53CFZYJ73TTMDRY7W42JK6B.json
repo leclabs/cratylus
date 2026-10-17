@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFZYJ73TTMDRY7W42JK6B",
+  "at": "2026-10-16T22:14:34.706Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0257",
+  "entry": "01M511XKHFJ19T8FJJQ137R886",
+  "reason": "Meaning is recorded only in concepts: authority ('on the loop … at a gate whose sign-off the operator has delegated to it … so no out-of-the-loop value exists') now state it."
+}

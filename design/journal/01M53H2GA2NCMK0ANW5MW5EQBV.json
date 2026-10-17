@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2GA2NCMK0ANW5MW5EQBV",
+  "at": "2026-10-16T23:34:35.586Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "host",
+  "wording": "the operator's machine; whatever cratylus didn't place there, the operator's settings included, is the host's",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFK4GXC98BQSE8Q1DPJ7Q"
+  ]
+}

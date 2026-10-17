@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5HAT33RNETSY33JPFDK2",
+  "at": "2026-10-17T01:03:37.818Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "conceptual model",
+  "wording": "its current state only: the purpose, the bounded contexts with their context map, each live concept as name ≜ residue; what work is accepted against",
+  "builtFrom": [],
+  "reason": "Being a projection is the event-sourced conceptual model's relation, stated there once; that decisions are read apart is the decision's; what a concept carries is its residue.",
+  "supersedes": [
+    "01M53MATTDZA55HRZEY03CXA37"
+  ]
+}

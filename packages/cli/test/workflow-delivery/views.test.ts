@@ -25,7 +25,7 @@ beforeEach(() => {
 });
 afterEach(() => h.dispose());
 
-it.each(['design', 'state', 'overview'])(
+it.each(['design', 'state'])(
   'workflow/1 — %s shows the release apart from the project, in a journal-less project without writing',
   (verb) => {
     const answer = views(h, verb);
@@ -39,7 +39,7 @@ it.each(['design', 'state', 'overview'])(
   },
 );
 
-it.each(['design', 'state', 'overview'])(
+it.each(['design', 'state'])(
   'workflow/2 — %s keeps unrelated same-name contexts separate, the release apart from the project',
   (verb) => {
     h.seed();
@@ -56,17 +56,13 @@ it.each(['design', 'state', 'overview'])(
     );
     const before = snapshot(h.cwd);
     const answer = views(h, verb);
-    expect(answer.contexts.map((c) => c.name ?? c.context).sort()).toEqual([
+    expect(answer.contexts.map((c) => c.name).sort()).toEqual([
       'booking',
       'workflow',
     ]);
-    const local = answer.contexts.find(
-      (c) => (c.name ?? c.context) === 'workflow',
-    )!;
+    const local = answer.contexts.find((c) => c.name === 'workflow')!;
     expectMeaning(local, 'A project-only practice.');
-    expect(answer.practice.map((c) => c.name ?? c.context)).toEqual([
-      qualified,
-    ]);
+    expect(answer.practice.map((c) => c.name)).toEqual([qualified]);
     assertDelivered(answer.practice[0], verb);
     expect(snapshot(h.cwd)).toEqual(before);
   },
@@ -81,33 +77,25 @@ it.each(['workflow', 'branch-practice'])(
       .toContain(qualified);
     ownSource(h, name);
     const before = snapshot(h.cwd);
-    for (const verb of ['design', 'state', 'overview']) {
+    for (const verb of ['design', 'state']) {
       const { contexts: answer, practice } = views(h, verb);
       // Held by the project, it is part of its design: no practice apart.
       expect(practice).toEqual([]);
-      assertSourceView(answer, verb, name);
+      assertSourceView(answer, name);
       // Suppression already holds vacuously on a reader that ignores all delivery.
       // Prove the same assertions reject a duplicate and a delivered override.
       const duplicate = {
         ...answer[0]!,
         name: qualified,
-        context: qualified,
         delivered: document,
       };
+      expect(() => assertSourceView([...answer, duplicate], name)).toThrow();
       expect(() =>
-        assertSourceView([...answer, duplicate], verb, name),
-      ).toThrow();
-      expect(() =>
-        assertSourceView([{ ...answer[0]!, delivered: document }], verb, name),
+        assertSourceView([{ ...answer[0]!, delivered: document }], name),
       ).toThrow();
       expect(() =>
         assertSourceView(
-          [
-            verb === 'overview'
-              ? { ...answer[0]!, account: document.concepts[0]!.wording }
-              : { ...answer[0]!, concepts: document.concepts },
-          ],
-          verb,
+          [{ ...answer[0]!, concepts: document.concepts }],
           name,
         ),
       ).toThrow();
@@ -293,7 +281,7 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
 });
 
 it('workflow/10 — the first project context records only itself and retains the delivered view', () => {
-  views(h, 'overview');
+  views(h, 'state');
   h.seed();
   const journal = snapshot(h.cwd);
   expect(Object.keys(journal)).toHaveLength(1);

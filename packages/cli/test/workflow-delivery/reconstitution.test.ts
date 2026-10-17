@@ -19,7 +19,7 @@ afterEach(() => {
   h.dispose();
 });
 
-function wholeBeforeDetail(text: string): void {
+function stateBeforeDecisions(text: string): void {
   const lower = text.toLowerCase();
   const delivered = /(?:delivered[^.\n]*workflow|cratylus:workflow)/i.exec(
     text,
@@ -28,24 +28,28 @@ function wholeBeforeDetail(text: string): void {
     delivered,
     'directs reading the delivered workflow, not remembered instructions alone',
   ).not.toBeNull();
-  const detail = lower.indexOf('detail');
-  expect(detail, 'both overviews precede detail').toBeGreaterThan(
-    delivered!.index,
-  );
-  expect(lower.slice(0, detail)).toMatch(/overview/);
-  expect(lower.slice(0, detail)).toMatch(/(?:touch|project|each context)/);
-  expect(lower.slice(detail)).toMatch(
+  const state = lower.indexOf('design state');
+  expect(state, 'reads the design state').toBeGreaterThanOrEqual(0);
+  const decisions = lower.indexOf('standing decisions');
+  expect(
+    decisions,
+    'the design state of touched contexts and the delivered workflow precede the standing decisions',
+  ).toBeGreaterThan(Math.max(state, delivered!.index));
+  expect(lower.slice(0, decisions)).toMatch(/(?:touch|project|each context)/);
+  expect(lower).not.toMatch(/overview/);
+  expect(lower.slice(decisions)).toMatch(
     /(?:read[^.\n]*back|readback|tell the operator)/,
   );
   expect(lower).toMatch(/current design/);
+  expect(lower).toMatch(/competing versions/);
   expect(lower).toMatch(/open decisions?/);
-  expect(lower).toMatch(/(?:cuts?|stories and tasks) in flight/);
+  expect(lower).toMatch(/stories and tasks in flight/);
   expect(lower).toMatch(
     /before (?:any act|acting)|recorded or changed before the read-back/,
   );
 }
 
-it('workflow/7, workflow/8 — every composed holder reads delivered and touched context overviews before detail and readback', () => {
+it('workflow/7, workflow/8 — every composed holder reads the design state of touched contexts and the delivered workflow, then standing decisions, before readback', () => {
   const agents = join(owned(h), 'agents');
   const holders = readdirSync(agents)
     .filter((name) => name.endsWith('.md'))
@@ -61,7 +65,7 @@ it('workflow/7, workflow/8 — every composed holder reads delivered and touched
   expect(holders.map((holder) => holder.name)).toContain('architect.md');
   for (const holder of holders) {
     expect
-      .soft(() => wholeBeforeDetail(holder.instruction), holder.name)
+      .soft(() => stateBeforeDecisions(holder.instruction), holder.name)
       .not.toThrow();
     expect
       .soft(holder.instruction)
@@ -73,7 +77,7 @@ it.each([
   ['workflow/7', false],
   ['workflow/8', true],
 ] as const)(
-  '%s — omp session-start note requires both overviews before detail and current readback',
+  '%s — omp session-start note requires the design state, then standing decisions, before current readback',
   async (_example, compacted) => {
     running = await load(
       { ...h, extension: join(owned(h), 'extensions/cratylus.ts') },
@@ -98,7 +102,7 @@ it.each([
       note,
       'the actual session-start note, not the agent declaration',
     ).toBeDefined();
-    wholeBeforeDetail(note!);
+    stateBeforeDecisions(note!);
     expect(note).toMatch(/journal/);
     expect(note).toMatch(/version control/);
     expect(note).not.toMatch(/ledger/);

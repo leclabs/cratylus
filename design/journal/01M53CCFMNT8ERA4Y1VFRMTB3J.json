@@ -1,0 +1,9 @@
+{
+  "id": "01M53CCFMNT8ERA4Y1VFRMTB3J",
+  "at": "2026-10-16T22:12:39.701Z",
+  "by": "lead",
+  "kind": "deprecate",
+  "decisionId": "0259",
+  "entry": "01M515CM0GC9APPAQ37JVEQ599",
+  "reason": "About the sign-off-gates story, which ended merged: its bounds are realized as scope notes in the delivered text, and the delivered reviewer text states where held-out examples are taken from. A decision about one story is history once it ends."
+}

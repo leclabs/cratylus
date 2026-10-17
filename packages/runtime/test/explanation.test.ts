@@ -16,6 +16,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
 import { JOURNAL } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
+import { VERSION_SKEW } from '../src/capabilities/version-skew/index.js';
 import { CAPABILITY_SUMMARIES } from '../src/capability.js';
 import {
   type Explanation,
@@ -53,7 +54,6 @@ async function run(
 }
 
 const VERBS = [
-  'overview',
   'state',
   'design',
   'history',
@@ -66,18 +66,16 @@ const VERBS = [
   'retire',
   'decide',
   'accept',
-  'classify',
   'deprecate',
 ];
 
 /** Each verb's parameters, as the realization contract names them. */
 const PARAMETERS: Record<string, string[]> = {
-  overview: ['context'],
-  state: ['context', 'history'],
+  state: ['context'],
   design: ['context', 'history'],
   history: ['concept', 'context'],
   decisions: ['context', 'open', 'history'],
-  leakage: ['context', 'history'],
+  leakage: ['context'],
   purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
@@ -92,10 +90,8 @@ const PARAMETERS: Record<string, string[]> = {
     'consequences',
     'status',
     'supersedes',
-    'kind',
   ],
   accept: ['id', 'reason'],
-  classify: ['id', 'kind', 'reason'],
   deprecate: ['id', 'reason'],
 };
 
@@ -136,14 +132,7 @@ describe('concepts --explain', () => {
         'parameters',
       ]);
       expect(explained.effect).toBe(
-        [
-          'overview',
-          'state',
-          'design',
-          'history',
-          'decisions',
-          'leakage',
-        ].includes(verb)
+        ['state', 'design', 'history', 'decisions', 'leakage'].includes(verb)
           ? 'reads'
           : 'appends',
       );
@@ -164,11 +153,6 @@ describe('concepts --explain', () => {
       type: 'string',
       enum: ['open', 'accepted'],
     });
-    for (const verb of ['decide', 'classify'])
-      expect(byVerb[verb]?.kind?.schema, verb).toEqual({
-        type: 'string',
-        enum: ['meaning', 'realization'],
-      });
     expect(byVerb.decisions?.open?.schema).toEqual({ type: 'boolean' });
     for (const verb of ['define', 'supersede'])
       expect(byVerb[verb]?.['built-from']?.schema).toEqual({
@@ -185,8 +169,7 @@ describe('concepts --explain', () => {
     expect(positional('context')).toEqual(['context']);
     expect(positional('decide')).toEqual(['id']);
     expect(positional('accept')).toEqual(['id']);
-    expect(positional('classify')).toEqual(['id']);
-    for (const verb of ['overview', 'state', 'design', 'decisions', 'leakage'])
+    for (const verb of ['state', 'design', 'decisions', 'leakage'])
       expect(positional(verb), verb).toEqual([]);
   });
 
@@ -211,30 +194,28 @@ describe('concepts --explain', () => {
       .filter((v) => !live.includes(v.concept))
       .map((v) => v.name);
 
-  it('acts on live concepts of cratylus’s own conceptual design', () => {
+  it('acts on live concepts of cratylus’s own conceptual model', () => {
     const concepts = Object.fromEntries(
       explain(JOURNAL).verbs.map((v) => [v.name, v.concept]),
     );
     expect(concepts).toEqual({
-      overview: 'context overview',
-      state: 'conceptual design',
-      design: 'conceptual design',
+      state: 'conceptual model',
+      design: 'conceptual model',
       history: 'concept',
       decisions: 'decision',
-      leakage: 'concept journal',
-      purpose: 'concept journal',
+      leakage: 'event-sourced conceptual model',
+      purpose: 'event-sourced conceptual model',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
       retire: 'retirement',
       decide: 'decision',
       accept: 'decision',
-      classify: 'decision',
       deprecate: 'decision',
     });
-    expect(unanchored(explain(JOURNAL), designAt(repositoryRoot).live)).toEqual(
-      [],
-    );
+    const live = designAt(repositoryRoot).live;
+    expect(unanchored(explain(JOURNAL), live)).toEqual([]);
+    expect(unanchored(explain(VERSION_SKEW), live)).toEqual([]);
   });
 
   it('convicts a verb whose concept the design has retired', () => {
@@ -386,11 +367,11 @@ describe('what the explanation calls required is what the verb refuses without',
 
   /** A full call of each single-use verb, by parameter. */
   const FULL: Record<string, Record<string, string>> = {
-    state: { context: 'booking', history: '' },
+    state: { context: 'booking' },
     design: { context: 'booking' },
     history: { concept: 'slot', context: 'booking' },
     decisions: { context: 'booking', open: '', history: '' },
-    leakage: { context: 'booking', history: '' },
+    leakage: { context: 'booking' },
     define: {
       concept: 'window',
       context: 'booking',
@@ -415,10 +396,8 @@ describe('what the explanation calls required is what the verb refuses without',
       consequences: 'C',
       status: 'open',
       supersedes: 'd1',
-      kind: 'meaning',
     },
     accept: { id: 'd1', reason: 'Agreed.' },
-    classify: { id: 'd1', kind: 'realization', reason: 'It constrains.' },
     deprecate: { id: 'd1', reason: 'Finished.' },
   };
 

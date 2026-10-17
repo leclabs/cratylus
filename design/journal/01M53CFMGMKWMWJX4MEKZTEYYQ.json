@@ -1,0 +1,12 @@
+{
+  "id": "01M53CFMGMKWMWJX4MEKZTEYYQ",
+  "at": "2026-10-16T22:14:22.996Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "delivery",
+  "name": "capability interface",
+  "reason": "Renamed tool definition, the established term for this meaning; the concept continues under that name.",
+  "supersedes": [
+    "01M4W14KNQ3320V20TGZ53DBPC"
+  ]
+}

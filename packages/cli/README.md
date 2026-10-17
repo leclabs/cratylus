@@ -31,7 +31,7 @@ cratylus install
 ```
 
 `cratylus install` puts the bundled corpus's agents and skills on this machine, for Claude
-Code or omp. It needs no project and no config. It looks for a harness by its directory: Claude
+Code or omp. It needs no project and no config. It looks for an agent harness by its directory: Claude
 Code's (`$CLAUDE_CONFIG_DIR` when that is set, else `~/.claude`) and omp's (`~/.omp`). Run it from a directory with no
 `cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
 bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
@@ -53,7 +53,7 @@ asked):
 
 | Decision                                  | Flag                                    | Asked when                                                                       | Where nothing is asked                                   |
 | ----------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Which harness                             | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness                 | none: refused                                            |
+| Which agent harness                       | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness                 | none: refused                                            |
 | Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                  | none: refused, whatever `--yes` says                     |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
@@ -89,8 +89,8 @@ removed, with what no chosen practice still carries.
 
 ### Which model each tier and persona runs on
 
-Which model runs an agent is yours to choose, and it is your harness's own setting, never
-cratylus's (decision 0112). Each agent's declaration names its own model role first, then the tier
+Which model runs an agent is yours to choose, and it is your agent harness's own setting, never
+cratylus's (decision 0112). Each agent's definition names its own model role first, then the tier
 and effort its design gives it: `builder` declares `["@builder", "@frontier:medium"]`, and is never
 rewritten with a model. So two kinds of role decide the model: a tier the agents fall back to
 (`frontier`, `frontier-other-family`, …), and the role named for an agent, which wins over its tier
@@ -111,11 +111,11 @@ binds no model to. Until you bind it, an agent on that tier runs on the session'
 
 ### What it places
 
-Everything install places for you on a harness lives under one root it owns: `~/.cratylus/omp/` (`<home>/.cratylus/omp/` with `--home <home>`). It is an omp extension package:
+Everything install places for you on an agent harness lives under one root it owns: `~/.cratylus/omp/` (`<home>/.cratylus/omp/` with `--home <home>`). It is an omp extension package:
 
 ```text
 ~/.cratylus/omp/
-  agents/<name>.md          the corpus's agent declarations
+  agents/<name>.md          the corpus's agent definitions
   skills/<name>/…           the corpus's skills
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
   extensions/…              the session hooks, and the dispatch isolation where an agent needs it
@@ -127,7 +127,7 @@ Everything install places for you on a harness lives under one root it owns: `~/
   installation.json         what install did outside the root, and the practices installed
 ```
 
-omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over a declaration of the same name.
+omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
 
 Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
 
@@ -163,7 +163,7 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 
 ## Starting a session as an agent
 
-An installed agent starts as the session itself through the harness's own flag:
+An installed agent starts as the session itself through the agent harness's own flag:
 
 ```sh
 omp --agent mav            # start the agent mav
@@ -172,7 +172,7 @@ claude --agent mav         # the same on Claude Code
 ```
 
 Install places no launcher and links no command for it: on omp, `--agent` is cratylus's extension
-(see what install places), and it starts any declaration omp discovers, not only the installed
+(see what install places), and it starts any agent definition omp discovers, not only the installed
 agents. An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed
 for that agent, and, when asked, a command per agent in `~/.local/bin` linked to the launcher.
@@ -187,7 +187,7 @@ removes them too.
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
 a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
 subagent's, and it carries no color. Where the host's status line hides it, `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. What
-that takes differs by harness, and the host's own configuration is only ever added to. `--dry-run`
+that takes differs by agent harness, and the host's own configuration is only ever added to. `--dry-run`
 says what would be set and writes nothing.
 
 **On Claude Code** install places a badge for each agent it installs. The status line is one
@@ -205,7 +205,7 @@ worker prints the host's output and no badge. `claude -p` runs no status line at
 **On omp** the badge is the status cratylus's extension sets for a session started with
 `omp --agent` (the section on starting a session as an agent), so install places no badge of its
 own, and makes room for it wherever it places that extension, whether or not the corpus delivers any
-agent: any session may be started as any declaration omp discovers. An extension's status shows
+agent: any session may be started as any agent definition omp discovers. An extension's status shows
 inside the status line only where the host's layout lists omp's `status` segment, and omp reads a
 segment list (`statusLine.leftSegments`) only under `statusLine.preset: custom`. Under any other
 preset, the default one included, the list is ignored and the badge renders on a row beneath the
@@ -240,7 +240,7 @@ so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 ## Where Claude Code and omp differ
 
-`cratylus` installs for two harnesses, Claude Code (`--harness claude`) and omp
+`cratylus` installs for two agent harnesses, Claude Code (`--harness claude`) and omp
 (`--harness omp`). Each receives every shipped cell at the highest fidelity it offers, and degrades
 and warns where it falls short; they are not the same, and this is what a user meets:
 
@@ -257,7 +257,7 @@ and warns where it falls short; they are not the same, and this is what a user m
   instead of printed, and the agent loads it with the Skill tool on demand. Install warns once per
   such skill and weighs it against the home it installs under, since the path is part of the
   output. An `omp --agent` session starts with the full instructions of the skills its
-  declaration's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
+  agent definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
   through omp's own skill discovery, as any omp session does.
 - **No guards.** Nothing judges an agent's acts or replies: an agent's behaviour is evaluated in
   real use (decision 0142). A dispatch or launch whose assignment is incomplete is shown its typed
@@ -285,7 +285,7 @@ and warns where it falls short; they are not the same, and this is what a user m
 
 ## The host's model routing on omp
 
-An agent's declaration names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in `~/.omp/agent/config.yml` wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The declaration is never rewritten with a model: a model install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in that file (decision 0112), which upgrade and uninstall keep. A role you already bind is never asked about, and a choice for it is said to be left as you set it.
+An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in `~/.omp/agent/config.yml` wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in that file (decision 0112), which upgrade and uninstall keep. A role you already bind is never asked about, and a choice for it is said to be left as you set it.
 
 ## The host runtime config
 
@@ -295,7 +295,7 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report` reports both at any time, and so does the `version_skew` tool in omp, which the installation itself carries: it is offered whatever command the capabilities reach, and reports the installation's recorded version beside the command's own `--version`. The root's `installation.json` names the version that projected it too. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
-omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks included. Those know a dispatch by what it carries, the agent and task of each item, never by what the harness calls its dispatch tool.
+omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks included. Those know a dispatch by what it carries, the agent and task of each item, never by what the agent harness calls its dispatch tool.
 
 ## Taking it away again
 
@@ -324,7 +324,7 @@ Every command and every capability verb answers `--help`; this reference is that
 
 ### `cratylus install`
 
-Install the bundled corpus into a harness on this machine, asking what you have not said.
+Install the bundled corpus into an agent harness on this machine, asking what you have not said.
 
 ```sh
 cratylus install [options]
@@ -332,7 +332,7 @@ cratylus install [options]
 
 | Flag                      | What it does                                                                                                                                                                                                                                   |
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`        | The harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                   |
+| `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                             |
 | `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                               |
 | `--all`                   | Install every practice, without asking                                                                                                                                                                                                         |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked) |
@@ -344,7 +344,7 @@ cratylus install [options]
 
 ### `cratylus uninstall`
 
-Remove from a harness what install placed there — its owned root and every reference into it — and leave what the host placed or changed.
+Remove from an agent harness what install placed there — its owned root and every reference into it — and leave what the host placed or changed.
 
 ```sh
 cratylus uninstall [options]
@@ -352,7 +352,7 @@ cratylus uninstall [options]
 
 | Flag               | What it does                                                                |
 | ------------------ | --------------------------------------------------------------------------- |
-| `--harness <name>` | The harness to remove from (required) (choices: "omp")                      |
+| `--harness <name>` | The agent harness to remove from (required) (choices: "omp")                |
 | `--dry-run`        | Print what would be removed and left, writing nothing                       |
 | `--verbose`        | Also list every item removed                                                |
 | `--home <dir>`     | The home directory the installation is under (default: your home directory) |
@@ -368,33 +368,25 @@ cratylus concepts supersede 'reservation expiry' --context booking --wording '�
 
 ### `cratylus concepts`
 
-The concept journal. Its verbs are `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify` and `deprecate`.
+The concept journal. Its verbs are `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept` and `deprecate`.
 
 What the journal and each verb are for, when to reach for each, the concept each acts on, whether it reads or appends, and what each parameter means are stated once, by the runtime, and not repeated here: `cratylus concepts --help` and `cratylus concepts <verb> --help` print them, and `cratylus concepts --explain` and `cratylus concepts <verb> --explain` print the same explanation as JSON (its name `concept journal`, purpose, when and verbs; per verb its concept, purpose, when, `reads` or `appends`, and each parameter with its description, whether it is required, its JSON Schema, and `positional` for the word it acts on). The entries below name only each verb's usage and the flags it takes.
 
-The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate`) each append one entry and print it as JSON; the queries (`overview`, `state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal and example files. A refusal is one line on stderr, exit 1, and appends nothing.
+The concept journal is `design/journal` at the top of the git repository you run it in: one file per entry, named by its id, only ever appended, so two branches that both appended merge as the union of their files. The appending verbs (`purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate`) each append one entry and print it as JSON; the queries (`state`, `design`, `history`, `decisions`, `leakage`) append nothing and print JSON, the same every time for the same journal and example files. A refusal is one line on stderr, exit 1, and appends nothing.
 
-**The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `overview` and `state` show it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
+**The project's purpose.** `purpose --statement '…'` records what the project is for, in plain words; `state` shows it first, as `purpose` (`null` until one is recorded), before any context. It changes the way a context's description does: `purpose --statement '…' --reason '…'` records a new statement superseding the current one, and a first recording with a reason, or a second without one, is refused. Purposes recorded differently on two branches compete (`purpose` is `null`, each listed under `competingPurposes`) until a later `purpose` with `--reason` settles them.
 
-**What stands.** A decision stands while it is open or accepted, until a later decision supersedes it or a later entry deprecates it: `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. Every example file present (`design/examples/<context>/<story>.md`) is current. Entries recorded by earlier workflows are read as recorded: a decision whose entry names a cut or example files it keeps is read by its own status alone, and the `efficiency` entries recorded for cuts are past effort. Every query but `history` shows only what stands: `design` and `state` give each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`; `state` lists them by `title`, `kind`, `id` and `entry` (their whole text is `decisions`'); `overview` tells only standing open ones; and `leakage` reads only standing decisions, and every example. `--history` on `design`, `state`, `decisions` and `leakage` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`), each decision's `supersedes`, `kinds` and recorded `cut`, and on `state` the past effort recorded, as `efficiency`. Every view shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references; `overview`'s account tells an open one as `“<title>” (decision <id>)`.
+**The design state.** `state` answers the design state alone, for a model to read: `purpose` (and `competingPurposes` while they compete), the delivered `practice` apart, and `contexts`, each with its `name`, `subject`, `relation`, `competingDescriptions` only when any, `concepts`, each live concept as one line `"<name> ≜ <residue>"`, and `competing`, `[{ "name", "versions" }]`, each version such a line or `"<name> retired"`. It carries no decision, no `builtFrom`, no reason, no retired concept and no history, and takes no `--history`.
 
-`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the standing decisions and the numbered examples in `design/examples` of the same repository; each warning names its passage (a concept by context and name, a decision by its title, context and id, an example by file and number, a context's description by context and `field`, `subject` or `relation`), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A decision whose kind is `realization` names what it constrains on purpose and is never inspected; one of kind `meaning`, or of no recorded kind, is (decision 0058). A decision's kind is given by `decide --kind` or recorded later by `classify`, an entry of its own that leaves the decision's record unchanged; the latest recorded governs, and a decision that already has one is classified again only with `--reason`. `decisions` reports each decision's governing `kind` (`null` where none is recorded) and, with `--history`, its `kinds`, every one recorded in order, each with the `entry` that recorded it and its `reason` where given. A live concept's wording and a context's current subject and relation, which state only what holds now, are also warned where they cite a decision by its number (rule `cites a decision`), recount their history, what changed or what something used to be or no longer is (`recounts history`), or only extend the version they replace, keeping its wording whole and adding to it (`only extends the version it replaces`, the words being what was added). When what `context`, `define`, `supersede` or `decide` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+**What stands.** A decision records realization: `decide` marks every new decision `"decisionKind": "realization"` and takes no kind; what the design means is recorded only as a concept's version, its reason being its why. A decision stands while it is open or accepted, until a later decision supersedes it or a later entry deprecates it: `deprecate <id> --reason` records that a standing decision no longer applies and has no replacement. Standing decisions are read with `decisions` alone. Every example file present (`design/examples/<context>/<user-story>.md`) is current. Entries recorded by earlier workflows are read as recorded: a decision recorded with a kind of `meaning`, a classification of a decision's kind, a decision whose entry names a cut or example files it keeps, each by its own status alone, and the `efficiency` entries recorded for cuts, the past effort `history --context <name>` shows as `efficiency`. `design` gives each live concept by its meaning (`name`, `wording`, `builtFrom`) and no retired concept; `decisions` lists only standing decisions, each with its governing `kind` and none of `supersedes`, `supersededBy` or `kinds`. `--history` on `design` and `decisions` adds the history: each live concept's `reason`, the `retired` concepts, every superseded decision with its `supersededBy`, every deprecated one with its `deprecation` (the deprecating `entry` and its `reason`), and each decision's `supersedes`, `kinds` (every kind recorded, in order, each with the `entry` that recorded it and its `reason` where given) and recorded `cut`. `decisions` shows a decision by what it says first: its `title` leads, and its `id` and `entry` follow as references.
 
-What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `classify` and `--supersedes` take a decision's id, or its entry where the id is shared.
+`leakage` reports implementation leakage as warnings, `{ "warnings": [...] }`, over the live concepts' wordings, the context descriptions and the numbered examples in `design/examples` of the same repository, never a decision; each warning names its passage (a concept by context and name, an example by file and number, a context's description by context and `field`, `subject` or `relation`), the words that leak and the rule they break. A context's own words never leak: the words of its concepts' names, and each word its current subject names, though only as that plain word on its own; a command, a code span or a flag that holds the word still leaks. A live concept's residue and a context's current subject and relation, which state only what holds now, are also warned where they cite a decision by its number (rule `cites a decision`), recount their history, what changed or what something used to be or no longer is (`recounts history`), or only extend the version they replace, keeping its wording whole and adding to it (`only extends the version it replaces`, the words being what was added). When what `context`, `define` or `supersede` records leaks, it is recorded all the same and the printed entry also carries its `warnings`; the journal's entry stores none. Nothing is ever refused for leakage.
+
+What merged branches each recorded is kept, never chosen between. A concept superseded differently on two branches is reported as competing until a later `supersede` supersedes every version; superseding a retired concept brings it back, and its history keeps the retirement. A context's subject and relation change the way a concept does: `context` with `--reason` records a new description superseding the current one, and `history --context` without a concept lists every description the context has had. A context recorded on two branches with the same subject and relation is one context; with a different one its description is competing (`subject` and `relation` are `null`, each description listed under `competingDescriptions`) until a later `context` with `--reason` settles it. A decision is its entry, reported as `entry`: two branches may each record a decision under one id, and both are kept and listed; `accept`, `deprecate` and `--supersedes` take a decision's id, or its entry where the id is shared.
 
 Nothing under `design/journal` is edited, moved or deleted: the journal is append-only because its verbs only append, and none edits or deletes an earlier entry.
 
-**Delivered contexts.** A project's design and context map are its own contexts only: `contexts` in `overview`, `state` and `design` lists the journal's own and nothing else. Each context the installation `cratylus` reaches delivers (the one `$CRATYLUS_INSTALLATION` names, else the one installation under `~/.cratylus/`; none when there is none) is the practice the project's agents work by, shown apart, under `practice` — `{ "about", "contexts" }`, `about` saying what it is — placed before `contexts` so a fresh session reads it first: the workflow as `cratylus:workflow`, its origin and context, carrying `"delivered": { "origin", "version", "context", "identity" }` and `"readOnly": true`, with no decisions, retired concepts or recorded effort; its overview's account says it is the practice, not part of the project's design, and tells its relation in cratylus's context map, never the project's. `--context cratylus:workflow` reads it alone, under `practice`, with `contexts` empty. Its `history` has no versions, only its current meaning as `current`, and `decisions --context cratylus:workflow` lists none. Where the journal holds the context itself — a `context` entry whose id is the delivered identity, as cratylus's own journal does, on the branch you are on — the journal's own is one of its `contexts`, part of its design, and no `practice` is shown for it. Recording into a delivered context (`context`, `define`, `supersede`, `retire` or `decide` naming `cratylus:workflow`) is refused as read-only and appends nothing; a context of your own named `workflow` is yours, separate from it. Reading never creates the journal.
-
-#### `cratylus concepts overview`
-
-```sh
-cratylus concepts overview [options]
-```
-
-| Flag                |
-| ------------------- |
-| `--context <value>` |
+**Delivered contexts.** A project's design and context map are its own contexts only: `contexts` in `state` and `design` lists the journal's own and nothing else. Each context the installation `cratylus` reaches delivers (the one `$CRATYLUS_INSTALLATION` names, else the one installation under `~/.cratylus/`; none when there is none) is the practice the project's agents work by, shown apart, under `practice` — `{ "about", "contexts" }`, `about` saying what it is — placed before `contexts` so a fresh session reads it first: the workflow as `cratylus:workflow`, its origin and context, carrying `"delivered": { "origin", "version", "context", "identity" }` and `"readOnly": true`, with no decisions, retired concepts or recorded effort; its relation is told in cratylus's context map, never the project's. `--context cratylus:workflow` reads it alone, under `practice`, with `contexts` empty. Its `history` has no versions, only its current meaning as `current`, and `decisions --context cratylus:workflow` lists none. Where the journal holds the context itself — a `context` entry whose id is the delivered identity, as cratylus's own journal does, on the branch you are on — the journal's own is one of its `contexts`, part of its design, and no `practice` is shown for it. Recording into a delivered context (`context`, `define`, `supersede`, `retire` or `decide` naming `cratylus:workflow`) is refused as read-only and appends nothing; a context of your own named `workflow` is yours, separate from it. Reading never creates the journal.
 
 #### `cratylus concepts state`
 
@@ -405,7 +397,6 @@ cratylus concepts state [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
-| `--history`         |
 
 #### `cratylus concepts design`
 
@@ -449,7 +440,6 @@ cratylus concepts leakage [options]
 | Flag                |
 | ------------------- |
 | `--context <value>` |
-| `--history`         |
 
 #### `cratylus concepts purpose`
 
@@ -526,7 +516,6 @@ cratylus concepts decide [options] <id>
 | `--consequences <value>` |
 | `--status <value>`       |
 | `--supersedes <value>`   |
-| `--kind <value>`         |
 
 #### `cratylus concepts accept`
 
@@ -536,17 +525,6 @@ cratylus concepts accept [options] <id>
 
 | Flag               |
 | ------------------ |
-| `--reason <value>` |
-
-#### `cratylus concepts classify`
-
-```sh
-cratylus concepts classify [options] <id>
-```
-
-| Flag               |
-| ------------------ |
-| `--kind <value>`   |
 | `--reason <value>` |
 
 #### `cratylus concepts deprecate`
@@ -578,7 +556,7 @@ These write and render a corpus. A consumer who only installs one needs none of 
 ```sh
 cratylus init                 # write a cratylus.config.ts naming a corpus
 cratylus project              # render the resolved corpus into .cratylus/<harness>
-cratylus deploy               # place a render tree into a harness
+cratylus deploy               # place a render tree into an agent harness
 cratylus deploy --check       # is the deployed tree still what the corpus says?
 cratylus explain <filter>     # where each resolved value came from
 ```
@@ -625,7 +603,7 @@ cratylus compose [options]
 
 ### `cratylus project`
 
-Render the plugins your config extends into a tree of harness files.
+Render the plugins your config extends into a tree of an agent harness's files.
 
 ```sh
 cratylus project [options]
@@ -635,7 +613,7 @@ cratylus project [options]
 | ------------------ | --------------------------------------------------------------------------------------------- |
 | `--config <path>`  | The config file to load (default: cratylus.config.ts in the current directory)                |
 | `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
-| `--harness <name>` | The harness to render for (choices: "claude", "omp", default: "claude")                       |
+| `--harness <name>` | The agent harness to render for (choices: "claude", "omp", default: "claude")                 |
 | `--verbose`        | Also print one line per file rendered or pruned                                               |
 
 ### `cratylus optimize`
@@ -660,7 +638,7 @@ cratylus optimize [options] <source>
 
 ### `cratylus deploy`
 
-Place a rendered tree's agents, skills and hooks into a harness.
+Place a rendered tree's agents, skills and hooks into an agent harness.
 
 ```sh
 cratylus deploy [options]
@@ -675,7 +653,7 @@ cratylus deploy [options]
 | `--assets <decls>`   | Files to ship with a skill, as <skill>=<file>[,…]; one that is absent is a warning                                                                                                                                                                                                 |
 | `--kind <kind>`      | What to place (choices: "agent", "skill", "hooks", "all", default: "all")                                                                                                                                                                                                          |
 | `--scope <scope>`    | Where to place it: your home, or a project (choices: "user", "project", default: "user")                                                                                                                                                                                           |
-| `--harness <name>`   | The harness to place into (choices: "claude", "omp", default: "claude")                                                                                                                                                                                                            |
+| `--harness <name>`   | The agent harness to place into (choices: "claude", "omp", default: "claude")                                                                                                                                                                                                      |
 | `--home <dir>`       | The directory the harness's home is under, for --scope user (default: your home directory)                                                                                                                                                                                         |
 | `--project <dir>`    | The project root, for --scope project (default: the current directory)                                                                                                                                                                                                             |
 | `--config <path>`    | The config file the corpus's lifecycle events are read from (default: cratylus.config.ts in the project root)                                                                                                                                                                      |

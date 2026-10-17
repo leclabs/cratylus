@@ -1,0 +1,18 @@
+{
+  "id": "01M53CFKWMDM3T4DRTNZN55B84",
+  "at": "2026-10-16T22:14:22.356Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "version skew",
+  "wording": "The version that projected a harness's files differing from the version of the cratylus command they call. Reported at every start of the harness, naming both versions and the remedy, installing again with the cratylus in use; never resolved by choosing between builds.",
+  "builtFrom": [
+    "install",
+    "runtime",
+    "projection"
+  ],
+  "reason": "The operator: the design state a session reads was long human prose restating facts across concepts and carrying decisions with their situations; its reader is a model, so the state is the design alone, each concept as its established name and residue, and decisions and their reasons are history. Restated as its established name and residue, standalone, each fact in the one concept it belongs to, with the meaning standing decisions carried folded in.",
+  "supersedes": [
+    "01M4VSQ8J49ET32T0E47TT6W6V"
+  ]
+}

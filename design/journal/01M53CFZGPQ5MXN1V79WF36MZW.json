@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFZGPQ5MXN1V79WF36MZW",
+  "at": "2026-10-16T22:14:34.262Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0187",
+  "entry": "01M4VQN1T74NSD819G41JGA1ZF",
+  "reason": "Meaning is recorded only in concepts: workflow/architect (principal, owns the conceptual design; explores then converges); agents/drift (stance every turn, tells); value packages/canon/src/roles/architect.ts (bottomLineUpFront slot 'ordering', level 'fixed'); value packages/canon/src/dimensions/evaluation/in-use.ts ('its behaviour is evaluated in real use, by the operator working with it') now state it."
+}

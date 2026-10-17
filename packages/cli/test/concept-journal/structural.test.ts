@@ -324,7 +324,7 @@ describe('concept journal structural examples', () => {
       ['design', '--history', '--context', 'workflow'],
       ['history', 'reservation', '--context', 'workflow'],
       ['decisions', '--history', '--context', 'workflow', '--open'],
-      ['state', '--history', '--context', 'workflow'],
+      ['state', '--context', 'workflow'],
     ];
     const answers = questions.map((args) => {
       const first = runConcepts(root, ...args);
@@ -384,17 +384,19 @@ describe('concept journal structural examples', () => {
     expect(answers[2]).toMatchObject({
       decisions: [expectedDecision('refund')],
     });
-    expect(answers[3]).toMatchObject({
+    // The design state: each live concept as one line, no decision.
+    expect(answers[3]).toEqual({
+      purpose: null,
       contexts: [
         {
-          ...design.contexts[0],
-          // The state names each standing decision; its text is the decisions reading's.
-          decisions: {
-            accepted: [
-              { id: 'deposit-revised', title: 'Choice deposit-revised' },
-            ],
-            open: [{ id: 'refund', title: 'Choice refund' }],
-          },
+          name: 'workflow',
+          subject: 'The workflow subject.',
+          relation: '',
+          concepts: [
+            `reservation ≜ ${fifteen}`,
+            'confirmation ≜ A confirmation acknowledges a reservation.',
+          ],
+          competing: [],
         },
       ],
     });

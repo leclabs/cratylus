@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFX7SJR3BC76Z8RHA6G7R",
+  "at": "2026-10-16T22:14:31.929Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0167",
+  "entry": "01M4VQN0M9G1XY9CSJ02BPCSRH",
+  "reason": "Meaning is recorded only in concepts: roles (and agents/role) now state it."
+}

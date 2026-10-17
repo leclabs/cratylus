@@ -7,10 +7,10 @@ import {
   fixture,
   git,
   meanings,
-  ordered,
-  overview,
+  open,
   relation,
   seed,
+  state,
   subject,
 } from './fixture.js';
 let f: OverviewFixture;
@@ -19,44 +19,24 @@ beforeEach(() => {
 });
 afterEach(() => f.dispose());
 
-it('workflow/2 — subject and relation first, whole before parts, then open decisions', () => {
+it('workflow/2 — the design state gives subject and relation, then each live concept as a line', () => {
   seed(f);
-  const answer = overview(f);
-  expect(answer, 'recorded subject and context-map relation').toMatchObject({
-    context: 'film-production',
+  const answer = state(f);
+  expect(answer, 'recorded subject, relation and concepts alone').toEqual({
+    name: 'film-production',
     subject,
     relation,
-  });
-  expect(answer, 'each concept told once, in the account').not.toHaveProperty(
-    'concepts',
-  );
-  ordered(
-    answer.account,
-    [
-      'production means',
-      meanings.production,
-      'shoot means',
-      meanings.shoot,
-      'take means',
-      meanings.take,
+    concepts: [
+      `take ≜ ${meanings.take}`,
+      `shoot ≜ ${meanings.shoot}`,
+      `production ≜ ${meanings.production}`,
     ],
-    'production, shoot and take in that order',
-  );
-  expect(answer.openDecisions, 'then its open decisions').toEqual([
-    { id: 'colour', title: 'Choose the colour treatment' },
-  ]);
-  expect(answer, 'the design alone, no work').not.toHaveProperty(
-    'workInFlight',
-  );
-  // Prose ordering, fidelity and subject/relation are judged by workflow/22;
-  // requiring verbatim source wording here would reject valid plain prose.
-  expect(
-    answer.account.trim(),
-    'plain prose account accompanies recorded state',
-  ).not.toBe('');
+    competing: [],
+  });
+  expect(open(f), 'its decisions are read apart').toEqual(['colour']);
 });
 
-it('workflow/3 — next overview reflects supersession and acceptance without rewriting an account', () => {
+it('workflow/3 — the next design state reflects supersession, and acceptance, without rewriting', () => {
   seed(f);
   concept(
     f,
@@ -74,23 +54,19 @@ it('workflow/3 — next overview reflects supersession and acceptance without re
     'The creative chose monochrome.',
   );
   const journal = snapshot(f.root);
-  const after = overview(f);
-  expect(after.account, 'reflects the new meaning').toContain(
-    'One continuous performance, including its sound.',
+  const after = state(f);
+  expect(after.concepts, 'reflects the new meaning').toContain(
+    'take ≜ One continuous performance, including its sound.',
   );
   expect(
-    after.account,
+    after.concepts.join('\n'),
     'never repeats superseded meaning as current',
   ).not.toContain(meanings.take);
-  expect(after.openDecisions, 'never settled decision as open').toEqual([]);
-  expect(
-    snapshot(f.root),
-    'computed without rewriting an overview or journal',
-  ).toEqual(journal);
-  expect(
-    overview(f),
-    'a subsequent query computes the same current account',
-  ).toEqual(after);
+  expect(open(f), 'never settled decision as open').toEqual([]);
+  expect(snapshot(f.root), 'computed without rewriting the journal').toEqual(
+    journal,
+  );
+  expect(state(f), 'a subsequent query computes the same state').toEqual(after);
 });
 
 it('workflow/8 — a branch journal stays local and lands with merge', () => {
@@ -114,8 +90,8 @@ it('workflow/8 — a branch journal stays local and lands with merge', () => {
     '--reason',
     'Film creative acceptance.',
   );
-  const feature = overview(f);
-  expect(feature.openDecisions, 'feature shows acceptance').toEqual([]);
+  const feature = state(f);
+  expect(open(f), 'feature shows acceptance').toEqual([]);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Film records');
   git(f.root, 'switch', 'journal');
@@ -123,14 +99,13 @@ it('workflow/8 — a branch journal stays local and lands with merge', () => {
     snapshot(f.root),
     'the shared checkout does not claim the feature journal',
   ).toEqual(common);
-  const shared = overview(f);
-  expect(
-    shared.openDecisions.map((d) => d.id),
-    'the shared checkout does not claim the acceptance',
-  ).toEqual(['colour']);
-  expect(shared.account).toContain(meanings.take);
+  expect(open(f), 'the shared checkout does not claim the acceptance').toEqual([
+    'colour',
+  ]);
+  expect(state(f).concepts).toContain(`take ≜ ${meanings.take}`);
   git(f.root, 'merge', '--no-edit', 'feature/film');
-  expect(overview(f), 'entries land with the work').toEqual(feature);
+  expect(state(f), 'entries land with the work').toEqual(feature);
+  expect(open(f)).toEqual([]);
 });
 
 it('workflow/16 — feature concepts, decisions and acceptances integrate in an ordinary checkout without a worktree', () => {
@@ -191,25 +166,4 @@ it('workflow/16 — feature concepts, decisions and acceptances integrate in an 
       : actual,
     'feature concept lands with its merge',
   ).toContain('review');
-});
-
-it('workflow/24 — roots retain recorded order and shared review appears only once after both', () => {
-  command(f, 'concepts', 'context', 'film-production', '--subject', subject);
-  concept(f, 'publication', 'Making the reviewed film public.', ['review']);
-  concept(f, 'production', 'Making the film.', ['review']);
-  concept(f, 'review', 'Assessing the film.');
-  const answer = overview(f);
-  ordered(
-    answer.account,
-    ['publication means', 'production means', 'review means'],
-    'publication and production first in recorded order, then review',
-  );
-  expect(answer.account.split('Review means').length, 'review told once').toBe(
-    2,
-  );
-  ordered(
-    answer.account,
-    ['publication', 'production', 'review'],
-    'never sorts roots by name or places review before them',
-  );
 });

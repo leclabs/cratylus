@@ -165,7 +165,7 @@ describe('the architect', () => {
     expect(deliverable && anchorOf(deliverable.value)).toBe('read-back');
   });
 
-  it('carries every drift tell in the persistence protocol, as every agent does', () => {
+  it('carries every persona-drift tell in the persistence protocol, as every agent does', () => {
     for (const tell of [
       'answerable question',
       'hand-back',
@@ -178,7 +178,7 @@ describe('the architect', () => {
     ])
       expect(architect.persistence).toContain(`**${tell}**`);
     expect(architect.persistence).toContain(
-      'The tells concern only decisions the agent owns: waiting at a gate for a sign-off it does not hold is never drift.',
+      'The tells concern only decisions the agent owns: waiting at a hold point for a sign-off it does not hold is never persona drift.',
     );
     for (const [name, agent] of Object.entries(agents))
       expect(agent.persistence, name).toBe(architect.persistence);

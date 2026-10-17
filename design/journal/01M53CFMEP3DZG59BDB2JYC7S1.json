@@ -1,0 +1,12 @@
+{
+  "id": "01M53CFMEP3DZG59BDB2JYC7S1",
+  "at": "2026-10-16T22:14:22.934Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "contract",
+  "reason": "Renamed consumer-driven contract, the established term for this meaning; the concept continues under that name.",
+  "supersedes": [
+    "01M50CYXRDFYJSHTHV35PBWZA8"
+  ]
+}

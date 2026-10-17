@@ -1,4 +1,4 @@
-// Black-box overview fixtures. Every command starts the built CLI in a new process.
+// Black-box reconstitution fixtures. Every command starts the built CLI in a new process.
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -53,13 +53,13 @@ export const meanings = {
   shoot: 'A recording occasion made up of takes.',
   take: 'One uninterrupted recorded performance.',
 };
-export interface Overview {
-  context: string;
+/** One context's design state, as `concepts state` gives it. */
+export interface State {
+  name: string;
   subject: string;
   relation: string;
-  cycles: string[][];
-  openDecisions: { id: string; title: string }[];
-  account: string;
+  concepts: string[];
+  competing: unknown[];
 }
 export function command<T = unknown>(f: OverviewFixture, ...args: string[]): T {
   const result = run(f, ...args);
@@ -127,11 +127,11 @@ export function decision(f: OverviewFixture) {
     'open',
   );
 }
-export function overview(f: OverviewFixture): Overview {
-  const answer = command<{ contexts: Overview[] }>(
+export function state(f: OverviewFixture): State {
+  const answer = command<{ contexts: State[] }>(
     f,
     'concepts',
-    'overview',
+    'state',
     '--context',
     'film-production',
   );
@@ -141,13 +141,14 @@ export function overview(f: OverviewFixture): Overview {
   ).toHaveLength(1);
   return answer.contexts[0]!;
 }
-export function ordered(account: string, texts: string[], binds: string) {
-  let previous = -1;
-  for (const text of texts) {
-    const index = account
-      .toLowerCase()
-      .indexOf(text.toLowerCase(), previous + 1);
-    expect(index, `${binds}: ${text}`).toBeGreaterThan(previous);
-    previous = index;
-  }
+/** The ids of the film's open decisions, as `concepts decisions` gives them. */
+export function open(f: OverviewFixture): string[] {
+  return command<{ decisions: { id: string }[] }>(
+    f,
+    'concepts',
+    'decisions',
+    '--context',
+    'film-production',
+    '--open',
+  ).decisions.map((d) => d.id);
 }

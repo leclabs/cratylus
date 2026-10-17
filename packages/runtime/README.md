@@ -6,7 +6,7 @@ A skill has two faces: what it _means_, which is canon's, and the programmatic t
 which is this package's. `runtime` is the generic platform beneath that second face, plus the
 record (the concept journal) an agent reconstitutes from.
 
-It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no harness and
+It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
@@ -21,32 +21,37 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                                                |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concepts`    | `overview`, `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `classify`, `deprecate` |
-| `versionSkew` | `report`                                                                                                                                                             |
+| capability    | verbs                                                                                                                                        |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate` |
+| `versionSkew` | `report`                                                                                                                                     |
 
-Every journal entry records who appended it (`by`: the agent making the call, named by the harness
-in `CRATYLUS_AGENT`, else git's user). History is held by review, as each change's risk calls
+Every journal entry records who appended it (`by`: the agent making the call, named by the agent
+harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
 for, never by refusal (decision 0274): the journal is append-only because its verbs only append.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
-[the `cratylus` README](../cli/README.md). Its `leakage` query, and the answer of each `define`,
-`supersede` and `decide`, warn of implementation leakage: text that should state meaning naming
-code, files, commands, flags, identifiers, tools or libraries. Detection is lexical and only ever
-warns; a context's own words, its concept names and each plain word its current subject names,
-are never leakage, though a command, code span or flag holding a subject's word still is, and a decision whose kind (given by `decide --kind` or recorded by `classify`) is
-`realization` is never inspected (decision 0058). The same warnings, from `leakage` and from
-`context`, `define` and `supersede`, also name a concept's wording or a context's subject or
-relation that cites a decision by its number, recounts its history (what changed, what something
-used to be or no longer is), or only extends the version it replaces, keeping its wording whole
-and adding to it. Its views read only the journal and the example files, and show what stands: a
-decision stands until it is superseded or deprecated, and every example file present is current;
-no retired concept, reason a concept's version was written, decision a decision superseded or kind
-recorded before the governing one shows until `design`, `state`, `decisions` or `leakage` is asked
-with `--history`. It also holds the project's purpose, what the project is for: `purpose` records it and, with a reason,
-changes it, and `overview` and `state` show it first, before any context.
+[the `cratylus` README](../cli/README.md). A session reads the design state first: `state` answers
+the project's purpose, the delivered practice apart, and each context's subject, relation and live
+concepts, each one line `name ≜ residue`, with any competing versions, and nothing else. The
+standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
+records every new one as realization and takes no kind. Its `leakage` query, and the answer of
+each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or
+an example naming code, files, commands, flags, identifiers, tools or libraries instead of what
+must hold. Detection is lexical and only ever warns, and never inspects a decision; a context's
+own words, its concept names and each plain word its current subject names, are never leakage,
+though a command, code span or flag holding a subject's word still is. The same warnings also
+name a concept's residue or a context's subject or relation that cites a decision by its number,
+recounts its history (what changed, what something used to be or no longer is), or only extends
+the version it replaces, keeping its wording whole and adding to it. Its views read only the
+journal and the example files, and show what stands: a decision stands until it is superseded or
+deprecated, and every example file present is current; no retired concept, reason a concept's
+version was written, decision a decision superseded or kind recorded before the governing one
+shows until `design` or `decisions` is asked with `--history`, and a context's history carries
+the effort recorded for its past work. It also holds the project's purpose, what the project is
+for: `purpose` records it and, with a reason, changes it, and `state` shows it first, before any
+context.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read and which append as code.
@@ -102,7 +107,7 @@ throws when called as a library. Never a silent no-op.
 ## Explaining itself
 
 Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
-for each verb the concept of cratylus's own conceptual design it acts on, when to reach for it, and
+for each verb the concept of cratylus's own conceptual model it acts on, when to reach for it, and
 whether it `reads` or `appends`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus concepts <verb> --explain`
@@ -118,7 +123,7 @@ verb does not take.
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
 corpus's skills declared it. The installation (`installationRoot`) is the one
-`$CRATYLUS_INSTALLATION` names — a harness's adapter names its own on every call — else the one
+`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else the one
 root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
 

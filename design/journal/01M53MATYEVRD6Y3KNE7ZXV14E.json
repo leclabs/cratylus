@@ -1,0 +1,14 @@
+{
+  "id": "01M53MATYEVRD6Y3KNE7ZXV14E",
+  "at": "2026-10-17T00:31:34.350Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "architect",
+  "wording": "in Brooks's sense, keeper of conceptual integrity: owns meaning (concepts, user stories, examples), never realization, technical choices included; the operator's principal, recommending priority; holds several bounded contexts without merging their models",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it.",
+  "supersedes": [
+    "01M53H20J7AQEH791966G900M6"
+  ]
+}

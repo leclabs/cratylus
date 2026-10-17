@@ -1,0 +1,9 @@
+{
+  "id": "01M53CFXNNDDMJS7RE1VXNNDXG",
+  "at": "2026-10-16T22:14:32.373Z",
+  "by": "Lance Caraccioli",
+  "kind": "deprecate",
+  "decisionId": "0231",
+  "entry": "01M50D0ZB757K4099NQF13YMVJ",
+  "reason": "Meaning is recorded only in concepts: bounded context; story; architect; workflow context relation now state it."
+}

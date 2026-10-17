@@ -90,7 +90,6 @@ function known() {
 }
 
 const readings = [
-  ['overview', '--context', 'booking'],
   ['state'],
   ['design', '--context', 'booking'],
   ['history', 'hold', '--context', 'booking'],
@@ -215,7 +214,7 @@ it('refuses a known entry it cannot read by name, though an unknown kind is pres
   expect(files()).toEqual(before);
 });
 
-it('shows the effort recorded for past work only as history, in a journal holding an unknown kind', () => {
+it('shows the effort recorded for past work with the context’s own history, in a journal holding an unknown kind', () => {
   known();
   entry(9, {
     kind: 'efficiency',
@@ -228,12 +227,12 @@ it('shows the effort recorded for past work only as history, in a journal holdin
   });
   unknown(10, 'annotation');
   const before = files();
-  expect(concepts('state', '--history')).toMatchObject({
-    contexts: [{ efficiency: [{ cut: 'delivery' }] }],
+  expect(concepts('history', '--context', 'booking')).toMatchObject({
+    context: 'booking',
+    efficiency: [{ cut: 'delivery', rounds: 1 }],
     uninterpreted: { kinds: { annotation: 1 }, mayBeIncomplete: true },
   });
-  expect(
-    (concepts('state') as { contexts: object[] }).contexts[0],
-  ).not.toHaveProperty('efficiency');
+  for (const reading of ['state', 'design'])
+    expect(JSON.stringify(concepts(reading))).not.toContain('delivery');
   expect(files()).toEqual(before);
 });

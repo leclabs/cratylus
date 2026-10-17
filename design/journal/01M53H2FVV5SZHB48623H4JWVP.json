@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2FVV5SZHB48623H4JWVP",
+  "at": "2026-10-16T23:34:35.131Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "ipseic agent",
+  "wording": "a persona with ipse-identity: a name, mark and signing key persisting across sessions, hosts and harnesses; its own continuous memory apart from working memory; a personality of its own, growing over a long life, travelling between environments as one self; so nothing in an agent's composition ties it to one session, host or harness",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFJRHYRXZZBKV0HWY8DC1"
+  ]
+}

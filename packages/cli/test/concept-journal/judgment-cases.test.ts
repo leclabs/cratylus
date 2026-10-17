@@ -107,26 +107,8 @@ describe('concept journal judgment regressions', () => {
         ).decisions,
       ).toMatchObject(expected);
     }
-    // The state names each decision by its entry, id and title.
-    const summary = ({
-      entry,
-      id,
-      title,
-    }: {
-      entry: string;
-      id: string;
-      title: string;
-    }) => ({
-      entry,
-      id,
-      title,
-    });
-    expect(query(root, 'state').contexts).toMatchObject([
-      {
-        name: 'workflow',
-        decisions: { accepted: [], open: expected.map(summary) },
-      },
-    ]);
+    // The design state carries no decision; they are read with decisions alone.
+    expect(query(root, 'state').contexts[0]).not.toHaveProperty('decisions');
     refuse(root, 'accept', '0022');
     append(
       root,
@@ -154,17 +136,6 @@ describe('concept journal judgment regressions', () => {
         '--open',
       ).decisions,
     ).toMatchObject(stillOpen);
-    expect(query(root, 'state').contexts).toMatchObject([
-      {
-        name: 'workflow',
-        decisions: {
-          accepted: accepted
-            .filter((decision) => decision.entry === leftEntry)
-            .map(summary),
-          open: stillOpen.map(summary),
-        },
-      },
-    ]);
   });
 
   it.each([

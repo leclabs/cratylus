@@ -1,0 +1,14 @@
+{
+  "id": "01M53P5H8RTM7RVHGEYG8A43GR",
+  "at": "2026-10-17T01:03:37.752Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "bounded context",
+  "wording": "every concept belongs to exactly one; one architect may hold several, never merging their models",
+  "builtFrom": [],
+  "reason": "Holding several contexts without merging their models is a fact about bounded contexts, stated here once now the architect keeps only its place among the parties.",
+  "supersedes": [
+    "01M53H218B2E7DMYQKCPQ40S3H"
+  ]
+}

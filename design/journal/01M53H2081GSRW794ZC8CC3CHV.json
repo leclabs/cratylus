@@ -1,0 +1,14 @@
+{
+  "id": "01M53H2081GSRW794ZC8CC3CHV",
+  "at": "2026-10-16T23:34:19.137Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "orchestrator-workers",
+  "wording": "the architect orchestrates user stories, the lead a story's tasks; a worker receives intent and what done means, never steps or a prescribed change",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFHHNCANJFGVDAG3MZE17"
+  ]
+}

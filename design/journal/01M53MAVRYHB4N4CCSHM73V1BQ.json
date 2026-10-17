@@ -1,0 +1,14 @@
+{
+  "id": "01M53MAVRYHB4N4CCSHM73V1BQ",
+  "at": "2026-10-17T00:31:35.198Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "code review",
+  "wording": "of any change, not only code, by one non-author, against its acceptance criteria and examples; approves or names findings, never repairs; a contrived way around a check is a finding on that check, not the change",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it.",
+  "supersedes": [
+    "01M53H2000ZWKJ38JQT9PGVRPY"
+  ]
+}

@@ -370,16 +370,16 @@ describe('concepts leakage, and the warnings of an append', () => {
     expect(concepts('leakage')).toHaveProperty('warnings.length', 3);
   });
 
-  it('inspects a decision unless its governing kind is realization', () => {
+  it('never inspects a decision, of realization or of a kind recorded before', () => {
     top = mkdtempSync(join(tmpdir(), 'leakage-'));
     execFileSync('git', ['init', '-q'], { cwd: top });
     const from = top;
     const concepts = (...argv: string[]) => dispatchConcepts(argv, { from });
     concepts('context', 'booking', '--subject', 'A subject.');
-    const decide = (id: string, ...kind: string[]) =>
+    expect(
       concepts(
         'decide',
-        id,
+        'built',
         '--context',
         'booking',
         '--title',
@@ -392,27 +392,30 @@ describe('concepts leakage, and the warnings of an append', () => {
         'C',
         '--status',
         'open',
-        ...kind,
-      );
-    expect(decide('built', '--kind', 'realization')).not.toHaveProperty(
-      'warnings',
+      ),
+    ).not.toHaveProperty('warnings');
+    // A decision recorded before, stating meaning, is read as recorded.
+    writeFileSync(
+      join(top, 'design/journal', '01Z00000000000000000000001.json'),
+      JSON.stringify({
+        id: '01Z00000000000000000000001',
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'decide',
+        decisionId: 'meant',
+        context: 'booking',
+        title: 'T',
+        situation: 'S',
+        decision: 'Validated with zod.',
+        consequences: 'C',
+        status: 'open',
+        supersedes: null,
+        decisionKind: 'meaning',
+      }),
     );
-    expect(decide('meant', '--kind', 'meaning')).toHaveProperty(
-      'warnings.length',
-      1,
+    expect(concepts('leakage')).toEqual({ warnings: [] });
+    expect(() => concepts('leakage', '--history')).toThrow(
+      /^concepts leakage: it does not take --history/,
     );
-    expect(decide('unsaid')).toHaveProperty('warnings.length', 1);
-    const warned = () => {
-      // The leakage query's answer, as the verb prints it.
-      const answer = concepts('leakage') as {
-        warnings: { passage: { id: string } }[];
-      };
-      return answer.warnings.map((w) => w.passage.id);
-    };
-    expect(warned()).toEqual(['meant', 'unsaid']);
-    concepts('classify', 'unsaid', '--kind', 'realization');
-    concepts('classify', 'built', '--kind', 'meaning', '--reason', 'It means.');
-    expect(warned()).toEqual(['built', 'meant']);
   });
 
   it('warns of a wording that cites, recounts or only extends, on recording and inspection', () => {

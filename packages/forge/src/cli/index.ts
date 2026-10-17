@@ -218,7 +218,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   const project = new Command('project')
     .description(
-      'Render the plugins your config extends into a tree of harness files',
+      "Render the plugins your config extends into a tree of an agent harness's files",
     )
     .addOption(configOption('The config file to load'))
     .addOption(
@@ -227,7 +227,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         `The directory to render into (default: .${CLI_BIN}/<harness>, the tree \`${CLI_BIN} deploy\` reads)`,
       ),
     )
-    .addOption(harnessOption('The harness to render for').default('omp'))
+    .addOption(harnessOption('The agent harness to render for').default('omp'))
     .addOption(
       new Option(
         '--verbose',
@@ -304,11 +304,11 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   const install = new Command('install')
     .description(
-      'Install the bundled corpus into a harness on this machine, asking what you have not said',
+      'Install the bundled corpus into an agent harness on this machine, asking what you have not said',
     )
     .addOption(
       harnessOption(
-        'The harness to install into (default: the one this machine has, else asked)',
+        'The agent harness to install into (default: the one this machine has, else asked)',
       ),
     )
     .addOption(
@@ -382,11 +382,11 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   const uninstall = new Command('uninstall')
     .description(
-      'Remove from a harness what install placed there — its owned root and every reference into it — and leave what the host placed or changed',
+      'Remove from an agent harness what install placed there — its owned root and every reference into it — and leave what the host placed or changed',
     )
     .addOption(
       harnessOption(
-        'The harness to remove from (required)',
+        'The agent harness to remove from (required)',
       ).makeOptionMandatory(),
     )
     .addOption(
@@ -420,7 +420,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   const deploy = new Command('deploy')
     .description(
-      "Place a rendered tree's agents, skills and hooks into a harness",
+      "Place a rendered tree's agents, skills and hooks into an agent harness",
     )
     .addOption(
       new Option(
@@ -465,7 +465,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         .choices(SCOPES)
         .default('user'),
     )
-    .addOption(harnessOption('The harness to place into').default('omp'))
+    .addOption(harnessOption('The agent harness to place into').default('omp'))
     .addOption(
       new Option(
         '--home <dir>',

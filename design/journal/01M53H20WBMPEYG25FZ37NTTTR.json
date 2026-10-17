@@ -1,0 +1,14 @@
+{
+  "id": "01M53H20WBMPEYG25FZ37NTTTR",
+  "at": "2026-10-16T23:34:19.787Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "check-writer",
+  "wording": "writes, before the build, the checks binding a user story's examples, each trusted only once seen failing against work that doesn't satisfy it; never builds what they judge",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names.",
+  "supersedes": [
+    "01M53CFHZZZWGVEB17KERN3JQY"
+  ]
+}
