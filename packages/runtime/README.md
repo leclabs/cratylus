@@ -34,15 +34,15 @@ for, never by refusal (decision 0274): the journal is append-only because its ve
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). A session reads the design state first: `state` answers
 the project's purpose, the delivered practice apart, and each context's subject, relation and live
-concepts, each one line `name ≜ wording`, with any competing versions, and nothing else. The
+concepts, each one line `name ≜ differentia`, with any competing versions, and nothing else. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
-each `context`, `define` and `supersede`, warn of implementation leakage: a concept's wording or
+each `context`, `define` and `supersede`, warn of implementation leakage: a concept's differentia or
 an example naming code, files, commands, flags, identifiers, tools or libraries instead of what
 must hold. Detection is lexical and only ever warns, and never inspects a decision; a context's
 own words, its concept names and each plain word its current subject names, are never leakage,
 though a command, code span or flag holding a subject's word still is. The same warnings also
-name a concept's wording or a context's subject or relation that cites a decision by its number,
+name a concept's differentia or a context's subject or relation that cites a decision by its number,
 recounts its history (what changed, what something used to be or no longer is), or only extends
 the version it replaces, keeping its wording whole and adding to it. Its views read only the
 journal and the example files, and show what stands: a decision stands until it is superseded or
