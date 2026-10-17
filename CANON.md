@@ -30,9 +30,9 @@ All derived Art must be consistent with the triad.
 The gate (`packages/canon/tooling/symbol-probe-gate.ts`, exercised by
 `packages/canon/test/symbol-probe-gate.test.ts`) realizes ENGINE's `signify-verify` for the symbols this
 corpus's own skills **declare** in their formal blocks; it reaches no consumer's surface. For each declared
-symbol `w` it raises one obligation: the concept the reader's priors circumscribe — `concept_R(w)` at
-reader=LLM (the `probe` skill) — must be the concept the block **assigns** `w` (its declaration gloss, its
-σ\* target).
+symbol `w` it raises one obligation: the concept the reader's priors circumscribe for `w` read in its
+bounded context — `concept_R(w)` at reader=LLM (the `probe` skill) — must be the concept the block
+**assigns** `w` (its declaration gloss, its σ\* target).
 
 The gate has two legs. The deterministic leg is mechanized: it extracts the obligations and routes recorded
 probe readouts to a verdict — **pass**, **fail** (priors circumscribe a **different** concept than assigned),

@@ -1,5 +1,7 @@
 // residue.ts — the machine-check behind AC-RESIDUE (MODEL PARSIMONIOUS
-// `body(c)=⟨α, residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus).
+// `body(c)=⟨α, residue⟩`, residue the workflow's residue of c with α read in its bounded
+// context, specialized to the DEPLOYED corpus). It checks register only, never the
+// residue's content.
 //
 // GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
 // model reads is formal σ* under ρ, never human prose. This leg enforces it over the

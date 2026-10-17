@@ -15,7 +15,7 @@ import { architectRole } from '../roles/architect.js';
 export const nico = persona(architectRole, {
   name: 'nico',
   description:
-    "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, and keeps the name a reader with no context decodes as meant.",
+    "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, read in its bounded context, and keeps the name a reader given only its bounded context decodes as meant.",
   mark: { emoji: '📐', hue: 'cyan' },
   values: {
     objective: [

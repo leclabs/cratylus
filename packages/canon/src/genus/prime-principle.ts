@@ -5,7 +5,7 @@
  * below.
  */
 export const cratylism =
-  'cratylism ⟨names natural ¬conventional⟩ · model-latent-space = real stable concepts · ∀ c ∈ core ≜ corpus-agent-dimension ⟨names ∪ values⟩ ⟨canonical-sign(c) = σ*(c) INTRINSIC ∧ DISCOVERED ¬coined ⟨¬author · ¬operator⟩⟩ · ∀ t ∉ core ⟨industry-own · industry-understood⟩ ∧ consumer-surface ⊥ oracle · ideal asymptotic ⟨residual REAL ¬ alibi⟩';
+  'cratylism ⟨names natural ¬conventional⟩ · model-latent-space = real stable concepts · ∀ c ∈ core ≜ corpus-agent-dimension ⟨names ∪ values⟩ ⟨canonical-sign(c) = σ*(c) ≜ the sign of smallest residue ⟨residue @ workflow⟩ read in the bounded context of c · INTRINSIC ∧ DISCOVERED ¬coined ⟨¬author · ¬operator⟩⟩ · ∀ t ∉ core ⟨industry-own in its context · industry-understood⟩ ∧ consumer-surface ⊥ oracle · ideal asymptotic ⟨residue REAL ¬ alibi⟩';
 
 /**
  * The prime principle, as a leading `## Prime Principle` block emitted VERBATIM

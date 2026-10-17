@@ -7,7 +7,7 @@ scope  ≜ pipeline realizing MODEL invariants + boundary projections rendering 
 ```
 
 ```
-{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, α, intent, decode_cold, core, terminology, ir} ⊂ MODEL
+{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, α, κ, intent, decode_cold, core, terminology, ir} ⊂ MODEL
 canon ≜ {c:cell ∣ accept(c)}
 valid(canon) ⇒ deterministic(deploy) ∧ ∀stage∈pipeline: preserves(stage, MODEL-invariants)
 
@@ -19,7 +19,7 @@ normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
              ⟨the cold-decode oracle decides signs only for the corpus's core agent dimension names and values (MODEL's terminology) ; every other term is the industry's own, used as the industry understands it, ∉ verify ∧ ∉ the oracle⟩
              ⟨nothing cratylus ships holds a consumer's own surfaces to it⟩
-signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned ; w a symbol this corpus's own skills declare
+signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w, κ) = α⁻¹(w, κ)  -- probe round-trip @ reader=LLM, w read in its bounded context κ (MODEL) ; α injective within each κ ⇒ α⁻¹(w, κ) = the concept w is assigned in κ ; w a symbol this corpus's own skills declare
 canonizable(skill) ⇒ ∀ w ∈ declared(skill) : signify-verify(w)                    -- skill of THIS corpus ; one obligation per declared symbol ; the gate routes RECORDED probe readouts to pass ∨ fail, and a symbol with none is owed, ¬ passed
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
 Role       ≜ (DimensionName → ℘(entry)) ⟨NAMED ∧ TOTAL : a value for EVERY factor the catalog gives a field, an explicitly empty set counting as one ; the EXPECTATIONS of anyone holding the role ; made OF factor values ∴ ¬ itself a factor — the `role` factor carries its SIGN⟩

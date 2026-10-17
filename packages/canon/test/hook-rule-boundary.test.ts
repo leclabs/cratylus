@@ -95,11 +95,11 @@ function repoAgentsMd(): string[] {
 // `RuleCell.residue` closed that, and the two loops collapsed into this roster.
 //
 // What SURVIVES is `definiens: c.residue`, and it is not a bridge: it is the honest
-// lift `residue → D`. A cell's authored payload has already paid `∖ fired(α)`; the
-// witness input `AcceptCell.definiens` is `D(c)`, the un-adjudicated text
-// `parsimonious()` reads in order to re-decide the subtraction for itself. Feeding a
-// residue in as D is the STRICTEST reading available — the leg must find nothing
-// left to subtract.
+// lift `residue → D`. A cell's authored payload carries the workflow's residue and never
+// restates what its anchor invokes; the witness input `AcceptCell.definiens` is `D(c)`,
+// the un-adjudicated text `parsimonious()` reads in order to re-decide that for itself.
+// Feeding a residue in as D is the STRICTEST reading available — the leg must find
+// nothing of the anchor restated.
 
 // KIND ⊥ FAMILY, and conflating them is what put a fifth member in `AcceptCell`.
 // `MODEL.md:10` — `Kind ≜ {fragment, agent, rule, skill}`. There is no `hook` Kind:
@@ -127,7 +127,7 @@ interface SourceCell {
   readonly slug: string;
   /** The home id (`<family>/<cell id>`). */
   readonly home: string;
-  /** MODEL's `residue(c)` — the σ*-signified identity, post-subtraction. */
+  /** MODEL's `residue(c)` — the σ*-signified identity, the workflow's residue of its anchor. */
   readonly residue: string;
   readonly refs: readonly string[];
 }

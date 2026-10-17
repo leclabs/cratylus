@@ -17,7 +17,7 @@
 // dereferences a glyph by asking an agent to explain the artifact (the on-demand channel),
 // never a maintained doc.
 //
-// `coldVerified`: a cold reader recovers the operation from the glyph ALONE
+// `coldVerified`: a cold reader, given the glyph and nothing of its sense, recovers the operation
 // (SIGNIFIED/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
 // cold-surveyed against reader priors and passed. `${}` is a CODE mechanism (resolved at
 // eval, not decoded) ⇒ false.
@@ -29,7 +29,7 @@ export interface OperatorEntry {
   readonly sense: string;
   /** the type signature (`name : Domain → Codomain`, or a usage schema) */
   readonly signature: string;
-  /** a cold reader recovers the operation from the glyph alone */
+  /** a cold reader, given the glyph and nothing of its sense, recovers the operation */
   readonly coldVerified: boolean;
 }
 

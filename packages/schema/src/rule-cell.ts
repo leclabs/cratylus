@@ -4,7 +4,8 @@
 //
 // The cell carries TWO separable things:
 //   1. `residue` — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
-//      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the rule's intent.
+//      REFLEXIVE/`accept()` target. R=LLM; read cold in its bounded context, it decodes
+//      to the rule's intent.
 //   2. `content` — the VERBATIM directive payload (the byte-anchor), regenerated
 //      to `targetPath` by the consuming corpus and byte-locked.
 //
@@ -15,23 +16,26 @@
 // the seam. MODEL already separates the two, and the separation is what settles the
 // direction:
 //
-//   `MODEL.md:50` — PARSIMONIOUS: body(c) = ⟨α(c), residue(c)⟩ ∧ residue(c) = D(c) ∖ fired(α(c))
+//   MODEL PARSIMONIOUS — body(c) = ⟨α(c), residue(c)⟩, residue(c) the workflow's residue
+//   of c (`residue @ workflow`), its anchor α(c) read in its bounded context κ(c)
 //
-// `D` and `residue` are DIFFERENT OBJECTS, related by a subtraction:
+// `D` and `residue` are DIFFERENT OBJECTS, related by that reading of the anchor:
 //
-//   definiens ≜ D(c)             the raw post-`≜` text, BEFORE fired(α) is subtracted
-//   residue   ≜ D(c) ∖ fired(α)  a payload that has ALREADY PAID that subtraction
+//   definiens ≜ D(c)        the raw post-`≜` text, BEFORE the anchor's reading is accounted for
+//   residue   ≜ residue(c)  a payload that HAS accounted for it: it carries the workflow's
+//                           residue (what α(c) does not invoke stated, what it invokes that c
+//                           lacks denied) and never restates what α(c) already invokes
 //
 // THE DISAMBIGUATION RULE. A field is `residue` iff PARSIMONIOUS quantifies over it —
-// it is the cell's σ*-signified identity, authored to carry only what its anchor does
-// not already fire. A field is `definiens` iff it is the UN-ADJUDICATED input a split
+// it is the cell's σ*-signified identity, authored to carry only the workflow's residue
+// of its anchor. A field is `definiens` iff it is the UN-ADJUDICATED input a split
 // produced — raw text handed to a witness that has yet to decide what the anchor
-// fires. Both signs are live and correct; they name opposite sides of one subtraction.
+// invokes. Both signs are live and correct; they name the two sides of that reading.
 //
 // TWO SITES CORRECTLY KEEP `definiens`, and neither is this one:
 //   · the ρ-class `dimension-definiens` (`canon/test/reader-density.test.ts`) — the
-//     post-`≜` text a dimension value's body splits into, pre-subtraction by
-//     construction; `splitBody` is the splitter.
+//     post-`≜` text a dimension value's body splits into, raw by construction, before
+//     the anchor's reading; `splitBody` is the splitter.
 //   · `AcceptCell.definiens` (`forge/src/validate/accept.ts`) — the witness INPUT,
 //     the thing `parsimonious()` reads in order to decide. Renaming it would make
 //     that leg read as checking that a residue is a residue.

@@ -4,7 +4,12 @@
 // exposes it as the authority for the two decode-shaped Universal legs:
 //
 //   COLD-BLIND : decode_cold(core f) = intent(f)
-//   SIGNIFIED  : α's fired priors circumscribe the concept  (α = σ*)
+//   SIGNIFIED  : α, read in its bounded context, has the smallest residue (`residue @
+//                workflow`) for the concept  (α = σ*)
+//
+// MODEL's cold read gives the fragment with its bounded context's name and subject and
+// nothing of its intent; the isolation script this driver wraps sends the fragment
+// text alone, without its context's name and subject.
 //
 // ISOLATION IS THE INVARIANT. A subagent is NOT cold (it inherits session context
 // + the local agent-registry aliases); only this process-level isolation yields a

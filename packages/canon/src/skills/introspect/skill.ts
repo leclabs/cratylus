@@ -16,7 +16,7 @@ addresses  : O → concept @ A's identity ⟨name · description · mark · key 
 
 def        : O → V @ src_def
 rt         : O → V @ src_rt
-decode     : O → concept ≜ decode_cold(def(o)) ⟨isolated tool-less read of the declared sign · its own priors · zero project-causes⟩
+decode     : O → concept ≜ decode_cold(def(o)) ⟨isolated tool-less read of the declared sign with its bounded context's name and subject · its own priors · zero project-causes · nothing of the concept it addresses⟩
 why        : div → causes
 
 harness-override    ≜ runtime substituted the value ⟨tool-gating · model-pin · env⟩
