@@ -3,8 +3,8 @@
 Cratylus puts a set of named agents and skills on your machine for Claude Code or omp. Each
 agent is projected from a corpus of meanings whose names were discovered in the model's own
 vocabulary rather than written as prose, so the same corpus renders the same way every time. You
-install it with one command and start an agent by its name. The thesis behind that is in
-[VISION.md](./VISION.md).
+install it with one command and start an agent by its name. The idea behind it, on one page and in
+plain terms, is in [INTRODUCTION.md](./INTRODUCTION.md); the thesis is in [VISION.md](./VISION.md).
 
 ## Install and use
 

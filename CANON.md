@@ -9,6 +9,9 @@ for them, the terminology it was built to discover, reading each sign in its bou
 by the workflow's residue. Every other term is the industry's own, used as the industry understands it, and
 nothing cratylus ships holds a consumer's own surfaces to the oracle.
 
+[`INTRODUCTION`](./INTRODUCTION.md) states the principle on one page, in neutral terms and three figures:
+the most intuitive way in before the triad below.
+
 ## High Altitude Mental Model:
 
 The apex triad that must stay mutually consistent:
