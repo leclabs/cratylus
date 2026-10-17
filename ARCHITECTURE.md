@@ -146,7 +146,7 @@ The sign was discovered, not chosen, and it carries its own constraint: asked wh
 would be beside these siblings, a reader with no access to this document answers _"the other three
 would depend on it, not the reverse — schema packages sit at the bottom of the dependency graph"_,
 and places content in canon and execution in runtime unprompted. **That is properties 2 and 4 below,
-recovered from the name alone.** It replaces a working title of `anatomy`, which could not be
+recovered from the name.** It replaces a working title of `anatomy`, which could not be
 used: `anatomy` was a metaphor binding four distinct concepts, and `anatomy` was already
 `canon`'s own package name before `2f9bd6e5`.
 

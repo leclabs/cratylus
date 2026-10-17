@@ -13,9 +13,10 @@
 // editing the projector.
 //
 // A dimension value is a per-dimension **nominal-branded string** — the MODEL
-// address shape: `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the leftover the
-// anchor does not already fire (residue ∅ for a true σ*). VISION: _address, don't
-// describe._ There is NO `{dimension,slug,definiens}` value object, NO per-value
+// address shape: `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the workflow's
+// residue of c, the anchor read in its bounded context (σ* is the anchor with the
+// smallest). VISION: _address, don't describe._ There is NO
+// `{dimension,slug,definiens}` value object, NO per-value
 // phantom metadata — the string carries the body; the module's directory
 // (`dimensions/<dimension>/`) is its dimension home (PARTITIONED) and its export
 // name is its anchor α (SIGNIFIED).
@@ -133,8 +134,10 @@ export type CapabilityName = string;
  * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
  * `model-native`/`model`, on the ground that nothing in the declaration points at a
  * language model unless the reader already knows the codebase. That objection is
- * answered by `MODEL.md:45`: `decode_cold(f) ≜ decode(f, LLM-priors ∪ Corpus, ∅)` —
- * the CORPUS is admitted to a cold decode; only session-K is excluded. Grounding in
+ * answered by MODEL's COLD-BLIND: `decode_cold(f) ≜ decode(⟨f, name(κ(f)),
+ * subject(κ(f))⟩, LLM-priors ∪ Corpus, ∅)` — the CORPUS is admitted to a cold decode,
+ * and the sign is read with its bounded context's name and subject; only session-K
+ * and the intended concept are excluded. Grounding in
  * `VISION.md` is cold grounding. Both of its winners are occupancy-blocked anyway:
  * `model` is a live dimension name (`export type Model`), and `model-native` is a
  * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:

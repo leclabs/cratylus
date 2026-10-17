@@ -21,9 +21,9 @@ This project takes the opposite route - discovering and canonizing the optimal-s
 
 ## Thesis
 
-> **For every concept a foundation model encodes, some signifier invokes it more precisely than any other. That signifier — its optimal-signifier, σ\* — is a fact about the model, so naming is discovery rather than invention.**
+> **For every concept a foundation model encodes, some signifier, read in the concept's bounded context, invokes it more precisely than any other. That signifier — its optimal-signifier in that context, σ\* — is a fact about the model, so naming is discovery rather than invention.**
 
-Foundation models encode rich priors over semantic content, relational structure, and compositional rules. Precision is therefore not uniform across the signifiers that could name a concept: some carry accidental meaning the concept does not have, some fail to carry meaning it does. A minimum exists, and the discipline is finding it.
+Foundation models encode rich priors over semantic content, relational structure, and compositional rules. Precision is therefore not uniform across the signifiers that could name a concept in its context: some carry accidental meaning the concept does not have, some fail to carry meaning it does. A minimum exists, and the discipline is finding it.
 
 <!-- ONE CONCEPT, ONE SIGN. This section carried `semantic address` and
      `optimal-signifier` as two names for one thing — "it's optimal-signifier, or
@@ -44,17 +44,19 @@ The word does real work in the other direction, though: to **address** a concept
 ### Core Concept: The Theoretical Ideal Optimal-Signifier
 
 ```
-σ^*(c) = argmin_{σ} μ(I(σ) △ C(c))
+σ^*(c) = argmin_{σ} μ(I(σ | κ) △ C(c))
 ```
 
 **Where:**
 
 - **σ** is a candidate signifier
-- **σ^\*(c)** is the optimal-signifier for concept c
-- **μ** is the semantic distance metric — semantic mass, not count
-- **I(σ)** is the inferred concept from σ, i.e. σ's actual meaning-in-effect
+- **κ** is the bounded context c is read in, part of σ's address
+- **σ^\*(c)** is the optimal-signifier for concept c in κ
+- **I(σ | κ)** is what σ invokes read in κ, i.e. σ's meaning-in-effect there
 - **C(c)** is the target concept c
-- **△** is the symmetric difference
+- **I(σ | κ) △ C(c)** is the workflow's residue of c under σ, and **μ** its size — semantic mass, not count
+
+So σ\*(c) is the signifier with the smallest residue in its bounded context.
 
 ## The Inversion
 
@@ -93,12 +95,13 @@ The runtime representation is compiled from the canon. It is not the primary art
 σ\* is an ideal. What a canon actually holds is an **anchor**.
 
 The distinction is load-bearing and was previously lost. [`MODEL.md`](./MODEL.md) already carries it: a
-concept's body is `⟨α(c), residue(c)⟩` — the anchor α, plus whatever meaning the anchor does not
-already fire. **An anchor whose residue is ∅ _is_ σ\***. Every other anchor is an approximation with
-its shortfall stated, which is why the residual is recorded rather than explained away.
+concept's body is `⟨α(c), residue(c)⟩` — the anchor α, plus the workflow's residue of c, both ways,
+with α read in c's bounded context. σ\* is the anchor with the smallest residue; **an anchor whose
+residue is ∅ is the ideal**. Every other anchor is an approximation with its shortfall stated, which
+is why the residue is recorded rather than explained away.
 
 So an anchor is not canonical because it is elegant, memorable, or preferred by its author. It earns
-canonical status through evidence: it cold-decodes to the intended concept, preserves the required
+canonical status through evidence: a cold decode, reading it in its bounded context, recovers the intended concept, it preserves the required
 distinctions, composes without collision, and stays stable across the models and runtimes for which
 it claims validity.
 
@@ -156,7 +159,7 @@ The discipline's extension is the discovery-and-record half: discover, verify, c
 
 The instrument is named **Cratylus**, after the dialogue in which the question this project answers is first put: whether names are correct by nature or by convention. The mark states the thesis in one word, and it was admitted the same way any other sign is — by cold decode, not by preference. Read blind, with no access to this repository, it returns _"deriving names automatically from structure and semantics rather than letting developers pick them freely"_ and _"correctness is discoverable rather than a matter of convention or consensus."_
 
-That is `σ*(c) INTRINSIC ∧ DISCOVERED ¬coined` recovered from the sign alone, by a reader who had never seen the axiom. It is the strongest reverse decode this project has recorded, and it is the whole warrant for the name.
+That is `σ*(c) INTRINSIC ∧ DISCOVERED ¬coined` recovered from the sign, by a reader who had never seen the axiom. It is the strongest reverse decode this project has recorded, and it is the whole warrant for the name.
 
 ## Implication
 
@@ -172,7 +175,7 @@ This is an engineering constraint, not a claim that all language has one objecti
 
 The constraint is scoped to the corpus's own terminology. It holds the **core agent dimension names and values** — the terms this project exists to discover — to a cold decode, and every other term is the industry's own, used as the industry understands it. Nothing this project ships holds a consumer's own surfaces to that test.
 
-Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: the canon admits those names and values only once a cold decode against model priors has recovered the concept each one names, while a term outside them is taken as the industry uses it.
+Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: the canon admits those names and values only once a cold decode against model priors, reading each name in its bounded context, has recovered the concept each one names, while a term outside them is taken as the industry uses it.
 
 ## Non-Goals
 

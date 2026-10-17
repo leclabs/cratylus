@@ -1,0 +1,15 @@
+{
+  "id": "01M53XHQC1RWFJSFGTPKB33PRJ",
+  "at": "2026-10-17T03:12:37.249Z",
+  "by": "task",
+  "kind": "decide",
+  "decisionId": "0304",
+  "context": "corpus",
+  "title": "Formal statements read a sign in its bounded context and cite the workflow's residue",
+  "situation": "The corpus's formal statements of its principle (VISION's σ*, MODEL's invariants, the prime principle and the signify, probe, exemplify and introspect skills) take what a sign fires from the sign alone and define the residue one-sidedly, while the corpus concepts now read every sign within its bounded context and measure it by the workflow's residue.",
+  "decision": "Every formal statement names the bounded context a sign is read in as κ, κ(c) for a concept's: what a sign fires is fired(n, κ), never fired(n); a cold read gives the reader the sign with κ's name and subject and nothing of the intended concept. The residue is cited, never restated: residue(c) is the workflow's residue of c, its name read in κ(c), referenced with the cells' existing `@` reference form (`residue @ workflow`) or in prose as the workflow's residue. σ* is the sign with the smallest residue in its context, any length tie-break and mint fallback kept. α is injective within each context, not across contexts. Code comments that state the residue one-sidedly are reworded to cite it; the cold-oracle script and the static witnesses keep their behaviour.",
+  "consequences": "Restating the principle changes no sign and runs no oracle; the cold-oracle script still sends a fragment without its context's name and subject, a follow-up for realizing the oracle, and the static PARSIMONIOUS witness still checks one half of the residue.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

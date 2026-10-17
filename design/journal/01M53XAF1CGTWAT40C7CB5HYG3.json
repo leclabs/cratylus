@@ -1,0 +1,17 @@
+{
+  "id": "01M53XAF1CGTWAT40C7CB5HYG3",
+  "at": "2026-10-17T03:08:39.340Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "corpus",
+  "name": "cratylism",
+  "wording": "the corpus's first principle: factor names and values take their optimal sign, the one with the smallest residue in its bounded context, found by the cold-decode oracle; every other term the industry's word in its context; a kept sign short of optimal is recorded as such, never explained away",
+  "builtFrom": [
+    "sign",
+    "cold-decode oracle"
+  ],
+  "reason": "The operator: the optimal sign is the one whose residue, the symmetric difference read in its bounded context, is smallest; the principle refers to the residue where the workflow owns it rather than restating it one-sided.",
+  "supersedes": [
+    "01M53H2HECPECQTZ74TA2FZQH7"
+  ]
+}

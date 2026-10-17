@@ -166,9 +166,9 @@ async function allSurfaces(): Promise<Surface[]> {
   // which every session loads on entry. It went unscanned while being the most
   // widely-read artifact the corpus emits.
   for (const rel of await collect('rules/*.ts')) {
-    // `residue`, not `definiens` — a cell's authored identity has already paid
-    // `∖ fired(α)`. The ρ-class `dimension-definiens` below is the OTHER object
-    // (raw `D`, pre-subtraction) and keeps its own sign; see `rule-cell.ts`.
+    // `residue`, not `definiens` — a cell's authored identity carries the workflow's
+    // residue of its anchor. The ρ-class `dimension-definiens` below is the OTHER object
+    // (raw `D`, before the anchor's reading) and keeps its own sign; see `rule-cell.ts`.
     const c = await firstExport<{ residue: string; content: string }>(
       join(srcRoot, rel),
     );
@@ -490,7 +490,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     homes: new Map([['dup-anchor', ['home-a', 'home-b']]]),
   },
   {
-    // the body restates the anchor → residue ⊇ fired(α)
+    // the body restates the anchor → it re-states what the anchor invokes
     leg: 'PARSIMONIOUS',
     cell: {
       kind: 'fragment',
@@ -658,7 +658,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
 //
 // The machine-check behind AC-RESIDUE: MODEL PARSIMONIOUS
-// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED σ* payload —
+// `body(c)=⟨α,residue⟩` (residue @ workflow) specialized to the DEPLOYED σ* payload —
 // every skill `formalBlock` (whole) MUST be a `formalize` artifact, never human prose.
 // Catalog values are NOT σ* payloads: each is an anchor and a plain gloss, gated by
 // the plain-gloss leg above. Predicate + witnesses: `tooling/cold-oracle/residue.ts`;

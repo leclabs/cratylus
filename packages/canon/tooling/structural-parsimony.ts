@@ -1,6 +1,7 @@
 // structural-parsimony.ts — the STRUCTURAL leg of PARSIMONIOUS the per-cell
 // lexical witness (`@cratylus/forge/validate` `accept.ts` `parsimonious`) cannot
-// see. `accept.ts` reads ONE cell's body against ONE anchor (residue ⊉ fired(α));
+// see. `accept.ts` reads ONE cell's body against ONE anchor (the body never restates
+// what the anchor invokes — one half of the workflow's residue, checked lexically);
 // the accretion this gate pays down lives ABOVE the cell — in the import-graph +
 // the module set:
 //

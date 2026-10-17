@@ -12,14 +12,15 @@
 // too. This gate is the census that makes it convictable: it reads the DECLARED GLOSS
 // off each cell field's own doc comment and asserts the map gloss → sign is a function.
 //
-// THE DISAMBIGUATION RULE IT ENFORCES (`MODEL.md:50`, `schema/src/rule-cell.ts`):
+// THE DISAMBIGUATION RULE IT ENFORCES (MODEL PARSIMONIOUS, `schema/src/rule-cell.ts`):
 //
-//   PARSIMONIOUS: body(c) = ⟨α(c), residue(c)⟩ ∧ residue(c) = D(c) ∖ fired(α(c))
+//   PARSIMONIOUS: body(c) = ⟨α(c), residue(c)⟩ ⟨residue @ workflow, α(c) read in κ(c)⟩
 //
-// `D` and `residue` are different objects across one subtraction. A CELL's σ*-signified
-// identity is the post-subtraction side — PARSIMONIOUS quantifies over it — so on every
-// cell shape it is named `residue`, and that is the second leg here. `definiens` ≜ `D`
-// stays alive for the PRE-subtraction side (`AcceptCell.definiens`, the witness input;
+// `D` and `residue` are different objects across one reading of the anchor. A CELL's
+// σ*-signified identity is the side that carries the workflow's residue — PARSIMONIOUS
+// quantifies over it — so on every cell shape it is named `residue`, and that is the
+// second leg here. `definiens` ≜ `D` stays alive for the raw side, before the anchor's
+// reading is accounted for (`AcceptCell.definiens`, the witness input;
 // the ρ-class `dimension-definiens`, raw post-`≜` text) and this gate never touches it:
 // it censuses `*Cell` interfaces in schema, which is exactly where the ambiguity lived.
 //
@@ -241,8 +242,8 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
     expect([...signs.keys()].sort(), 'every cell shape declares one').toEqual(
       [...cells].sort(),
     );
-    // `residue` ≜ D ∖ fired(α) — the post-subtraction side PARSIMONIOUS quantifies
-    // over. `definiens` ≜ D is the PRE-subtraction input and never a cell field.
+    // `residue` — the workflow's residue of the anchor, the side PARSIMONIOUS quantifies
+    // over. `definiens` ≜ D is the raw input and never a cell field.
     for (const [cell, borne] of signs)
       expect(borne, `${cell}'s σ*-identity field`).toEqual(['residue']);
   });
@@ -383,7 +384,7 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
   });
 
   it('is non-vacuous — the gloss key REFUSES to merge two genuinely different concepts', () => {
-    // The rule cuts BOTH ways: `definiens` ≜ D and `residue` ≜ D ∖ fired(α) are
+    // The rule cuts BOTH ways: `definiens` ≜ D and `residue` (the workflow's residue) are
     // different objects, so a gate that keyed on the shared root word would demand
     // one sign for two concepts. The key is the GLOSS, and these two differ.
     expect(glossKey('D(c) — the definiens (the core σ* fragment).')).not.toBe(

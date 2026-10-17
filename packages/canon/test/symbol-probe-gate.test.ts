@@ -87,7 +87,7 @@ describe('SYMBOL-PROBE gate — per-symbol round-trip signification', () => {
   // σ* and circ, from the LIVE signify.ts obligations, with recorded probe readouts
   // whose `concept_R` circumscribes the assigned gloss (cold-verified by mav's cold-read,
   // `.scratchpad/signify-review-jul-22/…verdict.md` claim A: σ* routes to the fittest
-  // symbolic sign by density — `argmin |n|` — and circ ⇔ fired(n)=D(c)).
+  // symbolic sign by density — `argmin |n|` — and circ ⇔ fired(n, κ(c))=D(c)).
   it('PASSES a correctly-signified reference symbol (σ*, circ)', async () => {
     const signify = (await loadSkills()).find((s) => s.name === 'signify');
     expect(signify).toBeDefined();

@@ -10,7 +10,9 @@
 // `pnpm test`) and a LIVE authority decided by the priors-only blind cold-oracle
 // (`./oracle.ts`, fresh /tmp, no corpus/session/root reads). The two decode-shaped
 // legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle rulings (does the
-// fragment / anchor decode to intent under LLM-priors ALONE?); the static witness is
+// fragment / anchor, read with its bounded context's name and subject and nothing of
+// its intent, decode to intent under LLM-priors? the oracle's script sends the
+// fragment alone, without its context's name and subject); the static witness is
 // their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
 // The five structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·ENFORCED·REGENERABLE)
 // are fully static. ENFORCED and REGENERABLE are GLOBAL rather than per-cell — a cell
@@ -55,7 +57,7 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
  * `ARCHITECTURE.md`, "Where the two disagree, the source is wrong." For a ground
  * enumeration `G` and a source enumeration `S` purporting to realize it:
  *
- *   S ⊂ G  — REFINEMENT. LEGAL. The source under-realizes; the residue is a known
+ *   S ⊂ G  — REFINEMENT. LEGAL. The source under-realizes; the remainder is a known
  *            gap, and a gap is nameable, schedulable, convictable.
  *   S ⊃ G  — DEFECT, ALWAYS. A source member with no ground peer is a concept
  *            admitted with NO HOME IN GROUND: unconvictable by construction,
@@ -106,18 +108,19 @@ export interface AcceptCell {
    * the typed IR field, not a markdown scrape.
    *
    * `definiens`, NOT `residue`, AND THAT IS DELIBERATE (ruled 2026-08-05, when
-   * `RuleCell.definiens` was renamed to `RuleCell.residue`). `MODEL.md:50` —
-   * `residue(c) = D(c) ∖ fired(α(c))` — makes the two DIFFERENT OBJECTS across one
-   * subtraction. This field is the witness INPUT: the un-adjudicated `D` that
-   * `parsimonious()` below reads in order to decide, for itself, what `fired(α)`
-   * already covers. Naming it `residue` would assert the verdict in the parameter and
-   * leave that leg reading as a check that a residue is a residue.
+   * `RuleCell.definiens` was renamed to `RuleCell.residue`). MODEL PARSIMONIOUS —
+   * `body(c) = ⟨α(c), residue(c)⟩`, residue(c) the workflow's residue of c with α(c)
+   * read in its bounded context — makes the two DIFFERENT OBJECTS. This field is the
+   * witness INPUT: the un-adjudicated `D` that `parsimonious()` below reads in order to
+   * decide, for itself, what the anchor already invokes. Naming it `residue` would
+   * assert the verdict in the parameter and leave that leg reading as a check that a
+   * residue is a residue.
    *
    * A CELL's authored payload is the other side: `HookCell.residue`,
-   * `RuleCell.residue` — post-subtraction by construction, because PARSIMONIOUS
+   * `RuleCell.residue` — they carry the residue by construction, because PARSIMONIOUS
    * quantifies over them. Lifting one in here (`definiens: c.residue`, as
    * `canon/test/hook-rule-boundary.test.ts` does) is not a rename bridge; it is the
-   * strictest reading available, since the leg must then find nothing left to subtract.
+   * strictest reading available, since the leg must then find nothing of the anchor restated.
    */
   readonly definiens: string;
   /** The anchors this cell references (imports · `ref` · composition). */
@@ -191,7 +194,7 @@ const EXTERNAL_CITE: ReadonlyArray<readonly [string, RegExp]> = [
   ],
 ];
 
-/** The anchor's own lexical tokens — a proxy for fired(α)'s core field. */
+/** The anchor's own lexical tokens — a proxy for what the anchor invokes. */
 function slugTokens(slug: string): string[] {
   return slug.split('-').filter((t) => t.length > 0);
 }
@@ -252,7 +255,7 @@ export function signified(cell: AcceptCell): LegVerdict {
  * COLD-BLIND — decode_cold(core f) = intent(f). Static FLOOR: the fragment does
  * not lean on an external cite (a fragment that needs an outside reference is not
  * self-sufficient and fails blind). The AUTHORITY is the live oracle
- * (`oracle.ts`): a cold, isolated, priors-only decode must recover intent.
+ * (`oracle.ts`): a cold, isolated decode, given nothing of the intent, must recover it.
  */
 export function coldBlindStatic(cell: AcceptCell): LegVerdict {
   const hits = EXTERNAL_CITE.filter(([, re]) => re.test(cell.definiens));
@@ -284,11 +287,11 @@ export function partitioned(cell: AcceptCell, homes: Homes): LegVerdict {
 }
 
 /**
- * PARSIMONIOUS — body(c)=⟨α(c),residue(c)⟩ ∧ residue=D∖fired(α). Static proxy: the
- * body must not re-emit the anchor's own lexical field (residue ⊇ fired(α) ⇒ the
- * gloss restates the name the reader already decoded). A leading self-restatement
- * is the crisp convictable signature; the full residue=D∖fired subtraction is the
- * oracle's finer ruling.
+ * PARSIMONIOUS — body(c)=⟨α(c),residue(c)⟩, residue(c) the workflow's residue of c
+ * with α(c) read in its bounded context. Static proxy, ONE half only: the body must
+ * not re-emit the anchor's own lexical field (a gloss restating the name the reader
+ * already decoded). A leading self-restatement is the crisp convictable signature;
+ * the rest of the residue, both ways, is the oracle's finer ruling.
  */
 export function parsimonious(cell: AcceptCell): LegVerdict {
   const restated = slugTokens(cell.slug).filter((t) =>

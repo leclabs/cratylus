@@ -30,9 +30,9 @@ All derived Art must be consistent with the triad.
 The gate (`packages/canon/tooling/symbol-probe-gate.ts`, exercised by
 `packages/canon/test/symbol-probe-gate.test.ts`) realizes ENGINE's `signify-verify` for the symbols this
 corpus's own skills **declare** in their formal blocks; it reaches no consumer's surface. For each declared
-symbol `w` it raises one obligation: the concept the reader's priors circumscribe — `concept_R(w)` at
-reader=LLM (the `probe` skill) — must be the concept the block **assigns** `w` (its declaration gloss, its
-σ\* target).
+symbol `w` it raises one obligation: the concept the reader's priors circumscribe for `w` read in its
+bounded context — `concept_R(w)` at reader=LLM (the `probe` skill) — must be the concept the block
+**assigns** `w` (its declaration gloss, its σ\* target).
 
 The gate has two legs. The deterministic leg is mechanized: it extracts the obligations and routes recorded
 probe readouts to a verdict — **pass**, **fail** (priors circumscribe a **different** concept than assigned),
@@ -43,5 +43,6 @@ computes it. A skill canonizes only when every symbol it declares has a recorded
 Nothing in the repository records a readout for the live corpus, so every declared symbol is owed today:
 `symbol-probe-gate.test.ts` pins that the live corpus routes entirely to needs-probe, and convicts a
 mis-signified symbol on fixtures that supply readouts. The same gate detects a symbol assigned different
-concepts by different cells, the injectivity `signify` states; `symbol-altitude.test.ts` holds the recorded
+concepts by different cells, the injectivity within one bounded context `signify` states (the corpus's own
+cells are read in one context); `symbol-altitude.test.ts` holds the recorded
 judgment on each such divergence.

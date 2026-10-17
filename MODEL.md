@@ -10,9 +10,12 @@ scope  ≜ implementation-independent acceptance criteria
 Kind ≜ {fragment, agent, rule, skill}
 cell ; class : cell → Kind
 Intent ; intent : fragment → Intent
-Sign ; σ* : concept → Sign ; α : concept → Sign, injective
+Sign ; σ* : concept → Sign ⟨the sign with the smallest residue(c) in κ(c)⟩ ; α : concept → Sign, injective within each BoundedContext ⟨¬ across : one sign may address different concepts in different contexts⟩
+BoundedContext ; κ : concept → BoundedContext ⟨the context a concept is read in, part of its sign's address ; κ(f) for a fragment's⟩
+fired : Sign × BoundedContext → ℘(D) ⟨what a sign invokes, read in a context⟩
+residue(c) ≜ residue @ workflow ⟨α(c) read in κ(c)⟩
 concepts : cell → ℘(Corpus) ; fragments : cell → ℘(fragment) ; content : cell → context
-{σ*, α, decode, home, residue, fired, D, body, orphan, private, palimpsest} ⊂ Corpus
+{σ*, α, κ, decode, home, residue, fired, D, body, orphan, private, palimpsest} ⊂ Corpus
 
 ActivationMode ≜ {compose-only, identity, scope, trigger}
 activation : cell ⇀ ActivationMode ⟨what CAUSES a cell to become active ; INSTANCE-level⟩
@@ -47,12 +50,12 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   CANONICAL   : ∀c∈concepts(a): ¬orphan(c) ∧ ¬private(c) ∧ ¬palimpsest(c)
   SIGNIFIED   : ∀c∈concepts(a) ∩ terminology: α(c)=σ*(c)
   COLD-BLIND  : core(f) ≜ f ∖ human-prose
-                decode_cold(f)   ≜ decode(f, LLM-priors ∪ Corpus, ∅)
+                decode_cold(f)   ≜ decode(⟨f, name(κ(f)), subject(κ(f))⟩, LLM-priors ∪ Corpus, ∅) ⟨nothing of intent(f)⟩
                 decode_warm(f,K) ≜ decode(f, LLM-priors ∪ Corpus, K)
                 ∀f∈fragments(a) ∩ terminology, ∀K≠∅: decode_cold(core f) = intent(f) = decode_warm(core f, K)
                 self-sufficient(f): core(f) grounds in inline-≜(f) ∪ Corpus ∪ LLM-priors ∧ ¬external-cite
   PARTITIONED : ∀c∈Corpus: |home(c)|=1 ∧ disjoint(homes) ∧ ⋃ home = Corpus
-  PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
+  PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ⟨residue @ workflow, α(c) read in κ(c)⟩
   ENFORCED    : enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a) ⟨¬ ambient : COMPOSITION is the scope, ¬ a runtime self-filter⟩
                 substrate : fragment → Substrate ; own(f,adapter) ⇔ enforcing(f) ∧ substrate(f) = substrate(adapter)
                 face_decl(f,a) ≜ body(f) ∈ content(a) ⟨UNCONDITIONAL ∀ adapter : the rule is ALWAYS published⟩

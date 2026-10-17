@@ -1,5 +1,7 @@
 // residue.ts — the machine-check behind AC-RESIDUE (MODEL PARSIMONIOUS
-// `body(c)=⟨α, residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus).
+// `body(c)=⟨α, residue⟩`, residue the workflow's residue of c with α read in its bounded
+// context, specialized to the DEPLOYED corpus). It checks register only, never the
+// residue's content.
 //
 // GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
 // model reads is formal σ* under ρ, never human prose. This leg enforces it over the
@@ -15,7 +17,8 @@
 // DECIDABLE PREDICATE (two shapes, one leg):
 //
 //   SINGLE-LINE (dimension value residue · skill `description`) admissible ⇔
-//       ∅  (empty — the anchor α fully fires the concept, residue=∅),  OR
+//       ∅  (empty — the anchor α, read in its context, invokes the concept and nothing
+//          else, so the workflow's residue is ∅),  OR
 //       a σ* EXPRESSION: a symbol/anchor (shortlex kebab, opt. application `f(args)`),
 //       or the declared value-algebra operators applied over such terms. The admitted
 //       operators are the INJECTED corpus operator lexicon (`policy.residueOperators` /

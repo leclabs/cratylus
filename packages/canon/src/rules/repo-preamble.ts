@@ -10,8 +10,9 @@ import type { RuleCell } from '@cratylus/schema';
 // `content` projects + byte-locks to `/AGENTS.md`.
 //
 //   residue — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
-//             `accept()`/REFLEXIVE target. It is `residue`, NOT `definiens`: it has
-//             already paid the `∖ fired(α)` subtraction (`schema/src/rule-cell.ts`).
+//             `accept()`/REFLEXIVE target. It is `residue`, NOT `definiens`: it carries
+//             the workflow's residue of its anchor read in its bounded context, never
+//             what the anchor already invokes (`schema/src/rule-cell.ts`).
 //   content — the VERBATIM directive payload, regenerated to `targetPath` by
 //             `project-targets` and byte-locked by `test/hook-rule-boundary.test.ts`.
 //             `content`, NOT `body`: `body(c) = ⟨α, residue⟩` is the whole cell, and
