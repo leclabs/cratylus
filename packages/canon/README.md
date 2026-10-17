@@ -89,8 +89,10 @@ role, carrying nothing beyond it and no mark. `holder` refuses a cell missing a 
 without exactly one value, a slot not filled exactly once, and empty guardrails.
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
-production, nico the corpus's concept space and the cold-decode oracle, mav any software
-repository), `persona(architectRole, residue)`: each is
+production and generative video, nico the corpus and latent lexicography, mav software
+engineering). The architect role owns the conceptual model of every context it is given, the
+corpus included; a persona brings its expertise and owns nothing its role does not.
+Each is `persona(architectRole, residue)`:
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
 after the role's, and restating one the role holds changes only its enforcement level or note. It

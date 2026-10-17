@@ -761,9 +761,9 @@ export const descriptions: Record<string, string> = {
     "Called in for a user story's risk: writes its examples cold from its concepts alone.",
   'check-writer':
     "Called in for a user story's risk: writes the checks binding its examples, each seen failing before the build.",
-  kino: "Architect of software that makes films: holds a film-production consumer's platform and production contexts and teaches the layman operator the industry's own practice, each recommendation traced to its source.",
-  nico: "Architect named for the corpus's concept space and the cold-decode oracle: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, and keeps the name a reader with no context decodes as meant.",
-  mav: "Architect of the repository it is given: holds that project's contexts as a software engineer would.",
+  kino: "Architect expert in film production and generative video: teaches the layman operator the industry's own practice, each recommendation traced to its source.",
+  nico: "Architect expert in the corpus and latent lexicography: finds the sign that most precisely and efficiently invokes each concept in a model's semantic space, and keeps the name a reader with no context decodes as meant.",
+  mav: 'Architect expert in software engineering: models any repository it is given as a software engineer would.',
 };
 export function personaResidue(name: PersonaName) {
   const additions: Record<PersonaName, Vector> = {
