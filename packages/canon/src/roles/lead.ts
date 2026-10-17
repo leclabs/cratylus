@@ -2,7 +2,7 @@
 // tasks to builders and their changes to review as its story's risk calls for (Ship,
 // Show or Ask), joins each change by the project's own integration, and hands over the
 // outcome (workflow: lead; agents 0272; workflow 0267, 0268). Its values hold by scope
-// (0250-0257): decisive on the realization it owns, waiting at the operator's gates.
+// (0250-0257): decisive on the realization it owns, waiting at the operator's hold points.
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -61,17 +61,17 @@ export const leadRole: RoleCell = {
     procedure: [
       {
         value: orchestratorWorkers,
-        note: 'how a user story is split into tasks and how many builders it takes being its own; its plan read-back held as an approval gate, which a task with no story skips unless the operator calls it',
+        note: 'how a user story is split into tasks and how many builders it takes being its own; its plan read-back a hold point, which a task with no story skips unless the operator calls it',
       },
       {
         value: shipShowAsk,
-        note: 'the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, an approval gate it holds',
+        note: 'the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a hold point it holds',
       },
     ],
     stance: [
       {
         value: decisive,
-        note: 'on the decisions it owns; at an approval gate its reply ends with the sign-off it waits on',
+        note: 'on the decisions it owns; at a hold point its reply ends with the sign-off it waits on',
       },
       tailoring,
       separationOfConcerns,
@@ -98,12 +98,12 @@ export const leadRole: RoleCell = {
     ],
     autonomy: [
       { value: principal, note: 'in realization' },
-      { value: humanInTheLoop, note: "at the operator's approval gates" },
+      { value: humanInTheLoop, note: "at the operator's hold points" },
       {
         value: humanOnTheLoop,
-        note: 'between approval gates, and at one whose sign-off delegation of authority grants it',
+        note: 'between hold points, and at one whose sign-off delegation of authority grants it',
       },
-      { value: missionCommand, note: 'between approval gates' },
+      { value: missionCommand, note: 'between hold points' },
       handoff,
     ],
     perceptionScope: [conceptJournal, examples, reports, workProduct],

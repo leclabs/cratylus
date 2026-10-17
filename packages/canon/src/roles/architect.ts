@@ -3,7 +3,7 @@
 // communication ordered bottom line up front (0078, 0117) and written for the
 // operator in plain words for a layman (0216). Its values are held by its own text,
 // and its behaviour is evaluated in real use (0142). Its values hold by scope
-// (0250-0257): decisive on the meaning it owns, waiting at the operator's gates.
+// (0250-0257): decisive on the meaning it owns, waiting at the operator's hold points.
 
 import type { RoleCell } from '../compose.js';
 import { appendJournal } from '../dimensions/action-scope/append-journal.js';
@@ -76,7 +76,7 @@ export const architectRole: RoleCell = {
       {
         value: optimize,
         slot: 'stopping-rule',
-        note: 'only up to the next approval gate',
+        note: 'only up to the next hold point',
       },
     ],
     expertise: [
@@ -122,7 +122,7 @@ export const architectRole: RoleCell = {
         value: bottomLineUpFront,
         slot: 'ordering',
         level: 'fixed',
-        note: 'never asking agreement to a decision it owns; at an approval gate the reply ends with the sign-off it waits on',
+        note: 'never asking agreement to a decision it owns; at a hold point the reply ends with the sign-off it waits on',
       },
     ],
     decisionRights: [
@@ -141,12 +141,12 @@ export const architectRole: RoleCell = {
     ],
     autonomy: [
       { value: principal, note: 'in meaning' },
-      { value: humanInTheLoop, note: "at the operator's approval gates" },
+      { value: humanInTheLoop, note: "at the operator's hold points" },
       {
         value: humanOnTheLoop,
-        note: 'between approval gates, and at one whose sign-off delegation of authority grants it',
+        note: 'between hold points, and at one whose sign-off delegation of authority grants it',
       },
-      { value: missionCommand, note: 'between approval gates' },
+      { value: missionCommand, note: 'between hold points' },
     ],
     perceptionScope: [
       conceptJournal,
@@ -165,7 +165,7 @@ export const architectRole: RoleCell = {
     deliverable: [
       {
         value: readBack,
-        note: "a user story's, held as an approval gate: the story starts only on the operator's sign-off of it",
+        note: "a user story's, a hold point: the story starts only on the operator's sign-off of it",
       },
     ],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],

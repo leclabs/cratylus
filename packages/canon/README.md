@@ -70,7 +70,7 @@ warrants them. Each role is defined by what it receives and what it hands off, n
   (Ship, Show or Ask), joins each change by the project's own integration once every check passes
   and any review due before it joins approves it, and hands off the outcome. Where the operator has
   asked to review a change before it joins, no agent reviews it: the operator's review is its code
-  review, and it joins only on the operator's sign-off, an approval gate.
+  review, and it joins only on the operator's sign-off, a hold point.
 - **builder** — receives one task and hands off one change that passes every check.
 - **reviewer** — reviews one change it did not write, before or after it joins as its user story's
   risk calls for, against the change and, where they apply, the story's acceptance criteria and

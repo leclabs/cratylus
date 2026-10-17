@@ -84,7 +84,7 @@ const storyForm = record(
     ),
     review: said(
       text,
-      "How the story's changes are reviewed, as its risk picks: Ship (joined with no code review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that approval gate: the operator's review is that change's code review, under Ask, and no agent reviews it.",
+      "How the story's changes are reviewed, as its risk picks: Ship (joined with no code review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that hold point: the operator's review is that change's code review, under Ask, and no agent reviews it.",
     ),
     cost: said(
       text,

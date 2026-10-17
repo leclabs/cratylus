@@ -64,9 +64,9 @@ c ∉ dom(α) ⇒ c ∉ Anchors :
 ¬circ(n, cᵢ) ⇒ evidence about fired(n), ¬ about cᵢ ⟨fired : Names → ℘(D) reads n ALONE⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
-∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩
-residue(c) = ∅ ⇒ c enters as α(c) alone
+differentia(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), differentia(c)⟩
+differentia(c) = ∅ ⇒ c enters as α(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 
 conform(a)  ⇔  register(a) = σ*

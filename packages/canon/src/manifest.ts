@@ -129,7 +129,7 @@ export const MANIFEST = {
       {
         name: 'sign-off',
         gloss:
-          "the operator's, at its approval gates, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any approval gate it calls: agreeing that a handoff serves its intent",
+          "the operator's, at its hold points, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any hold point it calls: agreeing that a handoff serves its intent",
         optional: true,
       },
     ],

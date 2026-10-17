@@ -994,7 +994,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * workflow first, then the standing decisions its work needs; nothing is recorded or
  * changed before the read-back, which carries the current design, then what is open,
  * competing versions and open decisions, then the stories and tasks in flight; a
- * ruling waits in it for the operator's sign-off, and a read-back held at a gate or
+ * ruling waits in it for the operator's sign-off, and a read-back held at a hold point or
  * called by the operator ends with the sign-off it waits on and ends the turn (0251,
  * 0252, 0294). It holds only where the launch starts a session with no conversation
  * since its last compaction, and again after the session is compacted; a resumed
@@ -1543,7 +1543,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project\'s version control and the lead\'s outcomes; the work product itself — the project tree, source, tests — is not a source: never list, search or open it.",',
         '    "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the user stories and tasks in flight as the project\'s version control and the lead\'s outcomes show them, in your own communication style.",',
         '    "Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.",',
-        '    "A read-back held at an approval gate or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.",',
+        '    "A read-back held at a hold point or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.",',
         '  ].join("\\n");',
         '}',
         '',
