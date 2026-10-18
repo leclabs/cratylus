@@ -1,5 +1,8 @@
-// `cratylus uninstall --harness <name> [--home <dir>] [--dry-run]` — take away from a
-// host what `install` placed there for one harness, and nothing else.
+// `cratylus uninstall --harness <name> [--scope user|project] [--home <dir>] [--dry-run]`
+// — take away from a host what `install` placed there for one harness at one scope,
+// and nothing else. `--scope project` takes back the installation of the project the
+// working directory is in, and nothing under the home; the user's (the default) leaves
+// every project installation untouched.
 //
 // WHAT IS THIS TOOL'S TO REMOVE is known by construction: the owned root
 // (`~/.cratylus/<harness>`) is cratylus's alone, so it goes whole, edits and additions
@@ -69,7 +72,12 @@ import {
   withoutRuntimeParts,
 } from '../../deploy/index.js';
 import {
-  ownedRootIn,
+  type InstallScope,
+  type Placement,
+  placementOf,
+} from '../../deploy/install-scope.js';
+import {
+  holdsRenderTree,
   readInstallationRecord,
   removeOwnedRoot,
   unlinkOwnedRoot,
@@ -97,6 +105,11 @@ export interface UninstallCmdOpts {
    *  harness's own directory — its environment variable's where it has one and that
    *  is set, else under the process's HOME — and the process's HOME for the rest. */
   home?: string;
+  /** `--scope`: the installation to take back, the user's (default) or the one in
+   *  the project of `cwd`. */
+  scope?: InstallScope;
+  /** The working directory the project is resolved from. Default: the process's. */
+  cwd?: string;
 }
 
 /** Something this run took away, or would. */
@@ -644,22 +657,28 @@ export function removeEarlierInstallation(
 }
 
 /**
- * Take back the installation of `adapter` under its owned root: every reference into
- * the root, found from where it points, so a root or record the host edited or removed
+ * Take back the installation of `adapter` at `placement`: every reference into the
+ * root, found from where it points, so a root or record the host edited or removed
  * leaves none dangling; then the root, whole. The operator's answers install wrote
  * into the host's settings are the host's, and stay. `undefined` where there is
  * neither a root nor a reference into one.
  */
 export function removeOwnedInstallation(
   adapter: HarnessAdapter,
-  opts: Pick<UninstallCmdOpts, 'home' | 'dryRun'>,
+  placement: Placement,
+  dry: boolean,
 ): Tally | undefined {
-  const dry = opts.dryRun ?? false;
-  const harnessDir = harnessDirIn(adapter, opts.home);
-  const root = ownedRootIn(adapter, opts.home);
+  const { harnessDir, root, scope } = placement;
   const present = existsSync(root);
   const record = present ? readInstallationRecord(root) : null;
-  const unlinked = unlinkOwnedRoot({ adapter, harnessDir, root, record, dry });
+  const unlinked = unlinkOwnedRoot({
+    adapter,
+    harnessDir,
+    root,
+    scope,
+    record,
+    dry,
+  });
   if (!present && unlinked.changed.length === 0) return undefined;
   const tally: Tally = { removed: [], left: [...unlinked.left] };
   for (const what of unlinked.changed)
@@ -720,12 +739,39 @@ export function runUninstall(opts: UninstallCmdOpts): number {
     );
   }
   const adapter = adapterByName(opts.harness);
+  const scope = opts.scope ?? 'user';
+  const placement = placementOf(adapter, scope, {
+    cwd: opts.cwd ?? process.cwd(),
+    home: opts.home,
+  });
+  if ('refused' in placement) return fail(placement.refused);
+  const { root } = placement;
   const run = { dry: opts.dryRun ?? false, verbose: opts.verbose ?? false };
+  // A project's `.cratylus/<harness>` holding files but no installation record, with
+  // nothing referring into it, is an author's render tree: not this command's.
+  if (
+    scope === 'project' &&
+    holdsRenderTree(root) &&
+    unlinkOwnedRoot({ ...placement, adapter, record: null, dry: true }).changed
+      .length === 0
+  ) {
+    return fail(
+      `${root} holds files but no installation record, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; nothing is removed, so remove it yourself if it is no longer wanted`,
+    );
+  }
   const tally: Tally = { removed: [], left: [] };
   let found = false;
   try {
-    for (const remove of [removeOwnedInstallation, removeEarlierInstallation]) {
-      const done = remove(adapter, opts);
+    // A project installation is only its root and the references into it; an earlier
+    // installation, from before the owned root, was only ever the user's.
+    const steps = [
+      () => removeOwnedInstallation(adapter, placement, run.dry),
+      ...(scope === 'user'
+        ? [() => removeEarlierInstallation(adapter, opts)]
+        : []),
+    ];
+    for (const remove of steps) {
+      const done = remove();
       if (done === undefined) continue;
       found = true;
       tally.removed.push(...done.removed);
@@ -739,7 +785,9 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   }
   if (!found) {
     say(
-      `nothing of ${CLI_BIN} is installed in ${adapter.name} here (no ${ownedRootIn(adapter, opts.home)}, and no earlier installation's record), so nothing is removed`,
+      scope === 'project'
+        ? `nothing of ${CLI_BIN} is installed in ${adapter.name} in this project (no ${root}), so nothing is removed`
+        : `nothing of ${CLI_BIN} is installed in ${adapter.name} here (no ${root}, and no earlier installation's record), so nothing is removed`,
     );
     return 0;
   }

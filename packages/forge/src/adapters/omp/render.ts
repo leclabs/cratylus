@@ -148,6 +148,11 @@ const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
+/** A project's settings file omp reads beside the user's, relative to the project's
+ *  `.omp`: `config.yml`, the file omp writes a project's model roles to. A project
+ *  installation reads and writes the operator's choices there (decision 0311). */
+const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
+
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
@@ -155,6 +160,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
  *  role only as the operator answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   tierRole: (tier) => tier,
   agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
 };
@@ -197,6 +203,7 @@ export const ompDispatchIsolation: DispatchIsolation = {
  *  separator is carried. */
 export const ompStatusSegment: StatusSegmentHost = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   segment: 'status',
   defaultPreset: 'default',
   defaultLayout: {

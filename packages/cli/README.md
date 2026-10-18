@@ -344,18 +344,19 @@ Install the bundled corpus into an agent harness on this machine, asking what yo
 cratylus install [options]
 ```
 
-| Flag                      | What it does                                                                                                                                                                                                                                   |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                             |
-| `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                               |
-| `--all`                   | Install every practice, without asking                                                                                                                                                                                                         |
-| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)           |
-| `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked) |
-| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                         |
-| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                 |
-| `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                      |
-| `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                           |
-| `--home <dir>`            | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                               |
+| Flag                      | What it does                                                                                                                                                                                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                    |
+| `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project") |
+| `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                                                                      |
+| `--all`                   | Install every practice, without asking                                                                                                                                                                                                                                                |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                  |
+| `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked)                                        |
+| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                                                                |
+| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                                                        |
+| `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                                                             |
+| `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                                                                  |
+| `--home <dir>`            | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                                                                      |
 
 ### `cratylus uninstall`
 
@@ -365,12 +366,13 @@ Remove from an agent harness what install placed there — its owned root and ev
 cratylus uninstall [options]
 ```
 
-| Flag               | What it does                                                                |
-| ------------------ | --------------------------------------------------------------------------- |
-| `--harness <name>` | The agent harness to remove from (required) (choices: "omp")                |
-| `--dry-run`        | Print what would be removed and left, writing nothing                       |
-| `--verbose`        | Also list every item removed                                                |
-| `--home <dir>`     | The home directory the installation is under (default: your home directory) |
+| Flag               | What it does                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--harness <name>` | The agent harness to remove from (required) (choices: "omp")                                                                                           |
+| `--scope <scope>`  | The installation to remove: user, yours, or project, the one inside the project of the current directory (choices: "user", "project", default: "user") |
+| `--dry-run`        | Print what would be removed and left, writing nothing                                                                                                  |
+| `--verbose`        | Also list every item removed                                                                                                                           |
+| `--home <dir>`     | The home directory the installation is under (default: your home directory)                                                                            |
 
 ## Capabilities
 

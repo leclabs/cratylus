@@ -11,6 +11,7 @@
 // nothing is written after.
 
 import * as clack from '@clack/prompts';
+import type { InstallScope } from '../../deploy/install-scope.js';
 import type { OfferedPractice, OfferedRuleset } from '../../project/index.js';
 
 /** One model role the host binds no model to, which the operator may bind: a tier the
@@ -33,6 +34,9 @@ export interface InstallPrompts {
     found: readonly string[],
     supported: readonly string[],
   ): Promise<string | undefined>;
+  /** Where to install: for the user, every project offered it (preselected), or
+   *  inside `project` only, which then loads it in place of the user's. */
+  scope(project: string): Promise<InstallScope | undefined>;
   /** Which practices to install, each offered with its description; `initial` are
    *  preselected: those already installed here, or on a fresh host the corpus's own.
    *  At least one is required. */
@@ -104,6 +108,25 @@ async function askRoute(q: RoleQuestion): Promise<string | undefined> {
 }
 
 export const terminalPrompts: InstallPrompts = {
+  async scope(project) {
+    return answer(
+      await clack.select<InstallScope>({
+        message: 'Install for whom?',
+        options: [
+          {
+            value: 'user',
+            label: 'for you, in every project (your home directory)',
+          },
+          {
+            value: 'project',
+            label: `for this project only, committable for its team (${project})`,
+          },
+        ],
+        initialValue: 'user',
+      }),
+    );
+  },
+
   async harness(found, supported) {
     const options = found.length > 0 ? found : supported;
     return answer(

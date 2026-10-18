@@ -80,6 +80,7 @@ export {
   type OwnedReference,
   type PlaceRootResult,
   type RenderedFile,
+  holdsRenderTree,
   linkOwnedRoot,
   ownedRootIn,
   placeOwnedRoot,
@@ -88,6 +89,14 @@ export {
   rootFiles,
   unlinkOwnedRoot,
 } from './owned-root.js';
+
+// Where an installation is: for the user, or inside one project.
+export {
+  type InstallScope,
+  type Placement,
+  placementOf,
+  projectOf,
+} from './install-scope.js';
 
 export {
   applyPrune,

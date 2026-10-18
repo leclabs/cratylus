@@ -74,7 +74,7 @@ export interface ProjectorOptions {
   readonly delivered?: readonly DeliveredDocument[];
 }
 
-/** The scopes `deploy` places into. */
+/** The scopes `install` and `uninstall` act at, and `deploy` places into. */
 const SCOPES = ['user', 'project'] as const;
 
 /** A `--harness` flag: one of the registered harnesses, said so in its help. */
@@ -260,6 +260,12 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     )
     .addOption(
       new Option(
+        '--scope <scope>',
+        'Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user)',
+      ).choices(SCOPES),
+    )
+    .addOption(
+      new Option(
         '--practices <names>',
         'The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)',
       ),
@@ -307,6 +313,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .action(
       async (opts: {
         harness?: string;
+        scope?: (typeof SCOPES)[number];
         practices?: string;
         all?: boolean;
         rules?: string;
@@ -319,6 +326,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
       }) => {
         process.exitCode = await runInstall({
           harness: opts.harness,
+          scope: opts.scope,
           corpus: options.defaultCorpus,
           version: options.version,
           delivered: options.delivered,
@@ -346,6 +354,14 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     )
     .addOption(
       new Option(
+        '--scope <scope>',
+        'The installation to remove: user, yours, or project, the one inside the project of the current directory',
+      )
+        .choices(SCOPES)
+        .default('user'),
+    )
+    .addOption(
+      new Option(
         '--dry-run',
         'Print what would be removed and left, writing nothing',
       ),
@@ -360,12 +376,14 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .action(
       (opts: {
         harness: string;
+        scope: (typeof SCOPES)[number];
         dryRun?: boolean;
         verbose?: boolean;
         home?: string;
       }) => {
         process.exitCode = runUninstall({
           harness: opts.harness,
+          scope: opts.scope,
           dryRun: opts.dryRun,
           verbose: opts.verbose,
           home: opts.home,
