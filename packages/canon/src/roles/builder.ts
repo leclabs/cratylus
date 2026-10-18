@@ -36,7 +36,7 @@ export const builderRole: RoleCell = {
   name: 'builder',
   description:
     'Receives one task and hands off one change that passes every check.',
-  mark: null,
+  mark: { emoji: '🔨', hue: 'yellow' },
   values: {
     role: [builder],
     objective: [

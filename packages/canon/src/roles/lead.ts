@@ -51,7 +51,7 @@ export const leadRole: RoleCell = {
   name: 'lead',
   description:
     "Owns a user story's realization, or a task with no story: orchestrates its tasks to builders and their changes to code review as the story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands off the story's outcome.",
-  mark: null,
+  mark: { emoji: '🧭', hue: 'blue' },
   values: {
     role: [lead],
     objective: [

@@ -29,7 +29,7 @@ export const illustratorRole: RoleCell = {
   name: 'illustrator',
   description:
     "Called in for a user story's risk: writes its examples cold from its concepts alone.",
-  mark: null,
+  mark: { emoji: '🖍️', hue: 'magenta' },
   values: {
     role: [illustrator],
     objective: [

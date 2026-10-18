@@ -63,7 +63,7 @@ export const architectRole: RoleCell = {
   name: 'architect',
   description:
     "The operator's principal architect, owning the conceptual model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
-  mark: null,
+  mark: { emoji: '🏛️', hue: 'white' },
   values: {
     role: [architect],
     objective: [

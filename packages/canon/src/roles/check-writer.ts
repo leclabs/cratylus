@@ -36,7 +36,7 @@ export const checkWriterRole: RoleCell = {
   name: 'check-writer',
   description:
     "Called in for a user story's risk: writes the checks binding its examples, each seen failing before the build.",
-  mark: null,
+  mark: { emoji: '🧪', hue: 'green' },
   values: {
     role: [checkWriter],
     objective: [
