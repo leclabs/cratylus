@@ -45,9 +45,7 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | `fragments` | the factor value modules, filed one per factor directory                                             |
 | `agents`    | the composed agents: six generic holders of their roles, and three personas                          |
 | `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes                  |
-| `hooks`     | the hook cells, each carrying its verbatim worker payload                                            |
 | `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
-| `plumbing`  | what every practice is installed with and none is offered as, declared beside them                   |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
@@ -68,14 +66,14 @@ warrants them. Each role is defined by what it receives and what it hands off, n
   builders (orchestrator-workers) and their changes to code review as the story's risk calls for
   (Ship, Show or Ask), joins each change by the project's own integration once every check passes
   and any review due before it joins approves it, and hands off the outcome. Where the operator has
-  asked to review a change before it joins, no agent reviews it: the operator's review is its code
-  review, and it joins only on the operator's sign-off, a hold point.
+  asked to review a change before it joins, the operator's review is its code review, and it joins
+  on the operator's sign-off, a hold point.
 - **builder** — receives one task and hands off one change that passes every check.
 - **reviewer** — reviews one change it did not write, before or after it joins as its user story's
   risk calls for, against the change and, where they apply, the story's acceptance criteria and
-  examples, held-out ones included; hands off one code review and never builds or repairs the work.
-  It never reviews a change the operator has asked to review itself; the operator takes that
-  change's held-out examples directly from the design.
+  examples, held-out ones included; hands off one code review naming each finding, leaving building
+  and repairing the work to the builders. A change the operator has asked to review is the
+  operator's to review; the operator takes that change's held-out examples directly from the design.
 - **illustrator** — writes a user story's examples cold from its concepts alone, flagging unclear
   terms.
 - **check-writer** — writes the checks binding a user story's examples, each seen failing before the
@@ -103,19 +101,17 @@ than its reach, is made, and composition warns (a `CompositionWarning`), naming 
 harm from one is on record (decision 0142(2)).
 
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
-effort (`routing`), its typed handoff (`contract`) and the per-turn persistence protocol every agent
-re-grounds its stance by (`persistence`). Nothing narrows its tools or whom it may dispatch: every
-agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic agents and is empty.
-`holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named exports,
-for a corpus that composes agents of its own over these roles.
+effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
+dispatch: every agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic
+agents and is empty. `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are
+also named exports, for a corpus that composes agents of its own over these roles.
 
 ## Typed handoffs
 
 An assignment and a deliverable are values of their factors, and each carries its contract as JSON
 Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
 the value's anchor). Composition copies the pair onto the agent as `contract`. Each handoff states
-what it must contain, so one passed without a part shows what is missing (`?` marks an optional
-field, `[≥1]` a list that may not be empty):
+what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
 | Role         | Assignment                                                                                                                                                     | Deliverable                                                        |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -130,19 +126,17 @@ one. Its outcome names the user story, or for a task with no story the task, and
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence, and
 the cost in agent runs by role, tokens and elapsed time. A code review's `verdict` is `approve` or
 `changes`. The architect's handoffs are a person's — free-text intent in, a read-back to the
-operator out (where things stand, with one recommendation) — so it carries no contract. An agent
-harness binds the deliverable as its own output schema, shows the assignment form when an agent is
-dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in the
-dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
-field, of the closest form where there are alternatives; it never refuses the dispatch or the launch
-for it (0142(3)).
+operator out (where things stand, and what it recommends) — so it carries no contract. An agent
+harness binds the deliverable as its own output schema and shows every session, each turn, the
+assignment form of each agent that takes one: one fenced `assignment` JSON block in the dispatch
+text.
 
 ## Evaluation and persona drift
 
 Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
 factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
-replies (0142(1)). Persona drift is held by the agent's own text, the persistence protocol naming
-its tells, and its definition is revised on the evidence of use.
+replies (0142(1)). Persona drift is a concept of the agents context, judged by the operator in real
+use; no agent carries countermeasure text against it.
 
 ## The first principle
 

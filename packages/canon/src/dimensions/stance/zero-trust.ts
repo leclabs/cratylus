@@ -1,3 +1,3 @@
 import type { Stance } from '../../manifest.js';
 
-export const zeroTrust: Stance = `zero-trust ≜ trusts no input by default, verifying each`;
+export const zeroTrust: Stance = `zero-trust ≜ verifies each input before it trusts it`;

@@ -57,7 +57,7 @@ import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
-import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import type { Agent } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -134,16 +134,6 @@ export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
  *  main session as the agent definition omp discovers by that name (decision
  *  0047). */
 const OMP_AGENT_FLAG = 'agent';
-
-/** What an agent dispatching a delegate from `eval` code is warned: no `task` call
- *  carries that dispatch, so its assignment is neither shown nor checked. */
-const EVAL_DISPATCH_WARNING =
-  'dispatch from eval code: its assignment is not shown or checked; dispatch with the task tool to have it checked.';
-
-/** `eval` code that dispatches a delegate: the eval prelude's `agent(…)` or `workpool(…)`,
- *  or the task tool called as `tool.task` or `tool["task"]`. */
-const EVAL_DISPATCH =
-  /(?<![\w.$])(?:agent|workpool)\s*\(|(?<![\w.$])tool\s*(?:\??\.\s*task\b|\[\s*["'`]task["'`]\s*\])/;
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
@@ -270,8 +260,8 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * **THE TYPED HANDOFF** ({@link Agent.contract}): the deliverable schema is omp's
  * own `output`, which task dispatch uses as the child's structured-output schema
  * (omp's own task dispatch checks a return against it), and the assignment
- * schema is {@link OMP_ASSIGNMENT_KEY}, which the extension shows with each
- * dispatch and launch of the agent, warning when the assignment given is incomplete.
+ * schema is {@link OMP_ASSIGNMENT_KEY}, whose form the extension shows every turn
+ * to a session that may dispatch the agent.
  *
  * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
@@ -927,21 +917,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * OPEN REACH (decision 0081). Every agent, main or dispatched, is offered every verb
  * of every capability: no verb is withheld and no declaration narrows the tools.
  *
- * TYPED HANDOFFS, SHOWN AND NEVER REFUSED (decision 0142(3)). Every turn of every
- * session carries the assignment form of each agent that declares an assignment
- * schema ({@link OMP_ASSIGNMENT_KEY}). On every `task` call, in any session, each
- * such item is checked with the same `checkAssignment` the schema package exports
- * (its source carried here verbatim) against the one fenced `assignment` block of
- * the item's text or of the batch's shared context; a misfit is warned of, naming
- * the agent and each missing or ill-typed field with the agent's form, and the call
- * goes ahead. A main session launched as an agent with an assignment schema checks
- * its first prompt the same way, whether given on the command line, typed, or by any
- * other route, warns of a misfit, and starts.
- *
- * DISPATCH FROM `eval`. A dispatch from `eval` code (the prelude's `agent(…)` or
- * `workpool(…)`, or the task tool called as `tool.task` or `tool["task"]`) reaches
- * no `task` call, so its assignment is not checked. A session launched as an agent, and a delegate whose declaration carries a
- * typed assignment, is warned so ({@link EVAL_DISPATCH_WARNING}); the call goes ahead.
+ * TYPED HANDOFFS, SHOWN (decision 0142(3)). Every turn of every session carries the
+ * assignment form of each agent that declares an assignment schema
+ * ({@link OMP_ASSIGNMENT_KEY}).
  *
  * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
  * alike, names the agent making it in `CRATYLUS_AGENT`: the
@@ -979,37 +957,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `parseArgs`, win over the declaration's — each for its own dimension — and the
  * declaration's body is carried either way.
  *
- * THE DECLARATION IS THE ONLY SOURCE OF IDENTITY, STANCE AND PROCEDURE. omp's own
- * system prompt opens a launched session's turn, and parts of it prescribe a coding
- * assistant's identity and workflow. So, for a main session launched as a
- * declaration (never a plain one), each turn keeps omp's sections that describe the
- * harness and every section it does not know, and drops, by heading, those that
- * prescribe: Role, Engineering, Workflow, Delivery, Critical, the project context's
- * `<critical>` blocks, and the tool policy's line against settling for plausibility.
- * The titles removed are notified once per launch.
- *
- * THE SESSION START. The first turn of a launch whose declared procedure holds
- * `reconstitution` carries a session-start note rendered from that value: the
- * session reads the design state of each context it touches and of the delivered
- * workflow first, then the standing decisions its work needs; nothing is recorded or
- * changed before the read-back, which carries the current design, then what is open,
- * competing versions and open decisions, then the stories and tasks in flight; a
- * ruling waits in it for the operator's sign-off, and a read-back held at a hold point or
- * called by the operator ends with the sign-off it waits on and ends the turn (0251,
- * 0252, 0294). It holds only where the launch starts a session with no conversation
- * since its last compaction, and again after the session is compacted; a resumed
- * session continuing a conversation reconstitutes nothing.
- * Every turn of a launch whose declared decision rights hold meaning (D) carries a
- * note rendered from that right: the meaning of the contexts it holds is its own,
- * the approval of their examples included, approved as they stand when they express
- * their meaning, and a ruling of meaning whose grounds it holds is taken in the turn
- * it holds them and recorded as a concept version with its reason, never as a
- * decision, or carried in the read-back for sign-off at a session's start or where
- * the operator called one (0086, 0251, 0294). Every turn of a launch whose memory
- * keeps the records as its source of truth under the honesty guardrail carries a
- * note rendered from those values: where things stand is what the records show, and
- * what they do not record is unknown. These hold what the agent's replies say by its
- * own text, not by a check on the reply (0106).
+ * THE DECLARATION'S TEXT FOLLOWS omp's own system prompt in every turn of a main
+ * session launched as a declaration (never a plain one), which keeps omp's prompt whole.
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -1112,14 +1061,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
-        "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
-        '// check every handoff is shown, here and at a launch alike.',
-        `const assignmentIn: (text: string) => unknown = (${String(assignmentIn)});`,
-        `const checkAssignment: (agent: string, schema: unknown, value: unknown) => { problem?: string } = (${String(checkAssignment)});`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
-        '// What an agent dispatching a delegate from `eval` code is warned, and that code.',
-        `const EVAL_DISPATCH_WARNING = ${JSON.stringify(EVAL_DISPATCH_WARNING)};`,
-        `const EVAL_DISPATCH = ${String(EVAL_DISPATCH)};`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
@@ -1203,21 +1145,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  );',
         '}',
         '',
-        '// THIS MODULE AS LOADED. omp loads an extension once per process and every session of that',
-        '// process, a dispatched one included, runs the module as loaded: an install that replaces it',
-        '// reaches only processes started afterwards. So a session started in an older process says',
-        "// so, since the checks of its dispatches are the old module's.",
-        'const MODULE = fileURLToPath(import.meta.url);',
-        'const LOADED = readFileSync(MODULE, "utf8");',
-        'function warnReplaced(session: Session): void {',
-        '  const installed = existsSync(MODULE) ? readFileSync(MODULE, "utf8") : undefined;',
-        '  if (installed === LOADED) return;',
-        '  session.ui.notify(',
-        '    `${COMMAND}: this omp process runs the ${COMMAND} extension it loaded when it started, which the installation has since ${installed === undefined ? "removed" : "replaced"}; its sessions, dispatched ones included, keep the earlier tools and dispatch checks until omp is restarted. Restart omp to run the installed one.`,',
-        '    "warning",',
-        '  );',
-        '}',
-        '',
         'const requirement = (p: Parameter): string => (p.required ? "required" : "optional");',
         '',
         'function description(e: Explanation): string {',
@@ -1293,8 +1220,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "  // One agent definition as omp's own discovery parses it.",
         '  declaration: AgentDefinition;',
         '  mark?: string;',
-        '  // The schema its assignment must fit, when the declaration carries one.',
-        '  assignment?: Schema;',
         '}',
         '// What of a session the launch reads or sets.',
         'interface Session {',
@@ -1306,18 +1231,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    setStatus(key: string, text: string | undefined): void;',
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
         '  };',
-        "  // The session's entries on its current branch, as omp's session manager keeps them.",
-        '  sessionManager?: { getBranch?(): readonly { type?: string; message?: { role?: string } }[] };',
-        '}',
-        '',
-        '// Whether the session already holds a conversation since its last compaction: a resumed',
-        '// session continuing one, not a new session or one compacted since it last spoke.',
-        'function conversed(session: Session): boolean {',
-        '  const branch = session.sessionManager?.getBranch?.() ?? [];',
-        '  const since = branch.map((entry) => entry.type).lastIndexOf("compaction");',
-        '  return branch',
-        '    .slice(since + 1)',
-        '    .some((entry) => entry.type === "message" && (entry.message?.role === "user" || entry.message?.role === "assistant"));',
         '}',
         'type Level = Parameters<ExtensionAPI["setThinkingLevel"]>[0];',
         '// A setting a launch holds as a runtime override.',
@@ -1338,7 +1251,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  if (declaration === undefined) return { names };',
         '  const said = frontmatterOf(declaration);',
         '  const mark = typeof said.mark === "string" && said.mark.trim() !== "" ? said.mark.trim() : undefined;',
-        '  return { found: { declaration, mark, assignment: schemaOf(said) }, names };',
+        '  return { found: { declaration, mark }, names };',
         '}',
         '',
         "// A declaration's front matter as its file says it, read with omp's own parser. A bundled",
@@ -1363,134 +1276,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  required?: readonly string[];',
         '}',
         '',
-        '// One item of a `task` call and the agent it runs as.',
-        'interface Handoff {',
-        '  item: Record<string, unknown>;',
-        '  agent: string;',
-        '}',
-        '',
-        '// A dispatch is known by what it carries — the agent each item runs as and its task, one item',
-        '// or a batch of them — never by what the harness calls the tool carrying it, which a host or',
-        '// a provider may present under another name.',
-        'function isDispatch(input: Record<string, unknown>): boolean {',
-        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
-        '  return items.length > 0 && items.every((raw) => {',
-        '    if (typeof raw !== "object" || raw === null) return false;',
-        '    const item = raw as Record<string, unknown>;',
-        '    return typeof item.task === "string" && (typeof item.agent === "string" || typeof input.agent === "string");',
-        '  });',
-        '}',
-        '',
-        '// The items of a dispatch, batch (`tasks[]`) or flat, each with the agent it names.',
-        'function itemsOf(input: Record<string, unknown>): Handoff[] {',
-        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
-        '  return items.flatMap((raw) => {',
-        '    if (typeof raw !== "object" || raw === null) return [];',
-        '    const item = raw as Record<string, unknown>;',
-        '    const agent = typeof item.agent === "string" ? item.agent : typeof input.agent === "string" ? input.agent : "task";',
-        '    return [{ item, agent }];',
-        '  });',
-        '}',
-        '',
-        '// The assignment an item is dispatched with: the block in its own text, else the one in the',
-        "// batch's shared context.",
-        'function assignmentOf(item: Record<string, unknown>, input: Record<string, unknown>): unknown {',
-        '  const own = typeof item.task === "string" ? assignmentIn(item.task) : undefined;',
-        '  if (own !== undefined) return own;',
-        '  return typeof input.context === "string" ? assignmentIn(input.context) : undefined;',
-        '}',
-        '',
         'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
-        '',
-        "// omp's own sections that prescribe an identity, a stance or a procedure, by heading: a session",
-        '// launched as a declaration takes all three from the declaration alone. Every other section,',
-        '// one omp adds later included, describes the harness and is kept.',
-        'const PRESCRIBES: readonly string[] = ["Role", "Engineering", "Workflow", "Delivery", "Critical"];',
-        "// The line of omp's tool policy that prescribes a stance (never settle for plausibility).",
-        'const PRESCRIBED_LINE = /settle for plausibility/i;',
-        '',
-        "// One part of omp's system prompt without the sections that prescribe: a `§` section or a `#`",
-        '// one so titled, to its next heading of the same or a higher level; the `<critical>` blocks',
-        '// opening the Critical section, which ends where they do; the `<critical>` blocks of the',
-        '// project context; and the prescriptive line of the tool policy. The titles removed are said.',
-        'function harnessOnly(text: string): { text: string; removed: string[] } {',
-        '  const removed: string[] = [];',
-        '  const say = (title: string) => {',
-        '    if (!removed.includes(title)) removed.push(title);',
-        '  };',
-        '  const out: string[] = [];',
-        '  let section = "";',
-        '  let dropping = 0;',
-        '  let critical = false;',
-        '  let inBlock = false;',
-        '  for (const raw of text.split("\\n")) {',
-        '    let line = raw;',
-        '    const top = /^§\\s+(.+?)\\s*$/.exec(line);',
-        '    if (top) {',
-        '      section = top[1] ?? "";',
-        '      critical = false;',
-        '      inBlock = false;',
-        '      dropping = PRESCRIBES.includes(section) ? 1 : 0;',
-        '      if (dropping === 0) out.push(line);',
-        '      else {',
-        '        say(section);',
-        '        critical = section === "Critical";',
-        '      }',
-        '      continue;',
-        '    }',
-        '    if (critical) {',
-        '      // The Critical section is its opening `<critical>` blocks; what follows them is not.',
-        '      let rest = line;',
-        '      for (;;) {',
-        '        if (inBlock) {',
-        '          const end = rest.indexOf("</critical>");',
-        '          if (end < 0) {',
-        '            rest = "";',
-        '            break;',
-        '          }',
-        '          rest = rest.slice(end + "</critical>".length);',
-        '          inBlock = false;',
-        '          continue;',
-        '        }',
-        '        const trimmed = rest.trimStart();',
-        '        if (!trimmed.startsWith("<critical>")) {',
-        '          rest = trimmed;',
-        '          break;',
-        '        }',
-        '        inBlock = true;',
-        '        rest = trimmed.slice("<critical>".length);',
-        '      }',
-        '      if (inBlock || rest === "") continue;',
-        '      critical = false;',
-        '      dropping = 0;',
-        '      line = rest;',
-        '    }',
-        '    const sub = /^#{1,2}\\s+(.+?)\\s*$/.exec(line);',
-        '    if (sub) {',
-        '      if (dropping === 2) dropping = 0;',
-        '      if (PRESCRIBES.includes(sub[1] ?? "")) {',
-        '        say(sub[1] ?? "");',
-        '        if (dropping === 0) dropping = 2;',
-        '      }',
-        '    }',
-        '    if (dropping > 0) continue;',
-        '    if (section === "Tool Policy" && PRESCRIBED_LINE.test(line)) {',
-        '      say("Tool Policy: plausibility");',
-        '      continue;',
-        '    }',
-        '    out.push(line);',
-        '  }',
-        '  // The project context describes the host; its `<critical>` blocks, inside it or right after',
-        '  // it, prescribe.',
-        '  const joined = out',
-        '    .join("\\n")',
-        '    .replace(/(<project-context>[\\s\\S]*?<\\/project-context>)((?:\\s*<critical>[\\s\\S]*?<\\/critical>)*)/g, (_all, context: string, after: string) => {',
-        '      const inner = context.replace(/\\s*<critical>[\\s\\S]*?<\\/critical>/g, "");',
-        '      if (inner !== context || after !== "") say("project context <critical>");',
-        '      return inner;',
-        '    });',
-        '  return { text: joined, removed };',
-        '}',
         '',
         '// The form an agent takes its assignment in, read from its schema: one fenced `assignment`',
         '// block holding a JSON object, then each field with its type, its least number of items,',
@@ -1520,61 +1306,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      `  ${i + 1}.${form.description ? ` ${form.description}` : ""}`,',
         '      ...lines(form, "    "),',
         '    ]),',
-        '  ].join("\\n");',
-        '}',
-        '',
-        '// One `### <name>` section of a declaration body, without its heading; empty when absent.',
-        'function declared(body: string, name: string): string {',
-        '  return new RegExp(`^### ${name}\\\\s*\\\\n([\\\\s\\\\S]*?)(?=^#{1,3} |(?![\\\\s\\\\S]))`, "m").exec(body)?.[1] ?? "";',
-        '}',
-        '',
-        '// The session-start note of a declaration whose procedure starts with reconstitution,',
-        '// rendered from that procedure value, and the scope its note gives it, as its body states',
-        '// them (0252: nothing is recorded or changed before the read-back; a read-back held or',
-        '// called ends the turn); none for any other.',
-        'function reconstitutionNote(body: string): string | undefined {',
-        '  const value = /^- \\*\\*reconstitution\\*\\*(?: \\(([^)]*)\\))?(?: — (.*?))?(?: \\(fixed\\))?\\s*$/m.exec(declared(body, "procedure"));',
-        '  if (value === null) return undefined;',
-        '  return [',
-        '    "# Session start: reconstitution",',
-        '    "",',
-        '    `This session starts with reconstitution${value[2] ? ` (${value[2]})` : ""}${value[1] ? `: ${value[1]}` : ""}.`,',
-        "    `Read the design state of each touched context and of the delivered workflow (${COMMAND}:workflow, or the project's own workflow context where its journal holds it) first, then the standing decisions your work needs. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.`,",
-        '    "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project\'s version control and the lead\'s outcomes; the work product itself — the project tree, source, tests — is not a source: never list, search or open it.",',
-        '    "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the user stories and tasks in flight as the project\'s version control and the lead\'s outcomes show them, in your own communication style.",',
-        '    "Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.",',
-        '    "A read-back held at a hold point or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.",',
-        '  ].join("\\n");',
-        '}',
-        '',
-        '// The per-turn note of a declaration whose decision rights hold meaning (D), rendered from',
-        '// that right as the design holds it: the meaning of the contexts it holds is its own,',
-        '// the approval of their examples included (0086), and a ruling of meaning whose grounds it',
-        '// holds is taken in the turn it holds them and recorded as a concept version with its',
-        "// reason, never as a decision (0294), except that at a session's start or under a",
-        '// read-back the operator called the ruling waits for sign-off (0251); none for any other.',
-        'function meaningNote(body: string): string | undefined {',
-        '  if (!/^- meaning(?: \\([^)]*\\))?: \\*\\*D\\*\\*/m.test(declared(body, "decision-rights"))) return undefined;',
-        '  return [',
-        '    "# Meaning: yours",',
-        '    "",',
-        '    "The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.",',
-        '    "Approval judges one thing: whether an example expresses its concepts\' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context\'s model its own; send back only an example that misses its meaning, naming the meaning it misses.",',
-        "    \"Settle on sight: a ruling of meaning whose grounds you hold is taken in the turn you hold them, recorded as a concept version with its reason, never as a decision, and then reported, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.\",",
-        '  ].join("\\n");',
-        '}',
-        '',
-        '// The per-turn note of a declaration that keeps the records as its source of truth under the',
-        '// honesty guardrail, rendered from those two values: where things stand is what the records',
-        '// show, observed apart from inferred; none for any other.',
-        'function recordsNote(body: string): string | undefined {',
-        '  if (!/^- \\*\\*source-of-truth\\*\\*/m.test(declared(body, "memory"))) return undefined;',
-        '  if (!/^- \\*\\*honesty\\*\\*/m.test(declared(body, "guardrails"))) return undefined;',
-        '  return [',
-        '    "# The records",',
-        '    "",',
-        '    "The journal is the record of the design, and the project\'s version control and your delegates\' reports and outcomes are the record of its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",',
-        '    "What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.",',
         '  ].join("\\n");',
         '}',
         '',
@@ -1636,15 +1367,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    type: "string",',
         '  });',
         '  let launched: Launched | undefined;',
-        '  // The launch whose typed assignment no prompt has carried yet.',
-        '  let awaiting: { name: string; schema: Schema } | undefined;',
-        "  // Whether the launch has been told which of omp's prompt sections it runs without.",
-        '  let told = false;',
-        "  // Whether the launch's first turn carries the session-start note: its procedure starts",
-        '  // with reconstitution and its session is new, or was compacted, rather than continuing',
-        '  // a conversation.',
-        '  let owed = false;',
-        '  let noted = false;',
         '  // What puts back each setting the current launch holds, in the order it took them.',
         '  const undo: (() => void)[] = [];',
         '',
@@ -1673,17 +1395,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // A launch ends: its prompt and every setting it holds go with it.',
         '  function end(): void {',
         '    launched = undefined;',
-        '    awaiting = undefined;',
-        '    told = false;',
-        '    owed = false;',
-        '    noted = false;',
         '    for (const restore of undo.splice(0).reverse()) restore();',
-        '  }',
-        '',
-        '  // The launch comes to owe the session-start note, when its procedure starts with reconstitution.',
-        '  function owe(declaration: AgentDefinition): void {',
-        '    owed = reconstitutionNote(declaration.systemPrompt) !== undefined;',
-        '    noted = false;',
         '  }',
         '',
         "  // The rest of the declaration, as omp's task dispatch resolves it for a child, each held",
@@ -1761,14 +1473,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
         '    // omp reads its command line, win; the declaration applies where the operator gave none.',
         '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
-        '    // A launch as an agent taking a typed assignment is shown it as a dispatch of it is: a',
-        '    // prompt given on the command line is checked now; with none, the first prompt is.',
-        '    if (found.assignment !== undefined) {',
-        '      const given = (operator as { messages?: unknown }).messages;',
-        '      const prompts = Array.isArray(given) ? given.filter((m): m is string => typeof m === "string") : [];',
-        '      if (startup && prompts.length > 0) checkLaunch(ctx, name, found.assignment, prompts.join("\\n\\n"));',
-        '      else awaiting = { name, schema: found.assignment };',
-        '    }',
         '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
         "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
         '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
@@ -1800,74 +1504,28 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    await settle(scope, declaration, operator);',
         '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
         '    launched = found;',
-        '    if (!conversed(ctx)) owe(declaration);',
         '  }',
         '  pi.on("session_start", async (_event, ctx) => {',
-        '    warnReplaced(ctx as unknown as Session);',
         '    await warnSkew(ctx as unknown as Session);',
         '    return launch(ctx as unknown as Session, true);',
         '  });',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
-        '  // A compacted session has lost its conversation, so the launch owes the session-start note again.',
-        '  pi.on("session_compact", (_event, ctx) => {',
-        '    if (launched !== undefined && (ctx as unknown as Session).agent?.kind === "main") owe(launched.declaration);',
-        '  });',
-        "  // A launch's first prompt checked against its typed assignment: a misfit is warned of, with",
-        '  // the form, and the agent starts all the same.',
-        '  function checkLaunch(session: Session, name: string, schema: Schema, prompt: string): void {',
-        '    awaiting = undefined;',
-        '    const { problem } = checkAssignment(name, schema, assignmentIn(prompt));',
-        '    if (problem !== undefined)',
-        '      session.ui.notify(`${name} starts with an incomplete assignment: ${problem}\\n${formOf(name, schema)}`, "warning");',
-        '  }',
-        '  pi.on("input", (event, ctx) => {',
-        '    const session = ctx as unknown as Session;',
-        '    if (awaiting !== undefined && session.agent?.kind === "main")',
-        '      checkLaunch(session, awaiting.name, awaiting.schema, String(event.text ?? ""));',
-        '    return undefined;',
-        '  });',
-        "  // Every turn's prompt is omp's own, kept where it describes the harness and without what",
-        '  // prescribes an identity, a stance or a procedure, then the declaration and the full',
-        '  // instructions of the skills it loads at start, so the declaration is the only source of',
-        '  // who the agent is and how it works, and a rebuilt base prompt drops neither. A launch',
-        '  // whose first prompt came by a route with no `input` event has it checked here. In every',
-        '  // session, launched or not, main or dispatched, the turn also carries the assignment form',
-        '  // of each agent that takes a typed one; the first turn of a launch whose procedure starts',
-        '  // with reconstitution carries a note saying so; and every turn of a launch whose decision',
-        '  // rights hold meaning, or that keeps the records as its source of truth under honesty,',
-        '  // carries a note of each.',
+        "  // Every turn's prompt is omp's own, then the declaration and the full instructions of the",
+        '  // skills it loads at start, so a rebuilt base prompt drops neither. In every session,',
+        '  // launched or not, main or dispatched, the turn also carries the assignment form of each',
+        '  // agent that takes a typed one.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
         '    const forms = await dispatchForms(session);',
         '    if (now === undefined || session.agent?.kind !== "main")',
         '      return forms === undefined ? undefined : { systemPrompt: [...event.systemPrompt, forms] };',
-        '    if (awaiting !== undefined) checkLaunch(session, awaiting.name, awaiting.schema, String(event.prompt ?? ""));',
-        '    const removed: string[] = [];',
-        '    const base = event.systemPrompt.map((part: string) => {',
-        '      const kept = harnessOnly(part);',
-        '      removed.push(...kept.removed.filter((title) => !removed.includes(title)));',
-        '      return kept.text;',
-        '    });',
-        '    if (removed.length > 0 && !told) {',
-        '      told = true;',
-        '      session.ui.notify(`Launched as ${now.declaration.name}: omp prompt sections removed: ${removed.join(", ")}`, "info");',
-        '    }',
-        '    // The first turn of a launch that owes the session-start note alone: a turn-scoped note,',
-        '    // gone from every later turn.',
-        '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
-        '    noted = true;',
-        '    const meaning = meaningNote(now.declaration.systemPrompt);',
-        '    const records = recordsNote(now.declaration.systemPrompt);',
         '    return {',
         '      systemPrompt: [',
-        '        ...base,',
+        '        ...event.systemPrompt,',
         '        instructions(now.declaration),',
         '        ...(await skills(now.declaration)),',
         '        ...(forms === undefined ? [] : [forms]),',
-        '        ...(start === undefined ? [] : [start]),',
-        '        ...(meaning === undefined ? [] : [meaning]),',
-        '        ...(records === undefined ? [] : [records]),',
         '      ],',
         '    };',
         '  });',
@@ -1883,46 +1541,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      ? undefined',
         '      : ["# Assignment forms", "", "Give a dispatch of these agents its assignment in its task text so:", "", ...forms].join("\\n");',
         '  }',
-        '',
-        "  // A dispatch from `eval` code (the prelude's `agent(…)` or `workpool(…)`, or the task tool called",
-        '  // through `tool`) never reaches the `task` call where its assignment is shown and checked. So',
-        '  // a session launched as an agent, or a delegate whose declaration',
-        "  // carries a typed assignment, is warned so; the call goes ahead. A plain session and omp's own",
-        '  // delegates are told nothing.',
-        '  pi.on("tool_call", async (event, ctx) => {',
-        '    if (event.toolName !== "eval") return undefined;',
-        '    const input: unknown = event.input;',
-        '    const code = input !== null && typeof input === "object" && "code" in input ? input.code : undefined;',
-        '    if (typeof code !== "string" || !EVAL_DISPATCH.test(code)) return undefined;',
-        '    const session = ctx as unknown as Session;',
-        '    const agent = session.agent;',
-        '    if (agent?.kind === "main" && launched === undefined) return undefined;',
-        '    if (agent?.kind === "sub") {',
-        '      const declaration = (await discoverAgents(session.cwd)).agents.find((a) => a.name === agent.name);',
-        '      if (schemaOf(frontmatterOf(declaration)) === undefined) return undefined;',
-        '    } else if (agent?.kind !== "main") return undefined;',
-        '    session.ui.notify(EVAL_DISPATCH_WARNING, "warning");',
-        '    return undefined;',
-        '  });',
-        '',
-        "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
-        '  // contract, each misfit warned of; the dispatch goes ahead.',
-        '  pi.on("tool_call", async (event, ctx) => {',
-        '    const input = (event.input ?? {}) as Record<string, unknown>;',
-        '    if (!isDispatch(input)) return undefined;',
-        '    const session = ctx as unknown as Session;',
-        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
-        '    const problems: string[] = [];',
-        '    for (const h of itemsOf(input)) {',
-        '      const value = assignmentOf(h.item, input);',
-        '      const schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
-        '      if (schema === undefined) continue;',
-        '      const { problem } = checkAssignment(h.agent, schema, value);',
-        '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, schema)}`);',
-        '    }',
-        '    if (problems.length > 0) session.ui.notify(`dispatch warning, going ahead: ${problems.join("\\n")}`, "warning");',
-        '    return undefined;',
-        '  });',
         '',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',
         '  // as one tool with every verb it explains, to every agent. One the command cannot explain',

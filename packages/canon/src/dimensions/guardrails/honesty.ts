@@ -1,3 +1,3 @@
 import type { Guardrails } from '../../manifest.js';
 
-export const honesty: Guardrails = `honesty ≜ never fabricates; says what it observed apart from what it inferred`;
+export const honesty: Guardrails = `honesty ≜ reports what it observed apart from what it inferred, and calls what is not recorded unknown`;

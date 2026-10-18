@@ -1,9 +1,8 @@
 // Composition: a persona that removes `none` from action-scope or weakens a guardrail
 // is made, and warned of, never refused (0142(2)), while no composed agent is narrowed
 // to read-only (0068); each role's typed handoff rides its agent as `contract`; every
-// agent carries the per-turn persistence protocol and states it is evaluated in real
-// use; no value of any agent is held by a guard (0142(1)); an optional slot may be left
-// unfilled, never another.
+// agent states it is evaluated in real use; no value of any agent is held by a guard
+// (0142(1)); an optional slot may be left unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
 import { type JsonSchema, anchorOf, enforcing } from '@cratylus/schema';
@@ -52,7 +51,7 @@ describe('composition over action-scope', () => {
     await setImmediate();
     process.off('warning', listen);
     expect(warned).toEqual([
-      'persona widener weakens the guardrail honesty from fixed to advisory',
+      'persona widener weakens the guardrail honesty from firm to advisory',
     ]);
   });
 
@@ -145,43 +144,24 @@ describe('typed handoffs', () => {
 });
 
 describe('the architect', () => {
-  it('composes its ordering, decisiveness and elevation as plain values at their levels', () => {
+  it("composes its ordering, decisiveness and elevation as plain values at their factor's default level", () => {
     const ordering = architect.communicationStyle.find(
       (e) => e.slot === 'ordering',
     );
-    expect(ordering?.level).toBe('fixed');
+    expect(ordering?.level).toBe('firm');
     expect(ordering && anchorOf(ordering.value)).toBe(
       anchorOf(bottomLineUpFront),
     );
     const decisive = architect.stance.find(
       (e) => anchorOf(e.value) === 'decisive',
     );
-    expect(decisive?.level).toBe('fixed');
+    expect(decisive?.level).toBe('firm');
     const elevation = architect.stance.find(
       (e) => anchorOf(e.value) === 'conceptual-elevation',
     );
-    expect(elevation?.level).toBe('fixed');
+    expect(elevation?.level).toBe('firm');
     const [deliverable] = architect.deliverable;
     expect(deliverable && anchorOf(deliverable.value)).toBe('read-back');
-  });
-
-  it('carries every persona-drift tell in the persistence protocol, as every agent does', () => {
-    for (const tell of [
-      'answerable question',
-      'hand-back',
-      'unrecommended options',
-      'transcribing',
-      'descending',
-      'prescribing',
-      'holding open',
-      'procedure past objective',
-    ])
-      expect(architect.persistence).toContain(`**${tell}**`);
-    expect(architect.persistence).toContain(
-      'The tells concern only decisions the agent owns: waiting at a hold point for a sign-off it does not hold is never persona drift.',
-    );
-    for (const [name, agent] of Object.entries(agents))
-      expect(agent.persistence, name).toBe(architect.persistence);
   });
 });
 

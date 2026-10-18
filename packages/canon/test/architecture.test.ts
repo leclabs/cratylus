@@ -1,8 +1,7 @@
 // Package-boundary gate — the four load-bearing package-boundary properties, enforced.
 //
-// Named for the law it enforces, on this corpus's own precedent: `cratylism.test.ts`
-// is named for the principle it enforces, not for a property-noun. Five cold legs were
-// spent looking for a quality-noun and the best of them returned `import-acyclicity`,
+// Named for the law it enforces, not for a property-noun. The best quality-noun found
+// was `import-acyclicity`,
 // which is simply WRONG — the law is stricter than acyclicity. `canon` importing
 // `cratylus` introduces no cycle and is still forbidden. A sign naming a weaker
 // property than the law would mislead exactly the reader who trusted it.
@@ -30,8 +29,7 @@
 // full of import-shaped text that is not an import: `config/scaffold.ts` holds a
 // scaffold TEMPLATE containing `import canon from '@cratylus/canon'`. A text scan
 // convicts it. It is not an edge. Comments and template literals are therefore
-// stripped before matching — the same use/mention line that governs
-// `command-veracity` and the density gate.
+// stripped before matching.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -439,24 +437,20 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
     // WAS 22, IS 0 — the whole point of the shapes extraction, and the proof it landed.
     // A cell reaching the projector again moves this off zero.
     expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);
-    // WAS 9, THEN 6, THEN 4, IS 5 — and these are LICENSED: a corpus BUILT BY forge,
-    // not DEFINED by it, which is not a divergence.
+    // WAS 9, THEN 6, THEN 4, THEN 5, IS 4 — and these are LICENSED: a corpus BUILT BY
+    // forge, not DEFINED by it, which is not a divergence.
     // Three of the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the
     // cell SHAPES and now take them from the schema, so their forge edge is gone
     // outright. Two more went with the two `toolkit/project-cli*.ts` files: they were one
     // program differing by an adapter string, and the shipped
-    // `cratylus project --harness <name>` is that program.
+    // `cratylus project --harness <name>` is that program. The last went with
+    // `tooling/project-targets.ts`, which regenerated committed hook targets and has
+    // none left to regenerate.
     //
-    // IT WENT UP BY ONE, and that is the property-1 repair's whole cost. Regenerating
-    // a committed hook target means RESOLVING its worker template, and the facts live
-    // in the projector — so `toolkit/project-targets.ts` took a forge import BACK.
-    // The trade is the one the architecture asks for: a BUILD SCRIPT reaching the
-    // projector (licensed, and the direction of every other entry here) in place of a
-    // CELL reaching the runtime (property 1, the highest-ranked property there is).
     // This number does not go to zero, and driving it there would mean canon could no
     // longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
-      5,
+      4,
     );
     // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `manifest.ts` and
     // `manifest.test-d.ts` took their shapes from the schema; `index.ts` was the last

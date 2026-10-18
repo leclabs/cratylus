@@ -158,8 +158,7 @@ export interface ProjectOpts {
    * enforcing values, INJECTED.
    *
    * deploy emits `mechanism` per (fragment, adapter), so it cannot live on the
-   * source cell. It is supplied here by the corpus, the
-   * same way `accept.ts` takes its palimpsest table as an injected `Policy` — the
+   * source cell. It is supplied here by the corpus — the
    * DATA lives in canon, the ALGORITHM stays doctrine-free.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;

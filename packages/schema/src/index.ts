@@ -224,7 +224,7 @@ export interface Binding {
  * binds to events.
  *
  * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
- * reasoning it governs, and the `accept()` target. `substrate` + `events` are
+ * reasoning it governs. `substrate` + `events` are
  * where it binds. Two independently-authored artifacts would guarantee silent
  * divergence, and a declaration that overstates what is enforced is worse than
  * no declaration — it manufactures trust in an invariant that does not exist.
@@ -262,7 +262,7 @@ export interface Enforcing<O extends string> {
    * Absent ⇒ the anchor α of this value is its own mechanism key.
    */
   readonly realizedBy?: string;
-  /** Anchors this value references — the CANONICAL orphan-ref witness. */
+  /** Anchors this value references. */
   readonly refs?: readonly string[];
 }
 
@@ -586,16 +586,10 @@ export interface Agent {
    * it returns. Copied by the corpus's own fold from the contracts its assignment
    * and deliverable values carry. Absent ⇒ its handoff is free text.
    *
-   * A harness binds the deliverable as its own output schema, shows the assignment
-   * when the agent is dispatched or launched, and warns when it is incomplete.
+   * A harness binds the deliverable as its own output schema and shows the
+   * assignment form to a session that may dispatch the agent.
    */
   readonly contract?: AgentContract;
-  /**
-   * OPTIONAL — the per-turn persistence protocol the agent re-grounds its stance
-   * by at the top of every turn, naming its drift tells. Text the corpus's fold
-   * carries for every agent; a harness renders it into the agent's instructions.
-   */
-  readonly persistence?: string;
   /**
    * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
    * omitted, and an empty list means the same thing as absent. Carried on the
@@ -760,13 +754,7 @@ export {
   resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
-export {
-  type AgentContract,
-  type ContractCheck,
-  type JsonSchema,
-  assignmentIn,
-  checkAssignment,
-} from './contract.js';
+export type { AgentContract, JsonSchema } from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
 // shapes it types. The MEMBERS are the corpus's, so there is nothing else here to

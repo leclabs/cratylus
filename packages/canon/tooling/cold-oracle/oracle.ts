@@ -4,7 +4,7 @@
 // corpus-coupled data it needs — WHICH isolation script, bound to the
 // manifest-owned `./cold-oracle.sh` (the script carries this corpus's repo-path guard
 // + credentials/isolation protocol), and WHICH no-prior lexicon, taken from
-// `canonPolicy` so the corpus declares it in ONE place. Callers name the bounded context
+// `./policy.ts` so the corpus declares it in ONE place. Callers name the bounded context
 // the text is read in (`nonceControl({ context: corpusContext })` for this corpus's own
 // cells, `./policy.ts`) and keep the rest of the surface (`model`, `timeoutMs`); the
 // script and the lexicon are bound here, never passed by them.
@@ -16,7 +16,7 @@ import {
   decodeCold as decodeColdEngine,
   nonceControl as nonceControlEngine,
 } from '@cratylus/forge/validate';
-import { canonPolicy } from './policy.js';
+import { noPriorMarkers } from './policy.js';
 
 export type { NonceControl };
 /** The caller-facing options — the injected `scriptPath` is bound here; the caller names
@@ -37,6 +37,6 @@ export function nonceControl(opts: ColdOracleOpts): NonceControl {
   return nonceControlEngine({
     ...opts,
     scriptPath: SCRIPT_PATH,
-    noPriorMarkers: canonPolicy.noPriorMarkers,
+    noPriorMarkers,
   });
 }

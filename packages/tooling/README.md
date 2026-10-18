@@ -20,4 +20,4 @@ because shell has no module resolution.
 
 Why it exists: a path built from a count of parent hops encodes the asking file's own
 location in its body, so moving that file silently repoints it — and the failure surfaces as
-an absence rather than an error. `packages/canon/test/positional-path.test.ts` is the law.
+an absence rather than an error.

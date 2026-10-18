@@ -1,6 +1,6 @@
 // THE PROJECTOR'S COMMANDS, as Commander commands — and nothing that runs them.
 //
-// This module builds `init`, `add`, `compose`, `project`, `optimize`, `install`,
+// This module builds `init`, `add`, `compose`, `project`, `install`,
 // `uninstall`, `deploy`, `explain` and `catalog`; the program that owns the `bin`
 // adds them to its own tree beside the capabilities, so there is ONE command, one
 // help, one refusal of a mistyped word. It used to build its own `cac` program and
@@ -11,7 +11,7 @@
 // EVERY VALUE IS CHECKED WHERE IT IS PARSED. A flag that takes one of a set (`--kind`,
 // `--scope`, `--harness`) declares the set, so Commander refuses a value outside it,
 // names the choices, and runs nothing — `--scope porject` used to mean user scope.
-// A required value (`optimize`'s `<source>` and `--plan`, `uninstall`'s `--harness`)
+// A required value (`uninstall`'s `--harness`)
 // is declared required. Every default a flag has is declared with it, so the help
 // prints the default the command runs with: where it is a fixed value it is the
 // option's own default, and where it depends on another flag or on the directory the
@@ -47,7 +47,6 @@ import {
 import { runExplain } from './commands/explain.js';
 import { runInit } from './commands/init.js';
 import { runInstall } from './commands/install.js';
-import { runOptimize } from './commands/optimize.js';
 import { runProject } from './commands/project.js';
 import { runUninstall } from './commands/uninstall.js';
 import { fail } from './style.js';
@@ -182,7 +181,7 @@ function unusedFlag(opts: {
  * The projector's commands, each under the audience it serves — the one place that is
  * said. The consumer installs a corpus and takes it away again (`install`,
  * `uninstall`); the corpus author writes and renders one (`init`, `add`, `compose`,
- * `project`, `optimize`, `deploy`, `explain`, `catalog`). Each list is in the order
+ * `project`, `deploy`, `explain`, `catalog`). Each list is in the order
  * its help lists it, and the program that owns the `bin` places the two groups from
  * this split, so it holds no list of command names of its own.
  */
@@ -245,58 +244,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           config: opts.config,
           out: opts.out,
           harness: opts.harness,
-          verbose: opts.verbose,
-        });
-      },
-    );
-
-  const optimize = new Command('optimize')
-    .description(
-      'Check a rewrite plan for a source you wrote, and write the artifacts and routing manifest it passes',
-    )
-    .argument('<source>', 'The source file or directory the plan rewrites')
-    .addOption(
-      new Option(
-        '--plan <file>',
-        'The JSON plan: its register, concepts and artifacts, which an agent writes (required)',
-      ).makeOptionMandatory(),
-    )
-    .addOption(
-      new Option(
-        '--out <dir>',
-        'The directory the artifacts are written to',
-      ).default('optimized'),
-    )
-    .addOption(
-      new Option(
-        '--manifest <path>',
-        'Where the routing manifest is written (default: .manifests/<source>.json)',
-      ),
-    )
-    .addOption(
-      new Option(
-        '--prior <path>',
-        'A manifest accepted earlier; artifacts whose digests match it are reused',
-      ),
-    )
-    .addOption(new Option('--verbose', 'Also list every file written'))
-    .action(
-      async (
-        source: string,
-        opts: {
-          plan: string;
-          out: string;
-          manifest?: string;
-          prior?: string;
-          verbose?: boolean;
-        },
-      ) => {
-        process.exitCode = await runOptimize({
-          source,
-          plan: opts.plan,
-          out: opts.out,
-          manifest: opts.manifest,
-          prior: opts.prior,
           verbose: opts.verbose,
         });
       },
@@ -653,6 +600,6 @@ export function projectorCommands(options: ProjectorOptions = {}): {
 
   return {
     consumer: [install, uninstall],
-    author: [init, add, compose, project, optimize, deploy, explain, catalog],
+    author: [init, add, compose, project, deploy, explain, catalog],
   };
 }

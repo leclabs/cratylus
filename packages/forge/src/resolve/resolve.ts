@@ -47,9 +47,7 @@
  * and the op table weakly follows — you can append to a uniform collection, merge
  * named parts, and only replace an atom.
  *
- * ALIGNMENT, NOT COLLISION, with `validate/residue.ts`'s `ResidueShape`: both are
- * `<Noun>Shape`, the qualifier naming the subject whose structure is meant. What
- * would be a collision is a bare `shape` field here, since `GatedField.shape`
+ * What would be a collision is a bare `shape` field here, since `GatedField.shape`
  * already squats that unqualified name — so the `value` qualifier on the field
  * below is LOAD-BEARING, not verbose.
  *

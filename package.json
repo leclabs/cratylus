@@ -26,7 +26,6 @@
     "typecheck:test": "turbo run typecheck:test",
     "canon:project": "pnpm canon:project:omp",
     "canon:project:omp": "pnpm build && pnpm exec cratylus project --harness omp --out .cratylus/omp",
-    "canon:project:targets": "pnpm --filter @cratylus/canon project:targets",
     "canon:deploy:agent": "pnpm exec cratylus deploy --kind agent",
     "canon:deploy:skill": "pnpm exec cratylus deploy --kind skill",
     "canon:deploy:hooks": "pnpm exec cratylus deploy --kind hooks",

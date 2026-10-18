@@ -8,7 +8,7 @@
 // not at build. This file is what makes the claim true instead of asserted.
 //
 // The one home is `@cratylus/runtime/bin-name` → `CLI_BIN`. Every consumer
-// interpolates it. This gate holds the four consumers to it, each by CAPTURE-AND-
+// interpolates it. This gate holds the three consumers to it, each by CAPTURE-AND-
 // COMPARE — read back the name the artifact actually carries and compare it to the
 // constant — so editing one without the other is red, in either direction:
 //
@@ -17,26 +17,6 @@
 //   (2) the runtime's Commander BRANDING (`main.ts`) — read out of `--help`.
 //   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
 //       of a real `scripts/<cap>.mjs` in a real render tree.
-//   (4) EVERY hook worker that names the bin — swept, not enumerated: every
-//       `hooks/**` file in a real render tree PLUS every committed `cellTargets()`
-//       byte. Both are RESOLVED bytes, which is the only form that ever reaches a
-//       host.
-//
-// LEG (4) WAS SITE-SPECIFIC AND BECAME A SCAN, because the cell it named
-// (`memory-consolidation-nudge`) stopped importing `CLI_BIN` — that import was a
-// canon cell's last import of the runtime, and THIS FILE REQUIRED IT: `CONSUMERS`
-// held the cell and asserted its source contained the symbol, so the only
-// mechanism admitted was the import. The scan outlived the cell: that cell (and
-// the memory skill triad it served) is since deleted, but the DEPLOY_TOOL half
-// of the sweep (`deploy-drift-notice`) still exercises the same mechanism.
-//
-// The replacement is strictly stronger, not a relaxation. The old leg captured ONE
-// worker at ONE hard-coded path; the sweep captures every projected hook artifact and
-// every committed target, so a SECOND worker acquiring the bin name is covered on the
-// day it lands rather than on the day someone remembers to enumerate it. What was
-// lost is `toContain('CLI_BIN')` — a mention-level proxy that could never have
-// distinguished a live interpolation from a stale comment, and which the
-// capture-and-compare legs subsume in every case where it was true.
 //
 // Plus a CENSUS: no file but `bin-name.ts` may spell the name as a quoted string
 // literal — the shape of the defect this retires (a second `const BIN = '…'`).
@@ -53,16 +33,6 @@
 // "npm reads the manifest, so it cannot be computed" is true of writing the manifest
 // and false of reading it.
 //
-// WHAT THAT CHANGES ABOUT THE DEPLOY_TOOL LEG BELOW, which is kept and not deleted:
-// its claim was "two authored homes agree", and its claim is now "the derivation
-// REACHED the artifact". That is the property still worth a gate, because the
-// artifact is shell — `deploy-drift-notice`'s worker names the projection fact
-// `deploy-bin` and the projector substitutes, and a resolution site that was missed
-// would ship a placeholder or a stale name to a host, silently, since the worker
-// fails open by design. It is still capture-and-compare against the manifest that
-// owns the name, deliberately NOT against `CLI_BIN`: comparing the derivation to
-// itself would be green on any value at all.
-//
 // This gate does NOT decide the name. The brand anchor is cratylism-gated and has
 // not converged; `CLI_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
@@ -77,9 +47,7 @@ import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import canonPlugin from '../src/index.js';
-import { cellTargets } from '../tooling/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
@@ -132,20 +100,10 @@ const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
   bin: Record<string, string>;
 };
 
-/** The deploy tool a hook worker declares, if any (`DEPLOY_TOOL=<name>`). */
-const deployTool = (sh: string): string | undefined =>
-  sh.match(/^DEPLOY_TOOL=(\S+)$/m)?.[1];
-
-/** The committed worker that names it — the convicting fixtures' subject. */
-const driftWorkerPath = deployDriftNotice.workers?.[0]?.targetPath ?? '';
-
 // A REAL render tree, not a hand-rolled emitter call: the shim under test is the
 // one that actually lands. V7 made the projector RETURN the artifact tree, so the
 // caller is the one writer — project THEN write.
 let projectedShim = '';
-
-/** Every projected `hooks/**` artifact, as ⟨path, RESOLVED bytes⟩. */
-let projectedHooks: Array<readonly [string, string]> = [];
 
 let scratch: string | undefined;
 beforeAll(async () => {
@@ -160,17 +118,14 @@ beforeAll(async () => {
     join(out, 'skills', CELL, 'scripts', `${CAPABILITY}.mjs`),
     'utf-8',
   );
-  projectedHooks = report.files
-    .filter((f) => f.path.startsWith('hooks/'))
-    .map((f) => [f.path, f.content] as const);
 }, 120_000);
 afterAll(async () => {
   if (scratch !== undefined)
     await rm(scratch, { recursive: true, force: true });
 });
 
-// Every hand-authored shell/`.mjs` source under each package's `src`. Emitted artifacts
-// are covered by the hook-artifact leg; these are the ones a human wrote and no compiler
+// Every hand-authored shell/`.mjs` source under each package's `src`: the ones a human
+// wrote and no compiler
 // reads. (Line comments, not a block: a glob like `packages/*` + `/src` would close a
 // block comment early at the `*` `/` pair — which is how this leg first failed to parse.)
 function shellSources(): string[] {
@@ -278,53 +233,6 @@ describe('the bin name has exactly one home', () => {
     expect(spawned).toBe(CLI_BIN);
     expect(projectedShim).toContain(`['${CAPABILITY}',`);
   });
-
-  it('EVERY hook artifact that names the DEPLOY TOOL agrees with forge’s `bin` key', async () => {
-    // The forge CLI's one home is a MANIFEST KEY, read here rather than transcribed —
-    // a transcription would be the second copy this whole file exists to forbid.
-    const committed = (await cellTargets()).map(
-      (t) => [`target ${t.path}`, t.content] as const,
-    );
-    const population = [...projectedHooks, ...committed];
-    const naming = population.filter(
-      ([, text]) => deployTool(text) !== undefined,
-    );
-    // NON-VACUITY, per population: a sweep that happens to find the assignment
-    // nowhere is green and DARK — precisely the failure this file was written
-    // against.
-    expect(
-      naming.map(([where]) => where).filter((w) => w.startsWith('hooks/'))
-        .length,
-      'no PROJECTED hook artifact names the deploy tool — the sweep is dark',
-    ).toBeGreaterThan(0);
-    expect(
-      naming.map(([where]) => where).filter((w) => w.startsWith('target '))
-        .length,
-      'no COMMITTED target names the deploy tool — the sweep is dark',
-    ).toBeGreaterThan(0);
-
-    for (const [where, text] of naming) {
-      expect(deployTool(text), `${where} names a stale deploy tool`).toBe(
-        CLI_BIN,
-      );
-    }
-  });
-
-  it('no projected or committed hook artifact carries an UNRESOLVED placeholder', async () => {
-    // The template's own failure mode, at the only grain that matters. `resolveWorker`
-    // throws on an unknown placeholder, so this can only go red if a resolution site
-    // were MISSED — a worker emitted straight from `cell.workers` — which is exactly
-    // how `{{fact:runtime-bin}}` would reach a host and fail there instead of here.
-    const committed = (await cellTargets()).map(
-      (t) => [`target ${t.path}`, t.content] as const,
-    );
-    for (const [where, text] of [...projectedHooks, ...committed]) {
-      expect(
-        text.includes('{{'),
-        `${where} ships an unresolved placeholder`,
-      ).toBe(false);
-    }
-  });
 });
 
 // ── THE CONVICTING FIXTURES ─────────────────────────────────────────────────────
@@ -335,7 +243,7 @@ describe('the bin name has exactly one home', () => {
 // assert it is rejected. Without them, "the bin name has one home" is a claim of the
 // same kind the retired shard above already made — asserted, unmeasured, and wrong.
 
-/** The three capture-and-compare predicates, isolated from their live inputs so a
+/** The two capture-and-compare predicates, isolated from their live inputs so a
  *  synthetic BAD corpus can be fed to the very same code the gate above runs. */
 const spawnedBin = (shim: string): string | undefined =>
   shim.match(/spawnSync\('([^']+)',/)?.[1];
@@ -510,24 +418,6 @@ describe('the single-home gate is non-vacuous', () => {
     expect(drifted).not.toBe(projectedShim); // the mutation actually landed
     expect(spawnedBin(projectedShim)).toBe(CLI_BIN);
     expect(spawnedBin(drifted)).not.toBe(CLI_BIN);
-  });
-
-  it('FAILS on a hook worker whose DEPLOY_TOOL drifted from forge’s `bin` key', () => {
-    // The SessionStart drift notice fails OPEN: a worker naming a program that no
-    // longer exists produces silence, and silence is indistinguishable from an
-    // in-sync host. A half-landed CLI rename would therefore delete this hook
-    // without deleting anything. Same capture-and-compare, over a corpus in which
-    // exactly one of the two sites moved.
-    const good = read(driftWorkerPath);
-    const drifted = good.replace(
-      `DEPLOY_TOOL=${CLI_BIN}`,
-      `DEPLOY_TOOL=${CLI_BIN}-stale`,
-    );
-    expect(drifted).not.toBe(good); // the mutation actually landed
-    expect(deployTool(good)).toBe(CLI_BIN);
-    expect(deployTool(drifted)).not.toBe(CLI_BIN);
-    // and the detector is not simply always-true: a worker naming no tool at all
-    // must read as absent, never as a drifted one.
   });
 
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {

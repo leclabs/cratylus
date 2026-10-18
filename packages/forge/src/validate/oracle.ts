@@ -1,7 +1,6 @@
-// oracle.ts — the LIVE half of the acceptance gate: the priors-only BLIND
-// cold-oracle driver. Wraps an ISOLATION script (fresh /tmp cwd OUTSIDE the repo +
-// a credentials-only CLAUDE_CONFIG_DIR ⇒ no corpus/memory/root/registry reads) and
-// exposes it as the authority for the two decode-shaped Universal legs:
+// oracle.ts — the cold-decode oracle's driver: the priors-only BLIND cold read.
+// Wraps an ISOLATION script (fresh /tmp cwd OUTSIDE the repo + a credentials-only
+// CLAUDE_CONFIG_DIR ⇒ no corpus/memory/root/registry reads), and answers for:
 //
 //   COLD-BLIND : decode_cold(core f) = intent(f)
 //   SIGNIFIED  : α, read in its bounded context, has the smallest residue (`residue @
@@ -21,15 +20,13 @@
 // This is the doctrine-agnostic ALGORITHM: the isolation-driving
 // protocol + the no-prior DETECTION. Both corpus-coupled data are INJECTED: WHICH
 // isolation script (it carries the corpus's repo-path guard) as `scriptPath`, and
-// WHICH decode lexicon witnesses a generic prior as `noPriorMarkers` (`./policy.ts`
-// `Policy.noPriorMarkers`). The script is a corpus asset (canon) and so is the
+// WHICH decode lexicon witnesses a generic prior as `noPriorMarkers`. The script is a
+// corpus asset (canon) and so is the
 // lexicon — a set of ENGLISH phrasings is this corpus's language, not the engine's;
 // neither is bundled here.
 //
-// These calls hit the network + a live model — SLOW and non-deterministic. They
-// are NOT part of the hermetic `pnpm test` floor; the caller gates them behind
-// `COLD_ORACLE_LIVE=1` (a live lane). The static floor (`./accept.ts`)
-// runs always; this oracle is the pre-land ceiling.
+// These calls hit the network + a live model — SLOW and non-deterministic, and never
+// part of `pnpm check`; the corpus runs them by hand.
 
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
@@ -75,7 +72,7 @@ export function decodeCold(text: string, opts: DecodeOpts): string {
 export interface NonceControlOpts extends DecodeOpts {
   /**
    * The generic-prior "no established meaning" signals a cold reader emits — the
-   * injected corpus lexicon (`Policy.noPriorMarkers`). Required: an engine default
+   * injected corpus lexicon. Required: an engine default
    * here would bake one natural language into a doctrine-agnostic module.
    */
   readonly noPriorMarkers: readonly RegExp[];

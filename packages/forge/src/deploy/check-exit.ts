@@ -3,11 +3,9 @@
 //
 // THE DEFECT THIS RETIRES. The check exited `1` both when the HOST was stale and
 // when the CHECK ITSELF failed. Those demand opposite responses from a caller,
-// and the caller that most needed to tell them apart — the SessionStart drift
-// advisory — could only do it by matching the report's closing VERDICT LINE with
-// `grep`. That coupled a hook worker to the comparator's output FORMAT because
-// its exit CONTRACT could not carry the distinction: reformat the report and the
-// advisory silently reclassifies a stale host as a broken tool.
+// and a caller could tell them apart only by matching the report's closing
+// VERDICT LINE, which coupled it to the comparator's output FORMAT: reformat the
+// report and the caller silently reclassifies a stale host as a broken tool.
 //
 // WHY NOT `--json`. It trades an exit-code contract for a parsing contract — the
 // same coupling one layer down, with every existing caller still reading the
@@ -60,8 +58,8 @@ export const DEPLOY_CHECK_EXIT = {
 // renumbering so that `drift` is a code an accident cannot produce: `--check` tools
 // exit `1` on "found something" by long convention (`grep`, `git diff
 // --exit-code`), and every operator's CI already reads it that way. The residual is
-// smaller than either repair, and it is loud when it happens: the advisory relays
-// the tool's own bytes, so a reader gets a stack trace where a diff belongs.
+// smaller than either repair, and it is loud when it happens: a crash prints a stack
+// trace where a diff belongs.
 
 /** One of the three statuses above. */
 export type DeployCheckExit =

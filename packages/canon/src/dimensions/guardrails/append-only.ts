@@ -1,3 +1,3 @@
 import type { Guardrails } from '../../manifest.js';
 
-export const appendOnly: Guardrails = `append-only ≜ never edits or deletes a recorded entry; a change is a new entry`;
+export const appendOnly: Guardrails = `append-only ≜ records each change as a new entry, keeping every recorded entry as written`;

@@ -23,7 +23,7 @@
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
-import { PLUMBING, PRACTICES } from './practices.js';
+import { PRACTICES } from './practices.js';
 
 export {
   CompositionRefusal,
@@ -34,7 +34,6 @@ export {
   type Stated,
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-export { personaProtocol } from './genus/persona.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
 export { builderRole } from './roles/builder.js';
@@ -57,13 +56,10 @@ export default defineAgentPlugin({
   // The projector needs the members to emit a host's runtime configuration and
   // receives them here as DATA on the plugin, never as an import of this package.
   events: CANONICAL_EVENTS,
-  // WHICH practices exist, and the plumbing every one of them is installed with —
-  // carried the same way, so an install offers what the corpus declares and no
-  // more (`practices.ts`).
+  // WHICH practices exist — carried the same way, so an install offers what the
+  // corpus declares and no more (`practices.ts`).
   practices: PRACTICES,
-  plumbing: PLUMBING,
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),
-  hooks: dir('./hooks'),
 });
