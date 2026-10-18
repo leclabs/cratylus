@@ -147,7 +147,7 @@ export const architectRole: RoleCell = {
     deliverable: [
       {
         value: readBack,
-        note: "a user story's, a hold point: the story starts only on the operator's sign-off of it",
+        note: "a user story's is a hold point: the story starts on the operator's sign-off of it",
       },
     ],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],

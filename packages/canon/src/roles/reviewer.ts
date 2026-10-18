@@ -1,7 +1,7 @@
 // The reviewer role: reviews one change it did not write, before or after it joins as
-// its story's risk calls for, and hands over one review, never building or repairing
-// the work, and never reviewing a change the operator has asked to review itself, whose
-// review is the operator's (workflow: reviewer; agents 0272; workflow 0267, 0292). It
+// its story's risk calls for, and hands over one review naming each finding; builders
+// build and repair the work, and a change the operator has asked to review is the
+// operator's to review (workflow: reviewer; agents 0272; workflow 0267, 0292). It
 // runs on another model family than the builders where one is available (0225, 0244),
 // and takes held-out examples directly from where the architect keeps them (0254).
 
@@ -41,7 +41,7 @@ import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
 export const reviewerRole: RoleCell = {
   name: 'reviewer',
   description:
-    'Reviews one change it did not write, before or after it joins, and hands off one code review; never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself.',
+    "Reviews one change it did not write, before or after it joins, and hands off one code review naming each finding; a change the operator has asked to review is the operator's to review.",
   mark: null,
   values: {
     role: [reviewer],
@@ -72,7 +72,7 @@ export const reviewerRole: RoleCell = {
       examples,
       {
         value: heldOutExamples,
-        note: 'taken directly from design/held-out/, never through the lead',
+        note: 'taken directly from design/held-out/',
       },
       workProduct,
     ],
@@ -85,7 +85,7 @@ export const reviewerRole: RoleCell = {
     assignment: [
       {
         value: reviewRequest,
-        note: 'its held-out examples taken directly from design/held-out/, never through the lead',
+        note: 'its held-out examples taken directly from design/held-out/',
       },
     ],
     deliverable: [deliverableCodeReview],

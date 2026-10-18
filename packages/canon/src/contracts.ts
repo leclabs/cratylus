@@ -195,7 +195,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               holds: said(flag, 'Whether the criterion holds in merged work.'),
               evidence: said(
                 text,
-                "Why it holds or does not, in the design's own terms: what the code review and the checks showed of the concept. Never a file, function, path or command: translate it into the concept it bears on.",
+                "Why it holds or does not, in the design's own terms: what the code review and the checks showed of the concept, each file, function, path or command translated into the concept it bears on.",
               ),
             }),
           },

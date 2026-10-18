@@ -68,14 +68,14 @@ warrants them. Each role is defined by what it receives and what it hands off, n
   builders (orchestrator-workers) and their changes to code review as the story's risk calls for
   (Ship, Show or Ask), joins each change by the project's own integration once every check passes
   and any review due before it joins approves it, and hands off the outcome. Where the operator has
-  asked to review a change before it joins, no agent reviews it: the operator's review is its code
-  review, and it joins only on the operator's sign-off, a hold point.
+  asked to review a change before it joins, the operator's review is its code review, and it joins
+  on the operator's sign-off, a hold point.
 - **builder** — receives one task and hands off one change that passes every check.
 - **reviewer** — reviews one change it did not write, before or after it joins as its user story's
   risk calls for, against the change and, where they apply, the story's acceptance criteria and
-  examples, held-out ones included; hands off one code review and never builds or repairs the work.
-  It never reviews a change the operator has asked to review itself; the operator takes that
-  change's held-out examples directly from the design.
+  examples, held-out ones included; hands off one code review naming each finding, leaving building
+  and repairing the work to the builders. A change the operator has asked to review is the
+  operator's to review; the operator takes that change's held-out examples directly from the design.
 - **illustrator** — writes a user story's examples cold from its concepts alone, flagging unclear
   terms.
 - **check-writer** — writes the checks binding a user story's examples, each seen failing before the

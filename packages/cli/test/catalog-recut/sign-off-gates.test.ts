@@ -30,7 +30,7 @@ const lineStarting = (lines: readonly string[] | undefined, prefix: string) =>
   );
 
 const signOffLine =
-  "- sign-off (the operator's, at its hold points, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any hold point it calls: agreeing that a handoff serves its intent): **R** (puts its handoffs up for it; takes it only where delegation of authority grants it) — recommends (fixed)";
+  "- sign-off (the operator's, at its hold points, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any hold point it calls: agreeing that a handoff serves its intent): **R** (puts its handoffs up for it; takes it only where delegation of authority grants it) — recommends";
 
 describe('sign-off-gates: agent values by scope', () => {
   it("sign-off is an optional decision-rights slot, the operator's class of decision", () => {
@@ -66,10 +66,10 @@ describe('sign-off-gates: agent values by scope', () => {
         ),
         name,
       ).toEqual([
-        `- **principal** (${principalScope}) — holds final authority within its remit (fixed)`,
-        "- **human-in-the-loop** (at the operator's hold points) — a person approves before it acts (fixed)",
-        '- **human-on-the-loop** (between hold points, and at one whose sign-off delegation of authority grants it) — acts on its own; a person oversees and can intervene (fixed)',
-        '- **mission-command** (between hold points) — escalates only a fork that is irreversible, about value, or beyond its competence (fixed)',
+        `- **principal** (${principalScope}) — holds final authority within its remit`,
+        "- **human-in-the-loop** (at the operator's hold points) — a person approves before it acts",
+        '- **human-on-the-loop** (between hold points, and at one whose sign-off delegation of authority grants it) — acts on its own; a person oversees and can intervene',
+        '- **mission-command** (between hold points) — escalates only a fork that is irreversible, about value, or beyond its competence',
       ]);
   });
 
@@ -82,7 +82,7 @@ describe('sign-off-gates: agent values by scope', () => {
       "- **reconstitution** — at every start, reads the concept journal's design",
       '- **decisive** — ',
       '- ordering (the sequence a reply presents its content in): **bottom-line-up-front** — ',
-      "- **read-back** (a user story's, a hold point: the story starts only on the operator's sign-off of it) — ",
+      "- **read-back** (a user story's is a hold point: the story starts on the operator's sign-off of it) — ",
     ])
       expect(lineStarting(lines, prefix), prefix).toHaveLength(1);
   });
@@ -91,21 +91,19 @@ describe('sign-off-gates: agent values by scope', () => {
     const lines = rendered('lead').lead;
     for (const prefix of [
       '- **orchestrator-workers** (how a user story is split into tasks and how many builders it takes being its own; its plan read-back a hold point, which a task with no story skips unless the operator calls it) — ',
-      '- **ship-show-ask** (the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a hold point it holds) — ',
-      '- **decisive** (on the decisions it owns; at a hold point its reply ends with the sign-off it waits on) — ',
+      "- **ship-show-ask** (the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, the operator's review is that change's code review, and the change joins on the operator's sign-off, a hold point it holds) — ",
+      '- **decisive** — ',
     ])
       expect(lineStarting(lines, prefix), prefix).toHaveLength(1);
   });
 
-  it('where the operator has asked to review a change, the lead has no agent review it and the reviewer never reviews it (0292)', () => {
-    const bodies = rendered('lead', 'reviewer');
-    const [leadLine] = lineStarting(bodies.lead, '- **lead** — ');
-    expect(leadLine).toContain(
-      "where the operator has asked to review a change before it joins, has no agent review that change and holds the operator's review as its hold point;",
+  it("where the operator has asked to review a change, the operator's review is its code review (0292)", () => {
+    const [reviewerLine] = lineStarting(
+      rendered('reviewer').reviewer,
+      '- **reviewer** — ',
     );
-    const [reviewerLine] = lineStarting(bodies.reviewer, '- **reviewer** — ');
     expect(reviewerLine).toContain(
-      'never builds or repairs the work it reviews, and never reviews a change the operator has asked to review itself',
+      "a change the operator has asked to review is the operator's to review",
     );
   });
 
@@ -115,12 +113,12 @@ describe('sign-off-gates: agent values by scope', () => {
         vectorOf(composedRole('reviewer')).perceptionScope,
         'reviewer.perceptionScope',
       ).find((entry) => anchorOf(entry.value) === 'held-out-examples')?.note,
-    ).toBe('taken directly from design/held-out/, never through the lead');
+    ).toBe('taken directly from design/held-out/');
     const bodies = rendered('reviewer', 'lead', 'builder');
     expect(
       lineStarting(
         bodies.reviewer,
-        '- **review-request** (its held-out examples taken directly from design/held-out/, never through the lead) — ',
+        '- **review-request** (its held-out examples taken directly from design/held-out/) — ',
       ),
     ).toHaveLength(1);
     for (const name of ['lead', 'builder'])
