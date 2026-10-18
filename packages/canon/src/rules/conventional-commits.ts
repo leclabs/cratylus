@@ -33,7 +33,7 @@ export const conventionalCommits: Ruleset = {
       name: 'conventional-commits-breaking-changes',
       description: 'Mark a breaking change with ! or a BREAKING CHANGE footer.',
       convention:
-        'Mark a commit that breaks the API with `!` immediately before the colon, `feat(api)!: …`, or with a footer `BREAKING CHANGE: <description>`, or both. A breaking change correlates with a MAJOR version, whatever its type.',
+        'Mark a commit that breaks the API with `!` immediately before the colon, `feat(api)!: …`, or with a footer `BREAKING CHANGE: <description>`, or both. Where `!` marks it and no `BREAKING CHANGE` footer is given, the commit description describes the breaking change. A breaking change correlates with a MAJOR version, whatever its type.',
       why: 'Consumers and release tooling learn from the commit itself that upgrading needs their attention.',
     },
     {

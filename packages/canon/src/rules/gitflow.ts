@@ -35,7 +35,7 @@ export const gitflow: Ruleset = {
       description:
         'Hotfix branches branch from main, then merge into main (tagged) and into develop.',
       convention:
-        'To fix a critical bug in a released version, branch `hotfix-<version>` from the tag on `main`, bump the patch version and fix the bug there. To finish it, merge it into `main` with `--no-ff` and tag that merge commit with the new version, then merge it into `develop` (or into the current release branch, where one exists), and delete it.',
+        'To fix a critical bug in a released version, branch `hotfix-<version>` from the tag on `main`, bump the patch version and fix the bug there. To finish it, merge it into `main` with `--no-ff` and tag that merge commit with the new version, then merge it into `develop` with `--no-ff` (or into the current release branch, where one exists), and delete it.',
       why: 'The fix ships from the released state without taking the unreleased work on develop, and merging it back keeps the fix in every later release.',
     },
   ],
