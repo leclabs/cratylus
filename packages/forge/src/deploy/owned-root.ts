@@ -9,6 +9,7 @@
 //
 //   agents/<name>.md        the corpus's agent declarations
 //   skills/<name>/…         the corpus's skills
+//   rules/<name>.md         the rules chosen at install, each applied in every session
 //   extensions/<module>.ts  the harness's adapters (the capability tools, the session
 //                           hooks, the dispatch isolation)
 //   hooks/<id>/<worker>     the workers the session hooks run

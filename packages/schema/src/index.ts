@@ -37,6 +37,7 @@
 import type { AgentContract } from './contract.js';
 import type { HookSubstrate } from './hook-cell.js';
 import type { EventName } from './hook/index.js';
+import type { Ruleset } from './rule.js';
 
 // ── Type-level metadata ─────────────────────────────────────────────────────
 
@@ -348,14 +349,12 @@ export interface DimensionMeta {
   /**
    * How the value-catalog is sourced (the `Repertoire`).
    *
-   * This field read `kind` until 2026-08-05, which put a THIRD concept on a sign
-   * two others already carried, two of them in
-   * this package: `RuleCell.kind` (`Kind ≜ {fragment, agent, rule, skill}`,
-   * one file over) and forge's `FragmentKind` (a value's structural shape). A blind
-   * reverse decode of all three read `kind` here as "the closure policy of the
-   * dimension's value space" and ranked this site's claim on the sign WEAKEST of
-   * the three — `kind` fires "variant tag answering what is this?", and this is a
-   * property ABOUT the dimension, not the dimension's identity. `RuleCell` keeps it.
+   * This field read `kind` until 2026-08-05, which put a second concept on a sign
+   * forge's `FragmentKind` (a value's structural shape) already carried. A blind
+   * reverse decode read `kind` here as "the closure policy of the dimension's value
+   * space" and ranked this site's claim on the sign weakest — `kind` fires "variant
+   * tag answering what is this?", and this is a property ABOUT the dimension, not
+   * the dimension's identity.
    */
   readonly repertoire: Repertoire;
   /** How many values the dimension field holds (the `Arity`). */
@@ -739,9 +738,9 @@ export function markToColor(mark: Mark): string {
   return mark.hue;
 }
 
-// ── Source-cell type kernel — the generic `hook`/`rule` cell shapes ───────────
-// The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
-// concrete cell instances live in the consuming corpus (canon).
+// ── Source-cell type kernel — the generic `hook` cell shape ─────────────────────
+// The doctrine-free hook cell shape + the generic config-IR lift. The concrete
+// cell instances live in the consuming corpus (canon).
 export {
   type HookCell,
   type HookMessage,
@@ -753,7 +752,7 @@ export {
   hookIrOf,
   resolveWorker,
 } from './hook-cell.js';
-export type { RuleCell } from './rule-cell.js';
+export type { Rule, Ruleset } from './rule.js';
 export type { AgentContract, JsonSchema } from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
@@ -907,6 +906,15 @@ export interface AgentPlugin extends Layout {
    * {@link Plumbing}. Plugins compose: the set's plumbing is the union.
    */
   readonly plumbing?: Plumbing;
+  /**
+   * WHICH rulesets the corpus offers — each one standard convention's rules, which
+   * an install offers whole, rule by rule, or not at all. Absent ⇒ none.
+   *
+   * It rides the plugin the way `practices` does: which rulesets exist is the
+   * corpus's to say, and the projector receives them as data. Plugins compose: a
+   * later plugin's ruleset of the same name replaces an earlier one's.
+   */
+  readonly rulesets?: readonly Ruleset[];
 }
 
 /**
