@@ -721,6 +721,7 @@ describe('install — the status line', () => {
             prompts: {
               harness: async () => 'omp',
               practices: async (_offered, initial) => [...initial],
+              rules: async () => [],
               routes: async () => ({}),
               agentStatus: async () => {
                 asked.push('agentStatus');

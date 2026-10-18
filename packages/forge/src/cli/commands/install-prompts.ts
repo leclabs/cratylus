@@ -11,7 +11,7 @@
 // nothing is written after.
 
 import * as clack from '@clack/prompts';
-import type { OfferedPractice } from '../../project/index.js';
+import type { OfferedPractice, OfferedRuleset } from '../../project/index.js';
 
 /** One model role the host binds no model to, which the operator may bind: a tier the
  *  installed agents fall back to, or a persona's own role (decision 0112). */
@@ -40,6 +40,10 @@ export interface InstallPrompts {
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
     initial: readonly string[],
   ): Promise<string[] | undefined>;
+  /** Which rules to place, each ruleset offered whole, rule by rule, or not at all;
+   *  nothing is chosen unless the operator chooses it. The answer is the rules chosen,
+   *  by name, possibly none. */
+  rules(offered: readonly OfferedRuleset[]): Promise<string[] | undefined>;
   /** The model per role asked: the answer of each role bound, a role left unbound
    *  absent. */
   routes(
@@ -126,6 +130,42 @@ export const terminalPrompts: InstallPrompts = {
         required: true,
       }),
     );
+  },
+
+  async rules(offered) {
+    const picked: string[] = [];
+    for (const set of offered) {
+      const how = answer(
+        await clack.select({
+          message: `Rules: ${set.name} — ${set.description}`,
+          options: [
+            { value: 'none', label: 'none' },
+            {
+              value: 'whole',
+              label: `all ${set.rules.length} (${set.rules.map((r) => r.name).join(', ')})`,
+            },
+            { value: 'each', label: 'rule by rule…' },
+          ],
+          initialValue: 'none',
+        }),
+      );
+      if (how === undefined) return undefined;
+      if (how === 'whole') picked.push(...set.rules.map((r) => r.name));
+      if (how !== 'each') continue;
+      const some = answer(
+        await clack.multiselect({
+          message: `Which ${set.name} rules? (space toggles, enter accepts)`,
+          options: set.rules.map((r) => ({
+            value: r.name,
+            label: `${r.name} — ${r.description}`,
+          })),
+          required: false,
+        }),
+      );
+      if (some === undefined) return undefined;
+      picked.push(...some);
+    }
+    return picked;
   },
 
   async routes(questions) {

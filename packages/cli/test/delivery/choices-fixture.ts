@@ -95,6 +95,10 @@ export async function guided(
         asked.push('practices');
         return [];
       },
+      rules: async () => {
+        asked.push('rules');
+        return [];
+      },
       routes: async (questions: readonly { role: string }[]) => {
         asked.push(...questions.map((q) => `model:${q.role}`));
         return answers.models ?? {};

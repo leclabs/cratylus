@@ -107,6 +107,7 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
     cwd: h.cwd,
     corpus: canon,
     all: true,
+    rules: 'none',
     modelRoles: 'default',
     interactive: true,
     prompts: {
@@ -117,6 +118,10 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
       practices: async (offered) => {
         asked.push('practices');
         return offered.map((p) => p.name);
+      },
+      rules: async () => {
+        asked.push('rules');
+        return [];
       },
       routes: async () => {
         asked.push('models');
@@ -157,6 +162,10 @@ it('delivery/5 — after an answer interactive install asks only missing informa
       practices: async (offered) => {
         record('practices');
         return offered.map((p) => p.name);
+      },
+      rules: async () => {
+        record('rules');
+        return [];
       },
       routes: async () => {
         record('models');

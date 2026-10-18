@@ -35,17 +35,19 @@
 // taken back by its own record as part of the run, leaving what the host placed or
 // changed.
 //
-// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
-// which harness, which of the corpus's practices, and which model each tier the agents
-// fall back to, and each persona's own role, runs on. Each has a flag; a decision given
-// by flag is never asked. The practices are the one decision no run takes for the
-// operator: with neither `--practices` nor `--all`, a terminal is asked (or, under
-// `--yes`, given the practices already installed here, or on a fresh host the corpus's
-// preselected ones) and a run with no terminal refuses, writing nothing. Of the rest a
-// run with no terminal (or `--yes`) takes the default. Before anything is written the
-// run shows what it would place, and on a terminal that is not fully decided it asks
-// once to go ahead: declining writes nothing. What it places is then summarised in a
-// few lines; the per-file detail is `--verbose`'s.
+// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
+// which harness, which of the corpus's practices, which of its rules, and which model
+// each tier the agents fall back to, and each persona's own role, runs on. Each has a
+// flag; a decision given by flag is never asked. The practices are the one decision no
+// run takes for the operator: with neither `--practices` nor `--all`, a terminal is
+// asked (or, under `--yes`, given the practices already installed here, or on a fresh
+// host the corpus's preselected ones) and a run with no terminal refuses, writing
+// nothing. Of the rest a run with no terminal (or `--yes`) takes the default. The rules
+// default to none, and the choice, once made, is recorded by name and kept by every
+// later install that is not told otherwise. Before anything is written the run shows
+// what it would place, and on a terminal that is not fully decided it asks once to go
+// ahead: declining writes nothing. What it places is then summarised in a few lines;
+// the per-file detail is `--verbose`'s.
 //
 // THE PREVIEW IS THE RUN, DRY. The same steps run once with `dry` set, and what they
 // report is what is shown — so the preview cannot describe something the placement
@@ -104,6 +106,7 @@ import {
 } from '../../deploy/index.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import {
+  type OfferedRuleset,
   type ProjectedTree,
   discoverFragments,
   projectPluginSet,
@@ -143,6 +146,11 @@ export interface InstallCmdOpts {
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
   all?: boolean;
+  /** `--rules <name,…|none>`: the rules to place, each name a ruleset (taken whole)
+   *  or one of its rules; `none` places none. Given at all, it settles the decision.
+   *  Absent: the choice an earlier install recorded, else asked; told nothing and
+   *  unable to ask, none. */
+  rules?: string;
   /** `--model-roles <role=model,…|default>`: the model each named role runs on,
    *  bound in the host's own settings: a tier the agents fall back to, or the role
    *  named for an agent. `default` binds none. Given at all, it settles the decision.
@@ -236,6 +244,39 @@ function parseNames(raw: string): string[] {
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** `--rules`, parsed against the rulesets offered: the rules named, each ruleset
+ *  named standing for all its rules; `none` for none. */
+function parseRules(raw: string, offered: readonly OfferedRuleset[]): string[] {
+  if (raw.trim() === 'none') return [];
+  const named = parseNames(raw);
+  if (named.length === 0) {
+    throw new Refusal(
+      "--rules: no rule was named; pass rulesets or rules, comma-separated, or the single word 'none'",
+    );
+  }
+  const rules: string[] = [];
+  const unknown: string[] = [];
+  for (const name of named) {
+    const set = offered.find((s) => s.name === name);
+    const rule = offered.some((s) => s.rules.some((r) => r.name === name));
+    if (set !== undefined) rules.push(...set.rules.map((r) => r.name));
+    else if (rule) rules.push(name);
+    else unknown.push(name);
+  }
+  if (unknown.length > 0) {
+    const offers =
+      offered.length === 0
+        ? 'this corpus offers no rulesets'
+        : offered
+            .map((s) => `${s.name}: ${list(s.rules.map((r) => r.name))}`)
+            .join('; ');
+    throw new Refusal(
+      `--rules: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no ruleset or rule of this corpus (${offers}); name only those, or 'none'`,
+    );
+  }
+  return rules;
 }
 
 /** `--model-roles`, parsed: the models by role, or `default` for none. */
@@ -385,7 +426,10 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     await discoverFragments(plugins),
     [],
   );
-  const render = async (practices: readonly string[] | undefined) => {
+  const render = async (
+    practices: readonly string[] | undefined,
+    rules: readonly string[],
+  ) => {
     const warnings: string[] = [];
     const report = await projectPluginSet({
       plugins,
@@ -397,10 +441,11 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       // depends on this path; the projection cannot know it, install does.
       hostHome: opts.home ?? homedir(),
       ...(practices !== undefined ? { practices } : {}),
+      rules,
     });
     return { report, warnings };
   };
-  let rendered = await render(undefined);
+  let rendered = await render(undefined, []);
 
   // ── WHICH PRACTICES ──────────────────────────────────────────────────────────
   // The one decision about WHAT is placed. It is never guessed: a flag names the
@@ -464,8 +509,40 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     if (chosen.length === 0) throw nothingChosen();
     // Declaration order, each once: the order the corpus lists them in.
     chosen = declaredNames.filter((n) => (chosen as string[]).includes(n));
+  }
+
+  // ── WHICH RULES ──────────────────────────────────────────────────────────────
+  // The standard conventions the agents follow in every project, each ruleset taken
+  // whole, rule by rule, or not at all. Told by flag; else the choice an earlier
+  // install recorded, kept without asking (a rule no longer offered is dropped from
+  // it, and named); else asked. A run that can neither places none, and leaves the
+  // choice open: nothing is placed unless chosen.
+  const offered = rendered.report.rulesets;
+  const offeredRules = offered.flatMap((s) => s.rules.map((r) => r.name));
+  const recordedRules = Array.isArray(prior?.rules) ? prior.rules : undefined;
+  let rules: string[] = [];
+  let droppedRules: string[] = [];
+  let rulesDecided = true;
+  if (opts.rules !== undefined) {
+    rules = parseRules(opts.rules, offered);
+  } else if (recordedRules !== undefined) {
+    rules = recordedRules.filter((n) => offeredRules.includes(n));
+    droppedRules = recordedRules.filter((n) => !offeredRules.includes(n));
+  } else if (offered.length === 0) {
+    rulesDecided = false;
+  } else if (interactive) {
+    open = true;
+    rules = await answered(prompts.rules(offered));
+  } else {
+    rulesDecided = false;
+  }
+  // Declaration order, each once.
+  rules = offeredRules.filter((n) => rules.includes(n));
+  const rulesOpen = !rulesDecided && offered.length > 0;
+
+  if (chosen !== undefined || rules.length > 0) {
     try {
-      rendered = await render(chosen);
+      rendered = await render(chosen, rules);
     } catch (e) {
       // A choice the corpus cannot place whole (a practice not closed under dispatch,
       // say) is a refusal with nothing written, not a crash.
@@ -685,6 +762,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       configuration,
       record: {
         ...(chosen === undefined ? {} : { practices: chosen }),
+        ...(rulesDecided ? { rules } : {}),
         references: linked.references,
         ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
       },
@@ -701,6 +779,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       root,
       tree: placedTree,
       practices: decided,
+      rules: { chosen: rules, dropped: droppedRules, open: rulesOpen },
       config: configFile,
       dry,
     })) {
@@ -724,10 +803,10 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
 /**
  * What a run shows an operator, before it places (`dry`) and after: the root and the
- * harness; the practices; the counts; the references into the root; an earlier
- * installation taken back; each host file edited and what changed in it; the models
- * bound for the operator; what the host had set and was left alone — and, once placed,
- * what to do next, the tiers no model is bound to among it.
+ * harness; the practices; the rules; the counts; the references into the root; an
+ * earlier installation taken back; each host file edited and what changed in it; the
+ * models bound for the operator; what the host had set and was left alone — and, once
+ * placed, what to do next, the tiers no model is bound to among it.
  */
 function describe(
   found: Findings,
@@ -740,6 +819,13 @@ function describe(
     practices:
       | { chosen: readonly string[]; removed: readonly string[] }
       | undefined;
+    /** The rules placed, those of an earlier choice no longer offered, and whether the
+     *  choice is still open: offered, but neither told, recorded nor asked. */
+    rules: {
+      chosen: readonly string[];
+      dropped: readonly string[];
+      open: boolean;
+    };
     /** The host config file holding its model roles, where the harness has one. */
     config: string | undefined;
     dry: boolean;
@@ -758,6 +844,15 @@ function describe(
         ? `; ${dry ? 'would remove' : 'removed'} ${list(ctx.practices.removed)}`
         : '';
     lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
+  }
+  if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
+    const dropped =
+      ctx.rules.dropped.length > 0
+        ? `; ${dry ? 'would drop' : 'dropped'} ${list(ctx.rules.dropped)}, no longer offered`
+        : '';
+    const placed =
+      ctx.rules.chosen.length > 0 ? list(ctx.rules.chosen) : 'none';
+    lines.push(`  rules: ${placed}${dropped}`);
   }
   if (found.references.length > 0) {
     lines.push(
@@ -812,6 +907,11 @@ function describe(
     ...(found.displayOpen
       ? [
           `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
+        ]
+      : []),
+    ...(ctx.rules.open
+      ? [
+          `choose the rules your agents follow in every project (rulesets: ${list(tree.rulesets.map((s) => s.name))}): run install again on a terminal to be asked, or pass --rules <ruleset-or-rule,…> (or --rules none)`,
         ]
       : []),
     `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,

@@ -20,9 +20,9 @@
 //                           each context the release delivers, read-only: handed in
 //                           by the command that holds the release and placed as given
 //   installation.json       what install did outside the root: the references it
-//                           placed; the practices it installed; and which of the
-//                           operator's choices it has been answered, never their
-//                           values, which are the host's own settings
+//                           placed; the practices and the rules it installed, by name;
+//                           and which of the operator's choices it has been answered,
+//                           never their values, which are the host's own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
 // every project of a user from its plugin directory (`~/.omp/plugins`), as `omp plugin
@@ -106,11 +106,15 @@ export type OwnedReference =
  *  whether the status line shows the session's agent. */
 export type OperatorChoice = 'agentStatus';
 
-/** What install did outside the root, and the practices it installed. */
+/** What install did outside the root, and the practices and rules it installed. */
 export interface InstallationRecord {
   /** The practices installed, in the corpus's order; absent where the corpus
    *  declares none. */
   readonly practices?: readonly string[];
+  /** The rules chosen, by name, in the corpus's order, possibly none: the choice an
+   *  upgrade keeps. Absent where the corpus offered no rulesets, or the choice was
+   *  never made. */
+  readonly rules?: readonly string[];
   readonly references: readonly OwnedReference[];
   /** The operator's choices install has been answered, by flag or question: each
    *  answer is the host's own setting from then on, so no later install asks for it

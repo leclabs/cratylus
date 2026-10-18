@@ -47,13 +47,14 @@ and installs only the practices it is named, or every practice when told `--all`
 
 ### The decisions
 
-Three decisions are yours, each with the flag that settles it (a decision given by flag is never
+Four decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
 | Decision                                  | Flag                                    | Asked when                                                                       | Where nothing is asked                                   |
 | ----------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Which agent harness                       | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness                 | none: refused                                            |
 | Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                  | none: refused, whatever `--yes` says                     |
+| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                     | the choice the last install recorded, else none          |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
@@ -85,6 +86,21 @@ since none is not every; to take it all out, run `cratylus uninstall --harness <
 Installing again is how you change the choice. A practice installed before and not chosen now is
 removed, with what no chosen practice still carries.
 
+### Which rules
+
+A rule is a standard working convention your agents follow in every session of every project,
+stated with why it holds; a ruleset is one convention's rules (`gitflow`, `conventional-commits`,
+`commit-discipline`, `established-libraries`, `green-field`). On a terminal, install offers each
+ruleset in turn: all its rules, rule by rule, or none, which is the default. `--rules <name,…>`
+settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
+(`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
+ruleset or rule is refused, listing each ruleset with its rules.
+
+The choice is recorded in the root by rule name, and installing again keeps it without asking
+unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
+named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
+placed and the summary names choosing them as a next step.
+
 ### Which model each tier and persona runs on
 
 Which model runs an agent is yours to choose, and it is your agent harness's own setting, never
@@ -115,6 +131,7 @@ Everything install places for you on an agent harness lives under one root it ow
 ~/.cratylus/omp/
   agents/<name>.md          the corpus's agent definitions
   skills/<name>/…           the corpus's skills
+  rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
   extensions/…              the session hooks the corpus declares, and the dispatch isolation where an agent needs it
   hooks/<id>/…              the workers those session hooks run
@@ -122,7 +139,7 @@ Everything install places for you on an agent harness lives under one root it ow
   runtime.json              each capability's configuration, where the corpus declares any
   delivered/cratylus/workflow.json
                             the workflow context this release delivers, read-only
-  installation.json         what install did outside the root, and the practices installed
+  installation.json         what install did outside the root, and the practices and rules installed
 ```
 
 omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
@@ -332,6 +349,7 @@ cratylus install [options]
 | `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                             |
 | `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                               |
 | `--all`                   | Install every practice, without asking                                                                                                                                                                                                         |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)           |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked) |
 | `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                         |
 | `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                 |
