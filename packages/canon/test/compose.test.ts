@@ -51,7 +51,7 @@ describe('composition over action-scope', () => {
     await setImmediate();
     process.off('warning', listen);
     expect(warned).toEqual([
-      'persona widener weakens the guardrail honesty from fixed to advisory',
+      'persona widener weakens the guardrail honesty from firm to advisory',
     ]);
   });
 
