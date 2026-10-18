@@ -11,7 +11,7 @@
 // nothing is written after.
 
 import * as clack from '@clack/prompts';
-import type { InstallScope } from '../../deploy/install-scope.js';
+import type { InstallScope } from '@cratylus/runtime/runtime-config';
 import type { OfferedPractice, OfferedRuleset } from '../../project/index.js';
 
 /** One model role the host binds no model to, which the operator may bind: a tier the

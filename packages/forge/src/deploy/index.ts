@@ -75,7 +75,6 @@ export {
 // references the harness's own surfaces hold into it.
 export {
   type DeliveredDocument,
-  INSTALLATION_RECORD,
   type InstallationRecord,
   type OwnedReference,
   type PlaceRootResult,
@@ -92,7 +91,6 @@ export {
 
 // Where an installation is: for the user, or inside one project.
 export {
-  type InstallScope,
   type Placement,
   placementOf,
   projectOf,

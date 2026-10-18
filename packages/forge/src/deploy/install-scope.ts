@@ -17,12 +17,10 @@
 import { existsSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import type { InstallScope } from '@cratylus/runtime/runtime-config';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import { ownedRootIn } from './owned-root.js';
 import { harnessDirIn } from './scope.js';
-
-/** Where an installation is: for the user, or inside one project. */
-export type InstallScope = 'user' | 'project';
 
 /** The ancestors of `dir`, itself first, up to the filesystem's root. */
 function ancestors(dir: string): string[] {

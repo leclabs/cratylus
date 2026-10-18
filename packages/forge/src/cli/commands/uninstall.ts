@@ -46,6 +46,7 @@ import {
 } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import type { InstallScope } from '@cratylus/runtime/runtime-config';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
@@ -71,11 +72,7 @@ import {
   unregisterHookCommands,
   withoutRuntimeParts,
 } from '../../deploy/index.js';
-import {
-  type InstallScope,
-  type Placement,
-  placementOf,
-} from '../../deploy/install-scope.js';
+import { type Placement, placementOf } from '../../deploy/install-scope.js';
 import {
   holdsRenderTree,
   readInstallationRecord,

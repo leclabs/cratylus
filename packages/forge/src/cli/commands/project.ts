@@ -9,11 +9,11 @@
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { INSTALLATION_RECORD_FILE } from '@cratylus/runtime/runtime-config';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig, requirePlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import { INSTALLATION_RECORD } from '../../deploy/owned-root.js';
 import {
   type ProjectablePlugin,
   discoverFragments,
@@ -83,9 +83,9 @@ async function project(
   // A PROJECT INSTALLATION IS NOT A RENDER TREE. `install --scope project` places its
   // owned root at this same default, and rendering into it would take over what install
   // owns (decision 0311).
-  if (existsSync(join(out, INSTALLATION_RECORD))) {
+  if (existsSync(join(out, INSTALLATION_RECORD_FILE))) {
     throw new Error(
-      `${out} holds an installation (${INSTALLATION_RECORD}), not a render tree, so nothing is rendered; render elsewhere with --out <dir>, or take the installation back first with \`${CLI_BIN} uninstall --harness ${harness} --scope project\``,
+      `${out} holds an installation (${INSTALLATION_RECORD_FILE}), not a render tree, so nothing is rendered; render elsewhere with --out <dir>, or take the installation back first with \`${CLI_BIN} uninstall --harness ${harness} --scope project\``,
     );
   }
   const config = await loadConfig(configPath);

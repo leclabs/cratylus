@@ -58,6 +58,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   DELIVERED_DIR,
   INSTALLATIONS_DIR,
+  INSTALLATION_RECORD_FILE,
+  type InstallScope,
   RUNTIME_CONFIG_FILE,
 } from '@cratylus/runtime/runtime-config';
 import { CLI_BIN } from '../bin-name.js';
@@ -65,7 +67,6 @@ import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
 } from '../core/harness-adapter.js';
-import type { InstallScope } from './install-scope.js';
 import { settingsJson } from './settings-json.js';
 import type { RenderTree } from './types.js';
 
@@ -90,9 +91,6 @@ export interface DeliveredDocument {
   readonly content: string;
 }
 
-/** The record of what install did outside the root, kept inside it. */
-export const INSTALLATION_RECORD = 'installation.json';
-
 /** The package manifest the harness reads the root as a package by. */
 const PACKAGE_MANIFEST = 'package.json';
 
@@ -103,8 +101,9 @@ const IGNORE_FILE = '.gitignore';
 /** A reference the harness's own surfaces hold into the root, by its path relative to
  *  the harness's home: a link to the root, or a dependency entry naming it in a
  *  package manifest (`created` where install made that manifest), or, at project
- *  scope, the lines of an ignore file that re-include the link (`appended`, the text
- *  install added at the file's end; `created` where install made that file). */
+ *  scope, the block of an ignore file that re-includes the link (`created` where
+ *  install made that file; `terminated` where install ended the host's last line to
+ *  append the block). */
 export type OwnedReference =
   | { readonly kind: 'link'; readonly path: string }
   | {
@@ -116,8 +115,8 @@ export type OwnedReference =
   | {
       readonly kind: 'ignore';
       readonly path: string;
-      readonly appended: string;
       readonly created: boolean;
+      readonly terminated: boolean;
     };
 
 /** An operator's choice install asks for and writes as the host's own setting:
@@ -168,7 +167,7 @@ function packageName(adapter: Pick<HarnessAdapter, 'name'>): string {
 export function readInstallationRecord(
   root: string,
 ): InstallationRecord | null {
-  const file = join(root, INSTALLATION_RECORD);
+  const file = join(root, INSTALLATION_RECORD_FILE);
   if (!existsSync(file)) return null;
   try {
     const doc: unknown = JSON.parse(readFileSync(file, 'utf8'));
@@ -192,7 +191,7 @@ export function holdsRenderTree(dir: string): boolean {
     existsSync(dir) &&
     statSync(dir).isDirectory() &&
     readdirSync(dir).length > 0 &&
-    !existsSync(join(dir, INSTALLATION_RECORD))
+    !existsSync(join(dir, INSTALLATION_RECORD_FILE))
   );
 }
 
@@ -319,7 +318,7 @@ export function placeOwnedRoot(opts: {
       readOnly: true as const,
     })),
     {
-      path: INSTALLATION_RECORD,
+      path: INSTALLATION_RECORD_FILE,
       // The record names the version that projected this root too, beside what it did.
       content: `${JSON.stringify({ ...(opts.version === undefined ? {} : { version: opts.version }), ...opts.record }, null, 2)}\n`,
     },
@@ -377,40 +376,40 @@ function dependenciesOf(doc: Record<string, unknown>): Record<string, unknown> {
     : {};
 }
 
-/** The lines of the package directory's ignore file that keep the link to the
- *  package `name` committable where the project ignores `node_modules`: the
- *  directory re-included, everything in it ignored, the link re-included. */
-function ignoreLines(name: string): string[] {
-  return ['!/node_modules/', '/node_modules/*', `!/node_modules/${name}`];
+/** The block of the package directory's ignore file that keeps the link to the
+ *  package `name` committable where the project ignores `node_modules`: a comment
+ *  naming cratylus, the directory re-included, everything in it ignored, the link
+ *  re-included. Cratylus's by its content, found wherever it stands. */
+function ignoreBlock(name: string): string[] {
+  return [
+    `# ${CLI_BIN}: commit the link to the project installation`,
+    '!/node_modules/',
+    '/node_modules/*',
+    `!/node_modules/${name}`,
+  ];
 }
 
-/** The text lines of `text`, without their terminators. */
-const linesOf = (text: string): string[] =>
-  text.split('\n').map((line) => line.replace(/\r$/, ''));
-
-/** `text` without the last line equal to each of `lines` (blank ones skipped), each
- *  removed with its terminator; every other byte as it was. */
-function withoutLines(text: string, lines: readonly string[]): string {
-  const pieces = text.split(/(?<=\n)/);
-  for (const line of lines) {
-    if (line.trim() === '') continue;
-    for (let at = pieces.length - 1; at >= 0; at--) {
-      if ((pieces[at] as string).replace(/\r?\n$/, '').trim() !== line.trim())
-        continue;
-      pieces.splice(at, 1);
-      break;
-    }
+/** Where `block` stands in `text` as contiguous whole lines: the index of its first
+ *  line among `text`'s lines (each with its terminator), or -1. */
+function blockAt(pieces: readonly string[], block: readonly string[]): number {
+  for (let at = 0; at + block.length <= pieces.length; at++) {
+    if (
+      block.every(
+        (line, k) => (pieces[at + k] as string).replace(/\r?\n$/, '') === line,
+      )
+    )
+      return at;
   }
-  return pieces.join('');
+  return -1;
 }
 
 /**
- * At project scope, the lines of the package directory's ignore file that re-include
- * the link: each line the file lacks is appended at its end, and the file is made
- * where there is none; every line of the host's stays as it is. The reference records
- * the text appended, so uninstall takes back exactly that. Where the file already
- * holds every line, nothing is appended, and the reference an earlier install recorded
- * is kept, or none is claimed: the lines are the host's.
+ * At project scope, the block of the package directory's ignore file that re-includes
+ * the link: kept where it already stands, else appended whole at the file's end, so it
+ * is read after every line of the host's; the file is made where there is none. No
+ * line of the host's is read or touched, one identical to a line of the block
+ * included. The reference records whether install made the file, and whether it ended
+ * the host's last line to append the block, so uninstall leaves the host's bytes.
  */
 function ignoreLink(opts: {
   readonly harnessDir: string;
@@ -418,29 +417,41 @@ function ignoreLink(opts: {
   readonly name: string;
   readonly prior: InstallationRecord | null;
   readonly dry: boolean;
-}): { reference?: OwnedReference; changed?: string } {
+}): { reference: OwnedReference; changed?: string } {
   const rel = join(opts.packageDir, IGNORE_FILE);
   const file = join(opts.harnessDir, rel);
   const existed = existsSync(file);
   const text = existed ? readFileSync(file, 'utf8') : '';
-  const have = new Set(linesOf(text).map((line) => line.trim()));
-  const missing = ignoreLines(opts.name).filter((line) => !have.has(line));
+  const block = ignoreBlock(opts.name);
   const priorRef = opts.prior?.references.find(
     (r) => r.kind === 'ignore' && r.path === rel,
   );
-  if (missing.length === 0)
-    return priorRef === undefined ? {} : { reference: priorRef };
-  const appended = `${text === '' || text.endsWith('\n') ? '' : '\n'}${missing.join('\n')}\n`;
+  if (blockAt(text.split(/(?<=\n)/), block) >= 0) {
+    return {
+      reference:
+        priorRef ??
+        ({
+          kind: 'ignore',
+          path: rel,
+          created: false,
+          terminated: false,
+        } as const),
+    };
+  }
+  const terminated = text !== '' && !text.endsWith('\n');
   if (!opts.dry) {
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, text + appended);
+    writeFileSync(
+      file,
+      `${text}${terminated ? '\n' : ''}${block.join('\n')}\n`,
+    );
   }
   return {
     reference: {
       kind: 'ignore',
       path: rel,
-      appended,
       created: priorRef?.kind === 'ignore' ? priorRef.created : !existed,
+      terminated,
     },
     changed: file,
   };
@@ -512,7 +523,7 @@ export function linkOwnedRoot(opts: {
         prior: opts.prior,
         dry,
       });
-      if (ignored.reference !== undefined) references.push(ignored.reference);
+      references.push(ignored.reference);
       if (ignored.changed !== undefined) changed.push(ignored.changed);
     }
   }
@@ -584,13 +595,12 @@ function pruneEmpty(dir: string, stop: string): void {
  * it. Whatever else those surfaces hold is the host's and stays. The record, where it
  * can be read, says only whether install made the manifest (so it goes once nothing
  * else is left in it) and which recorded references the host has since pointed
- * elsewhere, left and reported. At project scope the ignore file's lines that
- * re-include a link are taken back too: the text the record says install appended,
- * or, with no record of it, the line re-including each link taken back; the file goes
- * where install made it and nothing else is left in it.
+ * elsewhere, left and reported. At project scope the ignore file's block re-including
+ * the link is taken back too, found by its content wherever it stands, and no line of
+ * the host's with it; the file goes where install made it and nothing else is left.
  */
 export function unlinkOwnedRoot(opts: {
-  readonly adapter: Pick<HarnessAdapter, 'packageDir'>;
+  readonly adapter: Pick<HarnessAdapter, 'name' | 'packageDir'>;
   readonly harnessDir: string;
   readonly root: string;
   readonly scope: InstallScope;
@@ -618,12 +628,10 @@ export function unlinkOwnedRoot(opts: {
       ? entries(abs)
       : [abs],
   );
-  const linked: string[] = [];
   for (const abs of links) {
     if (!lstatSync(abs).isSymbolicLink()) continue;
     if (!into(resolve(dirname(abs), readlinkSync(abs)))) continue;
     references.push({ kind: 'link', path: abs.slice(harnessDir.length + 1) });
-    linked.push(abs.slice(modules.length + 1));
     changed.push(abs);
     if (!dry) {
       unlinkSync(abs);
@@ -631,37 +639,42 @@ export function unlinkOwnedRoot(opts: {
     }
   }
 
-  // The ignore file's lines re-including a link, at project scope.
+  // The ignore file's block re-including the link, at project scope.
   if (opts.scope === 'project') {
     const ignoreRel = join(adapter.packageDir, IGNORE_FILE);
     const ignore = join(harnessDir, ignoreRel);
     const recordedIgnore = opts.record?.references.find(
       (r) => r.kind === 'ignore' && r.path === ignoreRel,
     );
-    if (existsSync(ignore)) {
-      const text = readFileSync(ignore, 'utf8');
-      const ref =
-        recordedIgnore?.kind === 'ignore'
-          ? recordedIgnore
-          : {
-              kind: 'ignore' as const,
-              path: ignoreRel,
-              appended: linked.map((n) => `!/node_modules/${n}\n`).join(''),
-              created: false,
-            };
-      const next = text.endsWith(ref.appended)
-        ? text.slice(0, text.length - ref.appended.length)
-        : withoutLines(text, linesOf(ref.appended));
-      if (next !== text) {
-        references.push(ref);
-        changed.push(ignore);
-        if (!dry) {
-          if (ref.created && next.trim() === '') {
-            unlinkSync(ignore);
-            pruneEmpty(dirname(ignore), harnessDir);
-          } else {
-            writeFileSync(ignore, next);
-          }
+    const ref =
+      recordedIgnore?.kind === 'ignore'
+        ? recordedIgnore
+        : ({
+            kind: 'ignore',
+            path: ignoreRel,
+            created: false,
+            terminated: false,
+          } as const);
+    const pieces = existsSync(ignore)
+      ? readFileSync(ignore, 'utf8').split(/(?<=\n)/)
+      : [];
+    const block = ignoreBlock(packageName(adapter));
+    const at = blockAt(pieces, block);
+    if (at >= 0) {
+      pieces.splice(at, block.length);
+      // The terminator install gave the host's last line goes with the block, while
+      // nothing of the host's has come after it.
+      if (ref.terminated && at === pieces.length && at > 0)
+        pieces[at - 1] = (pieces[at - 1] as string).replace(/\n$/, '');
+      const next = pieces.join('');
+      references.push(ref);
+      changed.push(ignore);
+      if (!dry) {
+        if (ref.created && next === '') {
+          unlinkSync(ignore);
+          pruneEmpty(dirname(ignore), harnessDir);
+        } else {
+          writeFileSync(ignore, next);
         }
       }
     }

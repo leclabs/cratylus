@@ -4,6 +4,7 @@
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
 // and leaves the user's installation as it is, as the user's leaves it.
 
+import { execFileSync, spawnSync } from 'node:child_process';
 import {
   cpSync,
   existsSync,
@@ -15,8 +16,9 @@ import {
   realpathSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ompHarnessAdapter } from '../../src/adapters/omp/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
@@ -30,6 +32,10 @@ import {
   fixturePractices,
   tmp,
 } from './helpers.js';
+
+/** The block a project installation keeps in `.omp/plugins/.gitignore`. */
+const BLOCK =
+  '# cratylus: commit the link to the project installation\n!/node_modules/\n/node_modules/*\n!/node_modules/cratylus-omp\n';
 
 // One agents directory for the whole file: a module once imported is not read again.
 const agents = tmp('install-scope-agents-');
@@ -167,9 +173,7 @@ describe('install at project scope', () => {
     expect(
       JSON.parse(readFileSync(join(plugins(), 'package.json'), 'utf8')),
     ).toEqual({ dependencies: { 'cratylus-omp': 'file:../../.cratylus/omp' } });
-    expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(
-      '!/node_modules/\n/node_modules/*\n!/node_modules/cratylus-omp\n',
-    );
+    expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(BLOCK);
     expect(out).toContain(
       `is installed in omp at project scope, under ${projectRoot()}`,
     );
@@ -297,7 +301,7 @@ describe('uninstall at project scope', () => {
     writeFileSync(join(plugins(), 'package.json'), manifest);
     expect(await install({ scope: 'project' })).toBe(0);
     expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(
-      `${ignore}\n!/node_modules/\n/node_modules/*\n!/node_modules/cratylus-omp\n`,
+      `${ignore}\n${BLOCK}`,
     );
     expect(uninstall({ scope: 'project' })).toBe(0);
     expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(ignore);
@@ -307,16 +311,53 @@ describe('uninstall at project scope', () => {
     expect(existsSync(join(plugins(), 'node_modules'))).toBe(false);
   });
 
-  it('appends only the lines a host .gitignore lacks, and takes back only those', async () => {
+  it('appends its whole block after host lines identical to its own, and takes back only the block', async () => {
     mkdirSync(plugins(), { recursive: true });
-    const ignore = '/node_modules/*\n';
+    const ignore =
+      '!/node_modules/\n/node_modules/*\n!/node_modules/cratylus-omp\n';
     writeFileSync(join(plugins(), '.gitignore'), ignore);
     expect(await install({ scope: 'project' })).toBe(0);
     expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(
-      `${ignore}!/node_modules/\n!/node_modules/cratylus-omp\n`,
+      `${ignore}${BLOCK}`,
     );
     expect(uninstall({ scope: 'project' })).toBe(0);
     expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(ignore);
+  });
+
+  it('leaves exactly the host’s bytes after host edits elsewhere and an upgrade', async () => {
+    mkdirSync(plugins(), { recursive: true });
+    writeFileSync(join(plugins(), '.gitignore'), 'logs/\n');
+    expect(await install({ scope: 'project' })).toBe(0);
+    const edited = `# top\nlogs/\n${BLOCK}tmp/\n`;
+    writeFileSync(join(plugins(), '.gitignore'), edited);
+    expect(await install({ scope: 'project', version: '1.1.0' })).toBe(0);
+    expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(edited);
+    expect(uninstall({ scope: 'project' })).toBe(0);
+    expect(readFileSync(join(plugins(), '.gitignore'), 'utf8')).toBe(
+      '# top\nlogs/\ntmp/\n',
+    );
+  });
+
+  it('keeps the link committable where the host’s own lines would ignore it', async () => {
+    const real = tmp('install-scope-git-');
+    execFileSync('git', ['init', '-q'], { cwd: real });
+    writeFileSync(join(real, '.gitignore'), 'node_modules\n');
+    mkdirSync(plugins(real), { recursive: true });
+    writeFileSync(
+      join(plugins(real), '.gitignore'),
+      '!/node_modules/cratylus-omp\n/node_modules/*\n',
+    );
+    expect(await install({ scope: 'project', cwd: real })).toBe(0);
+    const ignored = spawnSync(
+      'git',
+      [
+        'check-ignore',
+        '-q',
+        join('.omp', 'plugins', 'node_modules', 'cratylus-omp'),
+      ],
+      { cwd: real },
+    );
+    expect(ignored.status).toBe(1);
   });
 });
 
@@ -339,5 +380,67 @@ describe('a project installation and an author’s render tree never share a dir
     expect(await runProject({ cwd: repo })).toBe(1);
     expect(out).toContain('holds an installation (installation.json)');
     expect(snapshot(projectRoot())).toEqual(before);
+  });
+});
+
+describe('a hook-bearing installation runs its own workers', () => {
+  /** The session module and its one worker, which logs the installation it was run
+   *  from, placed under `root`. */
+  function place(root: string): void {
+    const command = ompHarnessAdapter.hookCommand('nudge', 'w.sh');
+    const [module] =
+      ompHarnessAdapter.scopeActivatedSurface?.(
+        [{ id: 'nudge', events: ['session.start'], command }] as never,
+        [],
+      ) ?? [];
+    if (module === undefined) throw new Error('no session module');
+    const file = join(root, 'extensions', module.filename);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, module.content);
+    const worker = join(root, 'hooks', 'nudge', 'w.sh');
+    mkdirSync(dirname(worker), { recursive: true });
+    writeFileSync(worker, 'echo "$CRATYLUS_INSTALLATION" >> "$HOOK_LOG"\n');
+  }
+
+  /** Load the session module under `root` and start a session with it. */
+  async function start(root: string, module: string): Promise<void> {
+    const handlers: ((event: unknown) => unknown)[] = [];
+    const pi = {
+      on: (name: string, fn: (event: unknown) => unknown) => {
+        if (name === 'session_start') handlers.push(fn);
+      },
+      exec: async (command: string, args: string[]) => {
+        const r = spawnSync(command, args, { encoding: 'utf8' });
+        return {
+          stdout: r.stdout,
+          stderr: r.stderr,
+          code: r.status,
+          killed: false,
+        };
+      },
+    };
+    // The emitted module is written at test time into the installation under test.
+    (await import(join(root, 'extensions', module))).default(pi);
+    for (const fn of handlers) await fn({});
+  }
+
+  it('beside a user installation, and after the project is moved', async () => {
+    const log = join(tmp('install-scope-log-'), 'hooks.log');
+    vi.stubEnv('HOOK_LOG', log);
+    try {
+      place(userRoot());
+      place(projectRoot());
+      const module = readdirSync(join(userRoot(), 'extensions'))[0] as string;
+      await start(projectRoot(), module);
+      await start(userRoot(), module);
+      const moved = join(tmp('install-scope-moved-'), 'clone');
+      cpSync(repo, moved, { recursive: true });
+      await start(projectRoot(moved), module);
+      expect(readFileSync(log, 'utf8')).toBe(
+        `${projectRoot()}\n${userRoot()}\n${projectRoot(moved)}\n`,
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

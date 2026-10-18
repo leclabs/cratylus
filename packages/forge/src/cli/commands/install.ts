@@ -84,6 +84,10 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import {
+  INSTALLATION_RECORD_FILE,
+  type InstallScope,
+} from '@cratylus/runtime/runtime-config';
 import { mergeManifest } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
@@ -103,8 +107,6 @@ import {
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type DeliveredDocument,
-  INSTALLATION_RECORD,
-  type InstallScope,
   addModelRoles,
   capabilityConfiguration,
   ensureStatusSegment,
@@ -433,7 +435,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // an author's render tree, which no installation takes over (decision 0311).
   if (scope === 'project' && holdsRenderTree(root)) {
     throw new Refusal(
-      `${root} holds files but no ${INSTALLATION_RECORD}, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; render that tree elsewhere with \`${CLI_BIN} project --out <dir>\`, or move it away, and install again`,
+      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; render that tree elsewhere with \`${CLI_BIN} project --out <dir>\`, or move it away, and install again`,
     );
   }
   // The installation this one replaces: its record, under the owned root.
