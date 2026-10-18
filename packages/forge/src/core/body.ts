@@ -68,9 +68,7 @@ function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
  * factor the line `- (none)`). A `binding` factor is never text — it compiles to
  * harness settings — and an `attribute` factor occupies no field; a group with no
  * text factor is omitted. Then the agent's deliverable, field by field, where its
- * contract states one ({@link Agent.contract}), and its per-turn persistence
- * protocol ({@link Agent.persistence}), verbatim, where it carries one. Closed
- * `rstrip() + "\n"`.
+ * contract states one ({@link Agent.contract}). Closed `rstrip() + "\n"`.
  *
  * The SECTION ORDER is the catalog's own declaration order — which is why the
  * catalog is a parameter and not a module read: the sequence of an agent's
@@ -100,7 +98,6 @@ export function agentBody(a: Agent, manifest: DimensionManifest): string {
   }
   if (a.contract?.deliverable !== undefined)
     out.push(...deliverableSection(a.contract.deliverable), '');
-  if (a.persistence !== undefined) out.push(a.persistence, '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
 }
 

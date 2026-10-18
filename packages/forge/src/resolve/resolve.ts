@@ -37,23 +37,18 @@
  * A fragment's structural value-type — governs which ops are legal (⊥ dimension).
  *
  * This type read `FragmentKind`, and its field `kind`, until 2026-08-05. `kind` was
- * carrying THREE concepts across two packages — MODEL's `Kind ≜ {fragment, agent,
- * rule, skill}` (`RuleCell.kind`), how a dimension's value-catalog is sourced
- * (`DimensionMeta`, now `repertoire`), and this one. `kind` fires "variant tag
- * answering WHAT IS THIS?", so a blind reverse decode gave `RuleCell` the strongest
- * claim and this site predicted nothing: asked to guess the members off the sign
- * alone, a cold reader reaches for domain categories long before structural ones.
+ * carrying two concepts across two packages — how a dimension's value-catalog is
+ * sourced (`DimensionMeta`, now `repertoire`), and this one. `kind` fires "variant
+ * tag answering WHAT IS THIS?", and this site predicted nothing: asked to guess the
+ * members off the sign alone, a cold reader reaches for domain categories long
+ * before structural ones.
  * Off `valueShape` the members `'scalar' | 'set' | 'structured'` are near-guessable,
  * and the op table weakly follows — you can append to a uniform collection, merge
  * named parts, and only replace an atom.
  *
- * ALIGNMENT, NOT COLLISION, with `validate/residue.ts`'s `ResidueShape`. `MODEL.md:22`
- * rules `shape ⊥ vocabulary`, which installs `shape` as a GENUS — structure-of, as
- * against names-of — and a genus term is supposed to recur. `<Noun>Shape` is a family
- * whose qualifier names the subject whose structure is meant; meeting one member lets
- * a reader predict the construction of the next. What would be a collision is a bare
- * `shape` field here, since `GatedField.shape` already squats that unqualified name —
- * so the `value` qualifier on the field below is LOAD-BEARING, not verbose.
+ * What would be a collision is a bare `shape` field here, since `GatedField.shape`
+ * already squats that unqualified name — so the `value` qualifier on the field
+ * below is LOAD-BEARING, not verbose.
  *
  * KNOWN RESIDUAL, recorded because it is REAL and not an alibi: two of these three
  * signs are `Arity`'s two signs, where they mean cardinality and only cardinality.
@@ -149,10 +144,9 @@ export interface ResolveConfig {
  *
  * `kind` STAYS HERE, and that is the 2026-08-05 census's ruling rather than an
  * oversight. This is a discriminated UNION and `kind` is its variant tag — the one
- * job the sign fires for cold ("a literal answering WHAT IS THIS?"), the same job it
- * does on `RuleCell.kind`. One gloss, one sign, applied to two unions is alignment;
- * what the census convicts is one sign over two GLOSSES, which is why the structural
- * value-shape and the value-catalog sourcing both had to vacate it.
+ * job the sign fires for cold ("a literal answering WHAT IS THIS?"). What the census
+ * convicts is one sign over two GLOSSES, which is why the structural value-shape and
+ * the value-catalog sourcing both had to vacate it.
  */
 export type ContributionSource =
   | { readonly kind: 'plugin'; readonly name: string }

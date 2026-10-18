@@ -1,7 +1,6 @@
 # cratylus
 
-The command. One package and one bin; what it composes, and why this is the only package that may
-know all of it, is in [ARCHITECTURE.md](../../ARCHITECTURE.md).
+The command. One package and one bin, and the only package that may know all of the others.
 
 ```sh
 npm install -g cratylus
@@ -48,13 +47,14 @@ and installs only the practices it is named, or every practice when told `--all`
 
 ### The decisions
 
-Three decisions are yours, each with the flag that settles it (a decision given by flag is never
+Four decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
 | Decision                                  | Flag                                    | Asked when                                                                       | Where nothing is asked                                   |
 | ----------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Which agent harness                       | `--harness <claude\|omp>`               | absent, and the host does not have exactly one supported harness                 | none: refused                                            |
 | Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                  | none: refused, whatever `--yes` says                     |
+| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                     | the choice the last install recorded, else none          |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
@@ -71,8 +71,7 @@ and stops, writing nothing, and `--verbose` also prints the per-file detail.
 ### Which practices
 
 A practice is a way of working that install offers as one choice: the agents and skills that
-carry it, installed together. The drift notice comes with every choice and is offered as
-none. On a terminal, install asks one question that lists each practice with its
+carry it, installed together. On a terminal, install asks one question that lists each practice with its
 description, the practices already installed here ticked (on a fresh host, the one the corpus
 preselects).
 
@@ -86,6 +85,21 @@ since none is not every; to take it all out, run `cratylus uninstall --harness <
 
 Installing again is how you change the choice. A practice installed before and not chosen now is
 removed, with what no chosen practice still carries.
+
+### Which rules
+
+A rule is a standard working convention your agents follow in every session of every project,
+stated with why it holds; a ruleset is one convention's rules (`gitflow`, `conventional-commits`,
+`commit-discipline`, `established-libraries`, `green-field`). On a terminal, install offers each
+ruleset in turn: all its rules, rule by rule, or none, which is the default. `--rules <name,…>`
+settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
+(`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
+ruleset or rule is refused, listing each ruleset with its rules.
+
+The choice is recorded in the root by rule name, and installing again keeps it without asking
+unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
+named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
+placed and the summary names choosing them as a next step.
 
 ### Which model each tier and persona runs on
 
@@ -117,14 +131,15 @@ Everything install places for you on an agent harness lives under one root it ow
 ~/.cratylus/omp/
   agents/<name>.md          the corpus's agent definitions
   skills/<name>/…           the corpus's skills
+  rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks, and the dispatch isolation where an agent needs it
-  hooks/<id>/…              the workers the session hooks run
+  extensions/…              the session hooks the corpus declares, and the dispatch isolation where an agent needs it
+  hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the corpus declares any
   delivered/cratylus/workflow.json
                             the workflow context this release delivers, read-only
-  installation.json         what install did outside the root, and the practices installed
+  installation.json         what install did outside the root, and the practices and rules installed
 ```
 
 omp's own surfaces only refer into it, the way `omp plugin link` does: `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
@@ -260,8 +275,7 @@ and warns where it falls short; they are not the same, and this is what a user m
   agent definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
   through omp's own skill discovery, as any omp session does.
 - **No guards.** Nothing judges an agent's acts or replies: an agent's behaviour is evaluated in
-  real use (decision 0142). A dispatch or launch whose assignment is incomplete is shown its typed
-  assignment with a warning naming what is missing, and goes ahead.
+  real use (decision 0142). Every turn shows the typed assignment of each agent that takes one.
 - **Model, dispatch and tools.** On omp an agent's definition names its own model role,
   `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
@@ -295,7 +309,7 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report` reports both at any time, and so does the `version_skew` tool in omp, which the installation itself carries: it is offered whatever command the capabilities reach, and reports the installation's recorded version beside the command's own `--version`. The root's `installation.json` names the version that projected it too. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
-omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks included. Those know a dispatch by what it carries, the agent and task of each item, never by what the agent harness calls its dispatch tool.
+omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it: restart omp to run the installed extension.
 
 ## Taking it away again
 
@@ -335,6 +349,7 @@ cratylus install [options]
 | `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                             |
 | `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                               |
 | `--all`                   | Install every practice, without asking                                                                                                                                                                                                         |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)           |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked) |
 | `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                         |
 | `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                 |
@@ -561,10 +576,6 @@ cratylus deploy --check       # is the deployed tree still what the corpus says?
 cratylus explain <filter>     # where each resolved value came from
 ```
 
-`optimize` stands beside the pipeline: it checks the accept laws on a plan an agent wrote (`REC ≽`,
-`minimal`, `conform`), writes the artifacts that pass, and records the routing manifest. It is opt-in,
-and refuses without `--plan`.
-
 ### `cratylus init`
 
 Create cratylus.config.ts, extending a plugin package.
@@ -615,26 +626,6 @@ cratylus project [options]
 | `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
 | `--harness <name>` | The agent harness to render for (choices: "claude", "omp", default: "claude")                 |
 | `--verbose`        | Also print one line per file rendered or pruned                                               |
-
-### `cratylus optimize`
-
-Check a rewrite plan for a source you wrote, and write the artifacts and routing manifest it passes.
-
-```sh
-cratylus optimize [options] <source>
-```
-
-| Argument | What it is                                     |
-| -------- | ---------------------------------------------- |
-| `source` | The source file or directory the plan rewrites |
-
-| Flag                | What it does                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| `--plan <file>`     | The JSON plan: its register, concepts and artifacts, which an agent writes (required) |
-| `--out <dir>`       | The directory the artifacts are written to (default: "optimized")                     |
-| `--manifest <path>` | Where the routing manifest is written (default: .manifests/<source>.json)             |
-| `--prior <path>`    | A manifest accepted earlier; artifacts whose digests match it are reused              |
-| `--verbose`         | Also list every file written                                                          |
 
 ### `cratylus deploy`
 

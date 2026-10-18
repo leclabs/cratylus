@@ -18,13 +18,6 @@ import {
 import type { LoadedExtension } from './fixture.js';
 import { omp } from './omp-mocks.js';
 
-/** Every warning `running` showed, as one text. */
-const warnings = (running: LoadedExtension): string =>
-  running.notices
-    .filter((n) => n.level === 'warning')
-    .map((n) => n.text)
-    .join('\n');
-
 let f: Fixture;
 let running: LoadedExtension | undefined;
 beforeEach(() => {
@@ -58,54 +51,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
   });
 
   for (const field of [
-    'story',
-    'slice',
-    'why',
-    'acceptanceCriteria',
-    'outOfScope',
-    'path',
-    'review',
-    'cost',
-  ] as const) {
-    it(`agents/2 — a story missing ${field} is warned, naming it, and the lead is dispatched`, async () => {
-      running = await load(f);
-      const bad: Record<string, unknown> = { ...story };
-      delete bad[field];
-      const event = task('lead', story);
-      event.input.tasks.push({
-        id: 'two',
-        description: 'Malformed handover',
-        agent: 'lead',
-        task: assignment(bad),
-      });
-      const result = await running.fire('tool_call', event);
-      expect(result?.block, 'the dispatch is never refused').not.toBe(true);
-      expect(warnings(running), 'names the agent').toMatch(/lead/i);
-      expect(warnings(running), `naming the missing ${field}`).toContain(field);
-    });
-  }
-  it('agents/2 — ill-typed story fields are named in a warning rather than accepted silently', async () => {
-    running = await load(f);
-    const result = await running.fire(
-      'tool_call',
-      task('lead', {
-        ...story,
-        acceptanceCriteria: 'the approval is recorded',
-        why: 2,
-        outOfScope: null,
-      }),
-    );
-    expect(result?.block, 'the dispatch is never refused').not.toBe(true);
-    for (const field of ['acceptanceCriteria', 'why', 'outOfScope'])
-      expect(warnings(running)).toContain(field);
-  });
-  it('agents/2 — a complete story is shown without a warning', async () => {
-    running = await load(f);
-    await running.fire('tool_call', task('lead', story));
-    expect(warnings(running)).toBe('');
-  });
-
-  for (const field of [
     'evidence',
     'criteria',
     'meaningQuestions',
@@ -135,15 +80,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
   const contracts = [
     {
       role: 'builder',
-      input: {
-        task: 'record-approval',
-        story: 'film',
-        goal: "The creative's approval of a finished film is recorded.",
-        changes: 'Records the approval when the creative approves.',
-        decisions: [],
-        done: 'film-production/1 holds and every check passes.',
-      },
-      missing: 'goal',
       output: {
         change: 'Records the approval when the creative approves.',
         tests: 'Adds the check binding film-production/1.',
@@ -153,22 +89,11 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     },
     {
       role: 'reviewer',
-      input: {
-        change: '#1',
-        story: 'film',
-        acceptanceCriteria: [
-          "The creative's approval of a finished film is recorded.",
-        ],
-        examples: ['film-production/1'],
-      },
-      missing: 'change',
       output: { verdict: 'approve', findings: [], meaningQuestions: [] },
       missingReturn: 'verdict',
     },
     {
       role: 'check-writer',
-      input: { story: 'film', examples: ['film-production/1'] },
-      missing: 'examples',
       output: {
         story: 'film',
         checks: [
@@ -183,23 +108,11 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     },
     {
       role: 'illustrator',
-      input: { story: 'film', concepts: ['approval'] },
-      missing: 'concepts',
       output: { examples: [], flaggedTerms: [] },
       missingReturn: 'flaggedTerms',
     },
   ];
   for (const contract of contracts) {
-    it(`agents/5 — ${contract.role} assignment mismatch is warned at its handover, not only the lead's, and goes ahead`, async () => {
-      running = await load(f);
-      const bad: Record<string, unknown> = { ...contract.input };
-      delete bad[contract.missing];
-      const result = await running.fire('tool_call', task(contract.role, bad));
-      expect(result?.block, 'the handover is never refused').not.toBe(true);
-      const warning = warnings(running);
-      expect(warning).toContain(contract.role);
-      expect(warning).toContain(contract.missing);
-    });
     it(`agents/5 — ${contract.role} return mismatch is caught by its declared output schema`, () => {
       const validate = outputValidator(f, contract.role);
       expect(validate(contract.output), 'a fitting return is accepted').toBe(
@@ -212,42 +125,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       );
     });
   }
-  it('agents/5 — a task with no story is a complete handover to a builder', async () => {
-    running = await load(f);
-    const { story: _none, ...noStory } = contracts[0]!.input;
-    const result = await running.fire('tool_call', task('builder', noStory));
-    expect(result?.block, 'the handover is never refused').not.toBe(true);
-    expect(warnings(running)).toBe('');
-  });
-  it('agents/5 — a lead given a task with no story is not warned', async () => {
-    running = await load(f);
-    const { story: _none, ...noStory } = contracts[0]!.input;
-    const result = await running.fire('tool_call', task('lead', noStory));
-    expect(result?.block, 'the handover is never refused').not.toBe(true);
-    expect(warnings(running)).toBe('');
-  });
-  it("agents/5 — a lead's incomplete task is warned with the task's missing parts and both forms shown", async () => {
-    running = await load(f);
-    await running.fire(
-      'tool_call',
-      task('lead', { task: 'tidy-approval', goal: 'Tidy the approval code.' }),
-    );
-    const warning = warnings(running);
-    expect(warning).toContain(
-      'lead assignment is missing: changes, decisions, done',
-    );
-    expect(
-      warning.split('\n').find((line) => line.includes('is missing')),
-      'never the parts of the story it is not',
-    ).not.toContain('slice');
-    expect(warning).toMatch(
-      /in any one of these forms:\n {2}1\. A user story\./,
-    );
-    expect(warning).toContain('2. A task with no story');
-    expect(warning).toContain('`acceptanceCriteria` (list of strings');
-    expect(warning).toContain('`done` (string, required)');
-  });
-
   for (const role of roles) {
     it(`agents/7, workflow/30 — ${role} keeps default tools including shell and all journal appends`, async () => {
       const d = declaration(f, role);
@@ -319,10 +196,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     }
     running = await load(f, { role: 'reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
-    expect(
-      d.text,
-      'obligation never to build or repair remains behavioral',
-    ).toMatch(/no-implementation|never builds|never.*repair/i);
   });
   it('agents/10 — no retired read-only journal gate survives as an alternate narrowing route', async () => {
     running = await load(f, { role: 'lead', kind: 'sub' });

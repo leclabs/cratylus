@@ -607,9 +607,8 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     log(
       `DRIFT: ${v.stale} stale, ${v.absent} absent (+${v.foreign} foreign) — this host is NOT running what the corpus renders.`,
     );
-    // RELAYED VERBATIM INTO AN AGENT'S CONTEXT by the SessionStart drift
-    // advisory, so this line is a command someone runs on the strength of
-    // reading it. A stale program name here is a repair instruction that fails.
+    // A command someone runs on the strength of reading it: a stale program name
+    // here is a repair instruction that fails.
     log(`  Repair: re-run \`${CLI_BIN} project\`, then \`${CLI_BIN} deploy\`.`);
     return v.rc;
   } catch (e) {

@@ -12,10 +12,11 @@
 // projecting one, and a corpus could not then discover a dimension without
 // editing the projector.
 //
-// A dimension value is a per-dimension **nominal-branded string** — the MODEL
-// address shape: `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the leftover the
-// anchor does not already fire (residue ∅ for a true σ*). VISION: _address, don't
-// describe._ There is NO `{dimension,slug,definiens}` value object, NO per-value
+// A dimension value is a per-dimension **nominal-branded string** of the shape
+// `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the workflow's
+// residue of c, the anchor read in its bounded context (σ* is the anchor with the
+// smallest). There is NO
+// `{dimension,slug,definiens}` value object, NO per-value
 // phantom metadata — the string carries the body; the module's directory
 // (`dimensions/<dimension>/`) is its dimension home (PARTITIONED) and its export
 // name is its anchor α (SIGNIFIED).
@@ -36,6 +37,7 @@
 import type { AgentContract } from './contract.js';
 import type { HookSubstrate } from './hook-cell.js';
 import type { EventName } from './hook/index.js';
+import type { Ruleset } from './rule.js';
 
 // ── Type-level metadata ─────────────────────────────────────────────────────
 
@@ -56,8 +58,8 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
  * from the runtime's implementation interface. That was the only `schema →
  * runtime` edge, and it was the wrong kind of borrowing: what this package needs
  * is a **vocabulary** (which names exist), and what it reached for was a
- * **shape** (how those things are implemented). `MODEL.md:22` already rules
- * `shape ⊥ vocabulary` for `Event` — shape here, names in the corpus.
+ * **shape** (how those things are implemented). The rule `shape ⊥ vocabulary`
+ * already holds for `Event` — shape here, names in the corpus.
  *
  * So the members are the corpus's, exactly as WHICH dimensions exist is the
  * corpus's. This package states that a capability HAS a name and stops; a corpus
@@ -70,7 +72,7 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
  * that insight is kept here. Its root word is not, because the prompt that
  * produced it wrongly disqualified `capability`: only the plural keyspace
  * `capabilities` is occupied, not the root. `capability` is this architecture's
- * established sign for the concept (ten uses in `ARCHITECTURE.md`), so adopting
+ * established sign for the concept, so adopting
  * `Faculty` would have minted a SECOND sign for one concept — the precise defect
  * `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` forbids. */
 export type CapabilityName = string;
@@ -121,21 +123,12 @@ export type CapabilityName = string;
  * from strained to clean at once. Nine failing on one element is evidence, not
  * coincidence — so the member, not the field, was the defect.
  *
- * WHY `latent`, AND WHY IT IS DISCOVERED RATHER THAN COINED. It is already this
- * corpus's sign for exactly this concept. `VISION.md` names the whole discipline
- * LATENT LEXICOGRAPHY and glosses the word: "the vocabulary exists, unsurfaced,
- * awaiting description… Nor is it authored" — in a table whose owner column reads
- * THE MODEL. `cratylism` itself carries `model-latent-space = real stable concepts`.
- * So the member that means "the model's own set, discovered not authored" wears the
- * sign the founding document already gave it, and the type now QUOTES its axiom
- * where it used to contradict it.
- *
+ * WHY `latent`. `cratylism` itself carries `model-latent-space = real stable
+ * concepts`, so the member that means "the model's own set, discovered not
+ * authored" wears the sign the axiom already gave it, and the type now QUOTES its
+ * axiom where it used to contradict it.
  * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
- * `model-native`/`model`, on the ground that nothing in the declaration points at a
- * language model unless the reader already knows the codebase. That objection is
- * answered by `MODEL.md:45`: `decode_cold(f) ≜ decode(f, LLM-priors ∪ Corpus, ∅)` —
- * the CORPUS is admitted to a cold decode; only session-K is excluded. Grounding in
- * `VISION.md` is cold grounding. Both of its winners are occupancy-blocked anyway:
+ * `model-native`/`model`. Both of its winners are occupancy-blocked:
  * `model` is a live dimension name (`export type Model`), and `model-native` is a
  * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:
  * `native` (occupied — `llm-native`, and harness-native event vocabulary) ·
@@ -228,12 +221,11 @@ export interface Binding {
 }
 
 /**
- * A fragment that carries its OWN enforcement — MODEL's `events : fragment ⇀
- * ℘(Event) ⟨PARTIAL⟩`, realized as the shape a value takes when it is in the
- * function's domain.
+ * A fragment that carries its OWN enforcement: the shape a value takes when it
+ * binds to events.
  *
  * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
- * reasoning it governs, and the `accept()` target. `substrate` + `events` are
+ * reasoning it governs. `substrate` + `events` are
  * where it binds. Two independently-authored artifacts would guarantee silent
  * divergence, and a declaration that overstates what is enforced is worse than
  * no declaration — it manufactures trust in an invariant that does not exist.
@@ -263,16 +255,15 @@ export interface Enforcing<O extends string> {
   /**
    * The mechanism this value is realized BY — an ANCHOR, never the mechanism.
    *
-   * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
-   * deploy EMITS⟩`. A command, a timeout, a matcher or worker bytes are all
-   * PROJECT-register content; MODEL puts exactly two things on a fragment,
-   * `events` and `substrate`. They were briefly carried here and that broke
+   * A command, a timeout, a matcher or worker bytes are all PROJECT-register
+   * content, emitted per harness by deploy; a fragment carries only `events` and
+   * `substrate`. They were briefly carried here and that broke
    * BEING/FACE — a being holding one face's shell script cannot have many faces.
    *
    * Absent ⇒ the anchor α of this value is its own mechanism key.
    */
   readonly realizedBy?: string;
-  /** Anchors this value references — the CANONICAL orphan-ref witness. */
+  /** Anchors this value references. */
   readonly refs?: readonly string[];
 }
 
@@ -358,14 +349,12 @@ export interface DimensionMeta {
   /**
    * How the value-catalog is sourced (the `Repertoire`).
    *
-   * This field read `kind` until 2026-08-05, which put a THIRD concept on a sign
-   * two others already carried, two of them in
-   * this package: `RuleCell.kind` (MODEL's `Kind ≜ {fragment, agent, rule, skill}`,
-   * one file over) and forge's `FragmentKind` (a value's structural shape). A blind
-   * reverse decode of all three read `kind` here as "the closure policy of the
-   * dimension's value space" and ranked this site's claim on the sign WEAKEST of
-   * the three — `kind` fires "variant tag answering what is this?", and this is a
-   * property ABOUT the dimension, not the dimension's identity. `RuleCell` keeps it.
+   * This field read `kind` until 2026-08-05, which put a second concept on a sign
+   * forge's `FragmentKind` (a value's structural shape) already carried. A blind
+   * reverse decode read `kind` here as "the closure policy of the dimension's value
+   * space" and ranked this site's claim on the sign weakest — `kind` fires "variant
+   * tag answering what is this?", and this is a property ABOUT the dimension, not
+   * the dimension's identity.
    */
   readonly repertoire: Repertoire;
   /** How many values the dimension field holds (the `Arity`). */
@@ -414,7 +403,7 @@ export interface Entry<D extends string = string> {
  * A dimension MANIFEST: name → metadata. Membership is the definiendum — adding
  * an entry is what makes that dimension exist for the corpus that declares it.
  *
- * Distinct from MODEL's `catalog : DimensionName → ℘(fragment)`, which is the
+ * Distinct from a catalog (`DimensionName → ℘(fragment)`), which is the
  * same index set with a different codomain: a catalog maps a dimension to its
  * VALUES, a manifest maps it to its METADATA (group/repertoire/arity/level/…). That
  * disambiguation used to live only in the prose.
@@ -596,16 +585,10 @@ export interface Agent {
    * it returns. Copied by the corpus's own fold from the contracts its assignment
    * and deliverable values carry. Absent ⇒ its handoff is free text.
    *
-   * A harness binds the deliverable as its own output schema, shows the assignment
-   * when the agent is dispatched or launched, and warns when it is incomplete.
+   * A harness binds the deliverable as its own output schema and shows the
+   * assignment form to a session that may dispatch the agent.
    */
   readonly contract?: AgentContract;
-  /**
-   * OPTIONAL — the per-turn persistence protocol the agent re-grounds its stance
-   * by at the top of every turn, naming its drift tells. Text the corpus's fold
-   * carries for every agent; a harness renders it into the agent's instructions.
-   */
-  readonly persistence?: string;
   /**
    * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
    * omitted, and an empty list means the same thing as absent. Carried on the
@@ -755,9 +738,9 @@ export function markToColor(mark: Mark): string {
   return mark.hue;
 }
 
-// ── Source-cell type kernel — the generic `hook`/`rule` cell shapes ───────────
-// The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
-// concrete cell instances live in the consuming corpus (canon).
+// ── Source-cell type kernel — the generic `hook` cell shape ─────────────────────
+// The doctrine-free hook cell shape + the generic config-IR lift. The concrete
+// cell instances live in the consuming corpus (canon).
 export {
   type HookCell,
   type HookMessage,
@@ -769,18 +752,12 @@ export {
   hookIrOf,
   resolveWorker,
 } from './hook-cell.js';
-export type { RuleCell } from './rule-cell.js';
-export {
-  type AgentContract,
-  type ContractCheck,
-  type JsonSchema,
-  assignmentIn,
-  checkAssignment,
-} from './contract.js';
+export type { Rule, Ruleset } from './rule.js';
+export type { AgentContract, JsonSchema } from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
-// shapes it types. The MEMBERS are the corpus's (`MODEL.md:22`), so there is
-// nothing else here to export.
+// shapes it types. The MEMBERS are the corpus's, so there is nothing else here to
+// export.
 export type { EventName } from './hook/index.js';
 
 // ── The plugin authoring surface ────────────────────────────────────────────
@@ -905,9 +882,9 @@ export interface AgentPlugin extends Layout {
   readonly manifest?: DimensionManifest;
   /**
    * WHICH lifecycle events exist — the corpus's harness-agnostic event vocabulary
-   * (`MODEL.md:22`: `names @ corpus`).
+   * (`names @ corpus`).
    *
-   * It rides the plugin for the same reason `manifest` does, and here it also serves ARCHITECTURE property 3 exactly: the
+   * It rides the plugin for the same reason `manifest` does, and here it also keeps the package boundary exactly: the
    * corpus reaches the projector as DATA, never as an import. The projector needs
    * the members to EMIT the host's runtime configuration; it must not contain them,
    * or a corpus could not name a moment without editing the projector.
@@ -929,6 +906,15 @@ export interface AgentPlugin extends Layout {
    * {@link Plumbing}. Plugins compose: the set's plumbing is the union.
    */
   readonly plumbing?: Plumbing;
+  /**
+   * WHICH rulesets the corpus offers — each one standard convention's rules, which
+   * an install offers whole, rule by rule, or not at all. Absent ⇒ none.
+   *
+   * It rides the plugin the way `practices` does: which rulesets exist is the
+   * corpus's to say, and the projector receives them as data. Plugins compose: a
+   * later plugin's ruleset of the same name replaces an earlier one's.
+   */
+  readonly rulesets?: readonly Ruleset[];
 }
 
 /**

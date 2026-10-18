@@ -4,20 +4,11 @@
 // `sense` and pinned by its `signature`. `T` DECLARES rather than derives — the one table
 // exempt from "every symbol registered".
 //
-// DECLARE-NOT-DEGRADE (llm-native): `T` is a decodability REGISTRY, not an expression cap.
-// When the SYMBOLS gate rejects the FITTEST sign, EXTEND `T` with it (cold-verify its
-// decode) — never swap it for a weaker declared glyph to appease the gate.
-//
-// SINGLE HOME (DRY): the ONLY source for both gates —
-//   • the SYMBOLS gate (`test/symbols.test.ts`): every fence-interior glyph must be a
-//     non-ASCII key here (∪ the calibrated exempt classes).
-//   • the RESIDUE gate (`forge/src/validate/residue.ts`): its admissible σ* value-algebra
-//     operators = `↾ · ⟨⟩ · ${}`.
 // Agent-audience: dense `sense` + `signature` only — NO human-comprehension prose. A human
 // dereferences a glyph by asking an agent to explain the artifact (the on-demand channel),
 // never a maintained doc.
 //
-// `coldVerified`: a cold reader recovers the operation from the glyph ALONE
+// `coldVerified`: a cold reader, given the glyph and nothing of its sense, recovers the operation
 // (SIGNIFIED/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
 // cold-surveyed against reader priors and passed. `${}` is a CODE mechanism (resolved at
 // eval, not decoded) ⇒ false.
@@ -29,7 +20,7 @@ export interface OperatorEntry {
   readonly sense: string;
   /** the type signature (`name : Domain → Codomain`, or a usage schema) */
   readonly signature: string;
-  /** a cold reader recovers the operation from the glyph alone */
+  /** a cold reader, given the glyph and nothing of its sense, recovers the operation */
   readonly coldVerified: boolean;
 }
 
@@ -181,7 +172,7 @@ export const OPERATORS = {
   '·': { sense: 'and-list', signature: 'a · b · c', coldVerified: true },
   '…': { sense: 'and-so-on', signature: '{ a, b, … }', coldVerified: true },
 
-  // ── Provenance / representation (ASCII — contributes no gate glyph) ────────
+  // ── Provenance / representation (ASCII) ──────────────────────────────────
   '@': {
     sense:
       'resides-at / sourced-from — the authoritative on-disk or subsystem home of a fact',
@@ -189,7 +180,7 @@ export const OPERATORS = {
     coldVerified: true,
   },
 
-  // ── Reference mechanism (value algebra; ASCII — contributes no gate glyph) ─
+  // ── Reference mechanism (value algebra; ASCII) ───────────────────────────
   '${}': {
     sense: 'esm-reference',
     signature:
@@ -197,26 +188,3 @@ export const OPERATORS = {
     coldVerified: false,
   },
 } as const satisfies Record<Glyph, OperatorEntry>;
-
-/**
- * The non-ASCII declared glyph set — the SYMBOLS-gate keyset (replaces the live markdown
- * read). Each key contributes its non-ASCII code points; ASCII keys (`${}`) add nothing.
- */
-export function declaredGlyphs(): Set<string> {
-  const out = new Set<string>();
-  for (const glyph of Object.keys(OPERATORS)) {
-    for (const ch of glyph) {
-      if ((ch.codePointAt(0) ?? 0) > 127) {
-        out.add(ch);
-      }
-    }
-  }
-  return out;
-}
-
-/**
- * The σ* value-algebra operators the RESIDUE gate admits inside a residue expression:
- * restriction, the modifier bracket, and the ESM reference mechanism. Member-composition is
- * the agent's set-arity vector, NOT a glyph — no compose operator without its own survey.
- */
-export const RESIDUE_OPERATORS = ['↾', '⟨', '⟩', '${}'] as const;

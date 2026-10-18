@@ -1,0 +1,16 @@
+{
+  "id": "01M53XAEZCE8C77EGASYC2EYD7",
+  "at": "2026-10-17T03:08:39.276Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "corpus",
+  "name": "cold-decode oracle",
+  "wording": "a model given a sign with its bounded context's name and subject, and nothing of the intended concept, glosses it from its priors; the gloss is scored against the intended concept by the workflow's residue; the best-scoring candidate is kept if it keeps the design's distinctions and collides with no other sign in its context",
+  "builtFrom": [
+    "sign"
+  ],
+  "reason": "The operator: a cold decode reads the sign within its bounded context, never a sign alone, since what a sign invokes is conditioned on that context; the score is the residue, stated once in the workflow, both ways.",
+  "supersedes": [
+    "01M53H2HCFYZEM3T7DJFAM83WF"
+  ]
+}

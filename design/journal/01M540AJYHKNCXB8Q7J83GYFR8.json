@@ -1,0 +1,16 @@
+{
+  "id": "01M540AJYHKNCXB8Q7J83GYFR8",
+  "at": "2026-10-17T04:01:09.073Z",
+  "by": "task",
+  "kind": "decide",
+  "decisionId": "0305",
+  "context": "corpus",
+  "title": "Formal statements and the cold oracle read a sign in its bounded context and cite the workflow's residue",
+  "situation": "Decision 0304 restated the principle and left the cold-oracle script and the symbol probe gate's reading sending a sign without its context, as a follow-up now taken.",
+  "decision": "Every formal statement names the bounded context a sign is read in as κ, κ(c) for a concept's: what a sign fires is fired(n, κ); a cold read gives the reader the sign with κ's name and subject and nothing of the intended concept. The residue is cited (`residue @ workflow`, or the workflow's residue in prose), never restated; σ* is the smallest residue in its context, tie-break and mint kept; α is injective within each context. The cold-oracle script and its callers send each sign with its bounded context's name and subject and nothing of the intended concept, and the symbol probe gate's obligations and readouts carry that context. Static witnesses keep their behaviour.",
+  "consequences": "The oracle's callers must name the context a sign is read in; the corpus's own cells are read in the corpus context.",
+  "status": "accepted",
+  "supersedes": "0304",
+  "supersedesEntry": "01M53XHQC1RWFJSFGTPKB33PRJ",
+  "decisionKind": "realization"
+}

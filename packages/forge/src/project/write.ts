@@ -24,9 +24,7 @@
 // Convergence is union AND subtract at ONE seam, so the subtract is here and not
 // in `runProject` — the same split `deploy` makes by pruning in `deployLocal` rather
 // than in `runDeploy`. A `--clean` flag was refused: default-off makes
-// non-convergence the default and the stale artifact the silent case, and
-// `MODEL.md:68` (`REGENERABLE`) says a Target is deploy-owned and ¬hand-edit — a
-// file the projector will not remove and does not know about is neither.
+// non-convergence the default and the stale artifact the silent case.
 //
 // WHAT THIS MAY DELETE, exactly: a path THIS WRITER RECORDED HAVING WRITTEN under
 // this same `out` on a previous run, and did not write again. Nothing else, ever.

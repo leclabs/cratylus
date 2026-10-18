@@ -94,7 +94,7 @@ async function project(
   // straight off their import bindings — two pipelines over one plugin set that
   // never met, so a consumer `patches` entry was read here and silently dropped.
   // The fold now runs FIRST and its result rewrites each agent's dimension values,
-  // which is what makes `compose(select(a)) = ir(a)` (ENGINE:22) hold under a patch
+  // so an agent is rendered from the patched catalog under a patch
   // rather than only when `patches` happens to be empty.
   //
   // Discovery is separate from the fold because a patch can only target a node a

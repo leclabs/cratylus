@@ -1,0 +1,14 @@
+{
+  "id": "01M56EBV90HGHS4QBFTXTVASRD",
+  "at": "2026-10-18T02:44:59.296Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "corpus",
+  "name": "ruleset",
+  "wording": "the rules of one standard convention, such as a branching model, offered together at install; taken whole or rule by rule",
+  "builtFrom": [
+    "rule"
+  ],
+  "reason": "The operator: rules are offered as standard-convention groups or à la carte at install.",
+  "supersedes": []
+}

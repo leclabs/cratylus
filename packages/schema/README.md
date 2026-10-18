@@ -4,8 +4,8 @@ The shapes a corpus authors against, for [cratylus](../../README.md) — the dim
 meta-model as a TypeScript type system.
 
 It sits at the **bottom of the dependency graph**. `canon` authors against it, `forge` validates and
-projects against it, and it holds no opinion about either. What every package is for is
-[ARCHITECTURE.md](../../ARCHITECTURE.md)'s; this README is for the author of a corpus.
+projects against it, and it holds no opinion about either. This README is for the author of a
+corpus.
 
 This module is the contract and **only** the contract. It states that a dimension _has_ a group, a
 repertoire, an arity, a default enforcement level and a projection, and derives an entire dimension
@@ -99,8 +99,9 @@ export default defineAgentPlugin({
 
 `AgentPlugin` is a `Layout` (the four directories a projector scans: `fragments`, `agents`,
 `skills` and `hooks`) plus what the plugin contributes: the `manifest`, the `events` vocabulary,
-the `practices` it offers and the `plumbing` every practice is installed with. A plugin gives its
-directories as absolute paths; [`@cratylus/canon`](../canon/README.md) shows one locating its own.
+the `practices` it offers, the `plumbing` every practice is installed with, and the `rulesets` it
+offers. A plugin gives its directories as absolute paths; [`@cratylus/canon`](../canon/README.md)
+shows one locating its own.
 
 ## What is here
 
@@ -112,10 +113,11 @@ directories as absolute paths; [`@cratylus/canon`](../canon/README.md) shows one
 | `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `anchorOf` | a dimension value, bare or self-enforcing, and its α/residue split       |
 | `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                         |
 | `JsonValue`                                                             | the data a skill's runtime face may carry as `configuration`             |
-| `HookCell` · `RuleCell` · `hookIrOf` · `resolveWorker`                  | the doctrine-free source-cell kernel, and a worker's template resolution |
+| `HookCell` · `hookIrOf` · `resolveWorker`                               | the doctrine-free source-cell kernel, and a worker's template resolution |
 | `ProjectionFact` · `ProjectionFacts`                                    | the names of the facts a projector binds into a hook worker's template   |
 | `AgentPlugin` · `Layout` · `defineAgentPlugin`                          | a package's plugin declaration                                           |
 | `Practice` · `Plumbing` · `Agent.dispatches`                            | a way of working, its shared plumbing, and an agent's dispatch           |
+| `Rule` · `Ruleset`                                                      | a working convention and why it holds, and one convention's rules        |
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
 `null`), and optionally the role it `holds`, the roles it `dispatches` to, its model `routing`

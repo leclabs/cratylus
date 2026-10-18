@@ -13,7 +13,7 @@
 // moved `objective` to the patched value and `agents/parity.md` still carried the
 // authored one. That is `COMPOSED(a) : ∀on: S_on ⊆ catalog(on)` broken — the
 // agent's selection stops being a subset of the resolved catalog the instant the
-// catalog is folded — and with it ENGINE:22 `compose(select(a)) = ir(a)`.
+// catalog is folded.
 //
 // THE QUIET PART. A plugin ORIGINATES each of its fragments with a single
 // `replace(body)`, so absent patches THE FOLD IS THE IDENTITY. That is why every

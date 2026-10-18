@@ -26,8 +26,8 @@
 // decision supersedes it or a later entry deprecates it. Every example file
 // present is current. `state` is the design state alone: no decision, no
 // built-from part, no reason, no retired concept, no history. `design` and
-// `decisions` read only what stands, adding the history only when asked with
-// `--history`; `history` is history asked for.
+// `decisions` read what stands, adding the history when asked with `--history`;
+// `history` is history asked for.
 //
 // HISTORY READ AS RECORDED. Entries are never rewritten, so what earlier
 // workflows recorded is still read: a decision recorded with a kind, the
@@ -131,8 +131,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design state, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and never part of the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ residue”, and the competing versions none has settled, each such a line or “name retired”; nothing else: decisions, the concepts each is built from, why each version was written, earlier versions and retired concepts are read apart',
-    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and never in its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
+      'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and apart from the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ residue”, and the competing versions none has settled, each such a line or “name retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
+    when: 'For the project’s purpose and a short summary of the design, at the start of a session or after it was compacted, beside the design that recovers it; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and outside its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -144,8 +144,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Show the delivered practice the project’s agents work by in a place of its own (practice), then the current conceptual model of each of the project’s own bounded contexts: its live concepts, each by its current meaning with the concepts it is built from, and competing versions; retired concepts and why each live concept’s version was written are history, shown only when asked',
-    when: 'Beyond the design state, before work relies on how a concept is built from others, or after recording a change to the design, to see the design as it currently stands with its parts; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
+      'Read the design as it stands, the read that recovers it at a session’s start: the delivered practice the project’s agents work by in a place of its own (practice), then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts, each by its current meaning with the concepts it is built from, and competing versions; with history, also retired concepts and why each live concept’s version was written',
+    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
     positional: null,
     flags: {
       context: valueFlag(
@@ -372,7 +372,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read the design state of the delivered practice and of each context the work touches first, then the standing decisions its work needs, and the history only when how something came to be matters; to read the design back before acting; and to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made, so the design is kept nowhere else. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first; nothing is ever recorded into one. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; and to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made, so the journal holds the design from its start on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 

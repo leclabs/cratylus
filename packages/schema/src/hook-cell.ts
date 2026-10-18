@@ -66,7 +66,7 @@ export interface HookMessage {
 export interface HookWorker {
   /** Basename under `hooks/<id>/` in the render/deploy tree. */
   readonly filename: string;
-  /** Repo-relative committed target regenerated from RESOLVED `content` (byte-locked). */
+  /** Repo-relative committed target regenerated from RESOLVED `content`. */
   readonly targetPath: string;
   /**
    * The worker TEMPLATE — verbatim bytes except for a closed placeholder set:
@@ -89,7 +89,7 @@ export interface HookWorker {
 export interface HookCell<E extends EventName = EventName> {
   /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
   readonly id: string;
-  /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */
+  /** σ*-signified canonical identity (`body = ⟨α, residue⟩`). */
   readonly residue: string;
   /** Which substrate the event fires in. */
   readonly substrate: HookSubstrate;
@@ -117,7 +117,7 @@ export interface HookCell<E extends EventName = EventName> {
    * worker template. Absent on a hook that says nothing to a reader.
    */
   readonly speech?: readonly HookMessage[];
-  /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
+  /** Anchors this cell references. */
   readonly refs?: readonly string[];
 }
 
@@ -148,8 +148,7 @@ const PLACEHOLDER = /\{\{([^{}]*)\}\}/g;
  * IT THROWS ON AN UNKNOWN PLACEHOLDER, and that is the load-bearing half. A silent
  * pass-through would ship a literal `{{fact:runtime-bin}}` into a deployed `.sh`,
  * where it fails on a host at run time rather than here — the exact class of defect
- * (`ARCHITECTURE.md`: "the emitted-artifact sites are exactly where a missed rename
- * fails on a host rather than at build") this whole seam exists to close.
+ * this whole seam exists to close.
  */
 export function resolveWorker(
   worker: HookWorker,

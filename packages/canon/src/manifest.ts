@@ -55,14 +55,14 @@ export const MANIFEST = {
     group: 'Identity',
     arity: 'scalar',
     repertoire: 'open',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
   },
   objective: {
     group: 'Identity',
     arity: 'slots',
     repertoire: 'open',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
     slots: [{ name: 'drive' }, { name: 'stopping-rule' }],
   },
@@ -109,7 +109,7 @@ export const MANIFEST = {
     group: 'Authority',
     arity: 'slots',
     repertoire: 'fixed',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
     slots: [
       { name: 'intent', gloss: 'what is wanted and why' },
@@ -138,7 +138,7 @@ export const MANIFEST = {
     group: 'Authority',
     arity: 'set',
     repertoire: 'curated',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
   },
   // Reach — what a role sees and changes. Never text, and compiled to no setting:
@@ -147,14 +147,14 @@ export const MANIFEST = {
     group: 'Reach',
     arity: 'set',
     repertoire: 'fixed',
-    level: 'fixed',
+    level: 'firm',
     projection: 'binding',
   },
   'action-scope': {
     group: 'Reach',
     arity: 'set',
     repertoire: 'fixed',
-    level: 'fixed',
+    level: 'firm',
     projection: 'binding',
   },
   // Cognition
@@ -170,7 +170,7 @@ export const MANIFEST = {
     group: 'Cognition',
     arity: 'set',
     repertoire: 'curated',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
   },
   // Interface
@@ -197,7 +197,7 @@ export const MANIFEST = {
     group: 'Governance',
     arity: 'set',
     repertoire: 'curated',
-    level: 'fixed',
+    level: 'firm',
     projection: 'text',
     required: true,
   },
@@ -298,9 +298,9 @@ export type Evaluation = Value<'evaluation'>;
 //
 // This retires the `schema → runtime` edge. `CapabilityName` used to read
 // `keyof Omit<RuntimePlugin, 'name'>` — schema reaching into the runtime's
-// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`
-// (`MODEL.md:22`): the ports stay in the runtime where ARCHITECTURE puts them,
-// and the names come from the corpus. Nothing moved except where the members
+// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`: the
+// ports stay in the runtime, and the names come from the corpus. Nothing moved
+// except where the members
 // are declared.
 //
 // THE SIGN IS `RuntimeCapability`, WHICH IS WHAT SCHEMA ALREADY CALLED IT — and
@@ -322,14 +322,8 @@ export type { SkillExpression };
 
 // ── The lifecycle-event vocabulary ──────────────────────────────────────────
 //
-// `MODEL.md:22`, verbatim:
-//
-//   Event ≜ the harness-agnostic lifecycle vocabulary ⟨corpus-owned ⟨a name for a
-//   moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ schema · names @ corpus ;
-//   the PIVOT every adapter maps from⟩
-//
 // A NAME FOR A MOMENT IS A SIGNIFICATION, and signification is what this corpus is.
-// That single clause decides the home: not schema (which held 28 of these, emitted
+// That decides the home: not schema (which held 28 of these, emitted
 // from a JSON file by a generator), not runtime (which held the same 28,
 // hand-authored, identical as sets AND in order), but here — beside
 // `RUNTIME_CAPABILITIES`, which is the same ruling one axis over, already landed.
@@ -340,10 +334,10 @@ export type { SkillExpression };
 //   · schema  states only that an event HAS a name (`EventName`) and narrows
 //     `HookCell` from this tuple by type argument — an undeclared event is a
 //     compile error at the cell;
-//   · forge   receives it as DATA on the plugin (`AgentPlugin.events`, ARCHITECTURE
-//     property 3) and keys its own harness maps over it;
-//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED (property 4,
-//     verbatim) — `deploy` writes the host config, `dispatch` validates against it.
+//   · forge   receives it as DATA on the plugin (`AgentPlugin.events`) and keys
+//     its own harness maps over it;
+//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED — `deploy`
+//     writes the host config, `dispatch` validates against it.
 // Only the first is a compiler-enforced derivation; the other two cross package
 // boundaries the type system cannot, which is what `test/event-vocabulary.test.ts`
 // is for.

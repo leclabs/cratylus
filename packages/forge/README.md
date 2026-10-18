@@ -4,7 +4,7 @@ The build core for [cratylus](../../README.md): it resolves the plugins a projec
 merged set of cells and renders that set into the files a harness reads.
 
 This README is for the author of a corpus, or of an adapter for a harness, who works against the
-library. What every package is for is [ARCHITECTURE.md](../../ARCHITECTURE.md)'s. What a consumer does
+library. What a consumer does
 with the `cratylus` command — install and its flags, the practices, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
@@ -170,9 +170,7 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
-to drift. Every turn carries the handover form of each agent that takes a typed one; a dispatch or
-launch whose assignment is incomplete, and an `eval` call whose code dispatches a delegate (`agent(…)`,
-`workpool(…)`, `tool.task`, `tool["task"]`), are each warned of and go ahead — never refused. The
+to drift. Every turn carries the handover form of each agent that takes a typed one. The
 extension records nothing of a dispatch or its return.
 
 ## The harness adapter port
@@ -239,7 +237,7 @@ inversion `schema` exists to end; `@cratylus/forge/resolve` re-exports `AgentPlu
 `defineAgentPlugin` only so the resolver stays addressable through one place.
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
-fragment catalogs of a plugin set), `./validate` (the doctrine-free acceptance algorithm, whose data
+fragment catalogs of a plugin set), `./validate` (the cold-decode oracle's driver, whose data
 the corpus injects), `./module-scan` and `./adapters/omp` (the OMP adapter).
 
 ## License

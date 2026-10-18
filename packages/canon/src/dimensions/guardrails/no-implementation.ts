@@ -1,3 +1,3 @@
 import type { Guardrails } from '../../manifest.js';
 
-export const noImplementation: Guardrails = `no-implementation ≜ never builds the work itself`;
+export const noImplementation: Guardrails = `no-implementation ≜ leaves building the work to the builders`;

@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 470" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1200" height="470" fill="#fbfaf7"/>
+  <defs>
+    <pattern id="hatchMissing" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="6" height="6" fill="#dbeafe"/><line x1="0" y1="0" x2="0" y2="6" stroke="#2563eb" stroke-width="1.5"/>
+    </pattern>
+    <pattern id="hatchSpurious" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <rect width="6" height="6" fill="#fee2e2"/><line x1="0" y1="0" x2="0" y2="6" stroke="#dc2626" stroke-width="1.5"/>
+    </pattern>
+    <clipPath id="crMeant"><ellipse cx="812" cy="222" rx="70" ry="42"/></clipPath>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="40" y="48" font-size="24" font-weight="700" fill="#111">An agent's context: terms that point into the model</text>
+  <text x="40" y="76" font-size="15" fill="#555">each term is the address of a concept the model already holds; the context states only what's missing or spurious</text>
+
+  <!-- Left panel: the agent's context -->
+  <rect x="40" y="100" width="500" height="340" rx="14" fill="#fff" stroke="#ddd"/>
+  <text x="60" y="128" font-size="15" font-weight="700" fill="#111">the agent's context</text>
+  <text x="520" y="128" font-size="13" fill="#999" text-anchor="end">domain: software development</text>
+
+  <!-- entry 1: a term with a correction -->
+  <rect x="60" y="146" width="460" height="104" rx="10" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="80" y="178" font-size="17" font-weight="700" fill="#c2410c">code review</text>
+  <text x="80" y="208" font-size="14" fill="#1d4ed8">+ judged against the agreed examples</text>
+  <text x="80" y="232" font-size="14" fill="#b91c1c">− the reviewer never fixes the work</text>
+
+  <!-- entry 2: a term that needs no correction -->
+  <rect x="60" y="264" width="460" height="56" rx="10" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="80" y="298" font-size="17" font-weight="700" fill="#c2410c">acceptance criteria</text>
+  <text x="504" y="297" font-size="13" fill="#6b7280" text-anchor="end">nothing missing or spurious</text>
+
+  <!-- entry 3: a term that needs no correction -->
+  <rect x="60" y="334" width="460" height="56" rx="10" fill="#f9fafb" stroke="#e5e7eb"/>
+  <text x="80" y="368" font-size="17" font-weight="700" fill="#c2410c">nit</text>
+  <text x="504" y="367" font-size="13" fill="#6b7280" text-anchor="end">nothing missing or spurious</text>
+
+  <!-- legend -->
+  <text x="60" y="420" font-size="13" fill="#1d4ed8">+ states what's missing</text>
+  <text x="250" y="420" font-size="13" fill="#b91c1c">− rules out what's spurious</text>
+
+  <!-- Right panel: what the model already holds -->
+  <rect x="660" y="100" width="500" height="340" rx="14" fill="#fff" stroke="#ddd"/>
+  <text x="676" y="124" font-size="13" fill="#999">what the model learned from its training text, read in that domain</text>
+
+  <!-- other concepts the model holds, not called on -->
+  <g fill="#f3f4f6" stroke="#e5e7eb" stroke-width="1.5">
+    <ellipse cx="1080" cy="180" rx="50" ry="26"/>
+    <ellipse cx="1100" cy="300" rx="38" ry="24"/>
+    <ellipse cx="1070" cy="395" rx="58" ry="26"/>
+    <ellipse cx="750" cy="410" rx="44" ry="20"/>
+    <ellipse cx="960" cy="150" rx="40" ry="22"/>
+  </g>
+  <g font-size="12" fill="#9ca3af" text-anchor="middle">
+    <text x="1080" y="184">linting</text>
+    <text x="1100" y="304">merge</text>
+    <text x="1070" y="399">refactoring</text>
+    <text x="750" y="414">bug</text>
+    <text x="960" y="154">test</text>
+  </g>
+
+  <!-- code review: what the term calls to mind vs the concept meant, small gap -->
+  <ellipse cx="812" cy="222" rx="70" ry="42" fill="url(#hatchMissing)"/>
+  <ellipse cx="826" cy="214" rx="72" ry="44" fill="url(#hatchSpurious)"/>
+  <g clip-path="url(#crMeant)"><ellipse cx="826" cy="214" rx="72" ry="44" fill="#d1fae5"/></g>
+  <ellipse cx="812" cy="222" rx="70" ry="42" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <ellipse cx="826" cy="214" rx="72" ry="44" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="818" y="223" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">code review</text>
+
+  <!-- acceptance criteria: the term calls the concept to mind exactly -->
+  <ellipse cx="975" cy="290" rx="72" ry="32" fill="#d1fae5"/>
+  <ellipse cx="975" cy="290" rx="72" ry="32" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <ellipse cx="976" cy="289" rx="73" ry="33" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="975" y="295" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">acceptance criteria</text>
+
+  <!-- nit: the term calls the concept to mind exactly -->
+  <ellipse cx="930" cy="368" rx="40" ry="26" fill="#d1fae5"/>
+  <ellipse cx="930" cy="368" rx="40" ry="26" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="7 4"/>
+  <ellipse cx="931" cy="367" rx="41" ry="27" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+  <text x="930" y="373" font-size="14" font-weight="700" fill="#065f46" text-anchor="middle">nit</text>
+
+  <!-- each term points to its concept -->
+  <g fill="none" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arrow)">
+    <path d="M520,174 C600,174 670,218 736,218"/>
+    <path d="M520,292 C640,292 800,292 899,291"/>
+    <path d="M520,362 C660,362 800,368 886,368"/>
+  </g>
+</svg>

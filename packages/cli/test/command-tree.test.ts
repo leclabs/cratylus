@@ -30,7 +30,6 @@ const AUTHOR_COMMANDS = [
   'add',
   'compose',
   'project',
-  'optimize',
   'deploy',
   'explain',
   'catalog',
@@ -186,8 +185,6 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
       ['deploy', '--harness', 'nope'],
       ['nope', 'omp'],
     ],
-    [['optimize', 'x'], ['--plan']],
-    [['optimize', '--plan', 'p'], ['source']],
     [['uninstall'], ['--harness']],
     [['compose', 'extra'], ['extra']],
   ] as const)('%j', async (words, names) => {

@@ -1,18 +1,15 @@
-// ARCHITECTURE gate — the four load-bearing properties of `ARCHITECTURE.md`, enforced.
+// Package-boundary gate — the four load-bearing package-boundary properties, enforced.
 //
-// Named for the ground it enforces, on this corpus's own precedent: `cratylism.test.ts`
-// is named for the principle it enforces, not for a property-noun. Five cold legs were
-// spent looking for a quality-noun and the best of them returned `import-acyclicity`,
+// Named for the law it enforces, not for a property-noun. The best quality-noun found
+// was `import-acyclicity`,
 // which is simply WRONG — the law is stricter than acyclicity. `canon` importing
 // `cratylus` introduces no cycle and is still forbidden. A sign naming a weaker
 // property than the law would mislead exactly the reader who trusted it.
 //
-// WHY THIS EXISTS. `ARCHITECTURE.md` states four properties "in order of how much they
-// matter", and a census of the whole repository found that **nothing has ever checked
-// any of them** — no dependency-cruiser, no import lint, no CI, and the single
-// import-scanning assertion in the tree covers 4 files of one direction. A property
-// stated only in prose drifts silently. That is the same lesson this corpus already
-// learned about signs, one level up.
+// WHY THIS EXISTS. The package split rests on four properties, and a census of the whole
+// repository found that **nothing had ever checked any of them** — no dependency-cruiser,
+// no import lint, no CI, and the single import-scanning assertion in the tree covered 4
+// files of one direction. A property stated only in prose drifts silently.
 //
 // AND THE RATCHET IS NOW EMPTY. `src/hooks/memory-consolidation-nudge.ts` — a canon
 // CELL — imported `@cratylus/runtime` for `CLI_BIN`, and `bin-name-single-home.
@@ -32,8 +29,7 @@
 // full of import-shaped text that is not an import: `config/scaffold.ts` holds a
 // scaffold TEMPLATE containing `import canon from '@cratylus/canon'`. A text scan
 // convicts it. It is not an edge. Comments and template literals are therefore
-// stripped before matching — the same use/mention line that governs
-// `command-veracity` and the density gate.
+// stripped before matching.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
@@ -101,8 +97,8 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
  *
  * EMPTY MEANS SOMETHING HERE, because the shrink-only leg makes a stale pin fail
  * loudly: this set cannot be quietly padded to re-admit a breach without the
- * corresponding edge actually existing. The four properties of `ARCHITECTURE.md` now
- * hold on the real import graph with no exceptions.
+ * corresponding edge actually existing. The four properties now hold on the real
+ * import graph with no exceptions.
  */
 const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // `canon/hooks/memory-consolidation-nudge.ts → runtime` WAS HERE — property 1's
@@ -125,13 +121,13 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   //
   // The pin's own note proposed moving `RuntimePlugin` into the shapes package. A
   // census refuted that remedy: `RuntimePlugin` was typed over `MemoryStrategy` and
-  // the other runtime PORTS, which are the whole of what ARCHITECTURE
-  // assigns to `runtime` — so the move would have traded a ratcheted edge for a
+  // the other runtime PORTS, which are the whole of what `runtime` is for — so the
+  // move would have traded a ratcheted edge for a
   // fused concern. The detection was right; the remedy was not.
   //
   // What schema actually wanted was never `RuntimePlugin`. It wanted the capability
   // KEY SET, and it was obtaining a VOCABULARY by reaching into a
-  // SHAPE. `shape ⊥ vocabulary` (`MODEL.md:22`). Schema now states only that a
+  // SHAPE. `shape ⊥ vocabulary`. Schema now states only that a
   // capability has a name; `canon/manifest.ts` declares the members and narrows its
   // own `Skill` against them, which is the `DimensionManifest`/`MANIFEST` pattern
   // reused rather than a second one invented. The edge is gone, the ports never
@@ -361,7 +357,7 @@ function permitted(e: Edge): boolean {
   return PERMITTED.some(([a, b]) => a === e.from && b === e.to);
 }
 
-describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () => {
+describe('package-boundary gate — the four load-bearing properties, enforced', () => {
   // REACH. A stripper that over-strips, or a glob that matches nothing, yields zero
   // edges — and zero edges passes every assertion below as if the tree were perfect.
   // The package set is a LITERAL, so it can go stale the moment a package is added —
@@ -439,27 +435,22 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
       (e) => e.from === 'canon' && e.to === 'forge' && e.role === 'root',
     );
     // WAS 22, IS 0 — the whole point of the shapes extraction, and the proof it landed.
-    // (`ARCHITECTURE.md` carried "28" for months; it was never measured and it was
-    // wrong.) A cell reaching the projector again moves this off zero.
+    // A cell reaching the projector again moves this off zero.
     expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);
-    // WAS 9, THEN 6, THEN 4, IS 5 — and these are LICENSED: a corpus BUILT BY forge,
-    // not DEFINED by it, which `ARCHITECTURE.md` names explicitly as not a divergence.
+    // WAS 9, THEN 6, THEN 4, THEN 5, IS 4 — and these are LICENSED: a corpus BUILT BY
+    // forge, not DEFINED by it, which is not a divergence.
     // Three of the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the
     // cell SHAPES and now take them from the schema, so their forge edge is gone
     // outright. Two more went with the two `toolkit/project-cli*.ts` files: they were one
     // program differing by an adapter string, and the shipped
-    // `cratylus project --harness <name>` is that program.
+    // `cratylus project --harness <name>` is that program. The last went with
+    // `tooling/project-targets.ts`, which regenerated committed hook targets and has
+    // none left to regenerate.
     //
-    // IT WENT UP BY ONE, and that is the property-1 repair's whole cost. Regenerating
-    // a committed hook target means RESOLVING its worker template, and the facts live
-    // in the projector — so `toolkit/project-targets.ts` took a forge import BACK.
-    // The trade is the one the architecture asks for: a BUILD SCRIPT reaching the
-    // projector (licensed, and the direction of every other entry here) in place of a
-    // CELL reaching the runtime (property 1, the highest-ranked property there is).
     // This number does not go to zero, and driving it there would mean canon could no
     // longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
-      5,
+      4,
     );
     // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `manifest.ts` and
     // `manifest.test-d.ts` took their shapes from the schema; `index.ts` was the last
@@ -580,8 +571,8 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
   // importers are all `tooling/` and `test/`, and runtime's two `src` hits are both
   // COMMENTS. Property 2 ("nothing depends on projection") held at the module level and
   // was breached at the manifest level, so anyone running `npm i @cratylus/canon` also
-  // downloaded the projector — re-coupling at distribution exactly what ARCHITECTURE says
-  // the package split exists to prevent, and what the two-bin decision is argued from.
+  // downloaded the projector — re-coupling at distribution exactly what the package split
+  // exists to prevent, and what the two-bin decision is argued from.
   //
   // `dependencies` is the set a CONSUMER downloads. A package used only to build or test
   // this package is a `devDependency`; putting it in `dependencies` is a claim about the
@@ -633,7 +624,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
 
   // THE LIVE LEG ABOVE GOES DARK THE MOMENT THE CORPUS IS CLEAN — its subject is the real
   // manifests, and a clean tree is indistinguishable from a broken detector. It DID convict
-  // on first run (`schema → @cratylus/runtime`, an edge ARCHITECTURE recorded as repaired
+  // on first run (`schema → @cratylus/runtime`, an edge recorded as repaired
   // in 2026-08-05 while the manifest entry survived), but that violation is now fixed and
   // cannot be the standing proof.
   //

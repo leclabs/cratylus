@@ -23,7 +23,7 @@
 // they agreed by construction and the missing pipe was invisible. `discoverFragments`
 // + `resolveFragmentBodies` are that pipe: they hand back the authored-body ⟼
 // resolved-body substitution an agent's dimension values undergo before `agentDef`,
-// which is what makes `compose(select(a)) = ir(a)` (ENGINE:22) hold under a patch and
+// which is what makes an agent render from the patched catalog under a patch and
 // not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -41,6 +41,8 @@ import {
   type Plumbing,
   type Practice,
   type ProjectionFacts,
+  type Rule,
+  type Ruleset,
   type Skill,
   anchorOf,
   bodyOf,
@@ -82,10 +84,10 @@ import { runtimeShimContent } from './runtime-shim.js';
 /**
  * THE PROJECTOR'S FACT TABLE — every value a worker template may ask for by name.
  *
- * This is the seam that let ARCHITECTURE's property 1 close. A canon cell needed the
- * runtime bin's name and could only get it by importing `@cratylus/runtime` — meaning
- * reaching into mechanism, the highest-ranked property in the north star, breached by
- * exactly one edge. FORGE already depends on runtime (a permitted edge: projection
+ * This is the seam that removed a canon cell's import of the runtime. A canon cell
+ * needed the runtime bin's name and could only get it by importing
+ * `@cratylus/runtime` — meaning reaching into mechanism. FORGE already depends on
+ * runtime (a permitted edge: projection
  * knows both sides), so the value belongs here and the cell asks for it by NAME.
  *
  * The schema declares WHICH facts exist (`ProjectionFact`) and never a value; a value
@@ -137,6 +139,8 @@ export interface ProjectablePlugin {
   readonly practices?: readonly Practice[];
   /** What every practice is installed with and none is offered as (`AgentPlugin.plumbing`). */
   readonly plumbing?: Plumbing;
+  /** WHICH rulesets this plugin offers (`AgentPlugin.rulesets`). */
+  readonly rulesets?: readonly Ruleset[];
 }
 
 export interface ProjectOpts {
@@ -157,9 +161,8 @@ export interface ProjectOpts {
    * `anchor → HarnessMechanism` — the realization payloads for this corpus's
    * enforcing values, INJECTED.
    *
-   * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
-   * so it cannot live on the source cell. It is supplied here by the corpus, the
-   * same way `accept.ts` takes its palimpsest table as an injected `Policy` — the
+   * deploy emits `mechanism` per (fragment, adapter), so it cannot live on the
+   * source cell. It is supplied here by the corpus — the
    * DATA lives in canon, the ALGORITHM stays doctrine-free.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
@@ -196,6 +199,13 @@ export interface ProjectOpts {
    * a name that is no declared practice.
    */
   readonly practices?: readonly string[];
+  /**
+   * The rules to render, by name, each to `rules/<file>` as the adapter writes it
+   * (`HarnessAdapter.ruleDef`). ABSENT or EMPTY ⇒ none: a rule is placed only where
+   * it is chosen. A name that is no rule of the plugin set's rulesets is refused
+   * before anything is rendered.
+   */
+  readonly rules?: readonly string[];
 }
 
 /** One agent of the plugin set, as its module declares it: the agent is identified by
@@ -229,9 +239,9 @@ export interface ProjectedFile {
  * What a plugin set projects to: every artifact as bytes, plus the counts.
  *
  * DELIBERATELY a local structural type, and deliberately unnamed beyond that. This
- * is NOT MODEL's `IR`: `ir : agent → IR` is AGENT-scoped and is already realized by
- * the `Agent` interface. A whole-plugin-set aggregate is a different thing that no
- * grounding doc declares, and minting a canonical anchor for it is a cratylism act
+ * is NOT an agent's `IR`, which is AGENT-scoped and is already realized by the
+ * `Agent` interface. A whole-plugin-set aggregate is a different thing, and
+ * minting a canonical anchor for it is a cratylism act
  * this seam is not entitled to perform.
  */
 export interface ProjectedTree extends ProjectReport {
@@ -254,6 +264,10 @@ export interface ProjectedTree extends ProjectReport {
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
   readonly practices: readonly OfferedPractice[];
+  /** The rulesets the plugin set declares, in declaration order, each with its
+   *  rules: what an install offers, whole or rule by rule. Empty when the set
+   *  declares none. Reported whether or not a render named any rule. */
+  readonly rulesets: readonly OfferedRuleset[];
   /** Which form each runtime capability took on this harness, in capability order:
    *  the harness's own facility, the extension tool, or prose generated from the
    *  capability's explanation, the last resort. */
@@ -274,6 +288,16 @@ export interface OfferedPractice {
   readonly description: string;
   /** A fresh install selects it unless the operator declines. */
   readonly preselected: boolean;
+}
+
+/** A declared ruleset as an install offers it: whole, rule by rule, or not at all. */
+export interface OfferedRuleset {
+  readonly name: string;
+  readonly description: string;
+  readonly rules: readonly {
+    readonly name: string;
+    readonly description: string;
+  }[];
 }
 
 /** The Agent an agent module exports: its one non-default export carrying a string
@@ -507,7 +531,7 @@ export async function discoverFragments(
  * FOLD a discovery under the consumer `patches` → the substitution an agent's
  * authored dimension values must undergo: authored body ⟼ resolved body. Step TWO.
  *
- * WHY THIS EXISTS. `select(a)` (ENGINE:22) is realized as an agent module's import
+ * WHY THIS EXISTS. An agent's selection is realized as an agent module's import
  * list — `objective: insight_objective` binds the fragment's body AS IT SAT ON DISK.
  * The catalog those values are supposed to be drawn from is the resolver's ordered
  * fold. Without this map the two coincide only by accident: the moment a patch moves
@@ -720,6 +744,60 @@ function selectPractices(
 }
 
 /**
+ * The rulesets a plugin set declares, in declaration order. A later plugin's ruleset
+ * of the same name REPLACES an earlier one's (and is logged), as a practice does. A
+ * rule name two rulesets both carry is refused, naming both: a rule is loaded by its
+ * name, so the second would replace the first on the harness.
+ */
+function declaredRulesets(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Ruleset[] {
+  const byName = new Map<string, { ruleset: Ruleset; plugin: string }>();
+  for (const p of plugins) {
+    for (const ruleset of p.rulesets ?? []) {
+      const prev = byName.get(ruleset.name);
+      if (prev) {
+        log(`  override ruleset ${ruleset.name}: ${prev.plugin} → ${p.name}`);
+      }
+      byName.set(ruleset.name, { ruleset, plugin: p.name });
+    }
+  }
+  const rulesets = [...byName.values()].map((e) => e.ruleset);
+  const carriedBy = new Map<string, string>();
+  for (const ruleset of rulesets) {
+    for (const rule of ruleset.rules) {
+      const other = carriedBy.get(rule.name);
+      if (other !== undefined) {
+        throw new Error(
+          `the rule '${rule.name}' is in both the '${other}' and the '${ruleset.name}' rulesets; a rule's name is unique across the plugin set`,
+        );
+      }
+      carriedBy.set(rule.name, ruleset.name);
+    }
+  }
+  return rulesets;
+}
+
+/**
+ * The rules NAMED, in the order the rulesets declare them, each once. A name that is
+ * no declared rule is refused. Runs before anything is rendered.
+ */
+function selectRules(
+  names: readonly string[],
+  declared: readonly Ruleset[],
+): Rule[] {
+  const all = declared.flatMap((r) => r.rules);
+  const unknown = names.filter((n) => !all.some((rule) => rule.name === n));
+  if (unknown.length > 0) {
+    throw new Error(
+      `${unknown.map((n) => `'${n}'`).join(', ')} ${unknown.length === 1 ? 'is' : 'are'} no rule of the plugin set (rules: ${all.length === 0 ? 'none' : all.map((r) => r.name).join(', ')})`,
+    );
+  }
+  return all.filter((rule) => names.includes(rule.name));
+}
+
+/**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
@@ -767,7 +845,7 @@ export async function projectPluginSet(
   const manifest = mergeManifest(opts.plugins, log);
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
-  // module happened to import (ENGINE:22). Every move is reported, never silent.
+  // module happened to import. Every move is reported, never silent.
   const subst = opts.resolvedBodies ?? new Map<string, string>();
   for (const [from, to] of subst) {
     log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
@@ -792,6 +870,11 @@ export async function projectPluginSet(
   const contributedSkills = selection
     ? allSkills.filter((s) => selection.skills.has(s.name))
     : allSkills;
+
+  // RULES. None is the default: a rule is rendered only where it is named, and a
+  // name that is no declared rule is refused here, before a byte is rendered.
+  const rulesets = declaredRulesets(opts.plugins, log);
+  const chosenRules = selectRules(opts.rules ?? [], rulesets);
 
   let agents = 0;
   const agentNames: string[] = [];
@@ -1056,6 +1139,12 @@ export async function projectPluginSet(
     log(`EMIT capability prose ${path}`);
   }
 
+  for (const rule of chosenRules) {
+    const { filename, content } = opts.adapter.ruleDef(rule);
+    files.push({ path: join('rules', filename), content });
+    log(`EMIT rule ${rule.name}`);
+  }
+
   let skills = 0;
   let shims = 0;
   for (const { name, skill: cell } of contributedSkills) {
@@ -1263,6 +1352,14 @@ export async function projectPluginSet(
       name: p.name,
       description: p.description,
       preselected: p.preselected === true,
+    })),
+    rulesets: rulesets.map((r) => ({
+      name: r.name,
+      description: r.description,
+      rules: r.rules.map((rule) => ({
+        name: rule.name,
+        description: rule.description,
+      })),
     })),
     capabilities,
   };

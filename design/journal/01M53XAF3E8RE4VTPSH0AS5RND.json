@@ -1,0 +1,13 @@
+{
+  "id": "01M53XAF3E8RE4VTPSH0AS5RND",
+  "at": "2026-10-17T03:08:39.406Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "corpus",
+  "subject": "the agent semantics cratylus ships, written once in signs a model reads as meant",
+  "relation": "expresses the agents context's factors and values as signs and cells; measures every sign by the workflow's residue, never a residue of its own",
+  "reason": "The operator: the residue is stated once, where it is owned; the workflow owns it and ships with every project, so the corpus refers to it instead of defining it one-sided.",
+  "supersedes": [
+    "01M53H2S6DHHV5D202AP2SABZ7"
+  ]
+}

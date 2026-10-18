@@ -1,10 +1,14 @@
-// oracle.ts — the LIVE half of the acceptance gate: the priors-only BLIND
-// cold-oracle driver. Wraps an ISOLATION script (fresh /tmp cwd OUTSIDE the repo +
-// a credentials-only CLAUDE_CONFIG_DIR ⇒ no corpus/memory/root/registry reads) and
-// exposes it as the authority for the two decode-shaped Universal legs:
+// oracle.ts — the cold-decode oracle's driver: the priors-only BLIND cold read.
+// Wraps an ISOLATION script (fresh /tmp cwd OUTSIDE the repo + a credentials-only
+// CLAUDE_CONFIG_DIR ⇒ no corpus/memory/root/registry reads), and answers for:
 //
 //   COLD-BLIND : decode_cold(core f) = intent(f)
-//   SIGNIFIED  : α's fired priors circumscribe the concept  (α = σ*)
+//   SIGNIFIED  : α, read in its bounded context, has the smallest residue (`residue @
+//                workflow`) for the concept  (α = σ*)
+//
+// The isolation script this driver wraps sends the fragment with its bounded
+// context's name and subject (`DecodeOpts.context`), which every caller names, and
+// nothing of its intent.
 //
 // ISOLATION IS THE INVARIANT. A subagent is NOT cold (it inherits session context
 // + the local agent-registry aliases); only this process-level isolation yields a
@@ -13,34 +17,48 @@
 // NOT to any local registry gloss. If the corpus/registry leaked in, the nonce
 // would come back glossed; it does not.
 //
-// This is the doctrine-agnostic ALGORITHM (forge ENGINE): the isolation-driving
+// This is the doctrine-agnostic ALGORITHM: the isolation-driving
 // protocol + the no-prior DETECTION. Both corpus-coupled data are INJECTED: WHICH
 // isolation script (it carries the corpus's repo-path guard) as `scriptPath`, and
-// WHICH decode lexicon witnesses a generic prior as `noPriorMarkers` (`./policy.ts`
-// `Policy.noPriorMarkers`). The script is a corpus asset (canon) and so is the
+// WHICH decode lexicon witnesses a generic prior as `noPriorMarkers`. The script is a
+// corpus asset (canon) and so is the
 // lexicon — a set of ENGLISH phrasings is this corpus's language, not the engine's;
 // neither is bundled here.
 //
-// These calls hit the network + a live model — SLOW and non-deterministic. They
-// are NOT part of the hermetic `pnpm test` floor; the caller gates them behind
-// `COLD_ORACLE_LIVE=1` (a live lane). The static floor (`./accept.ts`)
-// runs always; this oracle is the pre-land ceiling.
+// These calls hit the network + a live model — SLOW and non-deterministic, and never
+// part of `pnpm check`; the corpus runs them by hand.
 
 import { execFileSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 
+/** A bounded context a sign is read in: its name and its subject. */
+export interface BoundedContext {
+  readonly name: string;
+  readonly subject: string;
+}
+
 export interface DecodeOpts {
   /** the isolation script that runs the cold, priors-only decode (injected corpus asset). */
   readonly scriptPath: string;
+  /** the bounded context the text is read in — sent to the reader with the text. */
+  readonly context: BoundedContext;
   /** model to pin for reproducibility (default: the script's default). */
   readonly model?: string;
   /** hard cap in ms (default 120_000). */
   readonly timeoutMs?: number;
 }
 
-/** decode_cold(text) — the isolated, priors-only cold read of a fragment. */
+/** decode_cold(text, κ) — the isolated, priors-only cold read of a fragment in its context. */
 export function decodeCold(text: string, opts: DecodeOpts): string {
-  const args = ['--raw', '--text', text];
+  const args = [
+    '--raw',
+    '--context-name',
+    opts.context.name,
+    '--context-subject',
+    opts.context.subject,
+    '--text',
+    text,
+  ];
   if (opts.model) {
     args.push('--model', opts.model);
   }
@@ -54,7 +72,7 @@ export function decodeCold(text: string, opts: DecodeOpts): string {
 export interface NonceControlOpts extends DecodeOpts {
   /**
    * The generic-prior "no established meaning" signals a cold reader emits — the
-   * injected corpus lexicon (`Policy.noPriorMarkers`). Required: an engine default
+   * injected corpus lexicon. Required: an engine default
    * here would bake one natural language into a doctrine-agnostic module.
    */
   readonly noPriorMarkers: readonly RegExp[];
@@ -69,9 +87,10 @@ export interface NonceControl {
 
 /**
  * The positive control: coin a fresh nonce (no generic prior, no registry entry)
- * and decode it cold. `isolated` ⇔ it comes back as an unknown/coined term — the
- * proof that NO corpus/registry gloss leaked into the reader. A false here means
- * the cold-oracle is warm (the whole gate is void), so the caller asserts it.
+ * and decode it cold in the caller's bounded context. `isolated` ⇔ it comes back as
+ * an unknown/coined term — the proof that NO corpus/registry gloss leaked into the
+ * reader. A false here means the cold-oracle is warm (the whole gate is void), so the
+ * caller asserts it.
  */
 export function nonceControl(opts: NonceControlOpts): NonceControl {
   // hex-with-a-vowel-cluster: pronounceable enough to look like a term, yet has

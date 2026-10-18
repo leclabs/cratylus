@@ -66,18 +66,10 @@ export const leadRole: RoleCell = {
       },
       {
         value: shipShowAsk,
-        note: 'the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, no agent reviews that change, and it joins only once the operator signs it off, a hold point it holds',
+        note: "the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, the operator's review is that change's code review, and the change joins on the operator's sign-off, a hold point it holds",
       },
     ],
-    stance: [
-      {
-        value: decisive,
-        note: 'on the decisions it owns; at a hold point its reply ends with the sign-off it waits on',
-      },
-      tailoring,
-      separationOfConcerns,
-      simplicity,
-    ],
+    stance: [decisive, tailoring, separationOfConcerns, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
       { value: maintenance, slot: 'density' },

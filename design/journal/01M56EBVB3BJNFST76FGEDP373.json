@@ -1,0 +1,14 @@
+{
+  "id": "01M56EBVB3BJNFST76FGEDP373",
+  "at": "2026-10-18T02:44:59.363Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "corpus",
+  "name": "cell",
+  "wording": "one unit of the corpus, a value, role, persona, skill or rule, authored once in signs; each harness's form is projected from it; the corpus is the cells cratylus ships",
+  "builtFrom": [],
+  "reason": "The corpus gains rules as product cells, offered at install like agents and skills.",
+  "supersedes": [
+    "01M53H2HGF30N6Y96FKAAYYRRS"
+  ]
+}

@@ -519,7 +519,6 @@ describe('omp tool definitions', () => {
       [
         `#!${process.execPath}`,
         'const args = process.argv.slice(2);',
-        "if (process.env.STAND_IN_CALLS) require('node:fs').appendFileSync(process.env.STAND_IN_CALLS, `${JSON.stringify(args)}\\n`);",
         "const answers = process.env.STAND_IN_ANSWERS ? JSON.parse(require('node:fs').readFileSync(process.env.STAND_IN_ANSWERS, 'utf8')) : {};",
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
@@ -1019,8 +1018,6 @@ describe('omp tool definitions', () => {
       command: string;
       explains: readonly string[];
       starts?: number;
-      /** The installation's module replaced on disk after it was loaded. */
-      replaced?: boolean;
     }): Promise<{
       warnings: string[][];
       tools: string[];
@@ -1097,8 +1094,6 @@ describe('omp tool definitions', () => {
         setModel: async () => {},
         setThinkingLevel: () => {},
       });
-      if (opts.replaced === true)
-        writeFileSync(file, `${module?.content ?? ''}\n// a later install\n`);
       const warnings: string[][] = [];
       for (let i = 0; i < (opts.starts ?? 1); i++) {
         const said: string[] = [];
@@ -1195,22 +1190,6 @@ describe('omp tool definitions', () => {
       expect(tools).toEqual(['version_skew']);
       expect(warnings[0]).toHaveLength(1);
       expect(warnings[0]?.[0]).toMatch(/does not provide concepts /);
-    });
-
-    it('says, at each start, that this process runs the module it loaded where an install has since replaced it', async () => {
-      const { warnings } = await started({
-        projected: '2.4.0',
-        command: '2.4.0',
-        explains: ALL,
-        replaced: true,
-        starts: 2,
-      });
-      for (const said of warnings) {
-        expect(said).toHaveLength(1);
-        expect(said[0]).toContain('runs the cratylus extension it loaded');
-        expect(said[0]).toContain('dispatch checks');
-        expect(said[0]).toMatch(/Restart omp/);
-      }
     });
   });
 
@@ -1490,54 +1469,6 @@ describe('omp tool definitions', () => {
       'A new harness section.',
     ].join('\n');
 
-    it('keeps the harness sections of omp’s prompt and drops those prescribing identity, stance or procedure', async () => {
-      omp.agents = [CARTOGRAPHER()];
-      const { did, fire } = await started('cartographer');
-      await fire('session_start');
-      const { systemPrompt } = (await fire('before_agent_start', 'main', {
-        systemPrompt: [OMP_PROMPT],
-      })) as { systemPrompt: string[] };
-      const [base, ...added] = systemPrompt;
-      for (const kept of [
-        '§ Runtime',
-        '# Skills & Rules',
-        '# Tool Inventory',
-        '§ Tool Policy',
-        'SHOULD resolve prerequisites, parallelize independent calls.',
-        '# Tool I/O',
-        '<project-context>',
-        '- OS: linux',
-        '# Memory',
-        '§ Something omp adds later',
-        'A new harness section.',
-      ])
-        expect(base, kept).toContain(kept);
-      for (const dropped of [
-        '§ Role',
-        'trusted coding assistant',
-        '# Engineering',
-        'settle for plausibility',
-        '§ Workflow',
-        '# 1. Scope',
-        'smoke runs',
-        '§ Delivery',
-        'ground code/tool/test/doc/source claims',
-        '§ Critical',
-        '<critical>',
-        'informed action',
-        'actionable work remains',
-      ])
-        expect(base, dropped).not.toContain(dropped);
-      expect(added.join('\n')).toContain(
-        'Map the estuary before drawing its shipping routes.',
-      );
-      // The titles removed are said to the session, once per launch.
-      await fire('before_agent_start', 'main', { systemPrompt: [OMP_PROMPT] });
-      expect(did.notices).toEqual([
-        'Launched as cartographer: omp prompt sections removed: Role, Engineering, Tool Policy: plausibility, Workflow, Delivery, Critical, project context <critical>',
-      ]);
-    });
-
     it('leaves omp’s prompt of a plain session untouched', async () => {
       const plain = await started();
       await plain.fire('session_start');
@@ -1585,214 +1516,6 @@ describe('omp tool definitions', () => {
       '  - `decisions` (list of strings, may be empty, required): The decisions in force.',
     ].join('\n');
 
-    it('warns of an eval call whose code dispatches a delegate, for a launched agent or a typed delegate, and lets it through', async () => {
-      omp.agents = [CARTOGRAPHER(), LEAD()];
-      const EVAL_DISPATCH_WARNING =
-        'dispatch from eval code: its assignment is not shown or checked; dispatch with the task tool to have it checked.';
-      /** Every `tool_call` handler of the module, in order, as omp's runner fires them;
-       *  what the session was told, each handler's answer checked to refuse nothing. */
-      const loaded = async (flag?: string) => {
-        const factory = await emitted({
-          name: 'stand in',
-          purpose: 'p',
-          when: 'w',
-          verbs: [],
-        });
-        const handlers = new Map<string, Handler[]>();
-        await factory({
-          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
-          registerTool: () => {},
-          registerFlag: () => {},
-          getFlag: (name: string) => (name === 'agent' ? flag : undefined),
-          on: (event: string, handler: Handler) =>
-            handlers.set(event, [...(handlers.get(event) ?? []), handler]),
-          setModel: async () => {},
-          setThinkingLevel: () => {},
-          setActiveTools: async () => {},
-        });
-        const ctx = (
-          kind: string,
-          name: string | undefined,
-          told: unknown[],
-        ) => ({
-          cwd: '/the/session/cwd',
-          agent: { kind, name },
-          model: { provider: 'fixture', id: 'base' },
-          modelRegistry: { standIn: 'registry' },
-          ui: { setStatus: () => {}, notify: (m: unknown) => told.push(m) },
-        });
-        const fire = async (
-          event: string,
-          payload: unknown,
-          kind = 'main',
-          name?: string,
-        ) => {
-          const told: unknown[] = [];
-          for (const handler of handlers.get(event) ?? [])
-            expect(
-              await handler(payload, ctx(kind, name, told)),
-            ).toBeUndefined();
-          return told;
-        };
-        await fire('session_start', {});
-        return fire;
-      };
-      const evalOf = (code: string) => ({
-        toolName: 'eval',
-        input: { language: 'py', code },
-      });
-      const dispatching = [
-        'h = agent(prompt, agent="lead", label="film-approval lead")\nprint(h.id, h.status)',
-        'const h = await agent({ agent: "lead", task: "Lead the story." });',
-        'pool = workpool([("lead", "Lead the story.")])',
-        'await tool.task({ tasks: [{ agent: "lead", task: "t" }] })',
-        'await tool["task"]({"tasks": []})',
-      ];
-      const ordinary = [
-        'print(read("design/journal/a.json"))',
-        'await tool.read({ path: "design/a.md" })',
-        'my_agent(1); x.agent(2); print(tool.tasks)',
-      ];
-      const warned = [EVAL_DISPATCH_WARNING];
-      const launched = await loaded('cartographer');
-      for (const code of dispatching) {
-        expect(await launched('tool_call', evalOf(code)), code).toEqual(warned);
-        // A delegate whose declaration carries a typed assignment is a cratylus agent too.
-        expect(
-          await launched('tool_call', evalOf(code), 'sub', 'lead'),
-          code,
-        ).toEqual(warned);
-      }
-      for (const code of ordinary) {
-        expect(await launched('tool_call', evalOf(code)), code).toEqual([]);
-        expect(
-          await launched('tool_call', evalOf(code), 'sub', 'lead'),
-          code,
-        ).toEqual([]);
-      }
-      // A plain main session is no agent, nor are omp's own delegates or an untyped one: told nothing.
-      const plain = await loaded();
-      for (const code of dispatching) {
-        expect(await plain('tool_call', evalOf(code)), code).toEqual([]);
-        expect(
-          await plain('tool_call', evalOf(code), 'sub', 'task'),
-          code,
-        ).toEqual([]);
-        expect(
-          await plain('tool_call', evalOf(code), 'sub', 'cartographer'),
-          code,
-        ).toEqual([]);
-      }
-      expect(
-        await plain('tool_call', evalOf(dispatching[0]!), 'sub', 'lead'),
-      ).toEqual(warned);
-    });
-
-    it('warns of a misfit dispatch with the assignment form, and lets it through', async () => {
-      omp.agents = [LEAD()];
-      const plain = await started();
-      await plain.fire('session_start');
-      expect(
-        await plain.fire('tool_call', 'main', {
-          toolName: 'task',
-          toolCallId: 'call',
-          input: {
-            context: 'A long prose brief.',
-            tasks: [{ agent: 'lead', task: 'Realize the film story, please.' }],
-          },
-        }),
-      ).toBeUndefined();
-      expect(plain.did.notices).toEqual([
-        `dispatch warning, going ahead: lead assignment is missing: story, examples, decisions\n${LEAD_FORM}`,
-      ]);
-    });
-
-    /** A builder declaring a typed task, as projection writes one. */
-    const BUILDER = () =>
-      declare(
-        {
-          name: 'builder',
-          description: 'Builds a task.',
-          assignment: {
-            type: 'object',
-            properties: {
-              task: { type: 'string', description: 'The task, by its name.' },
-              story: { type: 'string', description: 'The story it serves.' },
-            },
-            required: ['task'],
-          },
-        },
-        'Build it.',
-      );
-    /** The calls the stand-in command was sent, in order. */
-    const sent = (calls: string) =>
-      readFileSync(calls, 'utf8')
-        .trim()
-        .split('\n')
-        .filter((line) => line !== '')
-        .map((line) => JSON.parse(line) as string[]);
-
-    it('checks a dispatch whatever the harness calls the tool that carries it, and sends nothing of it or its return', async () => {
-      omp.agents = [LEAD(), BUILDER()];
-      const cwd = mkdtempSync(join(tmpdir(), 'omp-dispatch-cwd-'));
-      tmp.push(cwd);
-      const calls = join(cwd, 'calls.jsonl');
-      process.env.STAND_IN_CALLS = calls;
-      try {
-        for (const toolName of ['task', '_task', 'dispatch']) {
-          const session = await started(undefined, cwd);
-          await session.fire('session_start');
-          // A misfit is let through under any name, and warned of.
-          expect(
-            await session.fire('tool_call', 'main', {
-              toolName,
-              toolCallId: `misfit-${toolName}`,
-              input: { tasks: [{ agent: 'lead', task: 'Realize it.' }] },
-            }),
-            toolName,
-          ).toBeUndefined();
-          expect(session.did.notices, toolName).toHaveLength(1);
-          // A typed dispatch, and its settled return, send the command nothing.
-          writeFileSync(calls, '');
-          await session.fire('tool_call', 'main', {
-            toolName,
-            toolCallId: `call-${toolName}`,
-            input: {
-              tasks: [
-                {
-                  agent: 'builder',
-                  name: 'A',
-                  task: '```assignment\n{"task":"renewal-form"}\n```',
-                },
-              ],
-            },
-          });
-          await session.fire('tool_result', 'main', {
-            toolName,
-            toolCallId: `call-${toolName}`,
-            details: { results: [{ index: 0, id: 'A', output: 'built' }] },
-          });
-          expect(sent(calls), toolName).toEqual([]);
-          expect(session.did.notices, toolName).toHaveLength(1);
-        }
-      } finally {
-        Reflect.deleteProperty(process.env, 'STAND_IN_CALLS');
-      }
-    });
-
-    it('takes no other call for a dispatch: one carrying no agent and task is let through unread', async () => {
-      omp.agents = [LEAD()];
-      const session = await started();
-      await session.fire('session_start');
-      expect(
-        await session.fire('tool_call', 'main', {
-          toolName: 'write',
-          toolCallId: 'w',
-          input: { path: 'agent://lead', content: 'Realize it.' },
-        }),
-      ).toBeUndefined();
-    });
-
     it('lists the assignment form of each contracted agent in every session, launched or not, main or dispatched', async () => {
       omp.agents = [
         LEAD(),
@@ -1814,113 +1537,29 @@ describe('omp tool definitions', () => {
       }
     });
 
-    it('opens a launch whose procedure starts with reconstitution with a note on its first turn alone', async () => {
+    it('gives a launch no note beyond its declaration, its skills and the assignment forms, on any turn', async () => {
       omp.agents = [
         declare(
           { name: 'architect', description: 'Holds the design.' },
-          '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n- **judgment** — judge once\n\n### stance\n\n- **decisive** — decides',
+          '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the concept journal is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
         ),
       ];
-      const { fire } = await started('architect');
-      await fire('session_start');
-      const turns: string[] = [];
-      for (const _turn of [1, 2])
-        turns.push(
-          (
-            (await fire('before_agent_start')) as { systemPrompt: string[] }
-          ).systemPrompt.join('\n'),
-        );
-      expect(turns[0]).toContain('# Session start: reconstitution');
-      expect(turns[0]).toContain(
-        'This session starts with reconstitution (at every start, read back before acting).',
-      );
-      for (const line of [
-        "Read the design state of each touched context and of the delivered workflow (cratylus:workflow, or the project's own workflow context where its journal holds it) first, then the standing decisions your work needs. The delivered workflow is the practice you work by, shown apart from the project's design and never part of it: read it whole, never only recalled from tool descriptions or memory.",
-        "Your sources are the journal, the example files the design names, and for the work in flight and how it ended the project's version control and the lead's outcomes; the work product itself — the project tree, source, tests — is not a source: never list, search or open it.",
-        "Nothing is recorded or changed before the read-back: no dispatch, no journal append, no edit before it. In it tell the operator, in visible text rather than only in your thinking and in plain words rendered from the design state, the records as they stand now: first the current design, then what is open, competing versions and each open decision named as open, then the user stories and tasks in flight as the project's version control and the lead's outcomes show them, in your own communication style.",
-        'Say nothing to the operator before the read-back. Its bottom line is the state of the records; a ruling you hold now comes after it, as its own topic, carried in the read-back and recorded only once the operator signs off.',
-        'A read-back held at a hold point or called by the operator ends with the sign-off it waits on and ends your turn: nothing follows it until the operator answers.',
-      ])
-        expect(turns[0]).toContain(line);
-      // It no longer sends the agent on past the read-back in the same turn.
-      expect(turns[0]).not.toContain('in the same turn');
-      expect(turns[0]).not.toContain('pause for leave');
-      // It reads the design state, never an overview or the cuts.
-      expect(turns[0]).not.toMatch(/overview|\bcuts?\b/);
-      expect(turns[1]).not.toContain('# Session start');
-      // A declaration without it gets no note.
-      omp.agents = [CARTOGRAPHER()];
-      const other = await started('cartographer');
-      await other.fire('session_start');
-      expect(
-        (
-          (await other.fire('before_agent_start')) as { systemPrompt: string[] }
-        ).systemPrompt.join('\n'),
-      ).not.toContain('# Session start');
-    });
-
-    it('carries the scope a reconstitution note gives it into the session-start note', async () => {
-      omp.agents = [
-        declare(
-          { name: 'architect', description: 'Holds the design.' },
-          '# architect\n\n### procedure\n\n- **reconstitution** (records and changes nothing before its read-back) — at every start, read back before acting',
-        ),
-      ];
-      const { fire } = await started('architect');
-      await fire('session_start');
-      expect(await fire('before_agent_start')).toMatchObject({
-        systemPrompt: expect.arrayContaining([
-          expect.stringContaining(
-            'This session starts with reconstitution (at every start, read back before acting): records and changes nothing before its read-back.',
-          ),
-        ]),
-      });
-    });
-
-    it('gives every turn of a launch that decides meaning, or keeps the records under honesty, a note of each', async () => {
-      omp.agents = [
-        declare(
-          { name: 'architect', description: 'Holds the design.' },
-          '# architect\n\n### decision-rights\n\n- intent (what is wanted and why): **I** — gives input\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the concept journal and examples are authoritative over anything remembered\n\n### guardrails\n\n- **honesty** — never fabricates; says what it observed apart from what it inferred (fixed)',
-        ),
-      ];
-      /** The system prompt a turn of `fire`'s session carries, joined. */
-      const turnPrompt = async (fire: (event: string) => Promise<unknown>) => {
-        const turn = await fire('before_agent_start');
-        return turn &&
-          typeof turn === 'object' &&
-          'systemPrompt' in turn &&
-          Array.isArray(turn.systemPrompt)
-          ? turn.systemPrompt.join('\n')
-          : '';
-      };
       const { fire } = await started('architect');
       await fire('session_start');
       for (const turn of [1, 2]) {
-        const prompt = await turnPrompt(fire);
-        for (const line of [
+        const { systemPrompt } = (await fire('before_agent_start')) as {
+          systemPrompt: string[];
+        };
+        expect(systemPrompt, `turn ${turn}`).toHaveLength(2);
+        for (const heading of [
+          '# Session start',
           '# Meaning: yours',
-          'The meaning of every context you hold is yours: its concepts, each question on them, and the approval of every one of its examples. No one else approves or confirms an example of a context you hold, and you ask no one to.',
-          "Approval judges one thing: whether an example expresses its concepts' meaning accurately. Approve yourself, as they stand and in the turn they reach you, the examples returned to you that do, keeping each context's model its own; send back only an example that misses its meaning, naming the meaning it misses.",
-          "Settle on sight: a ruling of meaning whose grounds you hold is taken in the turn you hold them, recorded as a concept version with its reason, never as a decision, and then reported, never deferred to a later round, another party's return or anyone's answer. At a session's start, or where the operator has called a read-back before recording, carry the ruling in the read-back and record it only once the operator signs off.",
           '# The records',
-          "The journal is the record of the design, and the project's version control and your delegates' reports and outcomes are the record of its work, authoritative over anything remembered. State where things stand as they record it, what you observed apart from what you infer.",
-          'What they do not record is unknown: say it is unrecorded, never turn its absence into a fact about the work.',
         ])
-          expect(prompt, `turn ${turn}`).toContain(line);
+          expect(systemPrompt.join('\n'), `turn ${turn}`).not.toContain(
+            heading,
+          );
       }
-      // Recommending meaning, or keeping the records without honesty, gets neither note.
-      omp.agents = [
-        declare(
-          { name: 'illustrator', description: 'Writes examples.' },
-          '# illustrator\n\n### decision-rights\n\n- meaning (concepts and examples): **R** — recommends\n\n### memory\n\n- **source-of-truth** — authoritative',
-        ),
-      ];
-      const other = await started('illustrator');
-      await other.fire('session_start');
-      const prompt = await turnPrompt(other.fire);
-      expect(prompt).not.toContain('# Meaning: yours');
-      expect(prompt).not.toContain('# The records');
     });
 
     const ARCHITECT = () =>
@@ -1929,10 +1568,10 @@ describe('omp tool definitions', () => {
         '# architect\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### stance\n\n- **decisive** — decides',
       );
 
-    /** The CRATYLUS module loaded into a stand-in omp started with `--agent <agent>` on a
-     *  session whose branch holds `branch`, every handler of an event fired in order, as
-     *  omp's runner does; what each returned, and what the session was told. */
-    async function loadedAs(agent: string, branch: readonly unknown[] = []) {
+    /** The CRATYLUS module loaded into a stand-in omp started with `--agent <agent>`, every
+     *  handler of an event fired in order, as omp's runner does; what each returned, and
+     *  what the session was told. */
+    async function loadedAs(agent: string) {
       const factory = await emitted({
         name: 'concept journal',
         purpose: 'p',
@@ -1968,7 +1607,6 @@ describe('omp tool definitions', () => {
         model: { provider: 'fixture', id: 'base' },
         modelRegistry: { standIn: 'registry' },
         ui: { setStatus: () => {}, notify: (m: unknown) => told.push(m) },
-        sessionManager: { getBranch: () => branch },
       };
       const fire = async (event: string, payload: unknown) => {
         const answers: unknown[] = [];
@@ -2000,55 +1638,6 @@ describe('omp tool definitions', () => {
       for (const call of acts)
         expect(await fire('tool_call', call), call.toolName).toBeUndefined();
       expect(told).toEqual([]);
-    });
-
-    const conversation = [
-      {
-        type: 'message',
-        message: { role: 'user', content: 'Approve the cut.' },
-      },
-      { type: 'message', message: { role: 'assistant', content: 'Done.' } },
-    ];
-    /** The system prompt of the next turn, joined. */
-    const note = async (fire: (e: string, p: unknown) => Promise<unknown>) => {
-      const turn = await fire('before_agent_start', { systemPrompt: BASE });
-      return turn && typeof turn === 'object' && 'systemPrompt' in turn
-        ? String((turn.systemPrompt as string[]).join('\n'))
-        : '';
-    };
-
-    it('reconstitutes a new session: the note on its first turn', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await loadedAs('architect');
-      expect(await note(fire)).toContain('# Session start: reconstitution');
-    });
-
-    it('reconstitutes nothing in a resumed session continuing a conversation', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await loadedAs('architect', conversation);
-      expect(await note(fire)).not.toContain('# Session start');
-    });
-
-    it('reconstitutes a resumed session compacted since it last spoke', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await loadedAs('architect', [
-        ...conversation,
-        { type: 'compaction', summary: 'The cut was approved.' },
-      ]);
-      expect(await note(fire)).toContain('# Session start: reconstitution');
-    });
-
-    it('reconstitutes again once the session is compacted', async () => {
-      omp.agents = [ARCHITECT()];
-      const { fire } = await loadedAs('architect', conversation);
-      expect(await note(fire)).not.toContain('# Session start');
-      await fire('session_compact', {
-        compactionEntry: { type: 'compaction' },
-      });
-      expect(await note(fire)).toContain('# Session start: reconstitution');
-      expect(await note(fire), 'the first turn after it alone').not.toContain(
-        '# Session start',
-      );
     });
 
     it('never touches the active tools, whatever --tools the operator gave', async () => {

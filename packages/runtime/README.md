@@ -10,7 +10,7 @@ It **depends on nothing** in this system — zero `@cratylus/*` dependencies —
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
-What every package is for is [ARCHITECTURE.md](../../ARCHITECTURE.md)'s. The commands a consumer
+The commands a consumer
 types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for the
 author of a corpus whose skills route here, and for a library user of the package.
 
@@ -32,9 +32,11 @@ for, never by refusal (decision 0274): the journal is append-only because its ve
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
-[the `cratylus` README](../cli/README.md). A session reads the design state first: `state` answers
-the project's purpose, the delivered practice apart, and each context's subject, relation and live
-concepts, each one line `name ≜ residue`, with any competing versions, and nothing else. The
+[the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
+context's subject, relation and live concepts with the concepts each is built from, the delivered
+practice apart, and `state` is its short summary: the project's purpose, then each context's live
+concepts, each one line `name ≜ residue`, with any competing versions. The journal's record begins
+at its start. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
 each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or

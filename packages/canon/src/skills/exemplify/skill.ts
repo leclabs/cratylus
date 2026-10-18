@@ -10,9 +10,8 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // signification cells each claimed to be composed from the other three, and no one of
 // them could be read, taken or deployed alone.
 //
-// The relation those edges named is CITATION, not dependency: `symbol-altitude`'s
-// LEDGER records these cells RESTATING each other's signs in different registers
-// (prose here, signature there), which is what a REFERENCE row means. A citation
+// The relation those edges named is CITATION, not dependency: these cells RESTATE each
+// other's signs in different registers (prose here, signature there). A citation
 // belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
@@ -24,7 +23,7 @@ produce            : sources → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify ⟨a core name or value takes its σ* anchor · any other term keeps the industry's own⟩
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
-R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
+R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, given f's signifiers + inline ≜ with its bounded context's name and subject, nothing of intent(f))
 body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
 K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds

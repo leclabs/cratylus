@@ -3,8 +3,8 @@
 Cratylus puts a set of named agents and skills on your machine for Claude Code or omp. Each
 agent is projected from a corpus of meanings whose names were discovered in the model's own
 vocabulary rather than written as prose, so the same corpus renders the same way every time. You
-install it with one command and start an agent by its name. The thesis behind that is in
-[VISION.md](./VISION.md).
+install it with one command and start an agent by its name. The idea behind it, on one page and in
+plain terms, is in [INTRODUCTION.md](./INTRODUCTION.md).
 
 ## Install and use
 
@@ -60,11 +60,9 @@ uninstall leaves are all in [packages/cli/README.md](./packages/cli/README.md).
   [packages/schema/README.md](./packages/schema/README.md) for the shapes a corpus authors against,
   [packages/canon/README.md](./packages/canon/README.md) for the corpus that ships, and
   [packages/runtime/README.md](./packages/runtime/README.md) for the capabilities the agents call.
-- To change cratylus itself, start with [ARCHITECTURE.md](./ARCHITECTURE.md), which maps the packages
-  and the seams between them, then the ground documents in the order they build: [VISION.md](./VISION.md)
-  (why), [MODEL.md](./MODEL.md) (what exists), [ENGINE.md](./ENGINE.md) (how anchors are discovered,
-  validated and projected) and [CANON.md](./CANON.md) (the corpus itself). [AGENTS.md](./AGENTS.md)
-  lists what to read at the start of a session and the working conventions of the repository.
+- To change cratylus itself, start with [INTRODUCTION.md](./INTRODUCTION.md) and the concept
+  journal, which holds the conceptual model per bounded context. [AGENTS.md](./AGENTS.md) holds the
+  working conventions of the repository.
 
 ## License
 
