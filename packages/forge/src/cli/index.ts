@@ -280,7 +280,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--model-roles <roles>',
-        "The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked)",
+        "The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked)",
       ),
     )
     .addOption(

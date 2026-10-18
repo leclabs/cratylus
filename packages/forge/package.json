@@ -66,10 +66,12 @@
     "@cratylus/schema": "workspace:*",
     "chalk": "catalog:",
     "commander": "catalog:",
+    "js-yaml": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@cratylus/tooling": "workspace:*",
+    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "tsx": "^4.19.0",

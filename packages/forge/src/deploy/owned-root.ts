@@ -21,7 +21,8 @@
 //                           each context the release delivers, read-only: handed in
 //                           by the command that holds the release and placed as given
 //   installation.json       what install did outside the root: its scope (user or
-//                           project; absent, user); the references it placed; the
+//                           project; absent, user); the references it placed;
+//                           whether it created the project's harness directory; the
 //                           practices and the rules it installed, by name; and which
 //                           of the operator's choices it has been answered, never
 //                           their values, which are the host's own settings
@@ -136,6 +137,10 @@ export interface InstallationRecord {
    *  never made. */
   readonly rules?: readonly string[];
   readonly references: readonly OwnedReference[];
+  /** Set where a project installation created the project's harness directory
+   *  (`<project>/.omp`): its uninstall removes that directory where it is left empty,
+   *  and never one that was there before (decision 0312). */
+  readonly createdHarnessDir?: true;
   /** The operator's choices install has been answered, by flag or question: each
    *  answer is the host's own setting from then on, so no later install asks for it
    *  or applies it again. Absent where none has been. */
@@ -598,6 +603,8 @@ function pruneEmpty(dir: string, stop: string): void {
  * elsewhere, left and reported. At project scope the ignore file's block re-including
  * the link is taken back too, found by its content wherever it stands, and no line of
  * the host's with it; the file goes where install made it and nothing else is left.
+ * And the project's harness directory goes where the record says install created it
+ * and nothing is left in it.
  */
 export function unlinkOwnedRoot(opts: {
   readonly adapter: Pick<HarnessAdapter, 'name' | 'packageDir'>;
@@ -748,6 +755,17 @@ export function unlinkOwnedRoot(opts: {
         what: `${abs}: dependencies.${ref.name}`,
         why: `it no longer names ${root}`,
       });
+    }
+  }
+  if (
+    !dry &&
+    opts.scope === 'project' &&
+    opts.record?.createdHarnessDir === true
+  ) {
+    try {
+      rmdirSync(harnessDir);
+    } catch {
+      // not empty — the host's files are in it, or it is gone already
     }
   }
   return { references, changed, left };

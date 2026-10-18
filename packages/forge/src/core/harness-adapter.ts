@@ -589,8 +589,8 @@ export interface RoleRouting {
    *  in the harness's read order: it reads the first that exists. */
   readonly configRels: readonly string[];
   /** The project's config files that hold them, relative to the project's harness
-   *  directory (`<project>/.omp`), in read order: what a project installation reads
-   *  and writes. */
+   *  directory (`<project>/.omp`), in read order: what a project installation reads,
+   *  and never writes, since it binds no models (decision 0312). */
   readonly projectConfigRels: readonly string[];
   /** The model role a tier is bound by in the host's table. */
   tierRole(tier: string): string;
