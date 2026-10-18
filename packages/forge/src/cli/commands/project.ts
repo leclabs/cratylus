@@ -9,6 +9,7 @@
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { INSTALLATION_RECORD_FILE } from '@cratylus/runtime/runtime-config';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig, requirePlugins } from '../../config/index.js';
@@ -74,17 +75,25 @@ async function project(
   cwd: string,
   configPath: string,
 ): Promise<number> {
+  const harness = opts.harness ?? DEFAULT_HARNESS;
+  // THE ONE TREE `deploy` READS: `.cratylus/<harness>`, named after the tool and so
+  // derived from the bin. A default of any other name is a render `deploy` refuses.
+  const defaultOut = resolve(cwd, `.${CLI_BIN}`, harness);
+  const out = resolve(opts.out ?? defaultOut);
+  // A PROJECT INSTALLATION IS NOT A RENDER TREE. `install --scope project` places its
+  // owned root at this same default, and rendering into it would take over what install
+  // owns (decision 0311).
+  if (existsSync(join(out, INSTALLATION_RECORD_FILE))) {
+    throw new Error(
+      `${out} holds an installation (${INSTALLATION_RECORD_FILE}), not a render tree, so nothing is rendered; render elsewhere with --out <dir>, or take the installation back first with \`${CLI_BIN} uninstall --harness ${harness} --scope project\``,
+    );
+  }
   const config = await loadConfig(configPath);
   requirePlugins(config, configPath);
   // No cast: `AgentPlugin` now satisfies `ProjectablePlugin` structurally, because
   // projection consumes the `fragments` dir too. The cast this line used to carry
   // was the census's tell — it silently DISCARDED the one field the fold needs.
   const plugins: readonly ProjectablePlugin[] = config.extends;
-  const harness = opts.harness ?? DEFAULT_HARNESS;
-  // THE ONE TREE `deploy` READS: `.cratylus/<harness>`, named after the tool and so
-  // derived from the bin. A default of any other name is a render `deploy` refuses.
-  const defaultOut = resolve(cwd, `.${CLI_BIN}`, harness);
-  const out = resolve(opts.out ?? defaultOut);
   const adapter = adapterByName(harness);
   const detail = opts.verbose ? say : () => {};
 

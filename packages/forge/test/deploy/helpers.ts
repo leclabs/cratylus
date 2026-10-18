@@ -65,6 +65,7 @@ export function fixtureAgentSource(
 export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
   return {
     harness: async (found) => found[0],
+    scope: async () => 'user',
     practices: async (_offered, initial) => [...initial],
     rules: async () => [],
     routes: async () => ({}),

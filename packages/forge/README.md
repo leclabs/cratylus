@@ -195,7 +195,9 @@ port, not on OMP's concrete rendering functions.
 An event absent from `nativeEvents` is unrealizable, and projection reports it rather than
 fabricating a binding. `scopes` is a stronger demand than `realizes`: firing is not scoping, and an
 adapter must never answer yes for an event it cannot realize. `hookCommand` is written against
-`$HOME`, not a resolved path, because it is read at runtime on whatever host it lands on.
+`$CRATYLUS_INSTALLATION`, not a resolved path, because it is read at runtime wherever its
+installation lands; on OMP the session module sets that variable to its own root for every hook it
+runs, so a project installation runs its own workers.
 
 `scopedRel` places a scoped module in its scope's `extensions/` directory, and on OMP every scope is
 the session's. `launchSurface` receives

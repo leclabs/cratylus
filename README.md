@@ -20,6 +20,11 @@ working it offers), which rules your agents follow in every project (rulesets su
 model each agent falls back to. It shows what it will place and places it once you confirm, under
 one root cratylus owns, `~/.cratylus/omp/`, which omp loads in every project.
 
+**For one project**, run `cratylus install --scope project` inside it: the root is
+`<project>/.cratylus/omp/`, omp loads it in that project in place of yours, and committing
+`.cratylus/omp` and `.omp/` shares it with your team. Upgrade and uninstall it from that project
+with the same `--scope project`.
+
 **Upgrade** by running `npm install -g cratylus` and then `cratylus install` again; the root is
 replaced whole. Until you do, every omp session start warns that the installed agents and the
 command differ.

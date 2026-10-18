@@ -720,6 +720,7 @@ describe('install — the status line', () => {
             interactive: true,
             prompts: {
               harness: async () => 'omp',
+              scope: async () => 'user',
               practices: async (_offered, initial) => [...initial],
               rules: async () => [],
               routes: async () => ({}),

@@ -125,16 +125,22 @@ verb does not take.
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
 corpus's skills declared it. The installation (`installationRoot`) is the one
-`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else the one
-root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
+`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
+walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
+holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one
+root under `~/.cratylus/`. A tree without `installation.json`, an author's render, is no
+installation. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
+
+`installationScope` reads an installation's scope, `user` or `project`, from its
+`installation.json`; a record that says none, or no record, is the user's.
 
 ## Version skew
 
-`versionSkew report` prints `{ artifacts, command, installation }`: the version recorded in the
-installation's `package.json` by the cratylus that projected it, and the version of the command,
-which the program holding the commands hands in (`capabilityCommands({ version })`). It chooses
-between no builds.
+`versionSkew report` prints `{ artifacts, command, scope, installation }`: the version recorded in
+the installation's `package.json` by the cratylus that projected it, the version of the command,
+which the program holding the commands hands in (`capabilityCommands({ version })`), and the
+installation's scope and root. It chooses between no builds.
 
 ## The bin name
 

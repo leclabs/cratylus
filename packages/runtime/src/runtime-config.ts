@@ -11,7 +11,12 @@
 // WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
 // call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
 // reads the installation that harness runs. Called by the operator with none named,
-// it is the one installation under the home, when there is exactly one.
+// it is the project installation nearest above the working directory, as the harness
+// would load there, else the one installation under the home, when there is exactly one.
+//
+// WHICH SCOPE. An installation's record (`installation.json`) says whether it is the
+// user's or a project's (`scope`); a record that says neither, or none at all, is the
+// user's, installed before there were scopes.
 //
 // WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
 // runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd, so
@@ -21,9 +26,9 @@
 // here: declare → project → consume.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { type Dirent, existsSync, readFileSync, readdirSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
 import {
   type DeliveredContext,
@@ -69,15 +74,52 @@ export interface RuntimeConfig {
  *  holds several. */
 export class NoInstallationError extends Error {}
 
+/** An installation's scope: the user's, for every project, or one project's own. */
+export type InstallScope = 'user' | 'project';
+
+/** The record in an installation's root of what install did, and its scope. */
+export const INSTALLATION_RECORD_FILE = 'installation.json';
+
+/** The scope the installation at `root` records; `user` where its record says none
+ *  or cannot be read. */
+export function installationScope(root: string): InstallScope {
+  return recordedScope(root) ?? 'user';
+}
+
+function recordedScope(root: string): InstallScope | null {
+  try {
+    const { scope } = JSON.parse(
+      readFileSync(join(root, INSTALLATION_RECORD_FILE), 'utf8'),
+    ) as { scope?: unknown };
+    return scope === 'user' || scope === 'project' ? scope : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * The installation's root: the one `$CRATYLUS_INSTALLATION` names, else the one
- * installation under the home. Refused, naming what to do, where the home holds none
- * or several and none is named.
+ * The installation's root: the one `$CRATYLUS_INSTALLATION` names; else, walking up
+ * from the working directory, the nearest ancestor but the home whose `.cratylus/`
+ * holds exactly one installation recording project scope (a tree with no record, an
+ * author's render, is none); else the one installation under the home. Refused,
+ * naming what to do, where the home holds none or several and none is named.
  */
-export function installationRoot(): string {
+export function installationRoot(cwd = process.cwd()): string {
   const named = process.env[INSTALLATION_ENV];
   if (named !== undefined && named !== '') return named;
-  const parent = join(homedir(), INSTALLATIONS_DIR);
+  const home = resolve(homedir());
+  for (let dir = resolve(cwd); ; dir = dirname(dir)) {
+    const owned = join(dir, INSTALLATIONS_DIR);
+    if (dir !== home && existsSync(owned)) {
+      const project = readdirSync(owned, { withFileTypes: true }).filter(
+        (e) =>
+          e.isDirectory() && recordedScope(join(owned, e.name)) === 'project',
+      );
+      if (project.length === 1) return join(owned, (project[0] as Dirent).name);
+    }
+    if (dirname(dir) === dir) break;
+  }
+  const parent = join(home, INSTALLATIONS_DIR);
   const found = existsSync(parent)
     ? readdirSync(parent, { withFileTypes: true })
         .filter(

@@ -91,6 +91,10 @@ export async function guided(
         asked.push('harness');
         return 'omp';
       },
+      scope: async () => {
+        asked.push('scope');
+        return 'user' as const;
+      },
       practices: async () => {
         asked.push('practices');
         return [];
@@ -123,6 +127,7 @@ export async function guided(
       corpus: choiceCorpus(h, answers.four) as never,
       version: '2.4.0',
       all: true,
+      scope: 'user',
       interactive: true,
       prompts,
       ...options,

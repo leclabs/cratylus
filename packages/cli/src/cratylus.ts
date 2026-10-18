@@ -148,7 +148,7 @@ function register(command: Command): void {
 export function commandLine(): Command {
   const program = new Command(CLI_BIN)
     .description(
-      'Project a corpus of agent semantics onto Claude Code and omp, and run the capabilities it installs',
+      'Project a corpus of agent semantics onto omp, and run the capabilities it installs',
     )
     .version(VERSION, '-v, --version', 'Print the version and exit')
     .enablePositionalOptions();
