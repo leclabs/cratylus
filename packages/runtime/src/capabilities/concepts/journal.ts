@@ -25,6 +25,7 @@ import { execFileSync } from 'node:child_process';
 import {
   existsSync,
   linkSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -275,24 +276,38 @@ export function journalAt(
           input,
           stdio: ['pipe', 'pipe', 'ignore'],
         });
-      // What the commit holds: each path with its blob, read from its tree,
-      // never from the index or what git status reports.
+      // What the commit holds: each path with its mode and blob, read from its
+      // tree, never from the index or what git status reports.
       const committed = new Map(
         git(['ls-tree', '-r', '-z', commit, '--', JOURNAL_DIR])
           .split('\0')
           .filter((line) => line !== '')
           .map((line) => {
             const tab = line.indexOf('\t');
-            return [line.slice(tab + 1), line.slice(0, tab).split(' ')[2]];
+            const [mode, , blob] = line.slice(0, tab).split(' ');
+            return [line.slice(tab + 1), { mode, blob }];
           }),
       );
       const present = filesUnder(dir).map((file) => `${JOURNAL_DIR}/${file}`);
       if (present.length !== committed.size) return false;
+      // Each a regular file, never followed through a link, of the mode its
+      // tree entry records: executable or not.
+      for (const path of present) {
+        const stat = lstatSync(join(top, path));
+        const mode = committed.get(path)?.mode;
+        if (!stat.isFile()) return false;
+        if (mode !== ((stat.mode & 0o100) === 0 ? '100644' : '100755'))
+          return false;
+      }
       if (present.length === 0) return true;
-      const blobs = git(['hash-object', '--stdin-paths'], present.join('\n'))
+      // The bytes as they are, no filter of the repository's applied.
+      const blobs = git(
+        ['hash-object', '--no-filters', '--stdin-paths'],
+        present.join('\n'),
+      )
         .trim()
         .split('\n');
-      return present.every((path, i) => committed.get(path) === blobs[i]);
+      return present.every((path, i) => committed.get(path)?.blob === blobs[i]);
     },
     append(draft) {
       const entry = put(draft);

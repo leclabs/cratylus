@@ -8,11 +8,13 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  chmodSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -421,6 +423,49 @@ describe('closing the books', () => {
         );
       },
     );
+
+    it('while an entry is replaced by a link to the same bytes', () => {
+      seed();
+      commit();
+      const [first] = files();
+      const path = join(dir(), first as string);
+      const copy = join(sandbox, 'copy.json');
+      writeFileSync(copy, readFileSync(path));
+      unlinkSync(path);
+      symlinkSync(copy, path);
+      refused(
+        /^concepts close: design\/journal differs from the commit at HEAD/,
+      );
+    });
+
+    it('while an entry is made executable', () => {
+      seed();
+      commit();
+      const [first] = files();
+      chmodSync(join(dir(), first as string), 0o755);
+      refused(
+        /^concepts close: design\/journal differs from the commit at HEAD/,
+      );
+    });
+
+    it('while a clean filter maps a changed entry back to what HEAD holds', () => {
+      seed();
+      commit();
+      const [first] = files();
+      const path = `design/journal/${first as string}`;
+      git('config', 'filter.trim.clean', "sed -e 's/ *$//'");
+      writeFileSync(
+        join(repo, '.gitattributes'),
+        'design/journal/*.json filter=trim\n',
+      );
+      const content = readFileSync(join(repo, path), 'utf8');
+      writeFileSync(join(repo, path), content.replace('}\n', '}  \n'));
+      // Through the filter, the changed entry hashes as HEAD holds it.
+      expect(git('hash-object', path)).toBe(git('rev-parse', `HEAD:${path}`));
+      refused(
+        /^concepts close: design\/journal differs from the commit at HEAD/,
+      );
+    });
 
     it('while it reads past entries of a newer runtime', () => {
       seed();
