@@ -54,8 +54,8 @@
 // `mark:{emoji,hue}` identity token. Injecting those through the engine's `Policy` seam
 // would relocate three regexes and leave three functions whose LOGIC still encodes
 // canon's tree — a seam that looks satisfied while the fusion hides behind it. So the
-// module lives with the corpus it quantifies over (ARCHITECTURE property 2: nothing —
-// least of all a gate over canon's own corpus — depends on the projector). Its siblings
+// module lives with the corpus it quantifies over (nothing — least of all a gate
+// over canon's own corpus — depends on the projector). Its siblings
 // are the other pure canon-corpus gates flat under `toolkit/` (`symbol-probe-gate.ts`,
 // `formal-block-self-sufficiency.ts`), NOT `toolkit/cold-oracle/`, which is the live
 // LLM-isolation concern and its injected policy DATA.

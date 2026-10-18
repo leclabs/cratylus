@@ -12,7 +12,7 @@
 // too. This gate is the census that makes it convictable: it reads the DECLARED GLOSS
 // off each cell field's own doc comment and asserts the map gloss → sign is a function.
 //
-// THE DISAMBIGUATION RULE IT ENFORCES (MODEL PARSIMONIOUS, `schema/src/rule-cell.ts`):
+// THE DISAMBIGUATION RULE IT ENFORCES (PARSIMONIOUS, `schema/src/rule-cell.ts`):
 //
 //   PARSIMONIOUS: body(c) = ⟨α(c), residue(c)⟩ ⟨residue @ workflow, α(c) read in κ(c)⟩
 //
@@ -31,7 +31,7 @@
 //
 // ── THE SECOND DEFECT, AND WHY IT IS THE SAME GATE (2026-08-05) ────────────────
 //
-// `kind` was found carrying THREE concepts across two packages — MODEL's `Kind`
+// `kind` was found carrying THREE concepts across two packages — the cell `Kind`
 // (`RuleCell.kind`), how a dimension's value-catalog is sourced (`DimensionMeta`), and
 // a value's structural shape (forge's `FragmentKind`). Two of the three collided
 // INSIDE `schema/src`, and the census above could not see it: it read `*Cell`
@@ -69,7 +69,7 @@ const overloadSurface = [schemaSrc, join(packages, 'forge', 'src')];
 /**
  * The signs this repo has already over-loaded once, and may not regress onto.
  *
- * A closed roster, not a heuristic: `kind` carried MODEL's `Kind`, a value-catalog's
+ * A closed roster, not a heuristic: `kind` carried the cell `Kind`, a value-catalog's
  * sourcing, and a value's structural shape simultaneously. What remains legal is
  * `kind` as a UNION VARIANT TAG — the one job the sign fires for cold — which is why
  * the predicate keys on the GLOSS and not on the count of occurrences.
@@ -288,7 +288,7 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
       '  readonly kind: Repertoire;',
       '}',
       'export interface RuleCell {',
-      '  /** MODEL `Kind` — what this cell IS. */',
+      '  /** `Kind` — what this cell IS. */',
       '  readonly kind: rule;',
       '}',
       'export interface Fragment {',
@@ -303,7 +303,7 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
     expect(guilty, 'three glosses on one sign').toEqual([['kind', 3]]);
 
     // the control: the SAME source with the ruling applied goes clean, and it goes
-    // clean by RENAMING TWO — leaving `RuleCell` (MODEL's own) holding the sign.
+    // clean by RENAMING TWO — leaving `RuleCell` holding the sign.
     const after = before
       .replace('readonly kind: Repertoire', 'readonly repertoire: C')
       .replace(
@@ -322,11 +322,11 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
     // gloss is what separates re-use of a concept from re-use of a word.
     const shared = [
       'export interface RuleCell {',
-      '  /** MODEL `Kind` — what this cell IS. */',
+      '  /** `Kind` — what this cell IS. */',
       '  readonly kind: rule;',
       '}',
       'export interface HookCell {',
-      '  /** MODEL `Kind` — what this cell IS (a hook is `Kind ∋ rule`). */',
+      '  /** `Kind` — what this cell IS (a hook is `Kind ∋ rule`). */',
       '  readonly kind: rule;',
       '}',
     ].join('\n');

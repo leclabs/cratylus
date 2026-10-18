@@ -1,4 +1,4 @@
-// accept.ts — the machine-checkable falsifier for the root model's `accept()`.
+// accept.ts — the machine-checkable falsifier for `accept()`.
 // Lifts the author-time gate from the register-only leg to the full
 //
 //   accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
@@ -20,7 +20,7 @@
 // nonce positive-control (`oracle.ts`) empirically backs the SIGNIFIED floor: a
 // sign that fires NO circumscribing prior cannot be σ*.
 //
-// This is the doctrine-agnostic ALGORITHM (forge ENGINE): witnesses over
+// This is the doctrine-agnostic ALGORITHM: witnesses over
 // supplied data, zero IO, zero corpus doctrine. The corpus DATA it reads — which
 // tokens are palimpsest — is INJECTED as a `Policy` (`./policy.ts`); the DATA lives
 // in the corpus (canon), never here. Corpus loading + oracle driving live in
@@ -59,7 +59,7 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
  * stays: PARTITIONED quantifies over homes and needs them distinguishable.
  */
 export interface AcceptCell {
-  /** MODEL's `class(a)`. `Kind ≜ {fragment, agent, rule, skill}` — see above. */
+  /** `class(a)`. `Kind ≜ {fragment, agent, rule, skill}` — see above. */
   readonly kind: 'fragment' | 'agent' | 'skill' | 'rule';
   /** α(c) — the assigned anchor (the SIGN). */
   readonly slug: string;
@@ -78,9 +78,8 @@ export interface AcceptCell {
    * the typed IR field, not a markdown scrape.
    *
    * `definiens`, NOT `residue`, AND THAT IS DELIBERATE (ruled 2026-08-05, when
-   * `RuleCell.definiens` was renamed to `RuleCell.residue`). MODEL PARSIMONIOUS —
-   * `body(c) = ⟨α(c), residue(c)⟩`, residue(c) the workflow's residue of c with α(c)
-   * read in its bounded context — makes the two DIFFERENT OBJECTS. This field is the
+   * `RuleCell.definiens` was renamed to `RuleCell.residue`). `D` and the residue are
+   * DIFFERENT OBJECTS. This field is the
    * witness INPUT: the un-adjudicated `D` that `parsimonious()` below reads in order to
    * decide, for itself, what the anchor already invokes. Naming it `residue` would
    * assert the verdict in the parameter and leave that leg reading as a check that a
@@ -150,7 +149,7 @@ const KEBAB = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 
 /**
  * External-cite markers — a fragment that leans on an OUTSIDE reference cannot
- * ground in `inline-≜ ∪ Corpus ∪ LLM-priors` alone (MODEL `¬external-cite`), so
+ * ground in `inline-≜ ∪ Corpus ∪ LLM-priors` alone, so
  * it fails blind. The static floor under COLD-BLIND (the live oracle is the
  * authority: `decode_cold(core f) = intent(f)`).
  */
@@ -320,7 +319,7 @@ export interface EmittedMechanism {
   /**
    * `scoped(mechanism(f,adapter), a)` — the mechanism reaches THIS agent and no
    * other. False ⇒ ambient: emitted globally and narrowed (if at all) by a
-   * runtime self-filter, which MODEL rejects outright.
+   * runtime self-filter.
    */
   readonly scoped: boolean;
 }
@@ -328,15 +327,8 @@ export interface EmittedMechanism {
 /**
  * ENFORCED — `enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a)`.
  *
- * The leg MODEL declares and `accept()` did not implement. Its absence is not a
- * missing nicety: without it a cell passes the gate while declaring a bound that
- * projects to nothing, and MODEL states the consequence itself —
- *
- *   *a declared bound that projects to nothing is INDISTINGUISHABLE from an
- *   undeclared one*
- *
- * Two convicting shapes, and the second is the reason `¬ ambient` is written into
- * MODEL:
+ * Without it a cell passes the gate while declaring a bound that projects to
+ * nothing. Two convicting shapes:
  *
  *  1. **UNPROJECTED** — declared in the source register, no mechanism emitted for
  *     that agent. The bound reads as real and enforces nothing.

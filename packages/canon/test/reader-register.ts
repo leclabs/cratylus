@@ -8,7 +8,7 @@
 // Signal-class thresholds frozen from the 2026-07-01 corpus sweep; calibration
 // provenance in `reader-density.test.ts`'s header. The detector is one-sided:
 // it can witness register=human, never certify it — so ρ=human classes are
-// exempt BY THE MODEL, never by path.
+// exempt by their class, never by path.
 
 // ── ρ — the reader binding over the artifact classes this corpus materializes
 //        or its skills generate. Mirrors the READER BINDING subset lists. ──────
@@ -106,7 +106,7 @@ export function registerOf(text: string): Rho {
   return humanRegisterSignals(text).length > 0 ? 'human' : 'LLM';
 }
 
-/** conform, one-sided: ρ=LLM demands register=LLM; ρ=human is exempt by the model. */
+/** conform, one-sided: ρ=LLM demands register=LLM; ρ=human is exempt by its class. */
 export function conform(cls: ArtClass, text: string): boolean {
   return RHO[cls] === 'human' || registerOf(text) === 'LLM';
 }

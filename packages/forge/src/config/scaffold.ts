@@ -5,8 +5,8 @@
 // (the default plugin package) + empty `patches` — and takes an OVERRIDE, so the
 // default is a default rather than a law. A projector that could only ever
 // scaffold against one corpus would be deciding what the design IS; the plugin
-// it extends is the caller's to name (ARCHITECTURE north-star §3: the corpus
-// reaches the projector as DATA). `addPlugin` WIRES a plugin into
+// it extends is the caller's to name, reaching the projector as DATA.
+// `addPlugin` WIRES a plugin into
 // `extends` by editing the config SOURCE (config is code — the edit adds a real
 // `import` + appends the binding to the `extends` array). Both operate on the
 // canonical scaffold shape; `addPlugin` refuses LOUDLY on an unrecognized shape
