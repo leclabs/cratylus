@@ -29,8 +29,10 @@ names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 Every journal entry records who appended it (`by`: the agent making the call, named by the agent
 harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
 for, never by refusal (decision 0274): the journal's verbs only append, but for `close`, which
-closes its books (decision 0314): it appends one entry bringing forward, verbatim, the entries that
-stand, and removes every other entry file, which version control keeps at the commit the close names.
+closes its books (decision 0315): it appends one entry bringing forward, verbatim, the entries that
+stand and naming every other entry closed, never read again, and removes every other entry file,
+which version control keeps at the commit the close names. Every reading covers the journal since
+its latest close; the closed period is read from git at that commit.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in

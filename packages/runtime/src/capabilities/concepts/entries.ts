@@ -18,10 +18,11 @@
 // latest figures for a cut being its figures, and shown only as history.
 //
 // Closing the books (`close`) records the commit at HEAD holding the closed
-// period, the entries it brings forward, verbatim, each context's identity
-// and the id of each concept's first version, which keep the order the views
-// list them in; every other entry file then leaves the journal, kept by
-// version control.
+// period, the entries it brings forward, verbatim, the entries the period
+// ended, which no reading reads again, each context's identities, the id of
+// each concept's first version, which keep the order the views list them in,
+// and how each reference by a decision's name alone bound; every other entry
+// file then leaves the journal, kept by version control.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -165,17 +166,23 @@ export interface EfficiencyEntry extends Stamped {
 }
 
 /** The closing of the journal's books: the full sha of the commit at HEAD
- *  holding the closed period, the entries brought forward, verbatim as
- *  recorded and in id order, each context's identity, the id of the entry
- *  that first recorded it, by the context's name, and the id of the first
- *  version of each concept brought forward, by its context and name, which
- *  order the views as they were ordered before. */
+ *  holding the closed period; the entries brought forward, verbatim as
+ *  recorded and in id order; the id of every entry the period held that it
+ *  does not bring forward, which no reading reads again; for each context,
+ *  by its name, the id of every context entry the journal has held for it,
+ *  earlier closes' included, in id order, its identity first; the id of the
+ *  first version of each concept brought forward, by its context and name,
+ *  which order the views as they were ordered before; and, for each entry
+ *  brought forward that names a decision by its name alone, the entry that
+ *  name bound to, or `null` where it bound to none. */
 export interface CloseEntry extends Stamped {
   readonly kind: 'close';
   readonly commit: string;
   readonly broughtForward: readonly object[];
-  readonly identities: Readonly<Record<string, string>>;
+  readonly closed: readonly string[];
+  readonly identities: Readonly<Record<string, readonly string[]>>;
   readonly concepts: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  readonly resolved: Readonly<Record<string, string | null>>;
 }
 
 export type Entry =
@@ -193,6 +200,12 @@ export type Entry =
 type Fits = (value: unknown) => boolean;
 
 const text: Fits = (value) => typeof value === 'string';
+/** Whether `value` is a plain object each of whose values fits `fits`. */
+const dictionary = (value: unknown, fits: Fits): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  !Array.isArray(value) &&
+  Object.values(value).every(fits);
 const texts: Fits = (value) => Array.isArray(value) && value.every(text);
 const count: Fits = (value) => typeof value === 'number';
 const optional =
@@ -302,22 +315,11 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     broughtForward: (value) =>
       Array.isArray(value) &&
       value.every((v) => typeof v === 'object' && v !== null),
-    identities: (value) =>
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      Object.values(value).every(text),
-    concepts: (value) =>
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value) &&
-      Object.values(value).every(
-        (names) =>
-          typeof names === 'object' &&
-          names !== null &&
-          !Array.isArray(names) &&
-          Object.values(names).every(text),
-      ),
+    closed: texts,
+    identities: (value) => dictionary(value, texts),
+    concepts: (value) => dictionary(value, (names) => dictionary(names, text)),
+    resolved: (value) =>
+      dictionary(value, (entry) => entry === null || text(entry)),
   },
 };
 

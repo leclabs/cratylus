@@ -18,7 +18,7 @@
 // among them nor in the project's context map. It is named by its origin
 // (`<origin>:<context>`) and marked delivered and read-only, unless the journal
 // being read holds a context entry whose id is its identity, or a close that
-// records it as a context's identity: that journal owns
+// records it among the ids a context has held: that journal owns
 // the context, which is then part of its design and shown among its own. Nothing
 // is ever appended to a project's journal for a delivered context.
 // ─────────────────────────────────────────────────────────────────────────────

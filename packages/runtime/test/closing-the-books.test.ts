@@ -231,6 +231,7 @@ function seed() {
       hold,
       ...competing,
       truck,
+      gone[1] as string,
       d2,
       d4,
       d4Accepted,
@@ -243,7 +244,7 @@ function seed() {
       bookingFirst,
       holdFirst,
       slot,
-      ...gone,
+      gone[0] as string,
       d1,
       d1Accepted,
       d3,
@@ -252,10 +253,12 @@ function seed() {
       efficiency,
     ],
     bookingFirst,
+    booking,
     fleet,
     holdFirst,
     slot,
     truck,
+    goneFirst: gone[0] as string,
   };
 }
 
@@ -267,15 +270,26 @@ const closeFile = () => {
     kind: string;
     commit: string;
     broughtForward: { id: string }[];
-    identities: Record<string, string>;
+    closed: string[];
+    identities: Record<string, string[]>;
+    resolved: Record<string, string | null>;
     concepts: Record<string, Record<string, string>>;
   };
 };
 
 describe('closing the books', () => {
   it('leaves the close alone, what stands as it was, and the closed period at its commit', () => {
-    const { carried, dropped, bookingFirst, fleet, holdFirst, slot, truck } =
-      seed();
+    const {
+      carried,
+      dropped,
+      bookingFirst,
+      booking,
+      fleet,
+      holdFirst,
+      slot,
+      truck,
+      goneFirst,
+    } = seed();
     const head = commit();
     const before = standing();
     const contents = snapshot();
@@ -291,21 +305,22 @@ describe('closing the books', () => {
       kind: 'close',
       commit: head,
       broughtForward: carried.length,
-      closed: Object.keys(contents).length,
+      closed: dropped.length,
+      removed: Object.keys(contents).length,
     });
     const close = closeFile();
     expect(close.broughtForward.map((e) => e.id)).toEqual(carried);
-    for (const id of dropped)
-      expect(close.broughtForward.map((e) => e.id)).not.toContain(id);
+    expect(close.closed).toEqual([...dropped].sort());
     // Each entry is brought forward verbatim, as its file held it.
     for (const entry of close.broughtForward)
       expect(entry).toEqual(JSON.parse(contents[`${entry.id}.json`] as string));
     expect(close.identities).toEqual({
-      booking: bookingFirst,
-      fleet,
+      booking: [bookingFirst, booking],
+      fleet: [fleet],
     });
+    expect(close.resolved).toEqual({});
     expect(close.concepts).toEqual({
-      booking: { hold: holdFirst, slot },
+      booking: { hold: holdFirst, slot, gone: goneFirst },
       fleet: { truck },
     });
     // The same answers, each list in the same order.
@@ -369,7 +384,23 @@ describe('closing the books', () => {
       refused(/commit the journal first$/);
       git('checkout', '--', '.');
       unlinkSync(join(dir(), first as string));
-      refused(/an entry is uncommitted, changed or removed/);
+      refused(/an entry is uncommitted, changed, removed or ignored/);
+    });
+
+    it('while an entry file is ignored', () => {
+      seed();
+      const ignored = recorded({
+        kind: 'context',
+        name: 'hidden',
+        subject: 'Hidden.',
+        relation: '',
+      });
+      writeFileSync(
+        join(repo, '.gitignore'),
+        `/design/journal/${ignored}.json\n`,
+      );
+      commit();
+      refused(/an entry is uncommitted, changed, removed or ignored/);
     });
 
     it('while it reads past entries of a newer runtime', () => {
@@ -420,7 +451,7 @@ describe('closing the books', () => {
     const before = standing();
     const answer = concepts('close') as Record<string, unknown>;
     expect(files()).toEqual([`${answer.id}.json`]);
-    expect(answer).toMatchObject({ commit: head, closed: 2 });
+    expect(answer).toMatchObject({ commit: head, removed: 2 });
     const ids = closeFile().broughtForward.map((e) => e.id);
     expect(ids).toContain(hold);
     expect(ids).not.toContain(first);
@@ -472,6 +503,21 @@ describe('closing the books', () => {
       d6: 'open',
     });
     expect(decisions.decisions.at(-1)?.entry).toBe(d6);
+    // A concept retired before the close is brought back by a supersession.
+    concepts(
+      'supersede',
+      'gone',
+      '--context',
+      'booking',
+      '--wording',
+      'Back again.',
+      '--reason',
+      'Needed.',
+    );
+    expect(
+      (concepts('design', '--context', 'booking') as typeof design).contexts[0]
+        ?.concepts,
+    ).toContainEqual({ name: 'gone', wording: 'Back again.', builtFrom: [] });
   });
 
   it('keeps a delivered context’s identity, and the journal holding it, across a close', () => {
@@ -566,8 +612,10 @@ describe('closing the books', () => {
         kind: 'close',
         commit: '0'.repeat(40),
         broughtForward,
+        closed: [],
         identities: {},
         concepts: {},
+        resolved: {},
       });
     const context = (id: string) => ({
       id,
@@ -606,5 +654,214 @@ describe('closing the books', () => {
         versions: [{ id }],
       });
     });
+  });
+});
+
+describe('a close joined with another line of work', () => {
+  const define = (name: string, verb = 'define', wording = `A ${name}.`) =>
+    idOf(
+      concepts(
+        verb,
+        name,
+        '--context',
+        'booking',
+        '--wording',
+        wording,
+        '--reason',
+        'Because.',
+      ),
+    );
+  const standingIds = () =>
+    (concepts('decisions') as { decisions: { entry: string }[] }).decisions.map(
+      (d) => d.entry,
+    );
+  const join_ = (other: string) =>
+    git('merge', '-q', '--no-ff', '--no-edit', other);
+
+  beforeEach(() => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+  });
+
+  it('keeps a retirement one line closed competing with a version the other recorded', () => {
+    define('x');
+    commit('base');
+    git('checkout', '-q', '-b', 'other');
+    define('x', 'supersede', 'A wider x.');
+    commit('other');
+    git('checkout', '-q', 'main');
+    concepts('retire', 'x', '--context', 'booking', '--reason', 'Gone.');
+    commit('retire');
+    concepts('close');
+    commit('close');
+    join_('other');
+    expect(concepts('design', '--history')).toMatchObject({
+      contexts: [
+        {
+          concepts: [],
+          competing: [
+            {
+              name: 'x',
+              versions: [
+                { wording: 'A wider x.' },
+                { retired: true, reason: 'Gone.' },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('never reads again a decision one close ended, though another carried it', () => {
+    const d = decide('d', 'open').id;
+    commit('base');
+    git('checkout', '-q', '-b', 'other');
+    concepts('close');
+    commit('other close');
+    git('checkout', '-q', 'main');
+    concepts('deprecate', 'd', '--reason', 'Done.');
+    commit('deprecate');
+    concepts('close');
+    commit('close');
+    join_('other');
+    expect(files()).toHaveLength(2);
+    expect(standingIds()).not.toContain(d);
+  });
+
+  it('never reads again a superseded decision one close ended, carried by the other line', () => {
+    const d1 = decide('d1', 'open').id;
+    commit('base');
+    git('checkout', '-q', '-b', 'other');
+    concepts('close');
+    commit('other close');
+    git('checkout', '-q', 'main');
+    decide('d2', 'open', '--supersedes', 'd1');
+    concepts('deprecate', 'd2', '--reason', 'Done.');
+    commit('d2');
+    concepts('close');
+    commit('close');
+    join_('other');
+    expect(standingIds()).not.toContain(d1);
+    expect(standingIds()).toEqual([]);
+  });
+
+  it('binds a reference by name alone as it bound before the close', () => {
+    const legacy = (id: string, body: object) =>
+      writeFileSync(
+        join(dir(), `${id}.json`),
+        JSON.stringify({ id, at: '2026-01-01T00:00:00.000Z', ...body }),
+      );
+    const decision = {
+      kind: 'decide',
+      decisionId: 'd1',
+      context: 'booking',
+      title: 'T',
+      situation: 'S',
+      decision: 'D',
+      consequences: 'C',
+      status: 'open',
+      supersedes: null,
+    };
+    legacy('01A00000000000000000000001', decision);
+    legacy('01A00000000000000000000002', decision);
+    legacy('01A00000000000000000000003', {
+      ...decision,
+      decisionId: 'd2',
+      supersedes: 'd1',
+    });
+    legacy('01A00000000000000000000004', {
+      kind: 'deprecate',
+      decisionId: 'd1',
+      entry: '01A00000000000000000000001',
+      reason: 'Done.',
+    });
+    const before = concepts('decisions');
+    expect(standingIds()).toEqual([
+      '01A00000000000000000000002',
+      '01A00000000000000000000003',
+    ]);
+    commit();
+    concepts('close');
+    expect(closeFile().resolved).toEqual({
+      '01A00000000000000000000003': null,
+    });
+    expect(concepts('decisions')).toEqual(before);
+  });
+
+  it('keeps a delivered context the journal holds through a close of a joined context', () => {
+    concepts('purpose', '--statement', 'Book.');
+    commit('root');
+    git('checkout', '-q', '-b', 'other');
+    const theirs = idOf(
+      concepts('context', 'workflow', '--subject', 'Theirs.', '--relation', ''),
+    );
+    concepts(
+      'define',
+      'part',
+      '--context',
+      'workflow',
+      '--wording',
+      'A part.',
+      '--reason',
+      'First.',
+    );
+    const delivered = deliverContext({
+      from: repo,
+      context: 'workflow',
+      origin: 'cratylus',
+      version: '1.0.0',
+    });
+    expect(delivered.identity).toBe(theirs);
+    commit('theirs');
+    git('checkout', '-q', 'main');
+    const ours = idOf(
+      concepts('context', 'workflow', '--subject', 'Ours.', '--relation', ''),
+    );
+    commit('ours');
+    join_('other');
+    const settled = idOf(
+      concepts(
+        'context',
+        'workflow',
+        '--subject',
+        'Settled.',
+        '--relation',
+        '',
+        '--reason',
+        'Settle.',
+      ),
+    );
+    commit('settled');
+    const read = () =>
+      dispatchConcepts(['state'], { from: repo, delivered: [delivered] });
+    const before = read();
+    expect(before).not.toHaveProperty('practice');
+    concepts('close');
+    expect(closeFile().identities.workflow).toEqual(
+      [ours, theirs, settled].sort(),
+    );
+    expect(read()).toEqual(before);
+  });
+
+  it('keeps each concept’s order by its own recorded first version, whatever its name', () => {
+    define('first');
+    commit();
+    concepts('close');
+    commit();
+    define('constructor');
+    define('last');
+    const order = () =>
+      (
+        concepts('design') as { contexts: { concepts: { name: string }[] }[] }
+      ).contexts[0]?.concepts.map((c) => c.name);
+    expect(order()).toEqual(
+      ['booking', 'first', 'constructor', 'last'].slice(1),
+    );
+    commit();
+    concepts('close');
+    expect(
+      Object.hasOwn(closeFile().concepts.booking ?? {}, 'constructor'),
+    ).toBe(true);
+    expect(order()).toEqual(['first', 'constructor', 'last']);
   });
 });

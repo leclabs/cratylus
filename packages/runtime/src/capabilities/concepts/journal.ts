@@ -120,7 +120,8 @@ export interface Journal {
   /** Who appends to it: the acting agent, else git's user, when either is known. */
   readonly maker: string | undefined;
   /** Every entry of a kind this runtime knows, in append order: each entry
-   *  file's, and each a close brings forward, one per id. */
+   *  file's, and each a close brings forward, one per id, never one a close in
+   *  the directory names closed. */
   entries(): readonly Entry[];
   /** What was read past: entries of kinds this runtime does not know, or of a
    *  known kind holding a value it does not know. */
@@ -128,13 +129,18 @@ export interface Journal {
   /** The entry files the directory holds, each by its id with its kind, in
    *  append order. */
   files(): readonly { readonly id: string; readonly kind: string }[];
+  /** The id of every entry but a close the directory holds, as a file or
+   *  brought forward, those a close names closed included: the period's. */
+  held(): readonly string[];
   /** Append `draft` as one new entry, stamped with its id, its time and, when
    *  known, who appended it. */
   append<D extends Draft>(
     draft: D,
   ): D & { id: string; at: string; by?: string };
   /** Close the books: append `draft` as `append` does, then remove every other
-   *  entry file; the close entry, and how many files it removed. */
+   *  entry file; the close entry, and how many files it removed. Where one
+   *  cannot be removed, the journal is restored from HEAD and the close
+   *  removed, and it refuses. */
   close(draft: Draft<CloseEntry>): {
     readonly entry: CloseEntry;
     readonly removed: number;
@@ -170,6 +176,7 @@ export function journalAt(
         readonly entries: readonly Entry[];
         readonly readPast: ReadPast;
         readonly files: readonly { id: string; kind: string }[];
+        readonly held: readonly string[];
       }
     | undefined;
 
@@ -189,9 +196,12 @@ export function journalAt(
       read.set(entry.id, entry);
       return { id: entry.id, kind: entry.kind };
     });
+    /** Every entry a close in the directory names closed: never read. */
+    const closed = new Set<string>();
     for (const name of names) {
       const close = read.get(name.slice(0, -'.json'.length)) as Read;
       if (close.kind !== 'close' || 'newer' in close) continue;
+      for (const id of (close as CloseEntry).closed) closed.add(id);
       for (const [at, carried] of (
         close as CloseEntry
       ).broughtForward.entries()) {
@@ -205,12 +215,19 @@ export function journalAt(
     }
     const entries: Entry[] = [];
     const readPast = new ReadPast();
+    const held: string[] = [];
     for (const id of [...read.keys()].sort()) {
       const entry = read.get(id) as Read;
+      if (entry.kind === 'close') {
+        if (!('newer' in entry)) entries.push(entry);
+        continue;
+      }
+      held.push(id);
+      if (closed.has(id)) continue;
       if ('newer' in entry) readPast.add(entry.kind, entry.newer);
       else entries.push(entry);
     }
-    cached = { entries, readPast, files };
+    cached = { entries, readPast, files, held };
     return cached;
   };
 
@@ -244,6 +261,7 @@ export function journalAt(
     entries: () => load().entries,
     readPast: () => load().readPast,
     files: () => load().files,
+    held: () => load().held,
     append(draft) {
       const entry = put(draft);
       cached = undefined;
@@ -252,9 +270,21 @@ export function journalAt(
     close(draft) {
       const closed = load().files;
       const entry = put(draft);
-      // Every other entry file leaves the journal, the close alone staying.
-      for (const { id } of closed) unlinkSync(join(dir, `${id}.json`));
       cached = undefined;
+      // Every other entry file leaves the journal, the close alone staying;
+      // where one cannot be removed, the journal is put back as HEAD holds it.
+      try {
+        for (const { id } of closed) unlinkSync(join(dir, `${id}.json`));
+      } catch (failure) {
+        execFileSync('git', ['checkout', 'HEAD', '--', JOURNAL_DIR], {
+          cwd: top,
+          stdio: 'ignore',
+        });
+        unlinkSync(join(dir, `${entry.id}.json`));
+        throw refuse(
+          `removing the closed period’s entries failed (${failure instanceof Error ? failure.message : String(failure)}); they are restored from the commit at HEAD and the close removed, so the journal is as it was`,
+        );
+      }
       return { entry: entry as CloseEntry, removed: closed.length };
     },
   };

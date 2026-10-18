@@ -52,8 +52,10 @@
 // word its current subject names, though never a command, a quotation in code
 // type or a flag that holds it. Closing the books appends its close entry,
 // then removes every other entry file, and prints the close entry with the
-// number of entries it brought forward and of files it removed; it closes only
-// a journal committed as it stands. No verb edits an entry. Every refusal is
+// number of entries it brought forward, of entries it names closed and of
+// files it removed; it closes only a journal committed as it stands, an
+// ignored file included, and where a file cannot be removed it restores the
+// journal from HEAD and removes the close. No verb edits an entry. Every refusal is
 // one line opening with `concepts <verb>:`, thrown before anything changes.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
@@ -161,7 +163,7 @@ export const VERBS = {
         'Only this bounded context; every context when left out',
       ),
       history: switchFlag(
-        'Also its history: retired concepts with why each was retired, and why each live concept’s version was written',
+        'Also its history: retired concepts with why each was retired, and why each live concept’s version was written; since the journal’s latest closing of the books, which the answer then names with the commit holding the closed period',
       ),
     },
   },
@@ -169,7 +171,7 @@ export const VERBS = {
     concept: 'concept',
     effect: 'reads',
     purpose:
-      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it',
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, which the answer then names with the commit whose journal holds the earlier ones',
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
@@ -188,7 +190,7 @@ export const VERBS = {
     concept: 'decision',
     effect: 'reads',
     purpose:
-      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason',
+      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it, since the journal’s latest closing of the books, which the answer then names with the commit whose journal holds the earlier decisions. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason',
     when: 'Once the design state is read, for the standing decisions the work needs, before acting on a choice or after recording or accepting a decision; with history, to see how a choice was reached or why one no longer applies',
     positional: null,
     flags: {
@@ -197,7 +199,7 @@ export const VERBS = {
       ),
       open: switchFlag('Only the decisions still awaiting acceptance'),
       history: switchFlag(
-        'Also the decisions superseded or deprecated, and for every decision what it superseded, what superseded it and every kind recorded for it: the history of how each choice was reached',
+        'Also the decisions superseded or deprecated, and for every decision what it superseded, what superseded it and every kind recorded for it: the history of how each choice was reached, since the journal’s latest closing of the books, which the answer then names with its commit',
       ),
     },
   },
@@ -205,7 +207,7 @@ export const VERBS = {
     concept: 'event-sourced conceptual model',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept’s residue and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s residue and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends the version it replaces, keeping its wording whole and adding to it, as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
+      'Show where realization shows through text that should state meaning: each live concept’s residue and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s residue and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends a version it replaces that the journal holds, keeping its wording whole and adding to it (a closing of the books ends that comparison for the versions it carries), as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
     when: 'Before a design or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
     positional: null,
     flags: {
@@ -277,7 +279,7 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back, one retired before a closing of the books included, since a close carries its retirement',
     when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
     positional: concept(
       'The concept whose meaning changes, by its name in the bounded context',
@@ -379,8 +381,8 @@ export const VERBS = {
     concept: 'closing the books',
     effect: 'closes',
     purpose:
-      'Close the journal’s books: record one entry naming the commit that holds the period now closed and bringing forward, verbatim, what stands (the project’s current purpose, each bounded context’s current description and identity, each concept’s current versions unless it stands retired, and each standing decision with the acceptances recorded for it and the classification governing its kind), then take every other entry out of the journal, kept by version control at that commit; every reading answers what stands as before, and the history readings name the close and its commit',
-    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal differs from the commit at HEAD, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
+      'Close the journal’s books: record one entry naming the commit that holds the period now closed and bringing forward, verbatim, what stands (the project’s current purpose, each bounded context’s current description and identity, each concept’s current versions, a retirement included, and each standing decision with the acceptances recorded for it and the classification governing its kind), naming every other entry the period held as closed, which no reading reads again, so a line of work joined later cannot bring it back, then take every other entry out of the journal, kept by version control at that commit; every reading answers what stands as before, and the history readings name the close and its commit, where the closed period is read',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal differs from the commit at HEAD, an ignored file included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
     positional: null,
     flags: {},
   },
@@ -440,11 +442,9 @@ function answerOf(
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
   /** The delivered contexts shown: each this journal does not hold itself, by
-   *  the identity of the entry that first recorded it, or one a close records. */
-  const held = new Set([
-    ...[...folded.contexts.values()].flat().map((entry) => entry.id),
-    ...folded.closes.flatMap((close) => Object.values(close.identities)),
-  ]);
+   *  any id it has held for a context: a context entry's, or one a close
+   *  records. */
+  const held = folded.identities();
   const shown = delivered.filter((d) => !held.has(d.identity));
   /** The shown delivered context `--context` names, if it names one. */
   const deliveredNamed = (): DeliveredContext | undefined => {
@@ -929,12 +929,13 @@ function answerOf(
           'status',
           '--porcelain',
           '--untracked-files=all',
+          '--ignored=matching',
           '--',
           JOURNAL_DIR,
         ) !== ''
       )
         throw refuse(
-          `${JOURNAL_DIR} differs from the commit at HEAD: an entry is uncommitted, changed or removed; commit the journal first`,
+          `${JOURNAL_DIR} differs from the commit at HEAD: an entry is uncommitted, changed, removed or ignored; commit the journal first`,
         );
       if (journal.readPast().kinds.size > 0)
         throw refuse(
@@ -947,33 +948,14 @@ function answerOf(
         throw refuse(
           'nothing is recorded since the journal’s latest close; there is nothing to close',
         );
-      const { entry, removed } = journal.close({
-        kind: 'close',
-        commit,
-        broughtForward: folded.standingEntries(),
-        identities: Object.fromEntries(
-          [...folded.contexts.keys()].map((name) => [
-            name,
-            folded.identity(name) as string,
-          ]),
-        ),
-        concepts: folded
-          .carriedConcepts()
-          .reduce<Record<string, Record<string, string>>>(
-            (byContext, [context, name]) => {
-              byContext[context] = {
-                ...byContext[context],
-                [name]: folded.conceptIdentity(context, name) as string,
-              };
-              return byContext;
-            },
-            {},
-          ),
-      });
+      const { entry, removed } = journal.close(
+        folded.closing(commit, journal.held()),
+      );
       return {
         ...entry,
         broughtForward: entry.broughtForward.length,
-        closed: removed,
+        closed: entry.closed.length,
+        removed,
       };
     }
   }
