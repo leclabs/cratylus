@@ -8,8 +8,8 @@
 // was built from as build metadata where the build is no release, so a development
 // build never reads as the release. The capability reports both and chooses nothing:
 // neither build is preferred, and no call is redirected to another.
-// The remedy for a difference is to install again with the cratylus in use, which the
-// harness's adapter says at every start of the harness.
+// The remedy for a difference is to install again with the cratylus in use, at the
+// installation's own scope, which the harness's adapter says at every start of the harness.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -17,7 +17,11 @@ import { join } from 'node:path';
 import { CLI_BIN } from '../../bin-name.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
-import { installationRoot } from '../../runtime-config.js';
+import {
+  type InstallScope,
+  installationRoot,
+  installationScope,
+} from '../../runtime-config.js';
 import { type VerbFlags, readArgv } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
 
@@ -26,7 +30,7 @@ export const VERBS = {
     concept: 'version skew',
     effect: 'reads',
     purpose:
-      'Report the version of cratylus that projected this installation (artifacts) and the version of the cratylus command its capabilities run (command); they differ where the installation was projected by another build',
+      'Report the version of cratylus that projected this installation (artifacts) and the version of the cratylus command its capabilities run (command), with the scope (user or project) and root of the installation; the versions differ where the installation was projected by another build',
     when: 'When a session starts warning of version skew, or to confirm which build projected the installation and which command it reaches',
     positional: null,
     flags: {},
@@ -48,6 +52,8 @@ export interface VersionSkewReport {
   readonly artifacts: string;
   /** The version of the cratylus command the capabilities reach. */
   readonly command: string;
+  /** The installation's scope: the user's, or one project's. */
+  readonly scope: InstallScope;
   /** The installation's root. */
   readonly installation: string;
 }
@@ -82,5 +88,10 @@ export function dispatchVersionSkew(
     throw refuse(
       `${manifest} records no version; run ${CLI_BIN} install again`,
     );
-  return { artifacts: version, command: build.version, installation };
+  return {
+    artifacts: version,
+    command: build.version,
+    scope: installationScope(installation),
+    installation,
+  };
 }
