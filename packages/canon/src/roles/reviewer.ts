@@ -42,7 +42,7 @@ export const reviewerRole: RoleCell = {
   name: 'reviewer',
   description:
     "Reviews one change it did not write, before or after it joins, and hands off one code review naming each finding; a change the operator has asked to review is the operator's to review.",
-  mark: null,
+  mark: { emoji: '🔍', hue: 'red' },
   values: {
     role: [reviewer],
     objective: [

@@ -2,11 +2,12 @@
 // COMPOSITION — how an agent is made from the catalog.
 //
 // A role is a full default vector: one stated list per factor, every factor
-// present (`roles/<role>.ts`). Its generic holder is that vector made an agent:
-// each stated value becomes an `Entry` carrying its enforcement level (the
-// factor's default unless stated). A persona states its overrides and extensions of a
-// role: its own mark, single values that replace the role's, set values that extend the
-// role's, and values it removes. Everything it does not state is the role's.
+// present (`roles/<role>.ts`), and its mark. Its generic holder is that vector
+// made an agent, carrying the role's mark: each stated value becomes an `Entry`
+// carrying its enforcement level (the factor's default unless stated). A persona
+// states its overrides and extensions of a role: its own mark, single values that
+// replace the role's, set values that extend the role's, and values it removes.
+// Everything it does not state is the role's.
 //
 // Composition REFUSES a malformed persona (master design §2): one that states the
 // role, names an unknown factor or slot, removes a value its role does not hold, or
@@ -55,8 +56,8 @@ export interface RoleCell {
   /** The role's anchor; the generic holder's name. */
   readonly name: string;
   readonly description: string;
-  /** Roles carry no mark (the master design gives none). */
-  readonly mark: Mark | null;
+  /** The role's mark, which its generic holder carries. */
+  readonly mark: Mark;
   readonly values: {
     readonly [D in HeldFactor as KebabToCamel<D>]: readonly Stated<D>[];
   };
@@ -165,7 +166,7 @@ function agentOf(
   identity: {
     readonly name: string;
     readonly description: string;
-    readonly mark: Mark | null;
+    readonly mark: Mark;
     readonly holds: string;
   },
   vector: Readonly<Record<string, readonly Entry[]>>,
@@ -239,7 +240,6 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
   const who = `persona ${overrides.name}`;
   if (!overrides.mark) refuse(`${who} carries no mark`);
   if (
-    over.mark &&
     over.mark.emoji === overrides.mark.emoji &&
     over.mark.hue === overrides.mark.hue
   )

@@ -23,7 +23,7 @@ import { honesty } from '../src/dimensions/guardrails/honesty.js';
 import { builderRole } from '../src/roles/builder.js';
 import { reviewerRole } from '../src/roles/reviewer.js';
 
-const mark = { emoji: '🧪', hue: 'cyan' } as const;
+const mark = { emoji: '🧷', hue: 'cyan' } as const;
 const holders = {
   architect,
   builder,
@@ -184,6 +184,25 @@ describe('every agent', () => {
         agent.evaluation.map((e) => anchorOf(e.value)),
         name,
       ).toEqual(['in-use']);
+  });
+
+  it('carries its own mark, shared with no other agent', () => {
+    const marks = Object.fromEntries(
+      Object.entries(agents).map(([name, agent]) => [name, agent.mark]),
+    );
+    expect(marks).toEqual({
+      architect: { emoji: '🏛️', hue: 'white' },
+      lead: { emoji: '🧭', hue: 'blue' },
+      builder: { emoji: '🔨', hue: 'yellow' },
+      reviewer: { emoji: '🔍', hue: 'red' },
+      checkWriter: { emoji: '🧪', hue: 'green' },
+      illustrator: { emoji: '🖍️', hue: 'magenta' },
+      kino: { emoji: '🎬', hue: 'magenta' },
+      mav: { emoji: '✈️', hue: 'green' },
+      nico: { emoji: '📐', hue: 'cyan' },
+    });
+    const emojis = Object.values(agents).map((agent) => agent.mark?.emoji);
+    expect(new Set(emojis).size).toBe(emojis.length);
   });
 });
 

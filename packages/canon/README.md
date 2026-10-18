@@ -81,9 +81,9 @@ warrants them. Each role is defined by what it receives and what it hands off, n
 
 The reviewer, the illustrator and the check-writer run on another model family than the builders
 where one is available. A role cell (`src/roles/<role>.ts`) states a value for every factor, an
-explicitly empty set counting as one, and `agents/<role>.ts` is `holder(<role>Role)`: named for the
-role, carrying nothing beyond it and no mark. `holder` refuses a cell missing a factor, a scalar
-without exactly one value, a slot not filled exactly once, and empty guardrails.
+explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
+named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a cell missing
+a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
 production and generative video, nico the corpus and latent lexicography, mav software

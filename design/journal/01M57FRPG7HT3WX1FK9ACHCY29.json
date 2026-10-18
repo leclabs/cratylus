@@ -1,0 +1,14 @@
+{
+  "id": "01M57FRPG7HT3WX1FK9ACHCY29",
+  "at": "2026-10-18T12:28:43.399Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "agents",
+  "name": "identity",
+  "wording": "role, objective, expertise, procedure, stance and communication-style, with a name and a mark of its own identifying it to the operator; the same however the agent starts; its text states only identity, in plain words saying why",
+  "builtFrom": [],
+  "reason": "The operator: every agent launched shows a mark, the generic roles included; an agent without one is hard to tell apart at a glance. A mark of its own also sets a persona apart from the role it is over.",
+  "supersedes": [
+    "01M53H2FDPE7YXNP0JWQ45SVAY"
+  ]
+}
