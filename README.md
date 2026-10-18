@@ -1,68 +1,38 @@
 # Cratylus
 
-Cratylus puts a set of named agents and skills on your machine for Claude Code or omp. Each
-agent is projected from a corpus of meanings whose names were discovered in the model's own
-vocabulary rather than written as prose, so the same corpus renders the same way every time. You
-install it with one command and start an agent by its name. The idea behind it, on one page and in
-plain terms, is in [INTRODUCTION.md](./INTRODUCTION.md).
+Cratylus installs a team of named agents and skills into omp, the coding-agent harness,
+each defined in the terms the model already understands. The idea behind it, on one page, is in
+**[INTRODUCTION.md](./INTRODUCTION.md)**.
 
 ## Install and use
 
-You need Node 22 or later, and Claude Code or omp run at least once on this machine.
+You need Node 22 or later, and omp run at least once on this machine.
 
-1. Install the command:
+```sh
+npm install -g cratylus   # the command
+cratylus install          # put the agents on this machine
+omp --agent mav           # start a session as an installed agent
+```
 
-   ```sh
-   npm install -g cratylus
-   ```
+`cratylus install` asks only what you have not said: which harness, which practices (the ways of
+working it offers), which rules your agents follow in every project (rulesets such as `gitflow`,
+`conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`), and which
+model each agent falls back to. It shows what it will place and places it once you confirm, under
+one root cratylus owns, `~/.cratylus/omp/`, which omp loads in every project.
 
-2. Put the agents on this machine:
+**Upgrade** by running `npm install -g cratylus` and then `cratylus install` again; the root is
+replaced whole. Until you do, every omp session start warns that the installed agents and the
+command differ.
 
-   ```sh
-   cratylus install
-   ```
+**Uninstall** with `cratylus uninstall --harness omp`. It removes the owned root and every
+reference into it, and leaves whatever omp placed or changed.
 
-   The run is guided. It asks only what you have not said: which harness, which practices (the ways
-   of working it offers, each installed as one choice), and which model each agent falls back to.
-   It shows what it will place, and places it once you confirm. Everything lands under one root
-   cratylus owns, `~/.cratylus/omp/`, which omp loads in every project; omp's own files are only
-   pointed at it, never overwritten.
+Every flag, refusal and default is in [packages/cli/README.md](./packages/cli/README.md).
 
-3. Start a session as an installed agent, through the harness itself:
+## Contributing
 
-   ```sh
-   omp --agent mav
-   ```
-
-   Any other word on the command line is the harness's own flag.
-
-4. Upgrade by installing again with the new cratylus: `npm install -g cratylus`, then
-   `cratylus install`. The root is replaced whole, and an installation from before the owned root
-   is taken back. When the installed artifacts and the `cratylus` command differ, every omp session
-   start warns, naming both versions (`cratylus versionSkew report` shows them).
-
-5. Take it away again, whenever you like:
-
-   ```sh
-   cratylus uninstall --harness omp
-   ```
-
-   It removes the owned root and every reference into it, and leaves whatever the host placed or
-   changed.
-
-The questions and their flags, what a refusal says, the model routing, version skew and what
-uninstall leaves are all in [packages/cli/README.md](./packages/cli/README.md).
-
-## Where to go from here
-
-- To write a corpus of your own, read the package that owns each concern:
-  [packages/forge/README.md](./packages/forge/README.md) for projecting a corpus onto a harness,
-  [packages/schema/README.md](./packages/schema/README.md) for the shapes a corpus authors against,
-  [packages/canon/README.md](./packages/canon/README.md) for the corpus that ships, and
-  [packages/runtime/README.md](./packages/runtime/README.md) for the capabilities the agents call.
-- To change cratylus itself, start with [INTRODUCTION.md](./INTRODUCTION.md) and the concept
-  journal, which holds the conceptual model per bounded context. [AGENTS.md](./AGENTS.md) holds the
-  working conventions of the repository.
+Start with [INTRODUCTION.md](./INTRODUCTION.md) and the concept journal, which holds the conceptual
+model per bounded context; [AGENTS.md](./AGENTS.md) holds the working conventions.
 
 ## License
 
