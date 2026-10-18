@@ -170,8 +170,7 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
-to drift. Every turn carries the handover form of each agent that takes a typed one; a dispatch or
-launch whose assignment is incomplete is warned of and goes ahead — never refused. The
+to drift. Every turn carries the handover form of each agent that takes a typed one. The
 extension records nothing of a dispatch or its return.
 
 ## The harness adapter port

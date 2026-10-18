@@ -172,7 +172,7 @@ export const OPERATORS = {
   '·': { sense: 'and-list', signature: 'a · b · c', coldVerified: true },
   '…': { sense: 'and-so-on', signature: '{ a, b, … }', coldVerified: true },
 
-  // ── Provenance / representation (ASCII — contributes no gate glyph) ────────
+  // ── Provenance / representation (ASCII) ──────────────────────────────────
   '@': {
     sense:
       'resides-at / sourced-from — the authoritative on-disk or subsystem home of a fact',
@@ -180,7 +180,7 @@ export const OPERATORS = {
     coldVerified: true,
   },
 
-  // ── Reference mechanism (value algebra; ASCII — contributes no gate glyph) ─
+  // ── Reference mechanism (value algebra; ASCII) ───────────────────────────
   '${}': {
     sense: 'esm-reference',
     signature:

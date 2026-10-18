@@ -70,8 +70,7 @@ and stops, writing nothing, and `--verbose` also prints the per-file detail.
 ### Which practices
 
 A practice is a way of working that install offers as one choice: the agents and skills that
-carry it, installed together. The drift notice comes with every choice and is offered as
-none. On a terminal, install asks one question that lists each practice with its
+carry it, installed together. On a terminal, install asks one question that lists each practice with its
 description, the practices already installed here ticked (on a fresh host, the one the corpus
 preselects).
 
@@ -117,8 +116,8 @@ Everything install places for you on an agent harness lives under one root it ow
   agents/<name>.md          the corpus's agent definitions
   skills/<name>/…           the corpus's skills
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks, and the dispatch isolation where an agent needs it
-  hooks/<id>/…              the workers the session hooks run
+  extensions/…              the session hooks the corpus declares, and the dispatch isolation where an agent needs it
+  hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the corpus declares any
   delivered/cratylus/workflow.json
@@ -259,8 +258,7 @@ and warns where it falls short; they are not the same, and this is what a user m
   agent definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
   through omp's own skill discovery, as any omp session does.
 - **No guards.** Nothing judges an agent's acts or replies: an agent's behaviour is evaluated in
-  real use (decision 0142). A dispatch or launch whose assignment is incomplete is shown its typed
-  assignment with a warning naming what is missing, and goes ahead.
+  real use (decision 0142). Every turn shows the typed assignment of each agent that takes one.
 - **Model, dispatch and tools.** On omp an agent's definition names its own model role,
   `model: "@<name>"`, and the model behind it is the host's `modelRoles` entry (next section). Its
   `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
@@ -294,7 +292,7 @@ Each capability's configuration, where the corpus's skills declare any, is writt
 
 The installation records the version of cratylus that installed it; the extension's tools run the `cratylus` command on your `PATH`. When you upgrade one and not the other, every omp session start warns, naming both versions, whichever is older: install again with the cratylus in use (`cratylus install --harness omp`). The comparison reads the version the installation records and the version the command answers with `cratylus --version`, so it holds for a command that predates `versionSkew` too; where the command lacks a capability the installation expects, the warning names it, that capability's tool is not offered, and every other one still is. `cratylus versionSkew report` reports both at any time, and so does the `version_skew` tool in omp, which the installation itself carries: it is offered whatever command the capabilities reach, and reports the installation's recorded version beside the command's own `--version`. The root's `installation.json` names the version that projected it too. Nothing chooses between builds: a project's own pinned cratylus is never reached by the installed tools.
 
-omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it. A session started in an older process says so at its start: restart omp to run the installed extension, its dispatch checks included. Those know a dispatch by what it carries, the agent and task of each item, never by what the agent harness calls its dispatch tool.
+omp loads the extension once per process, and every session of that process, a dispatched one included, runs it as loaded, so an install reaches only omp processes started after it: restart omp to run the installed extension.
 
 ## Taking it away again
 

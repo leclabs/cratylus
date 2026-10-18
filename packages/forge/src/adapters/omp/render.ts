@@ -57,7 +57,7 @@ import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
-import { type Agent, assignmentIn, checkAssignment } from '@cratylus/schema';
+import type { Agent } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -260,8 +260,8 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * **THE TYPED HANDOFF** ({@link Agent.contract}): the deliverable schema is omp's
  * own `output`, which task dispatch uses as the child's structured-output schema
  * (omp's own task dispatch checks a return against it), and the assignment
- * schema is {@link OMP_ASSIGNMENT_KEY}, which the extension shows with each
- * dispatch and launch of the agent, warning when the assignment given is incomplete.
+ * schema is {@link OMP_ASSIGNMENT_KEY}, whose form the extension shows every turn
+ * to a session that may dispatch the agent.
  *
  * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
  * an agent operates through is a fact about the COMPOSED AGENT: the skills it
@@ -917,16 +917,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * OPEN REACH (decision 0081). Every agent, main or dispatched, is offered every verb
  * of every capability: no verb is withheld and no declaration narrows the tools.
  *
- * TYPED HANDOFFS, SHOWN AND NEVER REFUSED (decision 0142(3)). Every turn of every
- * session carries the assignment form of each agent that declares an assignment
- * schema ({@link OMP_ASSIGNMENT_KEY}). On every `task` call, in any session, each
- * such item is checked with the same `checkAssignment` the schema package exports
- * (its source carried here verbatim) against the one fenced `assignment` block of
- * the item's text or of the batch's shared context; a misfit is warned of, naming
- * the agent and each missing or ill-typed field with the agent's form, and the call
- * goes ahead. A main session launched as an agent with an assignment schema checks
- * its first prompt the same way, whether given on the command line, typed, or by any
- * other route, warns of a misfit, and starts.
+ * TYPED HANDOFFS, SHOWN (decision 0142(3)). Every turn of every session carries the
+ * assignment form of each agent that declares an assignment schema
+ * ({@link OMP_ASSIGNMENT_KEY}).
  *
  * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
  * alike, names the agent making it in `CRATYLUS_AGENT`: the
@@ -1091,10 +1084,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
-        "// The schema package's own `assignmentIn` and `checkAssignment`, carried verbatim: the one",
-        '// check every handoff is shown, here and at a launch alike.',
-        `const assignmentIn: (text: string) => unknown = (${String(assignmentIn)});`,
-        `const checkAssignment: (agent: string, schema: unknown, value: unknown) => { problem?: string } = (${String(checkAssignment)});`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
@@ -1179,21 +1168,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  );',
         '}',
         '',
-        '// THIS MODULE AS LOADED. omp loads an extension once per process and every session of that',
-        '// process, a dispatched one included, runs the module as loaded: an install that replaces it',
-        '// reaches only processes started afterwards. So a session started in an older process says',
-        "// so, since the checks of its dispatches are the old module's.",
-        'const MODULE = fileURLToPath(import.meta.url);',
-        'const LOADED = readFileSync(MODULE, "utf8");',
-        'function warnReplaced(session: Session): void {',
-        '  const installed = existsSync(MODULE) ? readFileSync(MODULE, "utf8") : undefined;',
-        '  if (installed === LOADED) return;',
-        '  session.ui.notify(',
-        '    `${COMMAND}: this omp process runs the ${COMMAND} extension it loaded when it started, which the installation has since ${installed === undefined ? "removed" : "replaced"}; its sessions, dispatched ones included, keep the earlier tools and dispatch checks until omp is restarted. Restart omp to run the installed one.`,',
-        '    "warning",',
-        '  );',
-        '}',
-        '',
         'const requirement = (p: Parameter): string => (p.required ? "required" : "optional");',
         '',
         'function description(e: Explanation): string {',
@@ -1269,8 +1243,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "  // One agent definition as omp's own discovery parses it.",
         '  declaration: AgentDefinition;',
         '  mark?: string;',
-        '  // The schema its assignment must fit, when the declaration carries one.',
-        '  assignment?: Schema;',
         '}',
         '// What of a session the launch reads or sets.',
         'interface Session {',
@@ -1314,7 +1286,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  if (declaration === undefined) return { names };',
         '  const said = frontmatterOf(declaration);',
         '  const mark = typeof said.mark === "string" && said.mark.trim() !== "" ? said.mark.trim() : undefined;',
-        '  return { found: { declaration, mark, assignment: schemaOf(said) }, names };',
+        '  return { found: { declaration, mark }, names };',
         '}',
         '',
         "// A declaration's front matter as its file says it, read with omp's own parser. A bundled",
@@ -1337,43 +1309,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// The fields a schema requires, as typed handoffs state them.',
         'interface Schema {',
         '  required?: readonly string[];',
-        '}',
-        '',
-        '// One item of a `task` call and the agent it runs as.',
-        'interface Handoff {',
-        '  item: Record<string, unknown>;',
-        '  agent: string;',
-        '}',
-        '',
-        '// A dispatch is known by what it carries — the agent each item runs as and its task, one item',
-        '// or a batch of them — never by what the harness calls the tool carrying it, which a host or',
-        '// a provider may present under another name.',
-        'function isDispatch(input: Record<string, unknown>): boolean {',
-        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
-        '  return items.length > 0 && items.every((raw) => {',
-        '    if (typeof raw !== "object" || raw === null) return false;',
-        '    const item = raw as Record<string, unknown>;',
-        '    return typeof item.task === "string" && (typeof item.agent === "string" || typeof input.agent === "string");',
-        '  });',
-        '}',
-        '',
-        '// The items of a dispatch, batch (`tasks[]`) or flat, each with the agent it names.',
-        'function itemsOf(input: Record<string, unknown>): Handoff[] {',
-        '  const items: unknown[] = Array.isArray(input.tasks) ? input.tasks : [input];',
-        '  return items.flatMap((raw) => {',
-        '    if (typeof raw !== "object" || raw === null) return [];',
-        '    const item = raw as Record<string, unknown>;',
-        '    const agent = typeof item.agent === "string" ? item.agent : typeof input.agent === "string" ? input.agent : "task";',
-        '    return [{ item, agent }];',
-        '  });',
-        '}',
-        '',
-        '// The assignment an item is dispatched with: the block in its own text, else the one in the',
-        "// batch's shared context.",
-        'function assignmentOf(item: Record<string, unknown>, input: Record<string, unknown>): unknown {',
-        '  const own = typeof item.task === "string" ? assignmentIn(item.task) : undefined;',
-        '  if (own !== undefined) return own;',
-        '  return typeof input.context === "string" ? assignmentIn(input.context) : undefined;',
         '}',
         '',
         'const messageOf = (error: unknown): string => (error instanceof Error ? error.message : String(error));',
@@ -1522,8 +1457,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    type: "string",',
         '  });',
         '  let launched: Launched | undefined;',
-        '  // The launch whose typed assignment no prompt has carried yet.',
-        '  let awaiting: { name: string; schema: Schema } | undefined;',
         "  // Whether the launch's first turn carries the session-start note: its procedure starts",
         '  // with reconstitution and its session is new, or was compacted, rather than continuing',
         '  // a conversation.',
@@ -1557,7 +1490,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  // A launch ends: its prompt and every setting it holds go with it.',
         '  function end(): void {',
         '    launched = undefined;',
-        '    awaiting = undefined;',
         '    owed = false;',
         '    noted = false;',
         '    for (const restore of undo.splice(0).reverse()) restore();',
@@ -1644,14 +1576,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
         '    // omp reads its command line, win; the declaration applies where the operator gave none.',
         '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
-        '    // A launch as an agent taking a typed assignment is shown it as a dispatch of it is: a',
-        '    // prompt given on the command line is checked now; with none, the first prompt is.',
-        '    if (found.assignment !== undefined) {',
-        '      const given = (operator as { messages?: unknown }).messages;',
-        '      const prompts = Array.isArray(given) ? given.filter((m): m is string => typeof m === "string") : [];',
-        '      if (startup && prompts.length > 0) checkLaunch(ctx, name, found.assignment, prompts.join("\\n\\n"));',
-        '      else awaiting = { name, schema: found.assignment };',
-        '    }',
         '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
         "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
         '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
@@ -1686,7 +1610,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    if (!conversed(ctx)) owe(declaration);',
         '  }',
         '  pi.on("session_start", async (_event, ctx) => {',
-        '    warnReplaced(ctx as unknown as Session);',
         '    await warnSkew(ctx as unknown as Session);',
         '    return launch(ctx as unknown as Session, true);',
         '  });',
@@ -1695,23 +1618,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  pi.on("session_compact", (_event, ctx) => {',
         '    if (launched !== undefined && (ctx as unknown as Session).agent?.kind === "main") owe(launched.declaration);',
         '  });',
-        "  // A launch's first prompt checked against its typed assignment: a misfit is warned of, with",
-        '  // the form, and the agent starts all the same.',
-        '  function checkLaunch(session: Session, name: string, schema: Schema, prompt: string): void {',
-        '    awaiting = undefined;',
-        '    const { problem } = checkAssignment(name, schema, assignmentIn(prompt));',
-        '    if (problem !== undefined)',
-        '      session.ui.notify(`${name} starts with an incomplete assignment: ${problem}\\n${formOf(name, schema)}`, "warning");',
-        '  }',
-        '  pi.on("input", (event, ctx) => {',
-        '    const session = ctx as unknown as Session;',
-        '    if (awaiting !== undefined && session.agent?.kind === "main")',
-        '      checkLaunch(session, awaiting.name, awaiting.schema, String(event.text ?? ""));',
-        '    return undefined;',
-        '  });',
         "  // Every turn's prompt is omp's own, then the declaration and the full instructions of the",
-        '  // skills it loads at start, so a rebuilt base prompt drops neither. A launch whose first',
-        '  // prompt came by a route with no `input` event has it checked here. In every session,',
+        '  // skills it loads at start, so a rebuilt base prompt drops neither. In every session,',
         '  // launched or not, main or dispatched, the turn also carries the assignment form of each',
         '  // agent that takes a typed one; the first turn of a launch whose procedure starts with',
         '  // reconstitution carries a note saying so; and every turn of a launch whose decision',
@@ -1723,7 +1631,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const forms = await dispatchForms(session);',
         '    if (now === undefined || session.agent?.kind !== "main")',
         '      return forms === undefined ? undefined : { systemPrompt: [...event.systemPrompt, forms] };',
-        '    if (awaiting !== undefined) checkLaunch(session, awaiting.name, awaiting.schema, String(event.prompt ?? ""));',
         '    // The first turn of a launch that owes the session-start note alone: a turn-scoped note,',
         '    // gone from every later turn.',
         '    const start = owed && !noted ? reconstitutionNote(now.declaration.systemPrompt) : undefined;',
@@ -1754,25 +1661,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      ? undefined',
         '      : ["# Assignment forms", "", "Give a dispatch of these agents its assignment in its task text so:", "", ...forms].join("\\n");',
         '  }',
-        '',
-        "  // EVERY dispatch, in any session: each item's assignment checked against its agent's",
-        '  // contract, each misfit warned of; the dispatch goes ahead.',
-        '  pi.on("tool_call", async (event, ctx) => {',
-        '    const input = (event.input ?? {}) as Record<string, unknown>;',
-        '    if (!isDispatch(input)) return undefined;',
-        '    const session = ctx as unknown as Session;',
-        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
-        '    const problems: string[] = [];',
-        '    for (const h of itemsOf(input)) {',
-        '      const value = assignmentOf(h.item, input);',
-        '      const schema = schemaOf(frontmatterOf(agents.find((a) => a.name === h.agent)));',
-        '      if (schema === undefined) continue;',
-        '      const { problem } = checkAssignment(h.agent, schema, value);',
-        '      if (problem !== undefined) problems.push(`${problem}\\n${formOf(h.agent, schema)}`);',
-        '    }',
-        '    if (problems.length > 0) session.ui.notify(`dispatch warning, going ahead: ${problems.join("\\n")}`, "warning");',
-        '    return undefined;',
-        '  });',
         '',
         '  // Each capability as its installed command explains it, asked once, at load, and offered',
         '  // as one tool with every verb it explains, to every agent. One the command cannot explain',
