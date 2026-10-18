@@ -42,7 +42,9 @@ context's subject, relation and live concepts with the concepts each is built fr
 practice apart, and `state` is its short summary: the project's purpose, then each context's live
 concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
 from its latest closing of the books: every reading reads the openings as it reads any entries,
-so what stands reads the same after a close as before it, and the history readings carry
+so the design and each standing decision's meaning and status read the same after a close as
+before it; each decision's `entry` is renewed as its opening's id, and the cut or example files
+(`keeps`) a legacy decision's entry recorded stay in the closed period. The history readings carry
 `booksClosed`, naming the close and the commit holding the period before it, and mark each opening
 they list `broughtForward`. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
