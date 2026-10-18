@@ -1,0 +1,14 @@
+{
+  "id": "01M57PJJ7N93Y4EG00TKGRZ3P1",
+  "at": "2026-10-18T14:27:42.453Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "install",
+  "wording": "per agent harness at one installation scope: user, across every project, by default, or project, inside one project and shared through it; under that scope's owned root, recording the projecting version; idempotent; within a project its project installation takes precedence over the user's; offers the corpus's rulesets, each taken whole, rule by rule or not at all; asks only what it isn't told, never choosing a tier's model in the operator's place; each operator's own settings, a tier's model and how the session shows its agent included, are written only by a user installation, which names each tier left unbound as the operator's next step; a project installation writes none of them",
+  "builtFrom": [],
+  "reason": "A project installation is shared through the project; any operator's own setting written there is imposed on the team, the status-line choice as much as a tier's model.",
+  "supersedes": [
+    "01M57NRY7BAMSQ1CQX7JXD8P9A"
+  ]
+}

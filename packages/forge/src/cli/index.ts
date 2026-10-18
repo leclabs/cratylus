@@ -286,7 +286,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(
       new Option(
         '--agent-status <choice>',
-        "Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it)",
+        "Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no operator's own setting (default: at user scope, asked where the status line hides it)",
       ).choices(['show', 'hide']),
     )
     .addOption(

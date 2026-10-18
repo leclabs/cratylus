@@ -1,8 +1,9 @@
-// Installation scopes (decisions 0311, 0312): install and uninstall act for the user,
+// Installation scopes (decisions 0311, 0313): install and uninstall act for the user,
 // by default, or inside one project. A project installation lives wholly in the
 // project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
-// binds no models, and leaves the user's installation as it is, as the user's leaves it.
+// writes no operator's own setting (a tier's model, how the session shows its agent),
+// and leaves the user's installation as it is, as the user's leaves it.
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
@@ -23,6 +24,7 @@ import { runInstall } from '../../src/cli/commands/install.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { projectOf } from '../../src/deploy/install-scope.js';
+import { sessionAgentHiding } from '../../src/deploy/read-settings.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import {
@@ -340,6 +342,179 @@ describe('install at project scope', () => {
     expect(
       readFileSync(join(home, '.omp', 'agent', 'config.yml'), 'utf8'),
     ).toBe('modelRoles:\n  frontier: "prov/big"\n');
+    expect(existsSync(join(repo, '.omp'))).toBe(false);
+  });
+});
+
+describe('a project installation writes no status line choice', () => {
+  const HIDDEN = 'statusLine:\n  showHookStatus: false\n';
+  const homeConfig = () => join(home, '.omp', 'agent', 'config.yml');
+  const projectConfig = () => join(repo, '.omp', 'config.yml');
+  const settings = (user?: string, project?: string): void => {
+    if (user !== undefined) writeFileSync(homeConfig(), user);
+    if (project !== undefined) {
+      mkdirSync(join(repo, '.omp'), { recursive: true });
+      writeFileSync(projectConfig(), project);
+    }
+  };
+  const SHOW_NEXT = 'cratylus install --scope user --agent-status show';
+  const statusSegment = ompHarnessAdapter.statusSegment ?? {
+    segment: 'status',
+  };
+
+  it('asks no status line question on a terminal and writes nothing about it, in the project or the home, nor records an answer', async () => {
+    settings(HIDDEN, HIDDEN);
+    const homeBefore = snapshot(home);
+    const asked: string[] = [];
+    const prompts = answers({
+      agentStatus: async () => {
+        asked.push('agentStatus');
+        return true;
+      },
+    });
+    expect(
+      await install({ scope: 'project', interactive: true, prompts }),
+    ).toBe(0);
+    expect(asked).toEqual([]);
+    expect(readFileSync(projectConfig(), 'utf8')).toBe(HIDDEN);
+    expect(snapshot(home)).toEqual(homeBefore);
+    expect(
+      JSON.parse(
+        readFileSync(join(projectRoot(), 'installation.json'), 'utf8'),
+      ),
+    ).not.toHaveProperty('answered');
+  });
+
+  it('refuses --agent-status, naming the user scope, and writes nothing', async () => {
+    settings(HIDDEN);
+    for (const agentStatus of ['show', 'hide']) {
+      const homeBefore = snapshot(home);
+      const repoBefore = snapshot(repo);
+      out = '';
+      expect(await install({ scope: 'project', agentStatus })).toBe(1);
+      expect(out).toContain(
+        'cratylus install: --agent-status: a project installation writes no status line choice',
+      );
+      expect(out).toContain(
+        '`cratylus install --scope user --agent-status <show|hide>`',
+      );
+      expect(snapshot(home)).toEqual(homeBefore);
+      expect(snapshot(repo)).toEqual(repoBefore);
+    }
+  });
+
+  const USER_CUSTOM =
+    'statusLine:\n  preset: custom\n  leftSegments: [model, status]\n  showHookStatus: false\n';
+  it.each([
+    ['the user’s settings alone hide it', HIDDEN, undefined, 'user'],
+    [
+      'the project’s settings, in JSON, hide it',
+      undefined,
+      '{ "statusLine": { "showHookStatus": false } }\n',
+      ['statusLine.showHookStatus'],
+    ],
+    [
+      'the project’s settings, in flow YAML, show the row the user’s hide',
+      HIDDEN,
+      'statusLine: { showHookStatus: true }\n',
+      'none',
+    ],
+    [
+      'the project’s custom layout lists the segment the user’s hide the row of',
+      HIDDEN,
+      'statusLine:\n  preset: custom\n  leftSegments: [model, status]\n',
+      'none',
+    ],
+    [
+      'the project’s other preset leaves the user’s hidden row hidden',
+      HIDDEN,
+      'statusLine:\n  preset: minimal\n',
+      ['statusLine.preset'],
+    ],
+    [
+      'the project’s custom list lacks the segment',
+      HIDDEN,
+      'statusLine:\n  preset: custom\n  leftSegments: [model]\n',
+      ['statusLine.leftSegments'],
+    ],
+    [
+      'the project’s null showHookStatus leaves the user’s hidden row',
+      HIDDEN,
+      'statusLine:\n  showHookStatus: null\n',
+      'user',
+    ],
+    [
+      'the project’s null preset leaves the user’s custom layout, which lists it',
+      USER_CUSTOM,
+      'statusLine:\n  preset: null\n',
+      'none',
+    ],
+    [
+      'the project’s null segment list leaves the user’s, which lists it',
+      USER_CUSTOM,
+      'statusLine:\n  preset: custom\n  leftSegments: null\n',
+      'none',
+    ],
+    ['neither hides it', 'theme: dark\n', undefined, 'none'],
+  ] as const)(
+    'names showing the agent as a next step exactly where %s, and where it comes from',
+    async (_case, user, project, named) => {
+      settings(user, project);
+      expect(await install({ scope: 'project' })).toBe(0);
+      const next = out.split('next:')[1] ?? '';
+      if (named === 'none')
+        expect(next).not.toMatch(/agent-status|session's agent/);
+      else if (named === 'user') expect(next).toContain(SHOW_NEXT);
+      else {
+        expect(next).toContain(
+          `show the session's agent, which the project's settings hide by ${named.join(', ')} in ${projectConfig()}: that is the project's setting, to change there`,
+        );
+        expect(next).not.toContain('--agent-status');
+      }
+    },
+  );
+
+  it('names the user-scope remedy only where it shows the agent once run', async () => {
+    settings(HIDDEN, 'theme: light\n');
+    expect(await install({ scope: 'project' })).toBe(0);
+    expect(out.split('next:')[1]).toContain(SHOW_NEXT);
+    expect(
+      sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
+    ).toEqual({ projectKeys: [], userKeys: ['statusLine.showHookStatus'] });
+    expect(await install({ scope: 'user', agentStatus: 'show' })).toBe(0);
+    expect(
+      sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
+    ).toBeUndefined();
+  });
+
+  it('names the user’s own file and keys, and no command, where a user install recorded the answer', async () => {
+    settings(HIDDEN);
+    expect(await install({ scope: 'user', agentStatus: 'hide' })).toBe(0);
+    expect(readFileSync(homeConfig(), 'utf8')).toBe(HIDDEN);
+    out = '';
+    expect(await install({ scope: 'project' })).toBe(0);
+    const next = out.split('next:')[1] ?? '';
+    expect(next).toContain(
+      `show the session's agent, which your own settings hide by statusLine.showHookStatus in ${homeConfig()}: that is your own setting, answered at an earlier user install, to change there`,
+    );
+    expect(next).not.toContain('--agent-status');
+  });
+
+  it('leaves a user install asking where its settings hide the agent and writing the answer there', async () => {
+    settings(HIDDEN);
+    const asked: string[] = [];
+    const prompts = answers({
+      agentStatus: async () => {
+        asked.push('agentStatus');
+        return true;
+      },
+    });
+    expect(await install({ scope: 'user', interactive: true, prompts })).toBe(
+      0,
+    );
+    expect(asked).toEqual(['agentStatus']);
+    expect(readFileSync(homeConfig(), 'utf8')).not.toBe(HIDDEN);
+    expect(record(userRoot())).toHaveProperty('answered', ['agentStatus']);
     expect(existsSync(join(repo, '.omp'))).toBe(false);
   });
 });
