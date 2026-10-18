@@ -282,9 +282,9 @@ describe('the bin name has exactly one home', () => {
   it('EVERY hook artifact that names the DEPLOY TOOL agrees with forge’s `bin` key', async () => {
     // The forge CLI's one home is a MANIFEST KEY, read here rather than transcribed —
     // a transcription would be the second copy this whole file exists to forbid.
-    const committed = (await cellTargets())
-      .filter((t) => t.kind === 'hook')
-      .map((t) => [`target ${t.path}`, t.content] as const);
+    const committed = (await cellTargets()).map(
+      (t) => [`target ${t.path}`, t.content] as const,
+    );
     const population = [...projectedHooks, ...committed];
     const naming = population.filter(
       ([, text]) => deployTool(text) !== undefined,

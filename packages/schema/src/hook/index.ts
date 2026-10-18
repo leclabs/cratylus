@@ -1,11 +1,7 @@
 // `@cratylus/schema/hook` — the SHAPE of a lifecycle binding, and NOT its
 // vocabulary.
 //
-// `MODEL.md:22` rules this verbatim:
-//
-//   Event ≜ the harness-agnostic lifecycle vocabulary ⟨corpus-owned ⟨a name for a
-//   moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ schema · names @ corpus ;
-//   the PIVOT every adapter maps from⟩
+// The shape lives here; the names live in the corpus.
 //
 // This module held the NAMES until 2026-08-05 — 28 of them, emitted from a sibling
 // `hook.schema.json` by a sibling generator — while `runtime/src/events.ts` held the
@@ -49,8 +45,8 @@
  *
  * The vendor-neutral PIVOT every harness adapter maps from
  * (`adapters/<harness>/events.ts`), stated here as a shape and enumerated by the
- * corpus. Exactly the `CapabilityName` treatment, for exactly the reason
- * `MODEL.md:22` gives: what this package needs of an event is that it HAS a name;
+ * corpus. Exactly the `CapabilityName` treatment, for exactly its reason: what
+ * this package needs of an event is that it HAS a name;
  * WHICH names exist is a signification act, and signification is the corpus's.
  *
  * A corpus declares its own set `as const satisfies readonly EventName[]` and

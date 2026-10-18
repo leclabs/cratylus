@@ -4,7 +4,7 @@ The build core for [cratylus](../../README.md): it resolves the plugins a projec
 merged set of cells and renders that set into the files a harness reads.
 
 This README is for the author of a corpus, or of an adapter for a harness, who works against the
-library. What every package is for is [ARCHITECTURE.md](../../ARCHITECTURE.md)'s. What a consumer does
+library. What a consumer does
 with the `cratylus` command — install and its flags, the practices, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.

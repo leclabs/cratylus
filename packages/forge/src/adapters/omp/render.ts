@@ -371,9 +371,9 @@ interface OmpRegistration {
  * ONE MODULE, in the session root every `omp` session scans natively — the same
  * reach claude's user-level `settings.json` gives these cells.
  *
- * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
- * constraint filtering itself at runtime; these cells compose no agent — they bind
- * the session — and nothing emitted for them asks who is running.
+ * NOT the ambient form of an agent-composed constraint filtering itself at runtime;
+ * these cells compose no agent — they bind the session — and nothing emitted for
+ * them asks who is running.
  */
 export function ompScopeActivatedExtensions(
   hooks: readonly Hook[],

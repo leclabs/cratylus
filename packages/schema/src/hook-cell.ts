@@ -148,8 +148,7 @@ const PLACEHOLDER = /\{\{([^{}]*)\}\}/g;
  * IT THROWS ON AN UNKNOWN PLACEHOLDER, and that is the load-bearing half. A silent
  * pass-through would ship a literal `{{fact:runtime-bin}}` into a deployed `.sh`,
  * where it fails on a host at run time rather than here — the exact class of defect
- * (`ARCHITECTURE.md`: "the emitted-artifact sites are exactly where a missed rename
- * fails on a host rather than at build") this whole seam exists to close.
+ * this whole seam exists to close.
  */
 export function resolveWorker(
   worker: HookWorker,

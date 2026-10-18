@@ -161,12 +161,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/deploy-drift-notice.test.ts': 'BEHAVIORAL',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
-  // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
-  // LIVE `accept.ts`, asserting S ⊆ G (never =, so refinement stays legal). Neither
-  // side is transcribed — a copy of a ground enumeration is the same defect one
-  // level up. Its convicting fixtures drive the same pure property over S∪{widget}
-  // and over the exact fifth Kind (`hook`) the gate was built from.
-  'canon/ground-conformance.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   'canon/reader-density.test.ts': 'GATE',

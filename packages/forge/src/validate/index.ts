@@ -1,6 +1,6 @@
 // validate/ — the doctrine-agnostic acceptance ALGORITHM (forge ENGINE).
 //
-// The pure leg-witness gates behind the root model's `accept()` (MODEL.md): the static
+// The pure leg-witness gates behind the root model's `accept()`: the static
 // Universal floor (`accept.ts`), the σ*-residue predicate (`residue.ts`), and the live
 // blind cold-oracle driver (`oracle.ts`). Every corpus-specific datum the algorithm
 // reads — the palimpsest token table, the operator lexicon, the isolation script's repo

@@ -298,9 +298,9 @@ export type Evaluation = Value<'evaluation'>;
 //
 // This retires the `schema → runtime` edge. `CapabilityName` used to read
 // `keyof Omit<RuntimePlugin, 'name'>` — schema reaching into the runtime's
-// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`
-// (`MODEL.md:22`): the ports stay in the runtime where ARCHITECTURE puts them,
-// and the names come from the corpus. Nothing moved except where the members
+// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`: the
+// ports stay in the runtime, and the names come from the corpus. Nothing moved
+// except where the members
 // are declared.
 //
 // THE SIGN IS `RuntimeCapability`, WHICH IS WHAT SCHEMA ALREADY CALLED IT — and
@@ -322,14 +322,8 @@ export type { SkillExpression };
 
 // ── The lifecycle-event vocabulary ──────────────────────────────────────────
 //
-// `MODEL.md:22`, verbatim:
-//
-//   Event ≜ the harness-agnostic lifecycle vocabulary ⟨corpus-owned ⟨a name for a
-//   moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ schema · names @ corpus ;
-//   the PIVOT every adapter maps from⟩
-//
 // A NAME FOR A MOMENT IS A SIGNIFICATION, and signification is what this corpus is.
-// That single clause decides the home: not schema (which held 28 of these, emitted
+// That decides the home: not schema (which held 28 of these, emitted
 // from a JSON file by a generator), not runtime (which held the same 28,
 // hand-authored, identical as sets AND in order), but here — beside
 // `RUNTIME_CAPABILITIES`, which is the same ruling one axis over, already landed.

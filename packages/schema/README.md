@@ -4,8 +4,8 @@ The shapes a corpus authors against, for [cratylus](../../README.md) — the dim
 meta-model as a TypeScript type system.
 
 It sits at the **bottom of the dependency graph**. `canon` authors against it, `forge` validates and
-projects against it, and it holds no opinion about either. What every package is for is
-[ARCHITECTURE.md](../../ARCHITECTURE.md)'s; this README is for the author of a corpus.
+projects against it, and it holds no opinion about either. This README is for the author of a
+corpus.
 
 This module is the contract and **only** the contract. It states that a dimension _has_ a group, a
 repertoire, an arity, a default enforcement level and a projection, and derives an entire dimension

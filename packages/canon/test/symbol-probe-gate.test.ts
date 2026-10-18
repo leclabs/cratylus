@@ -3,8 +3,7 @@
 // declared register member); this one binds SIGNIFICATION (every DECLARED symbol
 // round-trips — `concept_R(symbol, κ)` at reader=LLM, read in its bounded context κ,
 // circumscribes the concept its block ASSIGNS it, its σ* target). A mis-signified symbol
-// FAILS; the formal blocks are thereby the symbolic-σ* regression suite. Wired into the
-// lifecycle: ENGINE.md `verify` / `stage-invariant`, CANON.md §Signification-gate.
+// FAILS; the formal blocks are thereby the symbolic-σ* regression suite.
 //
 // INDEPENDENT-LEG HONESTY. The round-trip's semantic leg (`concept_R(w, κ) = intended C`) is
 // an LLM judgment; this suite does NOT fake a deterministic oracle over it. It tests the

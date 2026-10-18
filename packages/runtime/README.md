@@ -10,7 +10,7 @@ It **depends on nothing** in this system — zero `@cratylus/*` dependencies —
 no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
 configuration the projection emitted.
 
-What every package is for is [ARCHITECTURE.md](../../ARCHITECTURE.md)'s. The commands a consumer
+The commands a consumer
 types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for the
 author of a corpus whose skills route here, and for a library user of the package.
 

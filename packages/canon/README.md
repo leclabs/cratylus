@@ -3,14 +3,13 @@
 The **meaning** concern of [cratylus](../../README.md) — the canonical corpus of discovered
 optimal-signifiers, each read in its concept's bounded context, authored as typed TypeScript.
 
-The discipline is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
+The discipline is latent lexicography: describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
 therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
 markdown an agent harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
-_means_, never how either is carried. What every package is for is
-[ARCHITECTURE.md](../../ARCHITECTURE.md)'s; installing the corpus on a machine, and choosing among
+_means_, never how either is carried. Installing the corpus on a machine, and choosing among
 its practices, is [the `cratylus` README](../cli/README.md)'s. This README is for the author of a
 corpus, or of a plugin that extends this one.
 
@@ -173,5 +172,4 @@ No cell imports the runtime either. A skill names the capability it routes to �
 `versionSkew`, the two built into the runtime — as `runtime: { capability: … }`,
 never its implementation, and a cell that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
-and mechanism never referencing each other — and [ARCHITECTURE.md](../../ARCHITECTURE.md) records
-how it came to hold.
+and mechanism never referencing each other.
