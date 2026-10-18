@@ -1,6 +1,6 @@
-// residue.ts — the machine-check behind AC-RESIDUE (MODEL PARSIMONIOUS
-// `body(c)=⟨α, residue⟩`, residue the workflow's residue of c with α read in its bounded
-// context, specialized to the DEPLOYED corpus). It checks register only, never the
+// residue.ts — the machine-check behind AC-RESIDUE (`body(c)=⟨α, residue⟩`,
+// residue the workflow's residue of c with α read in its bounded context,
+// specialized to the DEPLOYED corpus). It checks register only, never the
 // residue's content.
 //
 // GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
@@ -35,7 +35,7 @@
 //     comment continuation. INADMISSIBLE = an explanatory free-NL line (no symbol-binder,
 //     no formal operator) or a `#`-preamble gloss — named by line number on reject.
 //
-// This is the doctrine-agnostic ALGORITHM (forge ENGINE): witnesses over supplied
+// This is the doctrine-agnostic ALGORITHM: witnesses over supplied
 // strings, zero IO. The operator lexicon it reads is CORPUS DATA, injected as a `Policy`
 // (`./policy.ts`) — the DATA lives in the corpus (canon), never here. Corpus
 // loading lives in the caller.

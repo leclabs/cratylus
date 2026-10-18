@@ -129,9 +129,8 @@ export interface NativeBinding {
  * The realization payload for ONE enforcing constraint on ONE harness — what
  * `realize(c, adapter)` yields and `inject` writes.
  *
- * Lives HERE, in the project register, and NEVER on the source cell. MODEL:
- * `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what deploy EMITS⟩`
- * — a function OF the adapter. A cell carrying a command is a BEING holding one
+ * Lives HERE, in the project register, and NEVER on the source cell: it is a
+ * function OF the adapter. A cell carrying a command is a BEING holding one
  * FACE's bytes, which is why it could no longer have many faces.
  */
 export interface HarnessMechanism {

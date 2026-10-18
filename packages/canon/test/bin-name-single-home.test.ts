@@ -23,8 +23,8 @@
 //       host.
 //
 // LEG (4) WAS SITE-SPECIFIC AND BECAME A SCAN, because the cell it named
-// (`memory-consolidation-nudge`) stopped importing `CLI_BIN` — that import was
-// ARCHITECTURE's last property-1 breach, and THIS FILE REQUIRED IT: `CONSUMERS`
+// (`memory-consolidation-nudge`) stopped importing `CLI_BIN` — that import was a
+// canon cell's last import of the runtime, and THIS FILE REQUIRED IT: `CONSUMERS`
 // held the cell and asserted its source contained the symbol, so the only
 // mechanism admitted was the import. The scan outlived the cell: that cell (and
 // the memory skill triad it served) is since deleted, but the DEPLOY_TOOL half
@@ -346,8 +346,8 @@ const manifestBins = (json: string): string[] =>
 //
 // Every leg above reads TypeScript or an artifact reached by a name the corpus hands
 // it. But the bin's operative sites are shell and `.mjs`: text no compiler reads, and
-// exactly where a missed rename fails ON A HOST rather than at build. ARCHITECTURE
-// says so in as many words. On 2026-08-05 that is precisely what happened — a stale
+// exactly where a missed rename fails ON A HOST rather than at build. On 2026-08-05
+// that is precisely what happened — a stale
 // bin stranded every deployed shim — `/wake`'s (since retired) among them — and
 // the repository was green throughout.
 //

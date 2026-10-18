@@ -33,7 +33,7 @@
 // literal here).
 //
 // NON-VACUOUS: a seeded human-register definiens is convicted with named
-// signals; the same text under a ρ=human class is exempt BY THE MODEL; the
+// signals; the same text under a ρ=human class is exempt by its class; the
 // calibration exemplars pass. All asserted below.
 
 import { readFileSync } from 'node:fs';
@@ -264,7 +264,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     ).toEqual([]);
     // …and nothing is scanned under a class this gate does not claim, which would
     // put a surface outside both gates' stated responsibility. A ρ=human class is
-    // not unclaimed, it is out of scope BY THE MODEL: the detector "can witness
+    // not unclaimed, it is out of scope by its class: the detector "can witness
     // register=human, never certify it" (`reader-register.ts`), so ρ=human is
     // exempt by ρ rather than by path — the same exemption the header already
     // grants `readme` and `human-doc`.
@@ -515,8 +515,7 @@ function allSeven(
 
 /**
  * The ENFORCED seed — a bound DECLARED in the source register that the projection
- * never emitted. MODEL: "a declared bound that projects to nothing is
- * INDISTINGUISHABLE from an undeclared one." Global like REGENERABLE, so it is
+ * never emitted. Global like REGENERABLE, so it is
  * seeded with a clean cell and a dirty obligation set rather than a dirty cell.
  */
 const ENFORCED_SEED: readonly EnforcedObligation[] = [
@@ -633,7 +632,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 
 // ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
 //
-// The machine-check behind AC-RESIDUE: MODEL PARSIMONIOUS
+// The machine-check behind AC-RESIDUE: PARSIMONIOUS
 // `body(c)=⟨α,residue⟩` (residue @ workflow) specialized to the DEPLOYED σ* payload —
 // every skill `formalBlock` (whole) MUST be a `formalize` artifact, never human prose.
 // Catalog values are NOT σ* payloads: each is an anchor and a plain gloss, gated by

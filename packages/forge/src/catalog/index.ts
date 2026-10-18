@@ -387,7 +387,7 @@ export async function enumeratePluginFragmentCatalogs(
       //
       // Deriving `Arity` FROM `ValueShape` would be structurally stronger and is refused:
       // `Arity` lives in the schema and `ValueShape` in the projector, so the derivation
-      // would make the shapes depend on projection — ARCHITECTURE property 2.
+      // would make the shapes depend on projection.
       const valueShape: ValueShape = meta.arity === 'set' ? 'set' : 'scalar';
       const dir = join(src.fragmentsDir, dimension);
       for (const { exportName, value } of await scanDimensionModules(dir)) {

@@ -109,8 +109,8 @@ export interface AgentDefContext {
   readonly manifest: DimensionManifest;
   /**
    * The resolved `anchor → HarnessMechanism` map for this agent's enforcing
-   * values — INJECTED, because MODEL makes `mechanism` a function of (fragment,
-   * adapter) that deploy emits, not a field the source cell carries. A harness
+   * values — INJECTED, because deploy emits `mechanism` per (fragment, adapter);
+   * it is not a field the source cell carries. A harness
    * that attaches per-agent (claude: front-matter hooks) renders them; one that
    * declares globally ignores it and uses `enforcingSurface` instead.
    */
@@ -319,8 +319,7 @@ export interface HarnessAdapter {
    * Only asked of a constraint some agent's `ir(a)` composes. A session-wide hook
    * that no agent composes has nothing to narrow to, so the question does not arise.
    *
-   * MODEL: `scopable(e,h) ⇒ realizable(e,h)`. An adapter must never return true here
-   * for an event it cannot realize.
+   * An adapter must never return true here for an event it cannot realize.
    */
   scopes(event: EventName): boolean;
   /**
@@ -335,9 +334,7 @@ export interface HarnessAdapter {
    * governance at all: every cell's command named a claude path, so that harness's whole
    * hooks dir was dropped rather than translated.
    *
-   * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
-   * deploy EMITS⟩`. A function OF the adapter — so it is asked here, never read
-   * off the cell.
+   * A function OF the adapter — so it is asked here, never read off the cell.
    */
   hookCommand(anchor: string, workerFilename: string): string;
   /** Project an agent vector → its subagent def file, under the set's context. */
@@ -364,8 +361,8 @@ export interface HarnessAdapter {
    *
    * `mechanisms` is the same injected `anchor → HarnessMechanism` map `agentDef`
    * takes, and it is what an implementation needs to know WHAT COMMAND to wire —
-   * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
-   * never a field the source cell carries.
+   * deploy emits `mechanism` per (fragment, adapter); it is never a field the
+   * source cell carries.
    *
    * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** An implementation took a
    * `mechanisms` parameter and defaulted it to an empty map, and the adapter never
@@ -408,7 +405,7 @@ export interface HarnessAdapter {
    * `agentNames` is the projected agent set, for a harness that scopes by
    * directory and must place a copy per agent scope beside the session's ({@link
    * SESSION_SCOPE}). omp does not: its one module sits at the session scope. That is
-   * not the ambient form MODEL forbids — nothing here filters itself at runtime, and
+   * not an ambient form — nothing here filters itself at runtime, and
    * no artifact governs an agent that did not compose it; these cells compose no
    * agent by construction.
    *

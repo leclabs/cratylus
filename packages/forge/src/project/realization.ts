@@ -37,8 +37,8 @@
 //
 // FIRE-ABILITY IS NOT SCOPABILITY. `realizable` answers "can the adapter fire `e`
 // at all"; a constraint composed into an agent needs the strictly stronger "can it
-// fire `e` FOR THAT AGENT". A global `Stop` fires and names nobody. Because MODEL
-// once had no word for the second question, an adapter grew a private
+// fire `e` FOR THAT AGENT". A global `Stop` fires and names nobody. Because there
+// was once no word for the second question, an adapter grew a private
 // `throw` to ask it — a second decision site, invisible because it was never a
 // missing string, only a missing distinction. Adapters DECLARE capability
 // (`realizes`, `scopes`); this module alone decides what a "cannot" means.
@@ -53,7 +53,7 @@ export interface Realizable {
   readonly substrate: string;
   readonly events: readonly EventName[];
   /**
-   * Agents whose `ir(a)` composes it — MODEL's `f ∈ ir(a)`.
+   * Agents whose `ir(a)` composes it.
    *
    * Empty ⇒ nothing to narrow to, so scopability is not asked. NOT optional: a
    * scoping demand reachable by omitting a field is a silent pass, the same
@@ -65,10 +65,9 @@ export interface Realizable {
 /**
  * How strongly a harness can carry a constraint.
  *
- * `bound` and `steer` are MODEL's own two modes — `enforcing(f) ⇔ events(f) ≠ ∅
- * ⟨f binds REGARDLESS of the agent's reasoning ∴ bounds, ¬ steers⟩`. A degraded
- * constraint is not a broken one; it is the same constraint realized at the
- * weaker of the two modes the model already names.
+ * `bound` is a constraint that binds regardless of the agent's reasoning; `steer`
+ * only steers it. A degraded constraint is not a broken one; it is the same
+ * constraint realized at the weaker of the two modes.
  */
 export type EnforcementMode = 'bound' | 'steer' | 'routed';
 

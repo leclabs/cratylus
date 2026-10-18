@@ -6,10 +6,8 @@ import {
   enforced,
 } from '../../src/validate/accept.js';
 
-// ENFORCED — the seventh Universal leg. MODEL declares it; accept() did not
-// implement it, so until now a cell could pass the gate while declaring a bound
-// that projects to nothing. MODEL states the consequence itself: "a declared
-// bound that projects to nothing is INDISTINGUISHABLE from an undeclared one."
+// ENFORCED — the seventh Universal leg. accept() did not implement it, so until
+// now a cell could pass the gate while declaring a bound that projects to nothing.
 
 const declared = (
   ...pairs: [string, string][]
@@ -27,7 +25,7 @@ describe('ENFORCED is a registered Universal leg', () => {
     expect(UNIVERSAL_LEGS).toHaveLength(7);
   });
 
-  it('sits between PARSIMONIOUS and REGENERABLE, as MODEL writes it', () => {
+  it('sits between PARSIMONIOUS and REGENERABLE', () => {
     expect([...UNIVERSAL_LEGS]).toEqual([
       'CANONICAL',
       'SIGNIFIED',
@@ -63,7 +61,7 @@ describe('ENFORCED convicts an UNPROJECTED bound', () => {
 
 describe('ENFORCED convicts an AMBIENT mechanism', () => {
   it('fails when the mechanism was emitted but is not scoped to the agent', () => {
-    // MODEL writes `¬ ambient` into the clause precisely for this: a mechanism
+    // A mechanism
     // that governs everyone, or narrows itself at runtime, has put the scope in
     // the enforcement code where the governed agent cannot see it.
     const v = enforced(

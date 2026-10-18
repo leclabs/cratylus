@@ -12,10 +12,10 @@
 // projecting one, and a corpus could not then discover a dimension without
 // editing the projector.
 //
-// A dimension value is a per-dimension **nominal-branded string** — the MODEL
-// address shape: `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the workflow's
+// A dimension value is a per-dimension **nominal-branded string** of the shape
+// `body(c) = ⟨α(c), residue(c)⟩`, the anchor plus the workflow's
 // residue of c, the anchor read in its bounded context (σ* is the anchor with the
-// smallest). VISION: _address, don't describe._ There is NO
+// smallest). There is NO
 // `{dimension,slug,definiens}` value object, NO per-value
 // phantom metadata — the string carries the body; the module's directory
 // (`dimensions/<dimension>/`) is its dimension home (PARTITIONED) and its export
@@ -122,19 +122,12 @@ export type CapabilityName = string;
  * from strained to clean at once. Nine failing on one element is evidence, not
  * coincidence — so the member, not the field, was the defect.
  *
- * WHY `latent`, AND WHY IT IS DISCOVERED RATHER THAN COINED. It is already this
- * corpus's sign for exactly this concept: `cratylism` itself carries
- * `model-latent-space = real stable concepts`. So the member that means "the
- * model's own set, discovered not authored" wears the sign the axiom already gave
- * it, and the type now QUOTES its axiom where it used to contradict it.
+ * WHY `latent`. `cratylism` itself carries `model-latent-space = real stable
+ * concepts`, so the member that means "the model's own set, discovered not
+ * authored" wears the sign the axiom already gave it, and the type now QUOTES its
+ * axiom where it used to contradict it.
  * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
- * `model-native`/`model`, on the ground that nothing in the declaration points at a
- * language model unless the reader already knows the codebase. That objection is
- * answered by COLD-BLIND: `decode_cold(f) ≜ decode(⟨f, name(κ(f)),
- * subject(κ(f))⟩, LLM-priors ∪ Corpus, ∅)` — the CORPUS is admitted to a cold decode,
- * and the sign is read with its bounded context's name and subject; only session-K
- * and the intended concept are excluded. Grounding in the corpus is cold grounding.
- * Both of its winners are occupancy-blocked anyway:
+ * `model-native`/`model`. Both of its winners are occupancy-blocked:
  * `model` is a live dimension name (`export type Model`), and `model-native` is a
  * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:
  * `native` (occupied — `llm-native`, and harness-native event vocabulary) ·
@@ -227,9 +220,8 @@ export interface Binding {
 }
 
 /**
- * A fragment that carries its OWN enforcement — MODEL's `events : fragment ⇀
- * ℘(Event) ⟨PARTIAL⟩`, realized as the shape a value takes when it is in the
- * function's domain.
+ * A fragment that carries its OWN enforcement: the shape a value takes when it
+ * binds to events.
  *
  * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
  * reasoning it governs, and the `accept()` target. `substrate` + `events` are
@@ -262,10 +254,9 @@ export interface Enforcing<O extends string> {
   /**
    * The mechanism this value is realized BY — an ANCHOR, never the mechanism.
    *
-   * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
-   * deploy EMITS⟩`. A command, a timeout, a matcher or worker bytes are all
-   * PROJECT-register content; MODEL puts exactly two things on a fragment,
-   * `events` and `substrate`. They were briefly carried here and that broke
+   * A command, a timeout, a matcher or worker bytes are all PROJECT-register
+   * content, emitted per harness by deploy; a fragment carries only `events` and
+   * `substrate`. They were briefly carried here and that broke
    * BEING/FACE — a being holding one face's shell script cannot have many faces.
    *
    * Absent ⇒ the anchor α of this value is its own mechanism key.
@@ -359,7 +350,7 @@ export interface DimensionMeta {
    *
    * This field read `kind` until 2026-08-05, which put a THIRD concept on a sign
    * two others already carried, two of them in
-   * this package: `RuleCell.kind` (MODEL's `Kind ≜ {fragment, agent, rule, skill}`,
+   * this package: `RuleCell.kind` (`Kind ≜ {fragment, agent, rule, skill}`,
    * one file over) and forge's `FragmentKind` (a value's structural shape). A blind
    * reverse decode of all three read `kind` here as "the closure policy of the
    * dimension's value space" and ranked this site's claim on the sign WEAKEST of
@@ -413,7 +404,7 @@ export interface Entry<D extends string = string> {
  * A dimension MANIFEST: name → metadata. Membership is the definiendum — adding
  * an entry is what makes that dimension exist for the corpus that declares it.
  *
- * Distinct from MODEL's `catalog : DimensionName → ℘(fragment)`, which is the
+ * Distinct from a catalog (`DimensionName → ℘(fragment)`), which is the
  * same index set with a different codomain: a catalog maps a dimension to its
  * VALUES, a manifest maps it to its METADATA (group/repertoire/arity/level/…). That
  * disambiguation used to live only in the prose.

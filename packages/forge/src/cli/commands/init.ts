@@ -20,8 +20,7 @@
 // `--plugin` (added 2026-08-05) is NOT that flag returning.
 // `--scope` named an IR root that no longer exists; this names the PLUGIN PACKAGE
 // the scaffold extends, which is read and load-bearing. The projector must not
-// decide which corpus a project extends — that is projection fusing with meaning
-// (ARCHITECTURE, property 3: the corpus reaches forge as DATA).
+// decide which corpus a project extends; the corpus reaches forge as DATA.
 
 import { CLI_BIN } from '../../bin-name.js';
 import { CONFIG_PACKAGE, scaffoldConfig } from '../../config/index.js';

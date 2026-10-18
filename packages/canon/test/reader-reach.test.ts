@@ -17,7 +17,7 @@
 // Shares ONE model with reader-density.test.ts: `reader-register.ts` (ρ · the
 // deterministic register witness · conform). FALSIFIERS: a seeded long-form-
 // English delegation prompt FAILS conform with named signals; the same text as
-// a generated-human-output is exempt BY THE MODEL; every pinned generated
+// a generated-human-output is exempt by its class; every pinned generated
 // fixture PASSES.
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -88,7 +88,7 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
     expect(conform('subagent-return', humanDelegationSeed)).toBe(false);
   });
 
-  it('EXEMPTS the same text as a generated-human-output — by the model, not a path', () => {
+  it('EXEMPTS the same text as a generated-human-output — by its class, not a path', () => {
     expect(registerOf(humanDelegationSeed)).toBe('human'); // still witnessed…
     expect(conform('generated-human-output', humanDelegationSeed)).toBe(true); // …ρ exempts
   });
