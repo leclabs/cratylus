@@ -1,0 +1,16 @@
+{
+  "id": "01M57YV402EZ9N6KJ7ZXYPZM1X",
+  "at": "2026-10-18T16:52:11.394Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0315",
+  "context": "workflow",
+  "title": "The journal's verbs append, and one closes its books: what stands carried forward, what the period ended named, the closed period's files removed, version control their archive",
+  "situation": "Decision 0314 realized closing the books. Its review found that a close carrying only what stands loses, across joined lines of work, the effect of what it ended (a retirement, a deprecation), changes how an early decision's reference by name binds, forgets context entries that own a delivered context, and can be left half done.",
+  "decision": "As 0314, with (2) to (4) restated. (1) The concepts capability gains the verb close, of effect closes (beside reads and appends), taking nothing; the command and the tool built from its explanation offer it to everyone. (2) A close appends one entry of kind close holding: commit, the commit at HEAD that holds the closed period; broughtForward, verbatim and in id order: the current purpose statements, each context's current descriptions, every concept's current versions, a retirement included, and each standing decision with the acceptances recorded for it and the classification governing its kind; closed, the id of every entry the period held that it does not bring forward; identities, each context's every context entry id the journal has held, earlier closes' included, its identity first; concepts, each carried concept's first version id; and resolved, for each carried entry that names a decision by its name alone, the entry that name bound to, or none. It then removes every other entry file, an earlier close included. (3) Every reading folds the brought-forward entries with the period's own, in id order, one per id, and never an entry any close names closed, so what stands reads the same after a close and after joining lines that closed or appended separately; a context's identity and order and a concept's order are the ones the latest close records, else its first entry's; a reference by name alone binds as the close resolved it; the history readings name the latest close and the commit holding the period before it. (4) A close refuses, changing nothing, where the journal's directory differs from HEAD in anything, an ignored file included; where there is no commit; where it read past entries of a newer runtime; where the journal holds no entry; and where nothing was recorded since the latest close; where removing the period's files fails, it restores them from HEAD and removes the close, leaving the journal as it was. (5) Every other verb only appends, and no verb edits an entry. (6) The leakage reading compares a version with the versions it replaces that the journal holds; a close ends that comparison for the versions it carries.",
+  "consequences": "Supersedes 0314. Closed periods are retrieved from version control at the commit each close names. One builder; review Ask.",
+  "status": "accepted",
+  "supersedes": "0314",
+  "supersedesEntry": "01M57XCJN1BVCN9BR984JSJFBY",
+  "decisionKind": "realization"
+}
