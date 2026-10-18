@@ -1,5 +1,39 @@
 # @cratylus/schema
 
+## 0.12.0
+
+### Minor Changes
+
+- 4c85b6e: Agents are judged in real use, so the mechanisms that policed an agent's act or text are removed, with nothing in their place.
+
+  - The omp extension no longer strips omp's own system prompt for a session launched with `omp --agent <name>`: the declaration follows omp's prompt whole, and no notice of removed sections is shown. A dispatch from `eval` code is no longer warned of, and neither is a dispatch or launch whose assignment misfits its agent's form. Every turn still shows the assignment form of each agent that takes one, and every session start still reports version skew.
+  - The omp extension no longer says, at session start, that its process runs a module an install has since replaced.
+  - `@cratylus/schema` no longer exports `checkAssignment`, `assignmentIn` or `ContractCheck`; `JsonSchema` and `AgentContract` stay.
+  - Canon no longer ships the `deploy-drift-notice` hook, its committed target or the `project:targets` script that regenerated it, and declares no plumbing. `cratylus deploy --check` is unchanged.
+  - Canon no longer ships the `introspect` skill; the `corpus-authoring` practice carries the rest.
+  - `cratylus optimize`, which checked the accept laws on a plan an agent wrote, is removed, with the exemplify pipeline behind it (`exemplify`, `optimize`, `elevateAgent`, `renderAgentVector`, `renderSkillCell`, the register classifier and their types).
+  - `@cratylus/forge/validate` keeps only the cold-decode oracle's driver (`decodeCold`, `nonceControl`): the static accept legs, the residue grammar, the formal-block lint and the `Policy` shape are removed.
+  - Canon's corpus-text gates are removed: reader density and reach, symbols, the symbol probe gate and symbol altitude with their tooling, formal-block self-sufficiency, skill shape, cratylism file naming, boundary binding, the cell gloss census, the hook boundary gate with its byte-lock, structural parsimony, the meta-gate that classified every test, and the source lints `authored-source-is-text` and `positional-path`. Forge's signification-marker scan and its story coverage suites go too, as do the simplification checks, the catalog re-cut's sign-off-gates and example checks, and the reply-discipline examples.
+
+- cf853ad: Each agent's text states what it is and does, once and positively; no instruction carries a countermeasure against a failure never seen in use.
+
+  - Canon rewords the architect's role and the `reconstitution` procedure and memory, `source-of-truth`, `honesty`, `decisive`, `conceptual-elevation`, `layman`, `bottom-line-up-front` and `read-back` values. The architect drops its role and reconstitution notes, takes a new `rectify` note, and holds `decisive`, `conceptual-elevation` and `bottom-line-up-front` at their factors' default level rather than fixed.
+  - Canon rewords the lead, reviewer, builder and check-writer roles, the `no-implementation`, `append-only`, `never-repairs`, `fixed-acceptance-criteria`, `input-untrusted` and `privacy` guardrails, the `orchestrator-workers` procedure and `management-by-exception` autonomy, each as what it does and who does what it leaves; the reviewer's description and held-out-examples notes, the lead's `ship-show-ask` note and the architect's `read-back` note say the same positively, and the lead drops its `decisive` note. No factor's default level is `fixed` any more, so no agent's text carries "(fixed)".
+  - The concept journal presents `design` as the read that recovers the design at a session's start, with `state` as its short summary, and its record as beginning at the journal's start.
+  - The persona Protocol is removed: canon no longer exports `personaProtocol`, `Agent` loses `persistence`, and an agent declaration no longer ends with a `## Protocol` section. Persona drift is judged by the operator in real use.
+  - The omp extension no longer adds the session-start reconstitution note, the "Meaning: yours" note or "The records" note to a launched session's prompt; every turn still carries the assignment forms.
+
+- a19139a: cratylus ships rulesets: standard working conventions, each rule stating its convention and why it holds, placed where omp applies them in every session of every project.
+
+  - Schema replaces the `RuleCell` source-cell shape with `Rule` (name, description, convention, why) and `Ruleset` (one convention's rules under its own name); an `AgentPlugin` offers `rulesets`.
+  - Canon offers five rulesets: `gitflow`, `conventional-commits`, `commit-discipline`, `established-libraries` and `green-field`, exported as `RULESETS`.
+  - Forge projection takes `rules` (rule names, default none) and renders each chosen rule to `rules/<name>.md` with `alwaysApply: true` front-matter; the owned root places them there, where omp loads a plugin's rules. The projected tree reports the declared `rulesets` for an install to offer. A name that is no declared rule, or a rule name two rulesets share, is refused.
+
+### Patch Changes
+
+- a33be54: The concept journal is the only home of cratylus's conceptual model, and INTRODUCTION.md is its entry point. The five static root documents (canon, vision, model, engine and architecture) are deleted, and no README or source comment points at them any longer. The repository's `AGENTS.md` is now a plain hand-authored file that sends a session to INTRODUCTION.md and the concept journal; canon's `repo-preamble` rule cell, its projection to `AGENTS.md` and the byte-lock that held them equal are removed, so `project:targets` regenerates hook targets only. The ground-conformance gate, which read the model document, is removed, and the cratylism gate no longer looks for those document names.
+- 98c6546: Source comments, doc comments and test titles no longer cite the deleted root documents by bare name (vision, model, engine, architecture) or quote them as authorities, and no longer carry prescriptions taken from them; they explain what the code does.
+
 ## 0.11.0
 
 ### Minor Changes
