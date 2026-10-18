@@ -16,7 +16,7 @@
 // surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
 // exactly that sense: the global config extent a harness offers, not a file.
 
-import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
+import type { Agent, Binding, DimensionManifest, Rule } from '@cratylus/schema';
 import type {
   EventName,
   HarnessMechanism,
@@ -341,6 +341,12 @@ export interface HarnessAdapter {
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
+  /**
+   * Project a rule → the file this harness loads in every session of every
+   * project, under the `rules/` directory of the owned root: the convention and why
+   * it holds, with whatever front-matter makes the harness always apply it.
+   */
+  ruleDef(rule: Rule): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports
    *  hooks (claude → `settings.json` `hooks` block). */
   hooks?(hooks: readonly Hook[]): HarnessHooksProjection;

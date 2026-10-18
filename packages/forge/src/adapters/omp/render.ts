@@ -26,6 +26,8 @@
 //     `.omp/agents` and the user's own `~/.omp/agent/agents`.
 //   - a SKILL is `skills/<name>/SKILL.md`, the AgentSkills shape, discovered from
 //     the package's `skills/`.
+//   - a RULE is `rules/<name>.md`, discovered from the package's `rules/`; its
+//     front-matter `alwaysApply: true` has omp inject it into every session.
 //   - ENFORCEMENT and the capability tools are TypeScript modules under
 //     `extensions/`, which the package's `package.json` names (`omp.extensions`).
 //     No hook CONFIG exists at all: the package names its modules.
@@ -57,7 +59,7 @@ import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
-import type { Agent } from '@cratylus/schema';
+import type { Agent, Rule } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 import {
@@ -331,6 +333,18 @@ function yamlString(s: string): string {
 export function skillToOmpMd(s: ResolvedSkill): string {
   const fm = [`name: ${s.name}`, `description: ${s.description}`];
   return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
+}
+
+// ── Rule projection → rules/<name>.md ────────────────────────────────────────
+
+/**
+ * The omp rule file for a rule: front-matter that has omp apply it in every session
+ * (`alwaysApply`) and lists it by its description, then the convention and why it
+ * holds, which omp injects whole.
+ */
+export function ruleToOmpMd(r: Rule): string {
+  const fm = [`description: ${yamlString(r.description)}`, 'alwaysApply: true'];
+  return `---\n${fm.join('\n')}\n---\n\n${r.convention.trim()}\n\nWhy: ${r.why.trim()}\n`;
 }
 
 // ── Session hooks → extensions/<bin>-session.ts ──────────────────────────────
@@ -1641,6 +1655,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
     content: agentToOmpMd(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
+  ruleDef: (r) => ({ filename: `${r.name}.md`, content: ruleToOmpMd(r) }),
   skillRel: ompSkillRel,
   // The session module: the cells no agent composes.
   scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),

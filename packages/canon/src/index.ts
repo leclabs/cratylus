@@ -24,6 +24,7 @@ import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
 import { PRACTICES } from './practices.js';
+import { RULESETS } from './rulesets.js';
 
 export {
   CompositionRefusal,
@@ -34,7 +35,7 @@ export {
   type Stated,
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-export { MANIFEST };
+export { MANIFEST, RULESETS };
 export { architectRole } from './roles/architect.js';
 export { builderRole } from './roles/builder.js';
 export { checkWriterRole } from './roles/check-writer.js';
@@ -59,6 +60,9 @@ export default defineAgentPlugin({
   // WHICH practices exist — carried the same way, so an install offers what the
   // corpus declares and no more (`practices.ts`).
   practices: PRACTICES,
+  // WHICH rulesets exist — carried the same way, so an install offers the standard
+  // conventions the corpus declares (`rulesets.ts`).
+  rulesets: RULESETS,
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),

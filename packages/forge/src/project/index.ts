@@ -41,6 +41,8 @@ import {
   type Plumbing,
   type Practice,
   type ProjectionFacts,
+  type Rule,
+  type Ruleset,
   type Skill,
   anchorOf,
   bodyOf,
@@ -137,6 +139,8 @@ export interface ProjectablePlugin {
   readonly practices?: readonly Practice[];
   /** What every practice is installed with and none is offered as (`AgentPlugin.plumbing`). */
   readonly plumbing?: Plumbing;
+  /** WHICH rulesets this plugin offers (`AgentPlugin.rulesets`). */
+  readonly rulesets?: readonly Ruleset[];
 }
 
 export interface ProjectOpts {
@@ -195,6 +199,13 @@ export interface ProjectOpts {
    * a name that is no declared practice.
    */
   readonly practices?: readonly string[];
+  /**
+   * The rules to render, by name, each to `rules/<file>` as the adapter writes it
+   * (`HarnessAdapter.ruleDef`). ABSENT or EMPTY ⇒ none: a rule is placed only where
+   * it is chosen. A name that is no rule of the plugin set's rulesets is refused
+   * before anything is rendered.
+   */
+  readonly rules?: readonly string[];
 }
 
 /** One agent of the plugin set, as its module declares it: the agent is identified by
@@ -253,6 +264,10 @@ export interface ProjectedTree extends ProjectReport {
    *  offers. Empty when the set declares none. Reported whether or not a render
    *  named any. */
   readonly practices: readonly OfferedPractice[];
+  /** The rulesets the plugin set declares, in declaration order, each with its
+   *  rules: what an install offers, whole or rule by rule. Empty when the set
+   *  declares none. Reported whether or not a render named any rule. */
+  readonly rulesets: readonly OfferedRuleset[];
   /** Which form each runtime capability took on this harness, in capability order:
    *  the harness's own facility, the extension tool, or prose generated from the
    *  capability's explanation, the last resort. */
@@ -273,6 +288,16 @@ export interface OfferedPractice {
   readonly description: string;
   /** A fresh install selects it unless the operator declines. */
   readonly preselected: boolean;
+}
+
+/** A declared ruleset as an install offers it: whole, rule by rule, or not at all. */
+export interface OfferedRuleset {
+  readonly name: string;
+  readonly description: string;
+  readonly rules: readonly {
+    readonly name: string;
+    readonly description: string;
+  }[];
 }
 
 /** The Agent an agent module exports: its one non-default export carrying a string
@@ -719,6 +744,60 @@ function selectPractices(
 }
 
 /**
+ * The rulesets a plugin set declares, in declaration order. A later plugin's ruleset
+ * of the same name REPLACES an earlier one's (and is logged), as a practice does. A
+ * rule name two rulesets both carry is refused, naming both: a rule is loaded by its
+ * name, so the second would replace the first on the harness.
+ */
+function declaredRulesets(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Ruleset[] {
+  const byName = new Map<string, { ruleset: Ruleset; plugin: string }>();
+  for (const p of plugins) {
+    for (const ruleset of p.rulesets ?? []) {
+      const prev = byName.get(ruleset.name);
+      if (prev) {
+        log(`  override ruleset ${ruleset.name}: ${prev.plugin} → ${p.name}`);
+      }
+      byName.set(ruleset.name, { ruleset, plugin: p.name });
+    }
+  }
+  const rulesets = [...byName.values()].map((e) => e.ruleset);
+  const carriedBy = new Map<string, string>();
+  for (const ruleset of rulesets) {
+    for (const rule of ruleset.rules) {
+      const other = carriedBy.get(rule.name);
+      if (other !== undefined) {
+        throw new Error(
+          `the rule '${rule.name}' is in both the '${other}' and the '${ruleset.name}' rulesets; a rule's name is unique across the plugin set`,
+        );
+      }
+      carriedBy.set(rule.name, ruleset.name);
+    }
+  }
+  return rulesets;
+}
+
+/**
+ * The rules NAMED, in the order the rulesets declare them, each once. A name that is
+ * no declared rule is refused. Runs before anything is rendered.
+ */
+function selectRules(
+  names: readonly string[],
+  declared: readonly Ruleset[],
+): Rule[] {
+  const all = declared.flatMap((r) => r.rules);
+  const unknown = names.filter((n) => !all.some((rule) => rule.name === n));
+  if (unknown.length > 0) {
+    throw new Error(
+      `${unknown.map((n) => `'${n}'`).join(', ')} ${unknown.length === 1 ? 'is' : 'are'} no rule of the plugin set (rules: ${all.length === 0 ? 'none' : all.map((r) => r.name).join(', ')})`,
+    );
+  }
+  return all.filter((rule) => names.includes(rule.name));
+}
+
+/**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
@@ -791,6 +870,11 @@ export async function projectPluginSet(
   const contributedSkills = selection
     ? allSkills.filter((s) => selection.skills.has(s.name))
     : allSkills;
+
+  // RULES. None is the default: a rule is rendered only where it is named, and a
+  // name that is no declared rule is refused here, before a byte is rendered.
+  const rulesets = declaredRulesets(opts.plugins, log);
+  const chosenRules = selectRules(opts.rules ?? [], rulesets);
 
   let agents = 0;
   const agentNames: string[] = [];
@@ -1055,6 +1139,12 @@ export async function projectPluginSet(
     log(`EMIT capability prose ${path}`);
   }
 
+  for (const rule of chosenRules) {
+    const { filename, content } = opts.adapter.ruleDef(rule);
+    files.push({ path: join('rules', filename), content });
+    log(`EMIT rule ${rule.name}`);
+  }
+
   let skills = 0;
   let shims = 0;
   for (const { name, skill: cell } of contributedSkills) {
@@ -1262,6 +1352,14 @@ export async function projectPluginSet(
       name: p.name,
       description: p.description,
       preselected: p.preselected === true,
+    })),
+    rulesets: rulesets.map((r) => ({
+      name: r.name,
+      description: r.description,
+      rules: r.rules.map((rule) => ({
+        name: rule.name,
+        description: rule.description,
+      })),
     })),
     capabilities,
   };
