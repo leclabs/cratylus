@@ -53,10 +53,11 @@ const STATUS_KEYS = [
 ] as const;
 
 /** How the user's and the project's settings hide the session's agent: the
- *  project's own `statusLine` keys that hide it, as `statusLine.<key>`, empty where
- *  the hiding comes from the user's settings alone. */
+ *  `statusLine` keys in effect that hide it, as `statusLine.<key>`, by the file that
+ *  sets each — the project's, or the user's where the project leaves it unset. */
 export interface SessionAgentHiding {
   readonly projectKeys: readonly string[];
+  readonly userKeys: readonly string[];
 }
 
 /**
@@ -80,7 +81,7 @@ export function sessionAgentHiding(
       ),
     ) as Partial<Record<(typeof STATUS_KEYS)[number], unknown>>;
   });
-  const own = layers[1] ?? {};
+  const [mine = {}, own = {}] = layers;
   const line = Object.assign({}, ...layers) as typeof own;
   if (line.showHookStatus !== false) return undefined;
   const lists = (['leftSegments', 'rightSegments'] as const).filter(
@@ -95,12 +96,25 @@ export function sessionAgentHiding(
     })
   )
     return undefined;
-  // The project's own keys among those that hide it: the row turned off, and a
-  // layout without the segment decided by its preset or its lists.
-  const projectKeys = [
-    ...(own.showHookStatus === false ? ['showHookStatus'] : []),
-    ...(own.preset !== undefined && !custom ? ['preset'] : []),
-    ...(custom ? lists.filter((key) => own[key] !== undefined) : []),
-  ].map((key) => `statusLine.${key}`);
-  return { projectKeys };
+  // The keys in effect that hide it: the row turned off, and a layout without the
+  // segment decided by a preset other than `custom`, or under `custom` by its lists
+  // (by `custom` itself where none is set), each named for the file that sets it.
+  const hiding: readonly (typeof STATUS_KEYS)[number][] = [
+    'showHookStatus',
+    ...(custom
+      ? lists.length > 0
+        ? lists
+        : (['preset'] as const)
+      : line.preset !== undefined
+        ? (['preset'] as const)
+        : []),
+  ];
+  return {
+    projectKeys: hiding
+      .filter((key) => own[key] !== undefined)
+      .map((key) => `statusLine.${key}`),
+    userKeys: hiding
+      .filter((key) => own[key] === undefined && mine[key] !== undefined)
+      .map((key) => `statusLine.${key}`),
+  };
 }

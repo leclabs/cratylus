@@ -480,11 +480,24 @@ describe('a project installation writes no status line choice', () => {
     expect(out.split('next:')[1]).toContain(SHOW_NEXT);
     expect(
       sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
-    ).toEqual({ projectKeys: [] });
+    ).toEqual({ projectKeys: [], userKeys: ['statusLine.showHookStatus'] });
     expect(await install({ scope: 'user', agentStatus: 'show' })).toBe(0);
     expect(
       sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
     ).toBeUndefined();
+  });
+
+  it('names the user’s own file and keys, and no command, where a user install recorded the answer', async () => {
+    settings(HIDDEN);
+    expect(await install({ scope: 'user', agentStatus: 'hide' })).toBe(0);
+    expect(readFileSync(homeConfig(), 'utf8')).toBe(HIDDEN);
+    out = '';
+    expect(await install({ scope: 'project' })).toBe(0);
+    const next = out.split('next:')[1] ?? '';
+    expect(next).toContain(
+      `show the session's agent, which your own settings hide by statusLine.showHookStatus in ${homeConfig()}: that is your own setting, answered at an earlier user install, to change there`,
+    );
+    expect(next).not.toContain('--agent-status');
   });
 
   it('leaves a user install asking where its settings hide the agent and writing the answer there', async () => {

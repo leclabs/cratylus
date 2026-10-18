@@ -113,6 +113,7 @@ import {
   hidesExtensionStatus,
   holdsRenderTree,
   linkOwnedRoot,
+  ownedRootIn,
   placeOwnedRoot,
   placementOf,
   projectOf,
@@ -738,22 +739,22 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     ensureStatusSegment(statusFile, statusHost, { dry: true }).state !==
       'present';
   // At project scope: whether the user's settings, with the project's over them, hide
-  // the session's agent, and which of the project's own keys do.
+  // the session's agent, which keys of each file do, and whether a user installation
+  // has recorded the answer, which a user install then never applies again.
+  const userStatusFile =
+    statusHost === undefined
+      ? undefined
+      : hostConfigPath(statusHost.configRels, harnessDirIn(adapter, opts.home));
   const projectStatusFile =
     statusHost === undefined || scope !== 'project'
       ? undefined
       : hostConfigPath(statusHost.projectConfigRels, harnessDir);
   const projectHiding =
-    statusHost === undefined || projectStatusFile === undefined
+    statusHost === undefined ||
+    userStatusFile === undefined ||
+    projectStatusFile === undefined
       ? undefined
-      : sessionAgentHiding(
-          hostConfigPath(
-            statusHost.configRels,
-            harnessDirIn(adapter, opts.home),
-          ),
-          projectStatusFile,
-          statusHost,
-        );
+      : sessionAgentHiding(userStatusFile, projectStatusFile, statusHost);
   const answeredBefore =
     scope === 'user' && prior?.answered?.includes('agentStatus') === true;
   let agentStatus: AgentStatus | undefined;
@@ -901,10 +902,20 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       practices: decided,
       rules: { chosen: rules, dropped: droppedRules, open: rulesOpen },
       config: configFile,
-      ...(projectHiding === undefined || projectStatusFile === undefined
+      ...(projectHiding === undefined ||
+      userStatusFile === undefined ||
+      projectStatusFile === undefined
         ? {}
         : {
-            agentHidden: { file: projectStatusFile, ...projectHiding },
+            agentHidden: {
+              projectFile: projectStatusFile,
+              userFile: userStatusFile,
+              ...projectHiding,
+              userAnswered:
+                readInstallationRecord(
+                  ownedRootIn(adapter, opts.home),
+                )?.answered?.includes('agentStatus') === true,
+            },
           }),
       dry,
     })) {
@@ -957,9 +968,16 @@ function describe(
     /** The user's host config file holding model roles, where the harness has one:
      *  where a user installation binds them, and a project one names to bind them in. */
     config: string | undefined;
-    /** At project scope, where the settings hide the session's agent: the project's
-     *  settings file and its own keys that hide it, none where the user's alone do. */
-    agentHidden?: { file: string; projectKeys: readonly string[] };
+    /** At project scope, where the settings hide the session's agent: each settings
+     *  file and the keys in it that hide it, and whether a user installation has
+     *  recorded the answer, so a user install would not apply it again. */
+    agentHidden?: {
+      projectFile: string;
+      userFile: string;
+      projectKeys: readonly string[];
+      userKeys: readonly string[];
+      userAnswered: boolean;
+    };
     dry: boolean;
   },
 ): string[] {
@@ -1050,8 +1068,10 @@ function describe(
       ? []
       : [
           ctx.agentHidden.projectKeys.length > 0
-            ? `show the session's agent, which the project's settings hide by ${list(ctx.agentHidden.projectKeys)} in ${ctx.agentHidden.file}: that is the project's setting, to change there, and a project installation writes no status line choice`
-            : `show the session's agent, which your own settings hide: ${CLI_BIN} install --scope user --agent-status show, since a project installation writes no status line choice`,
+            ? `show the session's agent, which the project's settings hide by ${list(ctx.agentHidden.projectKeys)} in ${ctx.agentHidden.projectFile}: that is the project's setting, to change there, and a project installation writes no status line choice`
+            : ctx.agentHidden.userAnswered
+              ? `show the session's agent, which your own settings hide by ${list(ctx.agentHidden.userKeys)} in ${ctx.agentHidden.userFile}: that is your own setting, answered at an earlier user install, to change there, and a project installation writes no status line choice`
+              : `show the session's agent, which your own settings hide: ${CLI_BIN} install --scope user --agent-status show, since a project installation writes no status line choice`,
         ]),
     ...(ctx.rules.open
       ? [
