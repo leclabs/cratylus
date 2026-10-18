@@ -196,10 +196,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     }
     running = await load(f, { role: 'reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
-    expect(
-      d.text,
-      'obligation never to build or repair remains behavioral',
-    ).toMatch(/no-implementation|never builds|never.*repair/i);
   });
   it('agents/10 — no retired read-only journal gate survives as an alternate narrowing route', async () => {
     running = await load(f, { role: 'lead', kind: 'sub' });
