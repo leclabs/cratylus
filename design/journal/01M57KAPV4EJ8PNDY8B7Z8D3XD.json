@@ -1,0 +1,14 @@
+{
+  "id": "01M57KAPV4EJ8PNDY8B7Z8D3XD",
+  "at": "2026-10-18T13:30:59.300Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "uninstall",
+  "wording": "removes exactly the owned root of the scope named and every reference into it; the other scope and the host's own untouched",
+  "builtFrom": [],
+  "reason": "The operator: installation has a user and a project scope; each is removed on its own.",
+  "supersedes": [
+    "01M53H2H4EFQQ3CVSMBEVHNHP4"
+  ]
+}

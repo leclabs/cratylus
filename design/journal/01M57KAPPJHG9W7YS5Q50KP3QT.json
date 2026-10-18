@@ -1,0 +1,14 @@
+{
+  "id": "01M57KAPPJHG9W7YS5Q50KP3QT",
+  "at": "2026-10-18T13:30:59.154Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "install",
+  "wording": "per agent harness at one installation scope: user, across every project, by default, or project, inside one project and shared through it; under that scope's owned root, recording the projecting version; idempotent; within a project its project installation takes precedence over the user's; offers the corpus's rulesets, each taken whole, rule by rule or not at all; asks only what it isn't told, a tier's model included, never choosing one in the operator's place, and names each tier left unbound as the operator's next step",
+  "builtFrom": [],
+  "reason": "The operator: installation scope aligns with industry practice, user and project, so a project can carry its own agents and rules and share them with its team.",
+  "supersedes": [
+    "01M56EBVD3X84A83Y4R2VFQE8Z"
+  ]
+}
