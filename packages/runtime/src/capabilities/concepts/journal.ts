@@ -130,8 +130,13 @@ export interface Journal {
    *  append order. */
   files(): readonly { readonly id: string; readonly kind: string }[];
   /** The id of every entry but a close the directory holds, as a file or
-   *  brought forward, those a close names closed included: the period's. */
+   *  brought forward, and of every entry a close in it names closed: what the
+   *  period held, or a close before it ended, in id order. */
   held(): readonly string[];
+  /** Whether the journal's directory holds exactly what `commit` holds there:
+   *  each file, hidden ones and those git ignores or is told to overlook
+   *  included, with the same content, and nothing more or less. */
+  matches(commit: string): boolean;
   /** Append `draft` as one new entry, stamped with its id, its time and, when
    *  known, who appended it. */
   append<D extends Draft>(
@@ -215,19 +220,19 @@ export function journalAt(
     }
     const entries: Entry[] = [];
     const readPast = new ReadPast();
-    const held: string[] = [];
+    const held = new Set(closed);
     for (const id of [...read.keys()].sort()) {
       const entry = read.get(id) as Read;
       if (entry.kind === 'close') {
         if (!('newer' in entry)) entries.push(entry);
         continue;
       }
-      held.push(id);
+      held.add(id);
       if (closed.has(id)) continue;
       if ('newer' in entry) readPast.add(entry.kind, entry.newer);
       else entries.push(entry);
     }
-    cached = { entries, readPast, files, held };
+    cached = { entries, readPast, files, held: [...held].sort() };
     return cached;
   };
 
@@ -262,6 +267,33 @@ export function journalAt(
     readPast: () => load().readPast,
     files: () => load().files,
     held: () => load().held,
+    matches(commit) {
+      const git = (args: string[], input?: string) =>
+        execFileSync('git', args, {
+          cwd: top,
+          encoding: 'utf8',
+          input,
+          stdio: ['pipe', 'pipe', 'ignore'],
+        });
+      // What the commit holds: each path with its blob, read from its tree,
+      // never from the index or what git status reports.
+      const committed = new Map(
+        git(['ls-tree', '-r', '-z', commit, '--', JOURNAL_DIR])
+          .split('\0')
+          .filter((line) => line !== '')
+          .map((line) => {
+            const tab = line.indexOf('\t');
+            return [line.slice(tab + 1), line.slice(0, tab).split(' ')[2]];
+          }),
+      );
+      const present = filesUnder(dir).map((file) => `${JOURNAL_DIR}/${file}`);
+      if (present.length !== committed.size) return false;
+      if (present.length === 0) return true;
+      const blobs = git(['hash-object', '--stdin-paths'], present.join('\n'))
+        .trim()
+        .split('\n');
+      return present.every((path, i) => committed.get(path) === blobs[i]);
+    },
     append(draft) {
       const entry = put(draft);
       cached = undefined;
@@ -288,6 +320,18 @@ export function journalAt(
       return { entry: entry as CloseEntry, removed: closed.length };
     },
   };
+}
+
+/** Every file under `dir`, by its path from it, hidden ones included; none
+ *  where there is no such directory. */
+function filesUnder(dir: string, within = ''): string[] {
+  if (!existsSync(join(dir, within))) return [];
+  return readdirSync(join(dir, within), { withFileTypes: true }).flatMap(
+    (d) => {
+      const path = within === '' ? d.name : `${within}/${d.name}`;
+      return d.isDirectory() ? filesUnder(dir, path) : [path];
+    },
+  );
 }
 
 /** A fresh id, past `last` when the journal has one. */

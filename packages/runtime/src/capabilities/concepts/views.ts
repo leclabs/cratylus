@@ -442,15 +442,16 @@ export class Folded {
     ]);
   }
 
-  /** Every id the journal has held for `context`, in id order: its context
-   *  entries', and each a close records for it. */
+  /** Every id the journal has held for `context`: its identity first, then
+   *  its context entries' and each a close records for it, in id order. */
   private identitiesOf(context: string): string[] {
-    return [
-      ...new Set([
-        ...(this.contexts.get(context) ?? []).map((entry) => entry.id),
-        ...this.closes.flatMap((close) => own(close.identities, context) ?? []),
-      ]),
-    ].sort();
+    const identity = this.identity(context) as string;
+    const others = new Set([
+      ...(this.contexts.get(context) ?? []).map((entry) => entry.id),
+      ...this.closes.flatMap((close) => own(close.identities, context) ?? []),
+    ]);
+    others.delete(identity);
+    return [identity, ...[...others].sort()];
   }
 
   /** The id of the first version of `name` in `context`: the one the latest

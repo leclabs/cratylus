@@ -382,7 +382,7 @@ export const VERBS = {
     effect: 'closes',
     purpose:
       'Close the journal’s books: record one entry naming the commit that holds the period now closed and bringing forward, verbatim, what stands (the project’s current purpose, each bounded context’s current description and identity, each concept’s current versions, a retirement included, and each standing decision with the acceptances recorded for it and the classification governing its kind), naming every other entry the period held as closed, which no reading reads again, so a line of work joined later cannot bring it back, then take every other entry out of the journal, kept by version control at that commit; every reading answers what stands as before, and the history readings name the close and its commit, where the closed period is read',
-    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal differs from the commit at HEAD, an ignored file included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
     positional: null,
     flags: {},
   },
@@ -924,18 +924,9 @@ function answerOf(
           'the repository has no commit at HEAD to hold the closed period; commit the journal first',
         );
       }
-      if (
-        git(
-          'status',
-          '--porcelain',
-          '--untracked-files=all',
-          '--ignored=matching',
-          '--',
-          JOURNAL_DIR,
-        ) !== ''
-      )
+      if (!journal.matches(commit))
         throw refuse(
-          `${JOURNAL_DIR} differs from the commit at HEAD: an entry is uncommitted, changed, removed or ignored; commit the journal first`,
+          `${JOURNAL_DIR} differs from the commit at HEAD: a file is uncommitted, changed, removed, ignored or overlooked; commit the journal first`,
         );
       if (journal.readPast().kinds.size > 0)
         throw refuse(

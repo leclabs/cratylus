@@ -384,7 +384,7 @@ describe('closing the books', () => {
       refused(/commit the journal first$/);
       git('checkout', '--', '.');
       unlinkSync(join(dir(), first as string));
-      refused(/an entry is uncommitted, changed, removed or ignored/);
+      refused(/a file is uncommitted, changed, removed, ignored or overlooked/);
     });
 
     it('while an entry file is ignored', () => {
@@ -400,8 +400,27 @@ describe('closing the books', () => {
         `/design/journal/${ignored}.json\n`,
       );
       commit();
-      refused(/an entry is uncommitted, changed, removed or ignored/);
+      refused(/a file is uncommitted, changed, removed, ignored or overlooked/);
     });
+
+    it.each(['--assume-unchanged', '--skip-worktree'])(
+      'while a changed entry is marked %s',
+      (mark) => {
+        seed();
+        commit();
+        const [first] = files();
+        const path = `design/journal/${first as string}`;
+        git('update-index', mark, path);
+        writeFileSync(
+          join(repo, path),
+          `${readFileSync(join(repo, path), 'utf8')}\n`,
+        );
+        expect(git('status', '--porcelain')).toBe('');
+        refused(
+          /^concepts close: design\/journal differs from the commit at HEAD/,
+        );
+      },
+    );
 
     it('while it reads past entries of a newer runtime', () => {
       seed();
@@ -863,5 +882,67 @@ describe('a close joined with another line of work', () => {
       Object.hasOwn(closeFile().concepts.booking ?? {}, 'constructor'),
     ).toBe(true);
     expect(order()).toEqual(['first', 'constructor', 'last']);
+  });
+
+  it('names closed again what an earlier close ended, so a line still carrying it cannot bring it back', () => {
+    const d1 = decide('d1', 'open').id;
+    commit('base');
+    git('checkout', '-q', '-b', 'other');
+    concepts('close');
+    commit('other close');
+    git('checkout', '-q', 'main');
+    concepts('deprecate', 'd1', '--reason', 'Done.');
+    commit('deprecate');
+    concepts('close');
+    commit('close');
+    concepts('purpose', '--statement', 'Book.');
+    commit('purpose');
+    concepts('close');
+    commit('close again');
+    expect(closeFile().closed).toContain(d1);
+    join_('other');
+    expect(standingIds()).not.toContain(d1);
+  });
+
+  it('keeps a context’s identity and order through a close of two joined closes', () => {
+    concepts('purpose', '--statement', 'Book.');
+    commit('root');
+    git('checkout', '-q', '-b', 'other');
+    const theirs = idOf(
+      concepts('context', 'shared', '--subject', 'Shared.', '--relation', ''),
+    );
+    commit('theirs');
+    git('checkout', '-q', 'main');
+    concepts('context', 'alpha', '--subject', 'Alpha.', '--relation', '');
+    const ours = idOf(
+      concepts('context', 'shared', '--subject', 'Shared.', '--relation', ''),
+    );
+    commit('ours');
+    git('checkout', '-q', 'other');
+    concepts('close');
+    commit('their close');
+    git('checkout', '-q', 'main');
+    concepts('close');
+    commit('our close');
+    join_('other');
+    const delivered = () =>
+      deliverContext({
+        from: repo,
+        context: 'shared',
+        origin: 'cratylus',
+        version: '1.0.0',
+      }).identity;
+    const order = () =>
+      (concepts('state') as { contexts: { name: string }[] }).contexts.map(
+        (c) => c.name,
+      );
+    expect(delivered()).toBe(ours);
+    expect(order()).toEqual(['booking', 'alpha', 'shared']);
+    concepts('purpose', '--statement', 'Book more.', '--reason', 'More.');
+    commit('purpose');
+    concepts('close');
+    expect(closeFile().identities.shared).toEqual([ours, theirs]);
+    expect(delivered()).toBe(ours);
+    expect(order()).toEqual(['booking', 'alpha', 'shared']);
   });
 });

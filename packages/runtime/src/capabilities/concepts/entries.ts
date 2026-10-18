@@ -168,9 +168,10 @@ export interface EfficiencyEntry extends Stamped {
 /** The closing of the journal's books: the full sha of the commit at HEAD
  *  holding the closed period; the entries brought forward, verbatim as
  *  recorded and in id order; the id of every entry the period held that it
- *  does not bring forward, which no reading reads again; for each context,
+ *  does not bring forward, and every entry a close before it named closed,
+ *  which no reading reads again; for each context,
  *  by its name, the id of every context entry the journal has held for it,
- *  earlier closes' included, in id order, its identity first; the id of the
+ *  earlier closes' included, its identity first and the rest in id order; the id of the
  *  first version of each concept brought forward, by its context and name,
  *  which order the views as they were ordered before; and, for each entry
  *  brought forward that names a decision by its name alone, the entry that
