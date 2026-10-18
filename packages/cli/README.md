@@ -98,10 +98,13 @@ would impose your settings on the whole team: it asks neither the model question
 line one, and writes no `modelRoles` entry and nothing about the status line, in the project or
 anywhere else; `--model-roles` and `--agent-status` with `--scope project` are each refused. It
 reads, without writing, the project's `.omp/config.yml` and your `~/.omp/agent/config.yml`, and
-names as your next steps, to settle at user scope: each tier the agents fall back to that neither
-binds, to bind in your own settings by hand or with
-`cratylus install --scope user --model-roles <tier=model,…>`; and, where those settings (the
-project's over yours, as omp reads them) hide the session's agent, showing it with
+names as your next steps: each tier the agents fall back to that neither binds, to bind in your own
+settings by hand or with `cratylus install --scope user --model-roles <tier=model,…>`; and, where
+those settings (the project's over yours, as omp reads them, a key set to null counting as unset)
+hide the session's agent, how to show it. Where the project's own `statusLine` keys hide it (its
+`showHookStatus: false`, or a preset or segment list that leaves `status` out), the step names
+those keys in the project's `.omp/config.yml`: they are the project's setting, to change there.
+Only where your own settings alone hide it does the step offer
 `cratylus install --scope user --agent-status show`.
 
 Inside a project that has one, the `cratylus` command you run yourself, naming no installation,
@@ -254,7 +257,7 @@ removes them too.
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
 a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
-subagent's, and it carries no color. Where the host's status line hides it, a user `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. A project installation never asks or writes it: where the project's settings over yours hide it, it names `cratylus install --scope user --agent-status show` as your next step. The host's own
+subagent's, and it carries no color. Where the host's status line hides it, a user `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. A project installation never asks or writes it: where the settings hide it, it names as your next step the project's own keys that do, to change in the project's `.omp/config.yml`, or, where your settings alone do, `cratylus install --scope user --agent-status show`. The host's own
 configuration is only ever added to, and `--dry-run` says what would be set and writes nothing.
 
 The badge is the status cratylus's extension sets for a session started with

@@ -44,23 +44,63 @@ export function readModelRoles(path: string): ReadonlyMap<string, string> {
   );
 }
 
+/** The `statusLine` keys that decide whether the session's agent shows. */
+const STATUS_KEYS = [
+  'showHookStatus',
+  'preset',
+  'leftSegments',
+  'rightSegments',
+] as const;
+
+/** How the user's and the project's settings hide the session's agent: the
+ *  project's own `statusLine` keys that hide it, as `statusLine.<key>`, empty where
+ *  the hiding comes from the user's settings alone. */
+export interface SessionAgentHiding {
+  readonly projectKeys: readonly string[];
+}
+
 /**
- * Whether the settings files at `paths`, each layer over the one before as the harness
- * merges them (the user's, then the project's), hide the session's agent: the row
- * beneath the editor is turned off (`showHookStatus: false`) and the layout in effect
- * does not list `host.segment` inside the line, which only `custom` reads from the
- * settings.
+ * Whether the user's settings at `user`, with the project's at `project` over them as
+ * the harness layers them, hide the session's agent: the row beneath the editor is
+ * turned off (`showHookStatus: false`) and the layout in effect does not list
+ * `host.segment` inside the line, which only `custom` reads from the settings. A key
+ * set to null is unset, as the harness reads it, so the layer below still applies.
+ * `undefined` where the agent shows.
  */
-export function hidesSessionAgent(
-  paths: readonly string[],
+export function sessionAgentHiding(
+  user: string,
+  project: string,
   host: Pick<StatusSegmentHost, 'segment'>,
-): boolean {
-  const line: Record<string, unknown> = {};
-  for (const path of paths)
-    Object.assign(line, mappingOf(readSettings(path).statusLine));
-  if (line.showHookStatus !== false) return false;
-  if (line.preset !== CUSTOM_PRESET) return true;
-  return ![line.leftSegments, line.rightSegments].some(
-    (segments) => Array.isArray(segments) && segments.includes(host.segment),
+): SessionAgentHiding | undefined {
+  const layers = [user, project].map((path) => {
+    const line = mappingOf(readSettings(path).statusLine) ?? {};
+    return Object.fromEntries(
+      STATUS_KEYS.flatMap((key) =>
+        line[key] === undefined || line[key] === null ? [] : [[key, line[key]]],
+      ),
+    ) as Partial<Record<(typeof STATUS_KEYS)[number], unknown>>;
+  });
+  const own = layers[1] ?? {};
+  const line = Object.assign({}, ...layers) as typeof own;
+  if (line.showHookStatus !== false) return undefined;
+  const lists = (['leftSegments', 'rightSegments'] as const).filter(
+    (key) => line[key] !== undefined,
   );
+  const custom = line.preset === CUSTOM_PRESET;
+  if (
+    custom &&
+    lists.some((key) => {
+      const segments = line[key];
+      return Array.isArray(segments) && segments.includes(host.segment);
+    })
+  )
+    return undefined;
+  // The project's own keys among those that hide it: the row turned off, and a
+  // layout without the segment decided by its preset or its lists.
+  const projectKeys = [
+    ...(own.showHookStatus === false ? ['showHookStatus'] : []),
+    ...(own.preset !== undefined && !custom ? ['preset'] : []),
+    ...(custom ? lists.filter((key) => own[key] !== undefined) : []),
+  ].map((key) => `statusLine.${key}`);
+  return { projectKeys };
 }

@@ -24,6 +24,7 @@ import { runInstall } from '../../src/cli/commands/install.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { projectOf } from '../../src/deploy/install-scope.js';
+import { sessionAgentHiding } from '../../src/deploy/read-settings.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 import {
@@ -357,6 +358,9 @@ describe('a project installation writes no status line choice', () => {
     }
   };
   const SHOW_NEXT = 'cratylus install --scope user --agent-status show';
+  const statusSegment = ompHarnessAdapter.statusSegment ?? {
+    segment: 'status',
+  };
 
   it('asks no status line question on a terminal and writes nothing about it, in the project or the home, nor records an answer', async () => {
     settings(HIDDEN, HIDDEN);
@@ -399,43 +403,89 @@ describe('a project installation writes no status line choice', () => {
     }
   });
 
+  const USER_CUSTOM =
+    'statusLine:\n  preset: custom\n  leftSegments: [model, status]\n  showHookStatus: false\n';
   it.each([
-    ['the user’s settings hide it', HIDDEN, undefined, true],
+    ['the user’s settings alone hide it', HIDDEN, undefined, 'user'],
     [
       'the project’s settings, in JSON, hide it',
       undefined,
       '{ "statusLine": { "showHookStatus": false } }\n',
-      true,
+      ['statusLine.showHookStatus'],
     ],
     [
       'the project’s settings, in flow YAML, show the row the user’s hide',
       HIDDEN,
       'statusLine: { showHookStatus: true }\n',
-      false,
+      'none',
     ],
     [
       'the project’s custom layout lists the segment the user’s hide the row of',
       HIDDEN,
       'statusLine:\n  preset: custom\n  leftSegments: [model, status]\n',
-      false,
+      'none',
     ],
     [
       'the project’s other preset leaves the user’s hidden row hidden',
       HIDDEN,
       'statusLine:\n  preset: minimal\n',
-      true,
+      ['statusLine.preset'],
     ],
-    ['neither hides it', 'theme: dark\n', undefined, false],
+    [
+      'the project’s custom list lacks the segment',
+      HIDDEN,
+      'statusLine:\n  preset: custom\n  leftSegments: [model]\n',
+      ['statusLine.leftSegments'],
+    ],
+    [
+      'the project’s null showHookStatus leaves the user’s hidden row',
+      HIDDEN,
+      'statusLine:\n  showHookStatus: null\n',
+      'user',
+    ],
+    [
+      'the project’s null preset leaves the user’s custom layout, which lists it',
+      USER_CUSTOM,
+      'statusLine:\n  preset: null\n',
+      'none',
+    ],
+    [
+      'the project’s null segment list leaves the user’s, which lists it',
+      USER_CUSTOM,
+      'statusLine:\n  preset: custom\n  leftSegments: null\n',
+      'none',
+    ],
+    ['neither hides it', 'theme: dark\n', undefined, 'none'],
   ] as const)(
-    'names showing the agent as a next step exactly where %s',
+    'names showing the agent as a next step exactly where %s, and where it comes from',
     async (_case, user, project, named) => {
       settings(user, project);
       expect(await install({ scope: 'project' })).toBe(0);
       const next = out.split('next:')[1] ?? '';
-      if (named) expect(next).toContain(SHOW_NEXT);
-      else expect(next).not.toMatch(/agent-status|session's agent/);
+      if (named === 'none')
+        expect(next).not.toMatch(/agent-status|session's agent/);
+      else if (named === 'user') expect(next).toContain(SHOW_NEXT);
+      else {
+        expect(next).toContain(
+          `show the session's agent, which the project's settings hide by ${named.join(', ')} in ${projectConfig()}: that is the project's setting, to change there`,
+        );
+        expect(next).not.toContain('--agent-status');
+      }
     },
   );
+
+  it('names the user-scope remedy only where it shows the agent once run', async () => {
+    settings(HIDDEN, 'theme: light\n');
+    expect(await install({ scope: 'project' })).toBe(0);
+    expect(out.split('next:')[1]).toContain(SHOW_NEXT);
+    expect(
+      sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
+    ).toEqual({ projectKeys: [] });
+    expect(await install({ scope: 'user', agentStatus: 'show' })).toBe(0);
+    expect(
+      sessionAgentHiding(homeConfig(), projectConfig(), statusSegment),
+    ).toBeUndefined();
+  });
 
   it('leaves a user install asking where its settings hide the agent and writing the answer there', async () => {
     settings(HIDDEN);
