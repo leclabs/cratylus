@@ -25,9 +25,8 @@ import type { HookCell } from '../manifest.js';
 // put a second home under the one claim that must never fork, and the second home
 // would be a shell script.
 //
-// WHAT IT MAY NOT DO: refuse. `ARCHITECTURE`'s fidelity ladder — a shortfall degrades
-// and warns, it never refuses and never widens. A stale deployment must not block a
-// session; it must be impossible to start one without being told.
+// WHAT IT MAY NOT DO: refuse. A stale deployment must not block a session; it must
+// be impossible to start one without being told.
 //
 // IT ASKS AGAIN, BECAUSE THE HOST GOES STALE MID-SESSION. Bound to `session.start`
 // alone, the cell answered a question that expires: a projection landing during the

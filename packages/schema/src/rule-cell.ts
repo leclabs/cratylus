@@ -1,4 +1,4 @@
-// `RuleCell` — the generic `rule` source-cell shape (MODEL `Kind ∋ rule`,
+// `RuleCell` — the generic `rule` source-cell shape (`Kind ∋ rule`,
 // `activation: rule↦scope`). A rule is HARNESS-AGNOSTIC SOURCE: the harness is
 // orthogonal until `deploy(c,adapter) = inject(content(c), realize(scope,adapter))`.
 //
@@ -12,11 +12,9 @@
 //
 // This field was called `definiens` while its sibling `HookCell` called the same
 // thing `residue`, and a test existed only to write `definiens: c.residue` across
-// the seam. MODEL already separates the two, and the separation is what settles the
-// direction:
-//
-//   MODEL PARSIMONIOUS — body(c) = ⟨α(c), residue(c)⟩, residue(c) the workflow's residue
-//   of c (`residue @ workflow`), its anchor α(c) read in its bounded context κ(c)
+// the seam. The two are different objects, and that settles the direction. The
+// PARSIMONIOUS leg reads `body(c) = ⟨α(c), residue(c)⟩`, residue(c) the workflow's
+// residue of c, its anchor α(c) read in its bounded context κ(c).
 //
 // `D` and `residue` are DIFFERENT OBJECTS, related by that reading of the anchor:
 //
@@ -33,8 +31,8 @@
 //
 // ── `body` vs `content`: A COALESCE, NOT A MINT ────────────────────────────────
 //
-// The verbatim payload field was called `body`, and `body` is TAKEN: MODEL binds it
-// to the WHOLE cell — `Enforcing.body` with `bodyOf()`/`anchorOf()` (`src/index.ts`)
+// The verbatim payload field was called `body`, and `body` is TAKEN: it names the
+// WHOLE cell — `Enforcing.body` with `bodyOf()`/`anchorOf()` (`src/index.ts`)
 // realize `body(c) = ⟨α(c), residue(c)⟩`. A rule's projected bytes are not that
 // pair; they are one part of it, so `body` here fired the wrong prior first.
 //

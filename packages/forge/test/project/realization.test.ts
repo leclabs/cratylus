@@ -182,7 +182,7 @@ describe('what the corpus actually faces — measured per predicate, not assumed
     }
   });
 
-  it('honours MODEL `scopable ⇒ realizable` on omp and the shortfall adapter', () => {
+  it('honours `scopable ⇒ realizable` on omp and the shortfall adapter', () => {
     for (const adapter of [ompHarnessAdapter, shortfallAdapter]) {
       for (const event of CANON_EVENTS) {
         if (adapter.scopes(event)) expect(adapter.realizes(event)).toBe(true);

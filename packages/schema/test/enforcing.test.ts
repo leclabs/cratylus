@@ -9,7 +9,7 @@ import {
 
 type Guardrails = Value<'guardrails'>;
 
-// `enforcing(f) ⇔ events(f) ≠ ∅` — MODEL's predicate, DERIVED and never stored.
+// `enforcing(f) ⇔ events(f) ≠ ∅` — DERIVED and never stored.
 // These are the runtime half of S1; the type-level half is canon's
 // `anatomy.test-d.ts` NEGATIVE 7 (a value with `events` and no `substrate` must
 // not compile).

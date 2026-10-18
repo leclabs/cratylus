@@ -334,10 +334,10 @@ export type { SkillExpression };
 //   · schema  states only that an event HAS a name (`EventName`) and narrows
 //     `HookCell` from this tuple by type argument — an undeclared event is a
 //     compile error at the cell;
-//   · forge   receives it as DATA on the plugin (`AgentPlugin.events`, ARCHITECTURE
-//     property 3) and keys its own harness maps over it;
-//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED (property 4,
-//     verbatim) — `deploy` writes the host config, `dispatch` validates against it.
+//   · forge   receives it as DATA on the plugin (`AgentPlugin.events`) and keys
+//     its own harness maps over it;
+//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED — `deploy`
+//     writes the host config, `dispatch` validates against it.
 // Only the first is a compiler-enforced derivation; the other two cross package
 // boundaries the type system cannot, which is what `test/event-vocabulary.test.ts`
 // is for.

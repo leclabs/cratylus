@@ -6,9 +6,9 @@
 //   SIGNIFIED  : α, read in its bounded context, has the smallest residue (`residue @
 //                workflow`) for the concept  (α = σ*)
 //
-// MODEL's cold read gives the fragment with its bounded context's name and subject and
-// nothing of its intent; the isolation script this driver wraps sends the fragment with
-// that context's name and subject (`DecodeOpts.context`), which every caller names.
+// The isolation script this driver wraps sends the fragment with its bounded
+// context's name and subject (`DecodeOpts.context`), which every caller names, and
+// nothing of its intent.
 //
 // ISOLATION IS THE INVARIANT. A subagent is NOT cold (it inherits session context
 // + the local agent-registry aliases); only this process-level isolation yields a
@@ -17,7 +17,7 @@
 // NOT to any local registry gloss. If the corpus/registry leaked in, the nonce
 // would come back glossed; it does not.
 //
-// This is the doctrine-agnostic ALGORITHM (forge ENGINE): the isolation-driving
+// This is the doctrine-agnostic ALGORITHM: the isolation-driving
 // protocol + the no-prior DETECTION. Both corpus-coupled data are INJECTED: WHICH
 // isolation script (it carries the corpus's repo-path guard) as `scriptPath`, and
 // WHICH decode lexicon witnesses a generic prior as `noPriorMarkers`. The script is a

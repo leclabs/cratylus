@@ -1,4 +1,4 @@
-// ARCHITECTURE gate — the four load-bearing package-boundary properties, enforced.
+// Package-boundary gate — the four load-bearing package-boundary properties, enforced.
 //
 // Named for the law it enforces, not for a property-noun. The best quality-noun found
 // was `import-acyclicity`,
@@ -358,7 +358,7 @@ function permitted(e: Edge): boolean {
   return PERMITTED.some(([a, b]) => a === e.from && b === e.to);
 }
 
-describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () => {
+describe('package-boundary gate — the four load-bearing properties, enforced', () => {
   // REACH. A stripper that over-strips, or a glob that matches nothing, yields zero
   // edges — and zero edges passes every assertion below as if the tree were perfect.
   // The package set is a LITERAL, so it can go stale the moment a package is added —

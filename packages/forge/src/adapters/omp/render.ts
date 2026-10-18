@@ -50,9 +50,9 @@
 
 // The bin's ONE authored home. This artifact is named after the TOOL that emits
 // it, so a rename must carry it — the same reason a cell carries `{{fact:runtime-bin}}`
-// rather than the literal. `forge → runtime` is a permitted edge (ARCHITECTURE's
-// north star); spelling the name here instead would be a second home for it, which
-// `bin-name-single-home` catches and rightly refused.
+// rather than the literal. `forge → runtime` is a permitted edge; spelling the name
+// here instead would be a second home for it, which `bin-name-single-home` catches
+// and rightly refused.
 import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';

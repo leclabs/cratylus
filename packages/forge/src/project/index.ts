@@ -23,7 +23,7 @@
 // they agreed by construction and the missing pipe was invisible. `discoverFragments`
 // + `resolveFragmentBodies` are that pipe: they hand back the authored-body ⟼
 // resolved-body substitution an agent's dimension values undergo before `agentDef`,
-// which is what makes `compose(select(a)) = ir(a)` (ENGINE:22) hold under a patch and
+// which is what makes an agent render from the patched catalog under a patch and
 // not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -82,10 +82,10 @@ import { runtimeShimContent } from './runtime-shim.js';
 /**
  * THE PROJECTOR'S FACT TABLE — every value a worker template may ask for by name.
  *
- * This is the seam that let ARCHITECTURE's property 1 close. A canon cell needed the
- * runtime bin's name and could only get it by importing `@cratylus/runtime` — meaning
- * reaching into mechanism, the highest-ranked property in the north star, breached by
- * exactly one edge. FORGE already depends on runtime (a permitted edge: projection
+ * This is the seam that removed a canon cell's import of the runtime. A canon cell
+ * needed the runtime bin's name and could only get it by importing
+ * `@cratylus/runtime` — meaning reaching into mechanism. FORGE already depends on
+ * runtime (a permitted edge: projection
  * knows both sides), so the value belongs here and the cell asks for it by NAME.
  *
  * The schema declares WHICH facts exist (`ProjectionFact`) and never a value; a value
@@ -157,8 +157,8 @@ export interface ProjectOpts {
    * `anchor → HarnessMechanism` — the realization payloads for this corpus's
    * enforcing values, INJECTED.
    *
-   * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
-   * so it cannot live on the source cell. It is supplied here by the corpus — the
+   * deploy emits `mechanism` per (fragment, adapter), so it cannot live on the
+   * source cell. It is supplied here by the corpus — the
    * DATA lives in canon, the ALGORITHM stays doctrine-free.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
@@ -228,9 +228,9 @@ export interface ProjectedFile {
  * What a plugin set projects to: every artifact as bytes, plus the counts.
  *
  * DELIBERATELY a local structural type, and deliberately unnamed beyond that. This
- * is NOT MODEL's `IR`: `ir : agent → IR` is AGENT-scoped and is already realized by
- * the `Agent` interface. A whole-plugin-set aggregate is a different thing that no
- * grounding doc declares, and minting a canonical anchor for it is a cratylism act
+ * is NOT an agent's `IR`, which is AGENT-scoped and is already realized by the
+ * `Agent` interface. A whole-plugin-set aggregate is a different thing, and
+ * minting a canonical anchor for it is a cratylism act
  * this seam is not entitled to perform.
  */
 export interface ProjectedTree extends ProjectReport {
@@ -506,7 +506,7 @@ export async function discoverFragments(
  * FOLD a discovery under the consumer `patches` → the substitution an agent's
  * authored dimension values must undergo: authored body ⟼ resolved body. Step TWO.
  *
- * WHY THIS EXISTS. `select(a)` (ENGINE:22) is realized as an agent module's import
+ * WHY THIS EXISTS. An agent's selection is realized as an agent module's import
  * list — `objective: insight_objective` binds the fragment's body AS IT SAT ON DISK.
  * The catalog those values are supposed to be drawn from is the resolver's ordered
  * fold. Without this map the two coincide only by accident: the moment a patch moves
@@ -766,7 +766,7 @@ export async function projectPluginSet(
   const manifest = mergeManifest(opts.plugins, log);
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
-  // module happened to import (ENGINE:22). Every move is reported, never silent.
+  // module happened to import. Every move is reported, never silent.
   const subst = opts.resolvedBodies ?? new Map<string, string>();
   for (const [from, to] of subst) {
     log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);

@@ -54,9 +54,8 @@ export default defineAgentPlugin({
   // containing it.
   manifest: MANIFEST,
   // WHICH lifecycle events exist — carried the same way, and for the same reason.
-  // The projector needs the members to emit a host's runtime configuration
-  // (ARCHITECTURE property 4); property 3 says it may only RECEIVE them. This
-  // field is that receipt: DATA on the plugin, never an import of this package.
+  // The projector needs the members to emit a host's runtime configuration and
+  // receives them here as DATA on the plugin, never as an import of this package.
   events: CANONICAL_EVENTS,
   // WHICH practices exist, and the plumbing every one of them is installed with —
   // carried the same way, so an install offers what the corpus declares and no
