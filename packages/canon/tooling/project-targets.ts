@@ -86,7 +86,7 @@ export interface CellTarget {
    * Which source FAMILY emitted this target — `src/hooks/*.ts` vs `src/rules/*.ts`.
    * A projection fact about the emitting module, NOT MODEL's `class(c)`: both
    * families are `Kind ∋ rule`, and `AcceptCell['kind']` carries no `'hook'`
-   * member (see the ground-conformance property on `AcceptCell`). Consumers
+   * member. Consumers
    * partition targets by this; nothing may read it as a Kind.
    */
   readonly kind: 'hook' | 'rule';
@@ -121,8 +121,8 @@ export const COMMITTED_TARGET_HARNESS = 'omp';
  * `{{fact:runtime-bin}}` and the byte-lock would then hold the WRONG subject fixed.
  *
  * Reaching `@cratylus/forge` from here is the LICENSED edge: this is one of canon's
- * build scripts driving the projector as a tool (`ARCHITECTURE.md` — "the divergence
- * is a CELL importing it"). The cell that used to import the value now names it.
+ * build scripts driving the projector as a tool; the divergence would be a CELL
+ * importing it. The cell that used to import the value now names it.
  */
 export async function cellTargets(
   harness: string = COMMITTED_TARGET_HARNESS,

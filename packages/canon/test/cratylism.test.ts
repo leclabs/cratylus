@@ -206,72 +206,32 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and skills
   // invoking a canon cell. Anything in it naming a workspace-local artifact is a
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
-  // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`. The apex
-  // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
-  // out to every Target for exactly that reason; its one home is the AMBIENT carry.
+  // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`.
   it('the intrinsic preamble names no workspace-local artifact', () => {
-    // Repo-local, non-deployed grounding docs + the ambient carry itself.
-    const local = ['VISION', 'MODEL.md', 'ENGINE', 'CANON.md', 'AGENTS.md'];
-    const leaked = local.filter((d) => {
-      // `¬ contingent on workspace-root AGENTS.md` legitimately names the ambient
-      // carry to DISCLAIM it; a bare mention elsewhere is the leak.
-      const stripped = primePrinciple.replace(
-        '¬ contingent on workspace-root AGENTS.md',
-        '',
-      );
-      return stripped.includes(d);
-    });
+    // `¬ contingent on workspace-root AGENTS.md` legitimately names the ambient
+    // carry to DISCLAIM it; a bare mention elsewhere is the leak.
+    const stripped = primePrinciple.replace(
+      '¬ contingent on workspace-root AGENTS.md',
+      '',
+    );
     expect(
-      leaked,
-      `intrinsic preamble references workspace-local artifact(s) — move to rules/repo-preamble.ts: ${leaked.join(', ')}`,
-    ).toEqual([]);
-    // non-vacuous: the predicate convicts the string that actually shipped
-    expect(
-      'apex confidence-order : cratylism ≻ VISION ≻ MODEL'.includes('VISION'),
-    ).toBe(true);
-  });
-
-  // The axiom's PROSE homes drift where its literal home cannot: a gloss re-explaining
-  // cratylism passes the literal-home leg (different bytes) while saying something the
-  // canonized value no longer says. It happened twice — `AGENTS.md` and `CANON.md`
-  // both re-explained it in prose of their own, and had already diverged on the third
-  // derived principle (`signify` vs `σ*`). `AGENTS.md`'s own definiens is `doctrine-pointers`:
-  // it points at CANON, so restating CANON there is the duplication. This leg pins the
-  // confidence-order — the clause that recurred in both — out of `src` entirely; its
-  // home is the hand-authored CANON.md, which is LOCKED and never generated from source.
-  it('the apex confidence-order has no home in src — it belongs to CANON.md', async () => {
-    const order = '≻ VISION'; // the confidence-order's distinguishing fragment
-    const homes: string[] = [];
-    for await (const p of glob('**/*.ts', { cwd: srcRoot })) {
-      if (readFileSync(join(srcRoot, p), 'utf-8').includes(order))
-        homes.push(p);
-    }
-    expect(
-      homes,
-      `the confidence-order names workspace-local docs and is restated in src — its one home is the hand-authored CANON.md: ${homes.join(', ')}`,
-    ).toEqual([]);
-    // non-vacuous: the predicate convicts the clause that shipped from two homes
-    expect('cratylism ≻ VISION ≻ MODEL'.includes(order)).toBe(true);
+      stripped.includes('AGENTS.md'),
+      'intrinsic preamble references the workspace-local AGENTS.md — move it to rules/repo-preamble.ts',
+    ).toBe(false);
   });
 
   // SCOPE FLOOR, consumer register. The scaffold template's output is a CONSUMER's
   // `<target>/AGENTS.md` — cratylus's tree is not in context there, so a
-  // `packages/…` path or a VISION/MODEL/ENGINE/CANON reference resolves to nothing.
-  // Same seam as the intrinsic carry, one register over; it shipped `(packages/
-  // canon)` into every scaffolded project until this leg existed. Naming the
-  // upstream catalog is fine — it is provenance, not a path claim.
+  // `packages/…` path resolves to nothing. Same seam as the intrinsic carry, one
+  // register over; it shipped `(packages/canon)` into every scaffolded project until
+  // this leg existed. Naming the upstream catalog is fine — it is provenance, not a
+  // path claim.
   it('the consumer scaffold template names no cratylus-local path', async () => {
     const { canonProjectTemplate } = await import(
       '../tooling/project-template.js'
     );
     const emitted = canonProjectTemplate.agentsMd('<subject>');
-    const local = [
-      'packages/',
-      'VISION.md',
-      'MODEL.md',
-      'ENGINE.md',
-      'CANON.md',
-    ];
+    const local = ['packages/'];
     const leaked = local.filter((d) => emitted.includes(d));
     expect(
       leaked,
@@ -288,17 +248,11 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // SCOPE FLOOR, projected-cell register. Dimension values and skill formalBlocks
   // deploy into a consumer repo, where cratylus's tree is absent. Clean today — this
   // leg keeps it that way, since nothing else in the suite would notice a `packages/…`
-  // path or a VISION/MODEL reference entering a cell. Completes the seam: intrinsic
-  // carry · consumer scaffold · projected cells all gated; only `rules/repo-preamble.ts`
-  // (cratylus-local, ρ=human) may name them.
+  // path entering a cell. Completes the seam: intrinsic carry · consumer scaffold ·
+  // projected cells all gated; only `rules/repo-preamble.ts` (cratylus-local, ρ=human)
+  // may name them.
   it('no projected cell names an cratylus-local path', async () => {
-    const local = [
-      'packages/',
-      'VISION.md',
-      'MODEL.md',
-      'ENGINE.md',
-      'CANON.md',
-    ];
+    const local = ['packages/'];
     const leaked: string[] = [];
     let checked = 0;
     for await (const p of glob('dimensions/*/*.ts', { cwd: srcRoot })) {

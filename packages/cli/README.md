@@ -1,7 +1,6 @@
 # cratylus
 
-The command. One package and one bin; what it composes, and why this is the only package that may
-know all of it, is in [ARCHITECTURE.md](../../ARCHITECTURE.md).
+The command. One package and one bin, and the only package that may know all of the others.
 
 ```sh
 npm install -g cratylus

@@ -57,8 +57,8 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
  * from the runtime's implementation interface. That was the only `schema →
  * runtime` edge, and it was the wrong kind of borrowing: what this package needs
  * is a **vocabulary** (which names exist), and what it reached for was a
- * **shape** (how those things are implemented). `MODEL.md:22` already rules
- * `shape ⊥ vocabulary` for `Event` — shape here, names in the corpus.
+ * **shape** (how those things are implemented). The rule `shape ⊥ vocabulary`
+ * already holds for `Event` — shape here, names in the corpus.
  *
  * So the members are the corpus's, exactly as WHICH dimensions exist is the
  * corpus's. This package states that a capability HAS a name and stops; a corpus
@@ -71,7 +71,7 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
  * that insight is kept here. Its root word is not, because the prompt that
  * produced it wrongly disqualified `capability`: only the plural keyspace
  * `capabilities` is occupied, not the root. `capability` is this architecture's
- * established sign for the concept (ten uses in `ARCHITECTURE.md`), so adopting
+ * established sign for the concept, so adopting
  * `Faculty` would have minted a SECOND sign for one concept — the precise defect
  * `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` forbids. */
 export type CapabilityName = string;
@@ -123,22 +123,18 @@ export type CapabilityName = string;
  * coincidence — so the member, not the field, was the defect.
  *
  * WHY `latent`, AND WHY IT IS DISCOVERED RATHER THAN COINED. It is already this
- * corpus's sign for exactly this concept. `VISION.md` names the whole discipline
- * LATENT LEXICOGRAPHY and glosses the word: "the vocabulary exists, unsurfaced,
- * awaiting description… Nor is it authored" — in a table whose owner column reads
- * THE MODEL. `cratylism` itself carries `model-latent-space = real stable concepts`.
- * So the member that means "the model's own set, discovered not authored" wears the
- * sign the founding document already gave it, and the type now QUOTES its axiom
- * where it used to contradict it.
- *
+ * corpus's sign for exactly this concept: `cratylism` itself carries
+ * `model-latent-space = real stable concepts`. So the member that means "the
+ * model's own set, discovered not authored" wears the sign the axiom already gave
+ * it, and the type now QUOTES its axiom where it used to contradict it.
  * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
  * `model-native`/`model`, on the ground that nothing in the declaration points at a
  * language model unless the reader already knows the codebase. That objection is
- * answered by MODEL's COLD-BLIND: `decode_cold(f) ≜ decode(⟨f, name(κ(f)),
+ * answered by COLD-BLIND: `decode_cold(f) ≜ decode(⟨f, name(κ(f)),
  * subject(κ(f))⟩, LLM-priors ∪ Corpus, ∅)` — the CORPUS is admitted to a cold decode,
  * and the sign is read with its bounded context's name and subject; only session-K
- * and the intended concept are excluded. Grounding in
- * `VISION.md` is cold grounding. Both of its winners are occupancy-blocked anyway:
+ * and the intended concept are excluded. Grounding in the corpus is cold grounding.
+ * Both of its winners are occupancy-blocked anyway:
  * `model` is a live dimension name (`export type Model`), and `model-native` is a
  * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:
  * `native` (occupied — `llm-native`, and harness-native event vocabulary) ·
@@ -782,8 +778,8 @@ export {
 } from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
-// shapes it types. The MEMBERS are the corpus's (`MODEL.md:22`), so there is
-// nothing else here to export.
+// shapes it types. The MEMBERS are the corpus's, so there is nothing else here to
+// export.
 export type { EventName } from './hook/index.js';
 
 // ── The plugin authoring surface ────────────────────────────────────────────
@@ -908,9 +904,9 @@ export interface AgentPlugin extends Layout {
   readonly manifest?: DimensionManifest;
   /**
    * WHICH lifecycle events exist — the corpus's harness-agnostic event vocabulary
-   * (`MODEL.md:22`: `names @ corpus`).
+   * (`names @ corpus`).
    *
-   * It rides the plugin for the same reason `manifest` does, and here it also serves ARCHITECTURE property 3 exactly: the
+   * It rides the plugin for the same reason `manifest` does, and here it also keeps the package boundary exactly: the
    * corpus reaches the projector as DATA, never as an import. The projector needs
    * the members to EMIT the host's runtime configuration; it must not contain them,
    * or a corpus could not name a moment without editing the projector.

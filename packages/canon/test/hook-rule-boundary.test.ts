@@ -103,12 +103,10 @@ function repoAgentsMd(): string[] {
 // nothing of the anchor restated.
 
 // KIND ⊥ FAMILY, and conflating them is what put a fifth member in `AcceptCell`.
-// `MODEL.md:10` — `Kind ≜ {fragment, agent, rule, skill}`. There is no `hook` Kind:
+// `Kind ≜ {fragment, agent, rule, skill}`. There is no `hook` Kind:
 // `hook` is what a HARNESS calls its mechanism (`schema/src/hook-cell.ts:6-10`), and
 // the cell it names is `Kind ∋ rule`, `activation: rule ↦ scope`. Both families
-// therefore enter `accept()` as `kind:'rule'` — see the ground-conformance property
-// on `AcceptCell` (`forge/src/validate/accept.ts`) and its gate
-// (`ground-conformance.test.ts`). MODEL was NOT amended to admit `hook`.
+// therefore enter `accept()` as `kind:'rule'` (`forge/src/validate/accept.ts`).
 //
 // `family` is what survives the collapse, and it is NOT a Kind: it is the source
 // MODULE the cell was walked from (`src/hooks/*.ts` vs `src/rules/*.ts`), and it
