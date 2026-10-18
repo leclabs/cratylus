@@ -295,24 +295,35 @@ describe('install at project scope', () => {
     }
   });
 
-  it("names as next steps exactly the tiers neither the project's nor the user's settings bind, to bind at user scope", async () => {
-    const homeConfig = join(home, '.omp', 'agent', 'config.yml');
-    writeFileSync(homeConfig, 'modelRoles:\n  fast: "prov/small"\n');
-    mkdirSync(join(repo, '.omp'));
-    writeFileSync(
-      join(repo, '.omp', 'config.yml'),
-      'modelRoles:\n  frontier: "prov/big"\n',
-    );
-    expect(await install({ scope: 'project' })).toBe(0);
-    expect(out).toContain(
-      `bind a model to the tier frontier-other-family in your own settings, under modelRoles in ${homeConfig} or with cratylus install --scope user --model-roles <tier=model,…>`,
-    );
-    expect(out).not.toMatch(/bind a model to [^\n]*\b(fast|frontier),/);
-    expect(out).not.toMatch(/bind a model to the tier (fast|frontier) /);
-    expect(readFileSync(homeConfig, 'utf8')).toBe(
-      'modelRoles:\n  fast: "prov/small"\n',
-    );
-  });
+  /** A settings file binding `role` to `model`, in each layout omp reads. */
+  const layouts: Record<string, (role: string, model: string) => string> = {
+    'block YAML': (role, model) => `modelRoles:\n  ${role}: "${model}"\n`,
+    'flow YAML': (role, model) => `modelRoles: { ${role}: "${model}" }\n`,
+    JSON: (role, model) => `{ "modelRoles": { "${role}": "${model}" } }\n`,
+  };
+
+  it.each(Object.keys(layouts))(
+    "names as next steps exactly the tiers neither the project's nor the user's settings bind, both in %s, to bind at user scope",
+    async (layout) => {
+      const write = layouts[layout] as (role: string, model: string) => string;
+      const homeConfig = join(home, '.omp', 'agent', 'config.yml');
+      const homeText = write('fast', 'prov/small');
+      const projectText = write('frontier', 'prov/big');
+      writeFileSync(homeConfig, homeText);
+      mkdirSync(join(repo, '.omp'));
+      writeFileSync(join(repo, '.omp', 'config.yml'), projectText);
+      expect(await install({ scope: 'project' })).toBe(0);
+      expect(out).toContain(
+        `bind a model to the tier frontier-other-family in your own settings, under modelRoles in ${homeConfig} or with cratylus install --scope user --model-roles <tier=model,…>`,
+      );
+      expect(out).not.toMatch(/bind a model to [^\n]*\b(fast|frontier),/);
+      expect(out).not.toMatch(/bind a model to the tier (fast|frontier) /);
+      expect(readFileSync(homeConfig, 'utf8')).toBe(homeText);
+      expect(readFileSync(join(repo, '.omp', 'config.yml'), 'utf8')).toBe(
+        projectText,
+      );
+    },
+  );
 
   it('leaves a user install asking for each unbound tier and binding the answer in the user settings', async () => {
     let asked: string[] = [];

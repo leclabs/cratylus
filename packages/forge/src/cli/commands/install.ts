@@ -120,6 +120,7 @@ import {
   readManifest,
   rootFiles,
 } from '../../deploy/index.js';
+import { readModelRoles } from '../../deploy/read-model-roles.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import {
   type OfferedRuleset,
@@ -629,14 +630,20 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     routing === undefined
       ? undefined
       : hostConfigPath(routing.configRels, harnessDirIn(adapter, opts.home));
-  const projectConfig =
-    routing === undefined || scope !== 'project'
-      ? undefined
-      : hostConfigPath(routing.projectConfigRels, harnessDir);
+  // What the host binds: at user scope, as the writer finds it, since only what it
+  // can extend is asked and bound; at project scope, nothing is written, so both
+  // files are read whole, in whatever layout they bind in.
   const hostBound = new Map(
-    [projectConfig, configFile].flatMap((file) =>
-      file === undefined ? [] : addModelRoles(file, [], { dry: true }).host,
-    ),
+    routing === undefined || configFile === undefined
+      ? []
+      : scope === 'project'
+        ? [
+            ...readModelRoles(
+              hostConfigPath(routing.projectConfigRels, harnessDir),
+            ),
+            ...readModelRoles(configFile),
+          ]
+        : addModelRoles(configFile, [], { dry: true }).host,
   );
 
   const choices: Record<string, string> = {};
