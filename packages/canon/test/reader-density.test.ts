@@ -161,38 +161,14 @@ async function allSurfaces(): Promise<Surface[]> {
       }
     }
   }
-  // Rule cells: the σ*-signified declaration AND the verbatim payload it projects.
-  // The payload is the one that matters — `repo-preamble` regenerates `/AGENTS.md`,
-  // which every session loads on entry. It went unscanned while being the most
-  // widely-read artifact the corpus emits.
-  for (const rel of await collect('rules/*.ts')) {
-    // `residue`, not `definiens` — a cell's authored identity carries the workflow's
-    // residue of its anchor. The ρ-class `dimension-definiens` below is the OTHER object
-    // (raw `D`, before the anchor's reading) and keeps its own sign; see `rule-cell.ts`.
-    const c = await firstExport<{ residue: string; content: string }>(
-      join(srcRoot, rel),
-    );
-    surfaces.push({
-      label: `rule ${rel} residue`,
-      cls: 'cell-declaration',
-      text: c.residue,
-    });
-    surfaces.push({
-      label: `rule ${rel} content`,
-      cls: 'rule-target-content',
-      text: c.content,
-    });
-  }
   // Hook cells: the DECLARATION only. `workers[].content` is SOURCE CODE, not
   // context — nothing loads a shell script into a reader. Scoring it would convict
   // the authorial "we" of an ordinary code comment, and this gate's own source
   // files would fail first.
   //
-  // `RuleCell.content` above is its structural twin and IS scored, so the split is
-  // now between two same-signed fields — which is correct and not a slip. The class
-  // is fixed by what READS the bytes, never by the field's sign: `/AGENTS.md` lands
-  // in an agent's context, a shell worker lands in a shell. The exclusion is by
-  // CONSTRUCTION, not by name — this loop never reaches `workers` at all.
+  // The class is fixed by what READS the bytes, never by the field's sign: a shell
+  // worker lands in a shell. The exclusion is by CONSTRUCTION, not by name — this
+  // loop never reaches `workers` at all.
   //
   // What a hook SPEAKS to an agent is `HookCell.speech` — a declared, enumerable
   // field as of the worker-template seam, no longer `printf` bodies reachable only
@@ -226,7 +202,6 @@ const OWNED_CLASSES: readonly ArtClass[] = [
   'skill-description',
   'genus-protocol',
   'cell-declaration',
-  'rule-target-content',
 ];
 
 /** Recover {slug, definiens} from a dimension value's `"<slug> ≜ <definiens>"` body. */
@@ -345,7 +320,6 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const labels = surfaces.map((s) => s.label);
     expect(labels).toContain('genus persona personaProtocol');
     expect(labels).toContain('genus prime-principle primePrinciple');
-    expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
     expect(count('skill-description')).toBeGreaterThanOrEqual(10);
   });

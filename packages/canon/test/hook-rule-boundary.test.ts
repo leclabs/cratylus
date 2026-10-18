@@ -1,23 +1,11 @@
-// hook/rule boundary gate — the `hook` and `rule` source-cell FAMILIES are both
-// `Kind ∋ rule` (`activation: rule ↦ scope`; MODEL declares no `hook` Kind and no
-// `event` ActivationMode), and their harness artifacts are PROJECTED TARGETS, not
-// hand-authored. `rule` now has ONE corpus instance: `src/rules/repo-preamble.ts`
-// projects the repo-root `AGENTS.md`. This became legal when the `AGENTS.md@node`
-// dream memory-sink route was RETIRED (the since-deleted `dream` skill routed no
-// node/plan `AGENTS.md`): the repo-root `AGENTS.md` is no longer SelfAuthored memory,
-// so `SelfAuthored ∉ Target` no longer bars it (the earlier S4 conversion, reverted
-// while the sink still existed, now holds). A per-NODE/per-PLAN `AGENTS.md` is a
-// retired convention — none should be tracked except the curated root and any not-yet-
-// swept plan-dir remnant (OUT-OF-SCOPE: not a rule target, awaiting plan retirement).
-// Three falsifiers, held here:
+// hook boundary gate — `hook` source cells are `Kind ∋ rule` (`activation: rule ↦
+// scope`; there is no `hook` Kind and no `event` ActivationMode), and their harness
+// artifacts are PROJECTED TARGETS, not hand-authored. Three falsifiers, held here:
 //
-//   (a) BEHAVIOR-IN-CELL — every in-scope shell hook is owned by a `.ts` source cell,
-//       and the repo-root `AGENTS.md` by a `rule` cell; the committed artifact is a
-//       deploy target. Enforced by the COVERAGE table (no silent cap): both hook
-//       families converted, the root AGENTS.md CONVERTED, every other tracked AGENTS.md
-//       classified OUT-OF-SCOPE (a retired-sink remnant no rule cell may target).
-//   (b) accept()/REFLEXIVE — each hook + rule cell's canonical RESIDUE passes the
-//       static Universal floor (`accept.ts`), and the cells' targets pass REGENERABLE.
+//   (a) BEHAVIOR-IN-CELL — every in-scope shell hook is owned by a `.ts` source cell;
+//       the committed artifact is a deploy target.
+//   (b) accept()/REFLEXIVE — each hook cell's canonical RESIDUE passes the static
+//       Universal floor (`accept.ts`), and the cells' targets pass REGENERABLE.
 //   (c) NO-DIVERGENCE — the committed target == the source cell's bytes, byte-for-
 //       byte (`regenerateTargets --check` finds zero drift). A hand-edit fails here.
 //
@@ -25,7 +13,6 @@
 // corpus context, `corpusContext`) is the architect's canon review, gated off the
 // hermetic floor exactly as in `reader-density.test.ts`.
 
-import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,7 +30,6 @@ import { describe, expect, it } from 'vitest';
 import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 import {
   allHookCells,
-  allRuleCells,
   cellTargets,
   regenerateTargets,
 } from '../tooling/project-targets.js';
@@ -51,110 +37,44 @@ import {
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = requireRepoRoot(canonRoot);
 
-// ── COVERAGE — the honest converted-vs-out-of-scope table (no silent cap) ────────
+// ── the homes map + accept plumbing for the hook cells ──────────────────────────
 //
-// Every convention AGENTS.md in the repo is classified here. `CONVERTED` = a `rule`
-// cell owns it (its committed file is a deploy target): the repo-root `AGENTS.md`
-// (`src/rules/repo-preamble.ts`). `RATCHET` = a deferred hand-authored rule target —
-// EMPTY. `OUT_OF_SCOPE` = a retired-sink remnant a rule cell must NEVER target — every
-// tracked NON-root `*AGENTS.md` (a not-yet-swept plan-dir file, awaiting plan
-// retirement). A repo AGENTS.md matching none of these FAILS the suite (a new
-// convention file cannot be silently un-owned), so the classification is exhaustive.
-
-/** In-scope AGENTS.md a `rule` cell converts — the curated repo-root. */
-const CONVERTED_RULE_TARGETS: ReadonlySet<string> = new Set(['AGENTS.md']);
-
-/** Deferred hand-authored rule targets — EMPTY. */
-const RATCHET_RULE_TARGETS: ReadonlySet<string> = new Set([]);
-
-/**
- * A tracked NON-root `AGENTS.md` is a retired-sink remnant (a plan-dir file awaiting
- * plan retirement) — OUT-OF-SCOPE for rule conversion; a rule cell must never target
- * one. The repo-root `AGENTS.md` is the rule TARGET (CONVERTED), not out-of-scope.
- */
-function isOutOfScope(rel: string): boolean {
-  return rel.endsWith('AGENTS.md') && rel !== 'AGENTS.md';
-}
-
-/** Every TRACKED `AGENTS.md` (git-listed — no node_modules/dist/render, no untracked). */
-function repoAgentsMd(): string[] {
-  const out = execFileSync('git', ['ls-files', '--', '*AGENTS.md'], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-  });
-  return out
-    .split('\n')
-    .filter((l) => l.endsWith('AGENTS.md'))
-    .sort();
-}
-
-// ── the homes map + accept plumbing for the hook + rule cells ───────────────────
+// `definiens: c.residue` is the honest lift `residue → D`. A cell's authored payload
+// carries the workflow's residue and never restates what its anchor invokes; the
+// witness input `AcceptCell.definiens` is `D(c)`, the un-adjudicated text
+// `parsimonious()` reads in order to re-decide that for itself. Feeding a residue in
+// as D is the STRICTEST reading available — the leg must find nothing of the anchor
+// restated.
 //
-// ONE ROSTER, TWO KINDS. `hook` and `rule` cells used to be walked by two loops that
-// differed in one thing only: the hook read `c.residue` and the rule read
-// `c.definiens` — two signs for MODEL's one `residue(c)`, bridged nowhere but here.
-// `RuleCell.residue` closed that, and the two loops collapsed into this roster.
-//
-// What SURVIVES is `definiens: c.residue`, and it is not a bridge: it is the honest
-// lift `residue → D`. A cell's authored payload carries the workflow's residue and never
-// restates what its anchor invokes; the witness input `AcceptCell.definiens` is `D(c)`,
-// the un-adjudicated text `parsimonious()` reads in order to re-decide that for itself.
-// Feeding a residue in as D is the STRICTEST reading available — the leg must find
-// nothing of the anchor restated.
+// There is no `hook` Kind: `hook` is what a HARNESS calls its mechanism
+// (`schema/src/hook-cell.ts`), and the cell it names is `Kind ∋ rule`, so a hook
+// cell enters `accept()` as `kind:'rule'` (`forge/src/validate/accept.ts`). Its HOME
+// (`hook/<id>`) names the source module, which is a different thing from a Kind.
 
-// KIND ⊥ FAMILY, and conflating them is what put a fifth member in `AcceptCell`.
-// `Kind ≜ {fragment, agent, rule, skill}`. There is no `hook` Kind:
-// `hook` is what a HARNESS calls its mechanism (`schema/src/hook-cell.ts:6-10`), and
-// the cell it names is `Kind ∋ rule`, `activation: rule ↦ scope`. Both families
-// therefore enter `accept()` as `kind:'rule'` (`forge/src/validate/accept.ts`).
-//
-// `family` is what survives the collapse, and it is NOT a Kind: it is the source
-// MODULE the cell was walked from (`src/hooks/*.ts` vs `src/rules/*.ts`), and it
-// names the HOME (`hook/<id>` vs `rule/<id>`). PARTITIONED quantifies over homes —
-// `|home(c)|=1 ∧ disjoint(homes)` — so the two families must stay distinguishable
-// there or a hook and a rule sharing an anchor would read as ONE home and the
-// collision would go unconvicted. A home id names a module; a Kind names what a
-// thing IS. Ground enumerates the second only.
-
-/** A hook/rule source cell at the grain both the homes map and the accept lift read. */
+/** A hook source cell at the grain both the homes map and the accept lift read. */
 interface SourceCell {
-  /** MODEL's `class(c)`. BOTH families are `rule` — there is no `hook` Kind. */
+  /** `class(c)` — `rule`; there is no `hook` Kind. */
   readonly kind: 'rule';
-  /** The source-module family. A HOME namespace, ¬ a Kind (see above). */
-  readonly family: 'hook' | 'rule';
   /** α(c) — the anchor the homes map is keyed by. */
   readonly slug: string;
-  /** The home id (`<family>/<cell id>`). */
+  /** The home id (`hook/<cell id>`). */
   readonly home: string;
-  /** MODEL's `residue(c)` — the σ*-signified identity, the workflow's residue of its anchor. */
+  /** `residue(c)` — the σ*-signified identity, the workflow's residue of its anchor. */
   readonly residue: string;
   readonly refs: readonly string[];
 }
 
-/** Every hook + rule source cell, family-tagged. The ONE walk over the corpus. */
+/** Every hook source cell. The ONE walk over the corpus. */
 async function sourceCells(): Promise<SourceCell[]> {
-  return [
-    ...(await allHookCells()).map(
-      (c): SourceCell => ({
-        kind: 'rule',
-        family: 'hook',
-        slug: c.id,
-        home: `hook/${c.id}`,
-        residue: c.residue,
-        refs: c.refs ?? [],
-      }),
-    ),
-    ...(await allRuleCells()).map(
-      (c): SourceCell => ({
-        kind: 'rule',
-        family: 'rule',
-        slug: c.slug,
-        home: `rule/${c.id}`,
-        residue: c.residue,
-        refs: c.refs ?? [],
-      }),
-    ),
-  ];
+  return (await allHookCells()).map(
+    (c): SourceCell => ({
+      kind: 'rule',
+      slug: c.id,
+      home: `hook/${c.id}`,
+      residue: c.residue,
+      refs: c.refs ?? [],
+    }),
+  );
 }
 
 /** The accept grain: `residue → D`, the strictest lift (see above), not a bridge. */
@@ -162,14 +82,7 @@ function acceptCellOf(c: SourceCell): AcceptCell {
   return { kind: c.kind, slug: c.slug, definiens: c.residue, refs: c.refs };
 }
 
-/**
- * One home per hook + rule anchor (the PARTITIONED claim over the source cells).
- *
- * The `hook/<id>` home ids KEEP their prefix and it is not the deleted fifth Kind:
- * a home names the source MODULE that owns the anchor, and PARTITIONED
- * (`|home(c)|=1 ∧ disjoint(homes)`) can only convict a cross-family anchor
- * collision if the two families remain distinguishable in the key.
- */
+/** One home per hook anchor (the PARTITIONED claim over the source cells). */
 async function cellHomes(): Promise<Homes> {
   const homes = new Map<string, string[]>();
   for (const c of await sourceCells()) {
@@ -189,33 +102,14 @@ function targetOf(path: string): Target {
 /** {slug, leg} pins for a cell knowingly failing a static leg. Empty ⇔ clean floor. */
 const ACCEPT_RATCHET: ReadonlyArray<{ slug: string; leg: Leg }> = [];
 
-describe('S4 hook/rule boundary — first-class source cells, projected targets', () => {
+describe('hook boundary — first-class source cells, projected targets', () => {
   it('every shell-hook family is a hook cell (behavior-in-cell)', async () => {
     const ids = (await allHookCells()).map((c) => c.id).sort();
     expect(ids).toEqual(['deploy-drift-notice']);
   });
 
-  it('the only AGENTS.md target is the repo-root rule; every other tracked AGENTS.md is out-of-scope', async () => {
-    // an AGENTS.md target is legal ONLY as the repo-root rule (`repo-preamble`); a
-    // NODE/PLAN AGENTS.md is a retired sink no cell may target.
-    const agentsMdTargets = (await cellTargets())
-      .map((t) => t.path)
-      .filter((p) => p.endsWith('AGENTS.md'));
-    expect(
-      agentsMdTargets,
-      `AGENTS.md targets (only the repo-root is legal): ${agentsMdTargets.join(', ')}`,
-    ).toEqual(['AGENTS.md']);
-    const notClassified = repoAgentsMd().filter(
-      (rel) => !isOutOfScope(rel) && !CONVERTED_RULE_TARGETS.has(rel),
-    );
-    expect(
-      notClassified,
-      `tracked AGENTS.md neither rule-target nor out-of-scope: ${notClassified.join(', ')}`,
-    ).toEqual([]);
-  });
-
   // ── (c) NO-DIVERGENCE — committed target == cell bytes, byte-for-byte ──────────
-  it('every committed hook + rule target is byte-identical to its source cell', async () => {
+  it('every committed hook target is byte-identical to its source cell', async () => {
     for (const t of await cellTargets()) {
       const abs = join(repoRoot, t.path);
       expect(existsSync(abs), `${t.path} exists (${t.source})`).toBe(true);
@@ -274,11 +168,11 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
   });
 
   // ── (b) accept()/REFLEXIVE — the static Universal floor over every hook cell ─────
-  it('every hook + rule cell RESIDUE passes the static Universal floor', async () => {
+  it('every hook cell RESIDUE passes the static Universal floor', async () => {
     const homes = await cellHomes();
     const failures: string[] = [];
-    // walked as SOURCE cells, not accept cells: the accept `kind` is `rule` for
-    // both families now, so the HOME is what still names which cell failed.
+    // walked as SOURCE cells, not accept cells: the HOME is what names which cell
+    // failed.
     for (const source of await sourceCells()) {
       const cell: AcceptCell = acceptCellOf(source);
       const failing = failingLegs(
@@ -312,24 +206,6 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
         `pin ${pin.slug} no longer fails ${pin.leg} — REMOVE it`,
       ).toContain(pin.leg);
     }
-  });
-
-  // ── (a) COVERAGE — no silent cap; every repo AGENTS.md is classified ────────────
-  it('every repo AGENTS.md is classified converted | ratcheted | out-of-scope', () => {
-    const all = repoAgentsMd();
-    const unclassified = all.filter(
-      (rel) =>
-        !CONVERTED_RULE_TARGETS.has(rel) &&
-        !RATCHET_RULE_TARGETS.has(rel) &&
-        !isOutOfScope(rel),
-    );
-    expect(
-      unclassified,
-      `unclassified AGENTS.md (classify converted/ratchet/out-of-scope): ${unclassified.join(', ')}`,
-    ).toEqual([]);
-    // the repo-root AGENTS.md is the sole CONVERTED rule target; ratchet is EMPTY.
-    expect(CONVERTED_RULE_TARGETS.size).toBe(1);
-    expect(RATCHET_RULE_TARGETS.size).toBe(0);
   });
 
   // ── projection stability — every hook cell imports + carries a payload ──────────

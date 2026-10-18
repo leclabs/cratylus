@@ -6,16 +6,6 @@
 //   hook worker → its `worker.targetPath` (a `.sh`/`.md` the harness or `.husky/*`
 //                 dispatcher runs; executable bit set per the cell)
 //
-// `rule` is a live KIND — one of MODEL's FOUR (`Kind ≜ {fragment, agent, rule,
-// skill}`; there is no `hook` Kind, and `hook` cells are `rule` cells whose home
-// module differs). Retiring the `AGENTS.md@node` dream
-// memory-sink route freed the repo-root `AGENTS.md` to become a byte-locked rule
-// TARGET (it is no longer SelfAuthored memory): `src/rules/*.ts` cells project their
-// `content` to `targetPath` here alongside the hook workers — the same field name a
-// hook worker uses, because it is the same concept (`schema/src/rule-cell.ts`).
-//
-//   rule cell → its `targetPath` (a committed instruction file, e.g. `/AGENTS.md`)
-//
 // `regenerateTargets({ check:true })` DIFFS instead of writing (the `--check` mode):
 // a drift between a committed target and its cell's bytes is reported, never
 // silently fixed. This is `deploy` for these locked artifacts (`inject(content(c),
@@ -27,7 +17,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
-import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
+import { type HookCell, resolveWorker } from '@cratylus/schema';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -68,28 +58,11 @@ export async function allHookCells(): Promise<HookCell[]> {
   return cells;
 }
 
-/** Every `rule` source cell (`src/rules/*.ts`), slug-sorted. */
-export async function allRuleCells(): Promise<RuleCell[]> {
-  const cells: RuleCell[] = [];
-  for (const rel of await collect('rules/*.ts')) {
-    cells.push(await firstExport<RuleCell>(join(srcRoot, rel)));
-  }
-  return cells;
-}
-
 /** One regenerable target: its repo-relative path + the cell bytes that own it. */
 export interface CellTarget {
   readonly path: string;
   readonly content: string;
   readonly executable: boolean;
-  /**
-   * Which source FAMILY emitted this target — `src/hooks/*.ts` vs `src/rules/*.ts`.
-   * A projection fact about the emitting module, NOT MODEL's `class(c)`: both
-   * families are `Kind ∋ rule`, and `AcceptCell['kind']` carries no `'hook'`
-   * member. Consumers
-   * partition targets by this; nothing may read it as a Kind.
-   */
-  readonly kind: 'hook' | 'rule';
   readonly source: string;
 }
 
@@ -112,7 +85,7 @@ export interface CellTarget {
 export const COMMITTED_TARGET_HARNESS = 'omp';
 
 /**
- * Flatten every hook worker + rule body into its committed target.
+ * Flatten every hook worker into its committed target.
  *
  * WORKERS ARE RESOLVED HERE, not carried raw. `workers[].content` is a template
  * (`{{fact:…}}` / `{{speech:…}}`) and the committed `.sh` is the RESOLVED bytes — the
@@ -136,19 +109,9 @@ export async function cellTargets(
         path: resolved.targetPath,
         content: resolved.content,
         executable: resolved.executable,
-        kind: 'hook',
         source: `${cell.id}/${resolved.filename}`,
       });
     }
-  }
-  for (const cell of await allRuleCells()) {
-    targets.push({
-      path: cell.targetPath,
-      content: cell.content,
-      executable: false,
-      kind: 'rule',
-      source: cell.id,
-    });
   }
   return targets;
 }
@@ -161,7 +124,7 @@ export interface RegenReport {
 }
 
 /**
- * Regenerate (or, in `check` mode, diff) every hook/rule committed target from its
+ * Regenerate (or, in `check` mode, diff) every hook committed target from its
  * source cell. Deterministic: pure function of the cells (no clock/host).
  */
 export async function regenerateTargets(

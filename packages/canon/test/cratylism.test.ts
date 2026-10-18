@@ -205,8 +205,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
 
   // SCOPE FLOOR — the intrinsic carry rides into foreign repos, blank cwds, and skills
   // invoking a canon cell. Anything in it naming a workspace-local artifact is a
-  // dangling reference THERE, which is ambient content in the intrinsic carry — the very
-  // distinction `prime-principle.ts` draws against `rules/repo-preamble.ts`.
+  // dangling reference THERE, which is ambient content in the intrinsic carry.
   it('the intrinsic preamble names no workspace-local artifact', () => {
     // `¬ contingent on workspace-root AGENTS.md` legitimately names the ambient
     // carry to DISCLAIM it; a bare mention elsewhere is the leak.
@@ -216,7 +215,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     );
     expect(
       stripped.includes('AGENTS.md'),
-      'intrinsic preamble references the workspace-local AGENTS.md — move it to rules/repo-preamble.ts',
+      'intrinsic preamble references the workspace-local AGENTS.md',
     ).toBe(false);
   });
 
@@ -249,8 +248,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // deploy into a consumer repo, where cratylus's tree is absent. Clean today — this
   // leg keeps it that way, since nothing else in the suite would notice a `packages/…`
   // path entering a cell. Completes the seam: intrinsic carry · consumer scaffold ·
-  // projected cells all gated; only `rules/repo-preamble.ts` (cratylus-local, ρ=human)
-  // may name them.
+  // projected cells all gated.
   it('no projected cell names an cratylus-local path', async () => {
     const local = ['packages/'];
     const leaked: string[] = [];

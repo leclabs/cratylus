@@ -8,12 +8,12 @@ pnpm-lock.yaml
 
 # Generated artifacts — must match their generator's output, never Prettier's:
 packages/canon/GLOSSARY.md
-# AGENTS.md is projected from its rule cell (packages/canon/src/rules/repo-preamble.ts)
-# and byte-locked to that cell's content.
-/AGENTS.md
 **/*.generated.*
 **/generated.*
 **/test/ir-bridge/canon.forge.json
+
+# The repo-root AGENTS.md is hand-authored by the operator and kept verbatim.
+/AGENTS.md
 
 # γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
 # not free-form markdown — exempt like the generated render/glossary above.
