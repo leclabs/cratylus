@@ -201,7 +201,7 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
   });
 
   it('names the command whose help to read', async () => {
-    const { err } = await run('install', '--harnes', 'claude');
+    const { err } = await run('install', '--harnes', 'omp');
     expect(err).toContain('cratylus install --help');
   });
 
