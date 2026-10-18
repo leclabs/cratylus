@@ -17,12 +17,12 @@
 // recorded, the latest classification governing a decision's kind and the
 // latest figures for a cut being its figures, and shown only as history.
 //
-// Closing the books (`close`) records the commit at HEAD holding the closed
-// period, the entries it brings forward, verbatim, the entries the period
-// ended, which no reading reads again, each context's identities, the id of
-// each concept's first version, which keep the order the views list them in,
-// and how each reference by a decision's name alone bound; every other entry
-// file then leaves the journal, kept by version control.
+// Closing the books opens a new period: one OPENING entry per current version
+// of each standing item, of the item's own kind, superseding nothing and
+// carrying `broughtForward`, the full sha of the commit at HEAD holding the
+// closed period, and, for a context, its `identity`; every other entry file
+// then leaves the journal, kept by version control. An opening is otherwise an
+// ordinary entry, so a runtime that does not know the field reads it as one.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -43,7 +43,9 @@ interface Stamped {
  *  with no reason; a later one changes it, with the `reason` it was written,
  *  naming the current entries it supersedes (one when settled, all when
  *  competing). Entries written before contexts could change carry no reason,
- *  and those written before descriptions could compete no `supersedes`. */
+ *  and those written before descriptions could compete no `supersedes`. An
+ *  opening carries `identity`, the context's identity, which it keeps across
+ *  periods. */
 export interface ContextEntry extends Stamped {
   readonly kind: 'context';
   readonly name: string;
@@ -51,6 +53,8 @@ export interface ContextEntry extends Stamped {
   readonly relation: string;
   readonly reason?: string;
   readonly supersedes?: readonly string[];
+  readonly identity?: string;
+  readonly broughtForward?: string;
 }
 
 /** The project's purpose: what the project is for, in plain words. The first
@@ -62,6 +66,7 @@ export interface PurposeEntry extends Stamped {
   readonly statement: string;
   readonly reason?: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** A version of a concept that states it: its first (`define`) or one that
@@ -74,15 +79,18 @@ export interface WordedEntry extends Stamped {
   readonly builtFrom: readonly string[];
   readonly reason: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
-/** The retirement of a concept, superseding every current version. */
+/** The retirement of a concept, superseding every current version; an opening
+ *  only where it competes with another current version. */
 export interface RetireEntry extends Stamped {
   readonly kind: 'retire';
   readonly context: string;
   readonly name: string;
   readonly reason: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** A version of a concept: what `history` lists. */
@@ -118,6 +126,7 @@ export interface DecideEntry extends Stamped {
   readonly decisionKind?: DecisionKind;
   readonly cut?: string;
   readonly keeps?: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** The acceptance of an open decision: its name, and its entry (absent on
@@ -165,27 +174,6 @@ export interface EfficiencyEntry extends Stamped {
   readonly tokens: number | null;
 }
 
-/** The closing of the journal's books: the full sha of the commit at HEAD
- *  holding the closed period; the entries brought forward, verbatim as
- *  recorded and in id order; the id of every entry the period held that it
- *  does not bring forward, and every entry a close before it named closed,
- *  which no reading reads again; for each context,
- *  by its name, the id of every context entry the journal has held for it,
- *  earlier closes' included, its identity first and the rest in id order; the id of the
- *  first version of each concept brought forward, by its context and name,
- *  which order the views as they were ordered before; and, for each entry
- *  brought forward that names a decision by its name alone, the entry that
- *  name bound to, or `null` where it bound to none. */
-export interface CloseEntry extends Stamped {
-  readonly kind: 'close';
-  readonly commit: string;
-  readonly broughtForward: readonly object[];
-  readonly closed: readonly string[];
-  readonly identities: Readonly<Record<string, readonly string[]>>;
-  readonly concepts: Readonly<Record<string, Readonly<Record<string, string>>>>;
-  readonly resolved: Readonly<Record<string, string | null>>;
-}
-
 export type Entry =
   | PurposeEntry
   | ContextEntry
@@ -194,19 +182,12 @@ export type Entry =
   | AcceptEntry
   | ClassifyEntry
   | DeprecateEntry
-  | EfficiencyEntry
-  | CloseEntry;
+  | EfficiencyEntry;
 
 /** Whether a field's value fits its place in an entry. */
 type Fits = (value: unknown) => boolean;
 
 const text: Fits = (value) => typeof value === 'string';
-/** Whether `value` is a plain object each of whose values fits `fits`. */
-const dictionary = (value: unknown, fits: Fits): boolean =>
-  typeof value === 'object' &&
-  value !== null &&
-  !Array.isArray(value) &&
-  Object.values(value).every(fits);
 const texts: Fits = (value) => Array.isArray(value) && value.every(text);
 const count: Fits = (value) => typeof value === 'number';
 const optional =
@@ -231,6 +212,7 @@ const worded = {
   builtFrom: texts,
   reason: text,
   supersedes: texts,
+  broughtForward: optional(text),
 } as const;
 
 /** Every kind of entry the journal holds, and the fields an entry of it must
@@ -241,6 +223,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     statement: text,
     reason: optional(text),
     supersedes: texts,
+    broughtForward: optional(text),
   },
   context: {
     at: text,
@@ -249,6 +232,8 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     relation: text,
     reason: optional(text),
     supersedes: optional(texts),
+    identity: optional(text),
+    broughtForward: optional(text),
   },
   define: worded,
   supersede: worded,
@@ -258,6 +243,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     name: text,
     reason: text,
     supersedes: texts,
+    broughtForward: optional(text),
   },
   decide: {
     at: text,
@@ -273,6 +259,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     decisionKind: optional(text),
     cut: optional(text),
     keeps: optional(texts),
+    broughtForward: optional(text),
   },
   accept: {
     at: text,
@@ -309,18 +296,6 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     rounds: count,
     wholeCheckRuns: count,
     tokens: (value) => value === null || count(value),
-  },
-  close: {
-    at: text,
-    commit: text,
-    broughtForward: (value) =>
-      Array.isArray(value) &&
-      value.every((v) => typeof v === 'object' && v !== null),
-    closed: texts,
-    identities: (value) => dictionary(value, texts),
-    concepts: (value) => dictionary(value, (names) => dictionary(names, text)),
-    resolved: (value) =>
-      dictionary(value, (entry) => entry === null || text(entry)),
   },
 };
 

@@ -6,19 +6,19 @@
 // Appending adds exactly one new file and changes no other; no entry is ever
 // edited or moved, so two branches that both appended merge in git as the
 // union of their files. Closing the books is the one change that removes
-// files: it appends a close entry bringing forward what stands, then removes
-// every other entry file, which version control keeps at the commit the close
-// names. Entries are read only from this directory of the working tree, never
-// from another branch, ref, worktree or git history: each entry file, and each
-// entry a close in it brings forward, one per id (the same id is the same
-// entry), ordered by their id. An entry of a kind this runtime does not know,
+// files: it writes one opening entry per current version of each standing
+// item, then removes every other entry file, which version control keeps at
+// the commit the openings name. Entries are read only from this directory of
+// the working tree, never from another branch, ref, worktree or git history,
+// and are ordered by their id. An entry of a kind this runtime does not know,
 // or of a known kind holding a value it does not know, is read past and
 // counted by its kind, so every reading can say what it left uninterpreted; an
 // entry of a known kind that cannot be read is refused.
 //
 // A process mints its ids monotonically; an id is also minted past the
 // journal's last file, so append order holds across the processes that
-// appended.
+// appended. A close mints its openings at one moment, past every file, in the
+// order it is given them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { execFileSync } from 'node:child_process';
@@ -29,6 +29,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -36,7 +37,6 @@ import { join } from 'node:path';
 import { makerAt } from '../../acting-agent.js';
 import { decodeTime, monotonicFactory, ulid } from '../../ulid.js';
 import {
-  type CloseEntry,
   type Draft,
   type Entry,
   isKind,
@@ -49,9 +49,6 @@ export const JOURNAL_DIR = 'design/journal';
 
 /** An entry's file name: its id, then `.json`. */
 const ENTRY_FILE = /^([0-9A-HJKMNP-TV-Z]{26})\.json$/;
-
-/** An entry's id: a ULID. */
-const ENTRY_ID = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
 /** What a reading of the journal read past, written by a newer runtime: each
  *  kind it left uninterpreted, with how many entries of it, and each value it
@@ -120,20 +117,13 @@ export interface Journal {
   readonly root: string;
   /** Who appends to it: the acting agent, else git's user, when either is known. */
   readonly maker: string | undefined;
-  /** Every entry of a kind this runtime knows, in append order: each entry
-   *  file's, and each a close brings forward, one per id, never one a close in
-   *  the directory names closed. */
+  /** Every entry file's entry of a kind this runtime knows, in append order. */
   entries(): readonly Entry[];
   /** What was read past: entries of kinds this runtime does not know, or of a
    *  known kind holding a value it does not know. */
   readPast(): ReadPast;
-  /** The entry files the directory holds, each by its id with its kind, in
-   *  append order. */
-  files(): readonly { readonly id: string; readonly kind: string }[];
-  /** The id of every entry but a close the directory holds, as a file or
-   *  brought forward, and of every entry a close in it names closed: what the
-   *  period held, or a close before it ended, in id order. */
-  held(): readonly string[];
+  /** The id of every entry file the directory holds, in append order. */
+  files(): readonly string[];
   /** Whether the journal's directory holds exactly what `commit` holds there:
    *  each file, hidden ones and those git ignores or is told to overlook
    *  included, with the same content, and nothing more or less. */
@@ -143,12 +133,13 @@ export interface Journal {
   append<D extends Draft>(
     draft: D,
   ): D & { id: string; at: string; by?: string };
-  /** Close the books: append `draft` as `append` does, then remove every other
-   *  entry file; the close entry, and how many files it removed. Where one
-   *  cannot be removed, the journal is restored from HEAD and the close
-   *  removed, and it refuses. */
-  close(draft: Draft<CloseEntry>): {
-    readonly entry: CloseEntry;
+  /** Close the books: write each of `openings`, in order, as one new entry
+   *  stamped with one moment and, when known, who closed, then remove every
+   *  other entry file; the openings, and how many files it removed. Where
+   *  writing or removing fails, the journal is restored from HEAD, the
+   *  openings written removed, and it refuses. */
+  close(openings: readonly Draft[]): {
+    readonly openings: readonly Entry[];
     readonly removed: number;
   };
 }
@@ -181,8 +172,7 @@ export function journalAt(
     | {
         readonly entries: readonly Entry[];
         readonly readPast: ReadPast;
-        readonly files: readonly { id: string; kind: string }[];
-        readonly held: readonly string[];
+        readonly files: readonly string[];
       }
     | undefined;
 
@@ -194,72 +184,41 @@ export function journalAt(
           .map((d) => d.name)
           .sort()
       : [];
-    // Each entry by its id: a file's first, then each a close brings forward
-    // that no file or earlier close holds, since the same id is the same entry.
-    const read = new Map<string, Read>();
-    const files = names.map((name) => {
-      const entry = readEntry(join(dir, name), name, refuse);
-      read.set(entry.id, entry);
-      return { id: entry.id, kind: entry.kind };
-    });
-    /** Every entry a close in the directory names closed: never read. */
-    const closed = new Set<string>();
-    for (const name of names) {
-      const close = read.get(name.slice(0, -'.json'.length)) as Read;
-      if (close.kind !== 'close' || 'newer' in close) continue;
-      for (const id of (close as CloseEntry).closed) closed.add(id);
-      for (const [at, carried] of (
-        close as CloseEntry
-      ).broughtForward.entries()) {
-        const id: unknown = Reflect.get(carried, 'id');
-        const what = `the entry ${typeof id === 'string' ? id : `#${at + 1}`} brought forward by the journal entry ${JOURNAL_DIR}/${name}`;
-        const entry = entryOf(carried, what, undefined, refuse);
-        if (entry.kind === 'close')
-          throw refuse(`${what} is a close entry; a close brings none forward`);
-        if (!read.has(entry.id)) read.set(entry.id, entry);
-      }
-    }
     const entries: Entry[] = [];
     const readPast = new ReadPast();
-    const held = new Set(closed);
-    for (const id of [...read.keys()].sort()) {
-      const entry = read.get(id) as Read;
-      if (entry.kind === 'close') {
-        if (!('newer' in entry)) entries.push(entry);
-        continue;
-      }
-      held.add(id);
-      if (closed.has(id)) continue;
+    const files = names.map((name) => {
+      const entry = readEntry(join(dir, name), name, refuse);
       if ('newer' in entry) readPast.add(entry.kind, entry.newer);
       else entries.push(entry);
-    }
-    cached = { entries, readPast, files, held: [...held].sort() };
+      return entry.id;
+    });
+    cached = { entries, readPast, files };
     return cached;
   };
 
   const maker = makerAt(top);
-  /** Append `draft` as one new entry, past the journal's last file. */
-  const put = <D extends Draft>(draft: D) => {
-    const id = mintAfter(load().files.at(-1)?.id);
-    const entry = {
-      id,
-      at: new Date(decodeTime(id)).toISOString(),
-      ...(maker === undefined ? {} : { by: maker }),
-      ...draft,
-    };
+  /** `draft` stamped with `id`, the moment `time` and, when known, who
+   *  records it. */
+  const stamped = <D extends Draft>(draft: D, id: string, time: number) => ({
+    id,
+    at: new Date(time).toISOString(),
+    ...(maker === undefined ? {} : { by: maker }),
+    ...draft,
+  });
+  /** Write `entry` as its own new file. */
+  const place = (entry: { readonly id: string }) => {
     mkdirSync(dir, { recursive: true });
     // Written aside, then linked into place: the entry appears whole or not
     // at all, and an id already taken is never overwritten.
-    const aside = join(dir, `.${id}.partial`);
+    const aside = join(dir, `.${entry.id}.partial`);
     writeFileSync(aside, `${JSON.stringify(entry, null, 2)}\n`, {
       flag: 'wx',
     });
     try {
-      linkSync(aside, join(dir, `${id}.json`));
+      linkSync(aside, join(dir, `${entry.id}.json`));
     } finally {
       unlinkSync(aside);
     }
-    return entry;
   };
   return {
     root: top,
@@ -267,7 +226,6 @@ export function journalAt(
     entries: () => load().entries,
     readPast: () => load().readPast,
     files: () => load().files,
-    held: () => load().held,
     matches(commit) {
       const git = (args: string[], input?: string) =>
         execFileSync('git', args, {
@@ -310,29 +268,41 @@ export function journalAt(
       return present.every((path, i) => committed.get(path)?.blob === blobs[i]);
     },
     append(draft) {
-      const entry = put(draft);
+      const id = mintAfter(load().files.at(-1));
+      const entry = stamped(draft, id, decodeTime(id));
+      place(entry);
       cached = undefined;
       return entry;
     },
-    close(draft) {
-      const closed = load().files;
-      const entry = put(draft);
+    close(drafts) {
+      const period = load().files;
+      const last = period.at(-1);
+      const time = Math.max(
+        Date.now(),
+        last === undefined ? 0 : decodeTime(last) + 1,
+      );
+      const mint = monotonicFactory(Math.random, () => time);
+      const openings = drafts.map((draft) => stamped(draft, mint(), time));
       cached = undefined;
-      // Every other entry file leaves the journal, the close alone staying;
-      // where one cannot be removed, the journal is put back as HEAD holds it.
+      // The openings enter the journal, then every other entry file leaves
+      // it; where either fails, the journal is put back as HEAD holds it.
       try {
-        for (const { id } of closed) unlinkSync(join(dir, `${id}.json`));
+        for (const opening of openings) place(opening);
+        for (const id of period) unlinkSync(join(dir, `${id}.json`));
       } catch (failure) {
         execFileSync('git', ['checkout', 'HEAD', '--', JOURNAL_DIR], {
           cwd: top,
           stdio: 'ignore',
         });
-        unlinkSync(join(dir, `${entry.id}.json`));
+        // Every opening, and any write of one left aside, leaves again.
+        for (const { id } of openings)
+          for (const file of [`${id}.json`, `.${id}.partial`])
+            rmSync(join(dir, file), { force: true });
         throw refuse(
-          `removing the closed period’s entries failed (${failure instanceof Error ? failure.message : String(failure)}); they are restored from the commit at HEAD and the close removed, so the journal is as it was`,
+          `closing the books failed (${failure instanceof Error ? failure.message : String(failure)}); the journal is restored from the commit at HEAD and the openings written removed, so it is as it was`,
         );
       }
-      return { entry: entry as CloseEntry, removed: closed.length };
+      return { openings: openings as Entry[], removed: period.length };
     },
   };
 }
@@ -363,51 +333,36 @@ type Read =
   | Entry
   | { id: string; kind: string; newer: [field: string, value: string][] };
 
-/** The entry in the file at `path`, named `name`, as read; refuses one that is
- *  not JSON, or as `entryOf` refuses. */
+/** The entry in the file at `path`, named `name`, or, when this runtime does
+ *  not know its kind or a value it holds, its id and kind with each value it
+ *  does not know; refuses one that is not an entry of this journal, or of a
+ *  known kind but lacking what that kind carries. */
 function readEntry(
   path: string,
   name: string,
   refuse: (message: string) => Error,
 ): Read {
+  const what = `the journal entry ${JOURNAL_DIR}/${name}`;
   const entry: unknown = (() => {
     try {
       return JSON.parse(readFileSync(path, 'utf8'));
     } catch {
-      throw refuse(`the journal entry ${JOURNAL_DIR}/${name} is not JSON`);
+      throw refuse(`${what} is not JSON`);
     }
   })();
-  return entryOf(
-    entry,
-    `the journal entry ${JOURNAL_DIR}/${name}`,
-    name.slice(0, -'.json'.length),
-    refuse,
-  );
-}
-
-/** `entry`, described as `what`, as read; `id` the id its file names it by,
- *  none for an entry a close brings forward, whose id is then any ULID. Refuses
- *  one that is not an entry of this journal, or of a known kind but lacking
- *  what that kind carries. */
-function entryOf(
-  entry: unknown,
-  what: string,
-  id: string | undefined,
-  refuse: (message: string) => Error,
-): Read {
-  // It names its id, the one its file names, and its kind; one without both is no entry.
+  // Its file names its id, and it names its kind; one without both is no entry.
   if (
     typeof entry !== 'object' ||
     entry === null ||
     !('id' in entry) ||
-    typeof entry.id !== 'string' ||
-    (id === undefined ? !ENTRY_ID.test(entry.id) : entry.id !== id) ||
+    entry.id !== name.slice(0, -'.json'.length) ||
     !('kind' in entry) ||
     typeof entry.kind !== 'string' ||
     entry.kind === ''
   )
     throw refuse(`${what} is not an entry of this journal`);
-  if (!isKind(entry.kind)) return { id: entry.id, kind: entry.kind, newer: [] };
+  if (!isKind(entry.kind))
+    return { id: entry.id as string, kind: entry.kind, newer: [] };
   const fields = entry as Record<string, unknown>;
   const missing = unfit(fields, entry.kind);
   if (missing.length > 0)
@@ -416,6 +371,6 @@ function entryOf(
     );
   const newer = newerValues(fields, entry.kind);
   return newer.length > 0
-    ? { id: entry.id, kind: entry.kind, newer }
+    ? { id: entry.id as string, kind: entry.kind, newer }
     : (entry as Entry);
 }
