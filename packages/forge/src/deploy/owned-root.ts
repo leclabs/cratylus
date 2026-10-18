@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE OWNED ROOT — everything cratylus places for one user on one harness, under one
-// directory it owns: `<home>/.cratylus/<harness>/`.
+// THE OWNED ROOT — everything cratylus places on one harness at one scope, under one
+// directory it owns: `<home>/.cratylus/<harness>/` for the user, or
+// `<project>/.cratylus/<harness>/` inside one project (`install-scope.ts`).
 //
 // What lives there is cratylus's by CONSTRUCTION, never inferred from a name, a
 // content or a digest: the root is cratylus's alone, so an install replaces it whole
@@ -19,17 +20,21 @@
 //   delivered/<origin>/<context>.json
 //                           each context the release delivers, read-only: handed in
 //                           by the command that holds the release and placed as given
-//   installation.json       what install did outside the root: the references it
-//                           placed; the practices and the rules it installed, by name;
-//                           and which of the operator's choices it has been answered,
-//                           never their values, which are the host's own settings
+//   installation.json       what install did outside the root: its scope (user or
+//                           project; absent, user); the references it placed; the
+//                           practices and the rules it installed, by name; and which
+//                           of the operator's choices it has been answered, never
+//                           their values, which are the host's own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
-// every project of a user from its plugin directory (`~/.omp/plugins`), as `omp plugin
-// link` places one: a link `node_modules/<package>` → the root, and the package's
-// dependency entry in the directory's `package.json`. Those are the references; an
-// uninstall finds each from where it points, into the root, so none is left dangling
-// when the root or its record was edited or removed.
+// every project of a user from its plugin directory (`~/.omp/plugins`), and for one
+// project from that project's (`<project>/.omp/plugins`, which shadows a user package
+// of the same name), as `omp plugin link` places one: a link `node_modules/<package>`
+// → the root, and the package's dependency entry in the directory's `package.json`;
+// at project scope each is relative, so a clone elsewhere resolves it, and the
+// directory's `.gitignore` gains the lines that keep the link committable. Those are
+// the references; an uninstall finds each from where it points, into the root, so
+// none is left dangling when the root or its record was edited or removed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -48,11 +53,13 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   DELIVERED_DIR,
   INSTALLATIONS_DIR,
+  INSTALLATION_RECORD_FILE,
+  type InstallScope,
   RUNTIME_CONFIG_FILE,
 } from '@cratylus/runtime/runtime-config';
 import { CLI_BIN } from '../bin-name.js';
@@ -84,15 +91,19 @@ export interface DeliveredDocument {
   readonly content: string;
 }
 
-/** The record of what install did outside the root, kept inside it. */
-export const INSTALLATION_RECORD = 'installation.json';
-
 /** The package manifest the harness reads the root as a package by. */
 const PACKAGE_MANIFEST = 'package.json';
 
+/** The ignore file in the package directory at project scope, whose lines keep the
+ *  link committable in a project that ignores `node_modules`. */
+const IGNORE_FILE = '.gitignore';
+
 /** A reference the harness's own surfaces hold into the root, by its path relative to
  *  the harness's home: a link to the root, or a dependency entry naming it in a
- *  package manifest (`created` where install made that manifest). */
+ *  package manifest (`created` where install made that manifest), or, at project
+ *  scope, the block of an ignore file that re-includes the link (`created` where
+ *  install made that file; `terminated` where install ended the host's last line to
+ *  append the block). */
 export type OwnedReference =
   | { readonly kind: 'link'; readonly path: string }
   | {
@@ -100,6 +111,12 @@ export type OwnedReference =
       readonly path: string;
       readonly name: string;
       readonly created: boolean;
+    }
+  | {
+      readonly kind: 'ignore';
+      readonly path: string;
+      readonly created: boolean;
+      readonly terminated: boolean;
     };
 
 /** An operator's choice install asks for and writes as the host's own setting:
@@ -108,6 +125,9 @@ export type OperatorChoice = 'agentStatus';
 
 /** What install did outside the root, and the practices and rules it installed. */
 export interface InstallationRecord {
+  /** Where the installation is: for the user, or inside one project. Absent in a
+   *  record written before scopes, which is a user installation. */
+  readonly scope?: InstallScope;
   /** The practices installed, in the corpus's order; absent where the corpus
    *  declares none. */
   readonly practices?: readonly string[];
@@ -122,14 +142,15 @@ export interface InstallationRecord {
   readonly answered?: readonly OperatorChoice[];
 }
 
-/** The owned root of `adapter`'s harness under `home` (the process's home when none
- *  is given): `<home>/.<bin>/<harness>`. */
+/** The owned root of `adapter`'s harness under `base` (the process's home when none
+ *  is given): `<base>/.<bin>/<harness>`. The base is the home for the user's
+ *  installation, and the project for a project's. */
 export function ownedRootIn(
   adapter: Pick<HarnessAdapter, 'name'>,
-  home?: string | null,
+  base?: string | null,
 ): string {
   return join(
-    home ? resolve(home) : homedir(),
+    base ? resolve(base) : homedir(),
     INSTALLATIONS_DIR,
     adapter.name,
   );
@@ -146,7 +167,7 @@ function packageName(adapter: Pick<HarnessAdapter, 'name'>): string {
 export function readInstallationRecord(
   root: string,
 ): InstallationRecord | null {
-  const file = join(root, INSTALLATION_RECORD);
+  const file = join(root, INSTALLATION_RECORD_FILE);
   if (!existsSync(file)) return null;
   try {
     const doc: unknown = JSON.parse(readFileSync(file, 'utf8'));
@@ -160,6 +181,18 @@ export function readInstallationRecord(
   } catch {
     return null;
   }
+}
+
+/** Whether `dir` holds files but no installation record: an author's render tree
+ *  (`cratylus project` writes one to `.cratylus/<harness>`), which an installation
+ *  never takes over (decision 0311). */
+export function holdsRenderTree(dir: string): boolean {
+  return (
+    existsSync(dir) &&
+    statSync(dir).isDirectory() &&
+    readdirSync(dir).length > 0 &&
+    !existsSync(join(dir, INSTALLATION_RECORD_FILE))
+  );
 }
 
 /**
@@ -285,7 +318,7 @@ export function placeOwnedRoot(opts: {
       readOnly: true as const,
     })),
     {
-      path: INSTALLATION_RECORD,
+      path: INSTALLATION_RECORD_FILE,
       // The record names the version that projected this root too, beside what it did.
       content: `${JSON.stringify({ ...(opts.version === undefined ? {} : { version: opts.version }), ...opts.record }, null, 2)}\n`,
     },
@@ -343,27 +376,115 @@ function dependenciesOf(doc: Record<string, unknown>): Record<string, unknown> {
     : {};
 }
 
+/** The block of the package directory's ignore file that keeps the link to the
+ *  package `name` committable where the project ignores `node_modules`: a comment
+ *  naming cratylus, the directory re-included, everything in it ignored, the link
+ *  re-included. Cratylus's by its content, found wherever it stands. */
+function ignoreBlock(name: string): string[] {
+  return [
+    `# ${CLI_BIN}: commit the link to the project installation`,
+    '!/node_modules/',
+    '/node_modules/*',
+    `!/node_modules/${name}`,
+  ];
+}
+
+/** Where `block` stands in `text` as contiguous whole lines: the index of its first
+ *  line among `text`'s lines (each with its terminator), or -1. */
+function blockAt(pieces: readonly string[], block: readonly string[]): number {
+  for (let at = 0; at + block.length <= pieces.length; at++) {
+    if (
+      block.every(
+        (line, k) => (pieces[at + k] as string).replace(/\r?\n$/, '') === line,
+      )
+    )
+      return at;
+  }
+  return -1;
+}
+
+/**
+ * At project scope, the block of the package directory's ignore file that re-includes
+ * the link: kept where it already stands, else appended whole at the file's end, so it
+ * is read after every line of the host's; the file is made where there is none. No
+ * line of the host's is read or touched, one identical to a line of the block
+ * included. The reference records whether install made the file, and whether it ended
+ * the host's last line to append the block, so uninstall leaves the host's bytes.
+ */
+function ignoreLink(opts: {
+  readonly harnessDir: string;
+  readonly packageDir: string;
+  readonly name: string;
+  readonly prior: InstallationRecord | null;
+  readonly dry: boolean;
+}): { reference: OwnedReference; changed?: string } {
+  const rel = join(opts.packageDir, IGNORE_FILE);
+  const file = join(opts.harnessDir, rel);
+  const existed = existsSync(file);
+  const text = existed ? readFileSync(file, 'utf8') : '';
+  const block = ignoreBlock(opts.name);
+  const priorRef = opts.prior?.references.find(
+    (r) => r.kind === 'ignore' && r.path === rel,
+  );
+  if (blockAt(text.split(/(?<=\n)/), block) >= 0) {
+    return {
+      reference:
+        priorRef ??
+        ({
+          kind: 'ignore',
+          path: rel,
+          created: false,
+          terminated: false,
+        } as const),
+    };
+  }
+  const terminated = text !== '' && !text.endsWith('\n');
+  if (!opts.dry) {
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(
+      file,
+      `${text}${terminated ? '\n' : ''}${block.join('\n')}\n`,
+    );
+  }
+  return {
+    reference: {
+      kind: 'ignore',
+      path: rel,
+      created: priorRef?.kind === 'ignore' ? priorRef.created : !existed,
+      terminated,
+    },
+    changed: file,
+  };
+}
+
 /**
  * Make the harness's own surfaces refer into `root`: where the harness loads an
- * extension package by name for every project (`adapter.packageDir`), a link to the
- * root under the package's name, and the package's dependency entry, naming the root,
- * in that directory's manifest — as the harness's own `plugin link` would. Whatever
- * else the directory holds is the host's and stays. A reference location the host
- * holds otherwise — a path that is not a link, a link pointing elsewhere, an entry
- * naming something else — is the host's: left as it is, claimed in no record, and
- * reported with what the operator must do. `prior` is the record of the installation
- * this one replaces, which says whether install made the manifest.
+ * extension package by name (`adapter.packageDir`), a link to the root under the
+ * package's name, and the package's dependency entry, naming the root, in that
+ * directory's manifest — as the harness's own `plugin link` would. Whatever else the
+ * directory holds is the host's and stays. A reference location the host holds
+ * otherwise — a path that is not a link, a link pointing elsewhere, an entry naming
+ * something else — is the host's: left as it is, claimed in no record, and reported
+ * with what the operator must do. `prior` is the record of the installation this one
+ * replaces, which says whether install made the manifest.
+ *
+ * At user scope the references name the root absolutely, as `plugin link` does. At
+ * project scope each is relative to where it stands, so a clone of the project
+ * elsewhere resolves it, and the directory's ignore file gains the lines that keep
+ * the link committable where the project ignores `node_modules`.
  */
 export function linkOwnedRoot(opts: {
   readonly adapter: HarnessAdapter;
   readonly harnessDir: string;
   readonly root: string;
+  readonly scope: InstallScope;
   readonly prior: InstallationRecord | null;
   readonly dry: boolean;
 }): ReferenceReport {
   const { adapter, harnessDir, root, dry } = opts;
   if (adapter.packageDir === undefined)
     return { references: [], changed: [], left: [] };
+  const project = opts.scope === 'project';
   const name = packageName(adapter);
   const references: OwnedReference[] = [];
   const changed: string[] = [];
@@ -387,8 +508,23 @@ export function linkOwnedRoot(opts: {
       changed.push(link);
       if (!dry) {
         mkdirSync(dirname(link), { recursive: true });
-        symlinkSync(root, link, 'dir');
+        symlinkSync(
+          project ? relative(dirname(link), root) : root,
+          link,
+          'dir',
+        );
       }
+    }
+    if (project) {
+      const ignored = ignoreLink({
+        harnessDir,
+        packageDir: adapter.packageDir,
+        name,
+        prior: opts.prior,
+        dry,
+      });
+      references.push(ignored.reference);
+      if (ignored.changed !== undefined) changed.push(ignored.changed);
     }
   }
 
@@ -403,7 +539,9 @@ export function linkOwnedRoot(opts: {
     });
     return { references, changed, left };
   }
-  const href = pathToFileURL(root).href;
+  const href = project
+    ? `file:${relative(dirname(manifest), root)}`
+    : pathToFileURL(root).href;
   const deps = dependenciesOf(read.doc);
   if (Object.hasOwn(deps, name) && deps[name] !== href) {
     left.push({
@@ -457,12 +595,15 @@ function pruneEmpty(dir: string, stop: string): void {
  * it. Whatever else those surfaces hold is the host's and stays. The record, where it
  * can be read, says only whether install made the manifest (so it goes once nothing
  * else is left in it) and which recorded references the host has since pointed
- * elsewhere, left and reported.
+ * elsewhere, left and reported. At project scope the ignore file's block re-including
+ * the link is taken back too, found by its content wherever it stands, and no line of
+ * the host's with it; the file goes where install made it and nothing else is left.
  */
 export function unlinkOwnedRoot(opts: {
-  readonly adapter: Pick<HarnessAdapter, 'packageDir'>;
+  readonly adapter: Pick<HarnessAdapter, 'name' | 'packageDir'>;
   readonly harnessDir: string;
   readonly root: string;
+  readonly scope: InstallScope;
   readonly record: InstallationRecord | null;
   readonly dry: boolean;
 }): ReferenceReport {
@@ -495,6 +636,47 @@ export function unlinkOwnedRoot(opts: {
     if (!dry) {
       unlinkSync(abs);
       pruneEmpty(dirname(abs), harnessDir);
+    }
+  }
+
+  // The ignore file's block re-including the link, at project scope.
+  if (opts.scope === 'project') {
+    const ignoreRel = join(adapter.packageDir, IGNORE_FILE);
+    const ignore = join(harnessDir, ignoreRel);
+    const recordedIgnore = opts.record?.references.find(
+      (r) => r.kind === 'ignore' && r.path === ignoreRel,
+    );
+    const ref =
+      recordedIgnore?.kind === 'ignore'
+        ? recordedIgnore
+        : ({
+            kind: 'ignore',
+            path: ignoreRel,
+            created: false,
+            terminated: false,
+          } as const);
+    const pieces = existsSync(ignore)
+      ? readFileSync(ignore, 'utf8').split(/(?<=\n)/)
+      : [];
+    const block = ignoreBlock(packageName(adapter));
+    const at = blockAt(pieces, block);
+    if (at >= 0) {
+      pieces.splice(at, block.length);
+      // The terminator install gave the host's last line goes with the block, while
+      // nothing of the host's has come after it.
+      if (ref.terminated && at === pieces.length && at > 0)
+        pieces[at - 1] = (pieces[at - 1] as string).replace(/\n$/, '');
+      const next = pieces.join('');
+      references.push(ref);
+      changed.push(ignore);
+      if (!dry) {
+        if (ref.created && next === '') {
+          unlinkSync(ignore);
+          pruneEmpty(dirname(ignore), harnessDir);
+        } else {
+          writeFileSync(ignore, next);
+        }
+      }
     }
   }
 
@@ -557,7 +739,11 @@ export function unlinkOwnedRoot(opts: {
         lstatSync(abs, { throwIfNoEntry: false }) !== undefined
       )
         left.push({ what: abs, why: `it no longer points at ${root}` });
-    } else if (Object.hasOwn(deps, ref.name) && !ours.includes(ref.name)) {
+    } else if (
+      ref.kind === 'dependency' &&
+      Object.hasOwn(deps, ref.name) &&
+      !ours.includes(ref.name)
+    ) {
       left.push({
         what: `${abs}: dependencies.${ref.name}`,
         why: `it no longer names ${root}`,

@@ -216,6 +216,7 @@ describe('install — model roles', () => {
         modelRoles: undefined,
         prompts: {
           harness: async () => 'omp',
+          scope: async () => 'user',
           practices: async (offered) => offered.map((p) => p.name),
           rules: async () => [],
           routes: async (questions) => {

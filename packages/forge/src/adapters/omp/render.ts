@@ -151,6 +151,11 @@ const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
+/** A project's settings file omp reads beside the user's, relative to the project's
+ *  `.omp`: `config.yml`, the file omp writes a project's model roles to. A project
+ *  installation reads and writes the operator's choices there (decision 0311). */
+const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
+
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
@@ -158,6 +163,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
  *  role only as the operator answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   tierRole: (tier) => tier,
   agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
 };
@@ -200,6 +206,7 @@ export const ompDispatchIsolation: DispatchIsolation = {
  *  separator is carried. */
 export const ompStatusSegment: StatusSegmentHost = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   segment: 'status',
   defaultPreset: 'default',
   defaultLayout: {
@@ -838,7 +845,7 @@ const TURN_EXEC: readonly string[] = [
   '      }',
   '      const envelope = join(dir, "envelope.json");',
   '      writeFileSync(envelope, JSON.stringify({ session_id: sessionId, cwd: pi.cwd, ...full }));',
-  '      return verdictOf(await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]));',
+  '      return verdictOf(await pi.exec("sh", ["-c", `${SET_INSTALLATION}${cmd} < ${envelope}`, "sh", INSTALLATION]));',
   '    } finally {',
   '      rmSync(dir, { recursive: true, force: true });',
   '    }',
@@ -869,9 +876,10 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
       ? [
           "import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
           "import { tmpdir } from 'node:os';",
-          "import { join } from 'node:path';",
+          "import { dirname, join } from 'node:path';",
         ]
-      : []),
+      : ["import { dirname } from 'node:path';"]),
+    "import { fileURLToPath } from 'node:url';",
     // `ExtensionAPI`, NOT `HookAPI`. omp's own `docs/hooks.md` closes with the
     // fact this module got wrong: "The package root does not re-export `HookAPI`;
     // import legacy hook types from the hooks subpath." A default export is an
@@ -881,6 +889,14 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     // who typechecked an emitted module.
     "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
+    // THE WORKERS ARE THIS INSTALLATION'S. A hook command names its worker under
+    // `$<INSTALLATION_ENV>`, and every exec sets it to the root this module sits in, so
+    // a project's installation runs its own workers beside the user's, wherever the
+    // project is. The root goes in as the script's `$1`, never spliced into its text.
+    '// The installation this module was placed in: the root above its `extensions/`.',
+    'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
+    `const SET_INSTALLATION = ${JSON.stringify(`export ${INSTALLATION_ENV}="$1"; `)};`,
+    '',
     ...(needsTurn ? TURN_BRIDGE : []),
     'export default function (pi: ExtensionAPI) {',
     // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
@@ -889,9 +905,9 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     // load with "Spread syntax requires ...iterable[Symbol.iterator] to be a
     // function" — measured against the installed binary, invisible to a stubbed
     // `pi`. There is no `shell` option either (`ExecOptions` is signal · timeout ·
-    // cwd), and the commands are shell text carrying `$HOME`, so the shell is
-    // named explicitly.
-    '  const exec = (cmd: string) => pi.exec("sh", ["-c", cmd]);',
+    // cwd), and the commands are shell text carrying the installation's variable, so
+    // the shell is named explicitly.
+    '  const exec = (cmd: string) => pi.exec("sh", ["-c", `${SET_INSTALLATION}${cmd}`, "sh", INSTALLATION]);',
     ...(needsTurn ? TURN_EXEC : []),
     ...registrations,
     '}',
@@ -1670,10 +1686,11 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // agent declaration names one of its own, so no event can be narrowed to one
   // agent. A hook an agent composes is reported, never widened to every session.
   scopes: () => false,
-  // `$HOME` and not a resolved path: the emitted module is read at RUN time on
-  // whatever host it lands on, so it must not bake in the projecting machine's home.
+  // `$<INSTALLATION_ENV>` and not a resolved path: the emitted module is read at RUN
+  // time wherever its installation lands (a user's home, or a project a clone moved),
+  // and sets the variable to its own root for every hook it runs.
   hookCommand: (anchor, workerFilename) =>
-    `sh "$HOME/.${CLI_BIN}/omp/hooks/${anchor}/${workerFilename}"`,
+    `sh "$${INSTALLATION_ENV}/hooks/${anchor}/${workerFilename}"`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),

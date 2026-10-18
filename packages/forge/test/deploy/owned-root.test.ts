@@ -54,6 +54,7 @@ const link = (h: Host, prior: InstallationRecord | null = null) =>
     adapter: ompHarnessAdapter,
     harnessDir: h.harnessDir,
     root: h.root,
+    scope: 'user',
     prior,
     dry: false,
   });
