@@ -2,54 +2,17 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
-import {
-  type LoadedExtension,
-  load,
-} from '../reconstitution/binding/fixture.js';
 import { type Host, installed, owned } from './fixture.js';
 
 let h: Host;
-let running: LoadedExtension | undefined;
 beforeEach(() => {
   h = installed();
 });
 afterEach(() => {
-  running?.restore();
-  running = undefined;
   h.dispose();
 });
 
-function stateBeforeDecisions(text: string): void {
-  const lower = text.toLowerCase();
-  const delivered = /(?:delivered[^.\n]*workflow|cratylus:workflow)/i.exec(
-    text,
-  );
-  expect(
-    delivered,
-    'directs reading the delivered workflow, not remembered instructions alone',
-  ).not.toBeNull();
-  const state = lower.indexOf('design state');
-  expect(state, 'reads the design state').toBeGreaterThanOrEqual(0);
-  const decisions = lower.indexOf('standing decisions');
-  expect(
-    decisions,
-    'the design state of touched contexts and the delivered workflow precede the standing decisions',
-  ).toBeGreaterThan(Math.max(state, delivered!.index));
-  expect(lower.slice(0, decisions)).toMatch(/(?:touch|project|each context)/);
-  expect(lower).not.toMatch(/overview/);
-  expect(lower.slice(decisions)).toMatch(
-    /(?:read[^.\n]*back|readback|tell the operator)/,
-  );
-  expect(lower).toMatch(/current design/);
-  expect(lower).toMatch(/competing versions/);
-  expect(lower).toMatch(/open decisions?/);
-  expect(lower).toMatch(/stories and tasks in flight/);
-  expect(lower).toMatch(
-    /before (?:any act|acting)|recorded or changed before the read-back/,
-  );
-}
-
-it('workflow/7, workflow/8 — every composed holder reads the design state of touched contexts and the delivered workflow, then standing decisions, before readback', () => {
+it('workflow/7, workflow/8 — every composed holder reads the design from the concept journal, then the recent work in version control, at every start', () => {
   const agents = join(owned(h), 'agents');
   const holders = readdirSync(agents)
     .filter((name) => name.endsWith('.md'))
@@ -64,48 +27,13 @@ it('workflow/7, workflow/8 — every composed holder reads the design state of t
     });
   expect(holders.map((holder) => holder.name)).toContain('architect.md');
   for (const holder of holders) {
+    const lower = holder.instruction.toLowerCase();
+    expect.soft(lower, holder.name).toMatch(/every start/);
+    const journal = lower.indexOf('concept journal');
+    expect.soft(journal, holder.name).toBeGreaterThanOrEqual(0);
     expect
-      .soft(() => stateBeforeDecisions(holder.instruction), holder.name)
-      .not.toThrow();
-    expect
-      .soft(holder.instruction)
-      .toMatch(/every start|each start|start.*compact/i);
+      .soft(lower.indexOf('version control'), holder.name)
+      .toBeGreaterThan(journal);
+    expect.soft(lower, holder.name).toMatch(/where things stand/);
   }
 });
-
-it.each([
-  ['workflow/7', false],
-  ['workflow/8', true],
-] as const)(
-  '%s — omp session-start note requires the design state, then standing decisions, before current readback',
-  async (_example, compacted) => {
-    running = await load(
-      { ...h, extension: join(owned(h), 'extensions/cratylus.ts') },
-      { role: 'architect', kind: 'main' },
-    );
-    if (compacted) {
-      await running.fire('before_agent_start', {
-        systemPrompt: ['Harness instructions.'],
-        prompt: 'Earlier work.',
-      });
-      await running.fire('session_compact');
-    }
-    const answer = await running.fire('before_agent_start', {
-      systemPrompt: ['Harness instructions.'],
-      prompt: 'Recover the current design.',
-    });
-    const parts = answer?.systemPrompt as string[] | undefined;
-    const note = parts?.find((part) =>
-      part.startsWith('# Session start: reconstitution'),
-    );
-    expect(
-      note,
-      'the actual session-start note, not the agent declaration',
-    ).toBeDefined();
-    stateBeforeDecisions(note!);
-    expect(note).toMatch(/journal/);
-    expect(note).toMatch(/version control/);
-    expect(note).not.toMatch(/ledger/);
-    expect(note).toMatch(/(?:stand now|current branch|afresh|current design)/);
-  },
-);

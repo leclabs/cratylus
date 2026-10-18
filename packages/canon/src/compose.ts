@@ -28,7 +28,6 @@ import {
   kebabToCamel,
 } from '@cratylus/schema';
 import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-import { personaProtocol } from './genus/persona.js';
 import { type Agent, type Dimension, MANIFEST } from './manifest.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
@@ -198,7 +197,6 @@ function agentOf(
       effort: slotAnchor('model', 'effort'),
     },
     ...(Object.keys(contract).length > 0 ? { contract } : {}),
-    persistence: personaProtocol,
     ...vector,
   } as unknown as Agent;
 }

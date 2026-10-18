@@ -19,7 +19,6 @@ import {
   body,
   camel,
   descriptions,
-  expectedBody,
   factorNames,
   factors,
   marks,
@@ -342,7 +341,7 @@ describe('catalog re-cut: the visible examples', () => {
         const value = module[camel(file)];
         const text = typeof value === 'string' ? value : value.body;
         expect(text, `${factor}/${file}`).toEqual(
-          expectedBody(factor as Factor, anchor),
+          body(factor as Factor, anchor),
         );
       }
     }
@@ -379,7 +378,7 @@ describe('catalog re-cut: rulings 0084–0085', () => {
     );
   });
 
-  it('0078: ordering is fixed bottom-line-up-front for the architect and otherwise unset', () => {
+  it('0078: ordering is bottom-line-up-front for the architect and otherwise unset', () => {
     for (const name of roleNames) {
       const ordering = requireDefined(
         vectorOf(composedRole(name)).communicationStyle,
@@ -394,7 +393,7 @@ describe('catalog re-cut: rulings 0084–0085', () => {
     }
   });
 
-  it('0085: reconstitution reads the design state before standing decisions and readback', () => {
+  it("0085: reconstitution reads the concept journal's design, then the recent work in version control", () => {
     const procedure = requireDefined(
       vectorOf(composedRole('architect')).procedure,
       'architect.procedure',

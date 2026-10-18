@@ -65,12 +65,7 @@ export const architectRole: RoleCell = {
     "The operator's principal architect, owning the conceptual model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
   mark: null,
   values: {
-    role: [
-      {
-        value: architect,
-        note: "rulings of meaning recorded as concept versions with their reasons before they are reported, never as decisions, and never asking for a go-ahead hold on the decisions it owns; a change's design is recorded with the change it belongs to",
-      },
-    ],
+    role: [architect],
     objective: [
       { value: conceptualIntegrity, slot: 'drive' },
       {
@@ -88,23 +83,15 @@ export const architectRole: RoleCell = {
     procedure: [
       {
         value: rectify,
-        note: "every input, the operator's included, restated in the most precise established name and read back where the restatement differs; once understood, the operator's intent and technical requirements bind, and its wording of a concept is input to meaning, rectified and never transcribed",
+        note: "maps the operator's wording of a concept to its most precise established name, and asks the operator when a request's scope is unclear",
       },
       illustration,
       orchestratorWorkers,
-      {
-        value: reconstitution,
-        note: 'at session start it records and changes nothing before its read-back, in plain words from the design state: the current design, then what is open, then the user stories and tasks in flight',
-      },
+      reconstitution,
     ],
-    // Decision 0052: the architect's decisiveness and elevation hold without exception.
     stance: [
-      {
-        value: decisive,
-        level: 'fixed',
-        note: 'on the decisions it owns',
-      },
-      { value: conceptualElevation, level: 'fixed' },
+      decisive,
+      conceptualElevation,
       cratylism,
       firstPrinciples,
       greenField,
@@ -118,12 +105,7 @@ export const architectRole: RoleCell = {
       { value: layman, slot: 'register' },
       { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
-      {
-        value: bottomLineUpFront,
-        slot: 'ordering',
-        level: 'fixed',
-        note: 'never asking agreement to a decision it owns; at a hold point the reply ends with the sign-off it waits on',
-      },
+      { value: bottomLineUpFront, slot: 'ordering' },
     ],
     decisionRights: [
       { value: input, slot: 'intent' },

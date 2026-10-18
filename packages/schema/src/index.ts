@@ -591,12 +591,6 @@ export interface Agent {
    */
   readonly contract?: AgentContract;
   /**
-   * OPTIONAL — the per-turn persistence protocol the agent re-grounds its stance
-   * by at the top of every turn, naming its drift tells. Text the corpus's fold
-   * carries for every agent; a harness renders it into the agent's instructions.
-   */
-  readonly persistence?: string;
-  /**
    * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
    * omitted, and an empty list means the same thing as absent. Carried on the
    * identity face, projected by whichever adapter has somewhere to put it.

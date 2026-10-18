@@ -34,7 +34,6 @@ export {
   type Stated,
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-export { personaProtocol } from './genus/persona.js';
 export { MANIFEST };
 export { architectRole } from './roles/architect.js';
 export { builderRole } from './roles/builder.js';

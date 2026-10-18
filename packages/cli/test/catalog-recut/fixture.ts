@@ -17,14 +17,12 @@ import { expect, inject } from 'vitest';
 import { parseYaml } from '../yaml.js';
 import type { ExpectedEntry, Vector } from './master.js';
 import {
-  Meaning,
   agentFactors,
   agentNames,
   anchorOf,
   camel,
   deliverableSections,
   factors,
-  personaProtocol,
   requireDefined,
 } from './master.js';
 export const repo = fileURLToPath(new URL('../../../..', import.meta.url));
@@ -244,10 +242,7 @@ export function expectProjection(
   expect(declaration.front.description).toBe(description);
   if (mark) expect(declaration.front.mark).toBe(mark);
   else expect(declaration.front).not.toHaveProperty('mark');
-  const lines: (string | Meaning)[] = [
-    `# ${mark ? `${mark} ` : ''}${name}`,
-    description,
-  ];
+  const lines: string[] = [`# ${mark ? `${mark} ` : ''}${name}`, description];
   let group = '';
   for (const factor of agentFactors) {
     const meta = factors[factor];
@@ -272,11 +267,7 @@ export function expectProjection(
         : '';
       const prefix = `- ${slot}**${anchor}**${entry.note ? ` (${entry.note})` : ''} — `;
       const suffix = entry.level === 'fixed' ? ' (fixed)' : '';
-      lines.push(
-        entry.value instanceof Meaning
-          ? entry.value.framed(prefix, suffix)
-          : `${prefix}${entry.value.split(' ≜ ')[1]}${suffix}`,
-      );
+      lines.push(`${prefix}${entry.value.split(' ≜ ')[1]}${suffix}`);
     }
   }
   const deliverable = anchorOf(
@@ -293,7 +284,6 @@ export function expectProjection(
       .map((line) => line.trim())
       .filter(Boolean),
   );
-  lines.push(...personaProtocol.split('\n').filter(Boolean));
   // Blank lines and line endings are formatting; ordered headings and entry meaning are not.
   expect(
     declaration.body

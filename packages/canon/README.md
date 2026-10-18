@@ -103,11 +103,10 @@ than its reach, is made, and composition warns (a `CompositionWarning`), naming 
 harm from one is on record (decision 0142(2)).
 
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
-effort (`routing`), its typed handoff (`contract`) and the per-turn persistence protocol every agent
-re-grounds its stance by (`persistence`). Nothing narrows its tools or whom it may dispatch: every
-agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic agents and is empty.
-`holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are also named exports,
-for a corpus that composes agents of its own over these roles.
+effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
+dispatch: every agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic
+agents and is empty. `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are
+also named exports, for a corpus that composes agents of its own over these roles.
 
 ## Typed handoffs
 
@@ -130,7 +129,7 @@ one. Its outcome names the user story, or for a task with no story the task, and
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence, and
 the cost in agent runs by role, tokens and elapsed time. A code review's `verdict` is `approve` or
 `changes`. The architect's handoffs are a person's — free-text intent in, a read-back to the
-operator out (where things stand, with one recommendation) — so it carries no contract. An agent
+operator out (where things stand, and what it recommends) — so it carries no contract. An agent
 harness binds the deliverable as its own output schema, shows the assignment form when an agent is
 dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in the
 dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
@@ -141,8 +140,8 @@ for it (0142(3)).
 
 Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
 factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
-replies (0142(1)). Persona drift is held by the agent's own text, the persistence protocol naming
-its tells, and its definition is revised on the evidence of use.
+replies (0142(1)). Persona drift is a concept of the agents context, judged by the operator in real
+use; no agent carries countermeasure text against it.
 
 ## The first principle
 
