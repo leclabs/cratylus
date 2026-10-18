@@ -646,6 +646,8 @@ it('delivery/15 — restoring the current command and reinstalling resolves real
     expect(await versions(after)).toEqual({
       artifacts: '2.5.0',
       command: '2.5.0',
+      scope: 'user',
+      installation: owned(h),
     });
     expect(after.notifications.filter((n) => n.level === 'warning')).toEqual(
       [],
