@@ -1,0 +1,14 @@
+{
+  "id": "01M56EBVD3X84A83Y4R2VFQE8Z",
+  "at": "2026-10-18T02:44:59.427Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "install",
+  "wording": "per agent harness and user, across projects, under the owned root, recording the projecting version; idempotent; offers the corpus's rulesets, each taken whole, rule by rule or not at all; asks only what it isn't told, a tier's model included, never choosing one in the operator's place, and names each tier left unbound as the operator's next step",
+  "builtFrom": [],
+  "reason": "The operator: rules are offered at install as standard-convention groups or à la carte, and projected into the owned root like agents and skills.",
+  "supersedes": [
+    "01M53Q5JJS9T574NXETAT1H77P"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": "01M56JA07EEMRE6GE561CE8CKR",
+  "at": "2026-10-18T03:53:53.134Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "corpus",
+  "name": "ruleset",
+  "wording": "the rules of one standard convention as the convention itself states them, under its own name, never a variant of it; offered together at install, taken whole or rule by rule; a project wanting a variant states it in its own files",
+  "builtFrom": [
+    "rule"
+  ],
+  "reason": "The operator: a known convention's name is never used for an alternative version of it; a ruleset aligns with the named convention, and a user who wants otherwise adds their own the standard way, in the project's own files.",
+  "supersedes": [
+    "01M56EBV90HGHS4QBFTXTVASRD"
+  ]
+}
