@@ -60,7 +60,7 @@ asked):
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
 question asks about each tier, then each persona, that your config does not bind; leaving one
-unbound is an answer. A project installation asks no model question.
+unbound is an answer. A project installation asks neither the model question nor the status line one.
 Unless a flag settled every decision, the preview ends with that last question. Answering no, or
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
@@ -88,18 +88,21 @@ is relative, so a clone anywhere resolves it, and every teammate's omp loads it 
 Upgrade it and uninstall it from inside the project with `--scope project`.
 
 Each scope leaves the other alone. A project install, upgrade or uninstall writes nothing under your
-home: the status line choice it settles is the project's `.omp/config.yml`, and an earlier
-installation under your home is left for a user install to take back. A user install, upgrade or
-uninstall leaves every project installation as it is, and a project one leaves the user
-installation and every other project's.
+home, and an earlier installation under your home is left for a user install to take back. A user
+install, upgrade or uninstall leaves every project installation as it is, and a project one leaves
+the user installation and every other project's.
 
-A project installation binds no models. It is shared through the project, and a tier's model is
-each operator's own setting, so binding one there would impose your models on the whole team: it
-asks no model question and writes no `modelRoles` entry, in the project or anywhere else, and
-`--model-roles` with `--scope project` is refused. It reads, without writing, the project's
-`.omp/config.yml` and your `~/.omp/agent/config.yml`, and names as your next step each tier the
-agents fall back to that neither binds, for you to bind in your own settings, by hand or with
-`cratylus install --scope user --model-roles <tier=model,…>`.
+A project installation writes no operator's own setting. It is shared through the project, and a
+tier's model and how the session shows its agent are each operator's own, so writing them there
+would impose your settings on the whole team: it asks neither the model question nor the status
+line one, and writes no `modelRoles` entry and nothing about the status line, in the project or
+anywhere else; `--model-roles` and `--agent-status` with `--scope project` are each refused. It
+reads, without writing, the project's `.omp/config.yml` and your `~/.omp/agent/config.yml`, and
+names as your next steps, to settle at user scope: each tier the agents fall back to that neither
+binds, to bind in your own settings by hand or with
+`cratylus install --scope user --model-roles <tier=model,…>`; and, where those settings (the
+project's over yours, as omp reads them) hide the session's agent, showing it with
+`cratylus install --scope user --agent-status show`.
 
 Inside a project that has one, the `cratylus` command you run yourself, naming no installation,
 reads the project installation; elsewhere it reads yours.
@@ -182,7 +185,7 @@ omp's own surfaces only refer into it, the way `omp plugin link` does. At user s
 
 Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
 
-Install writes nothing else of yours, with two exceptions, both in omp's settings for the scope: `~/.omp/agent/config.yml` at user scope, the project's `.omp/config.yml` at project scope. At user scope the models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's; at project scope none do. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
+Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/config.yml`: a project installation writes no operator's own setting (above). The models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
 **Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
@@ -217,8 +220,9 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 At project scope install also refuses where the project is your home; where the project's
 `.cratylus/omp` holds files and no installation record, which is an author's render tree
 (`cratylus project` below) that a project root never shares a directory with; and where
-`--model-roles` is given (`--model-roles: a project installation binds no models, …`): bind your
-models at user scope instead.
+`--model-roles` or `--agent-status` is given (`--model-roles: a project installation binds no
+models, …`, `--agent-status: a project installation writes no status line choice, …`): settle
+those at user scope instead.
 
 ## Starting a session as an agent
 
@@ -250,7 +254,7 @@ removes them too.
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
 a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
-subagent's, and it carries no color. Where the host's status line hides it, `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. The host's own
+subagent's, and it carries no color. Where the host's status line hides it, a user `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. A project installation never asks or writes it: where the project's settings over yours hide it, it names `cratylus install --scope user --agent-status show` as your next step. The host's own
 configuration is only ever added to, and `--dry-run` says what would be set and writes nothing.
 
 The badge is the status cratylus's extension sets for a session started with
@@ -260,9 +264,8 @@ agent: any session may be started as any agent definition omp discovers. An exte
 inside the status line only where the host's layout lists omp's `status` segment, and omp reads a
 segment list (`statusLine.leftSegments`) only under `statusLine.preset: custom`. Under any other
 preset, the default one included, the list is ignored and the badge renders on a row beneath the
-status line. On `show`, install edits omp's settings for the scope, `~/.omp/agent/config.yml`
-(`config.yaml` where that is the file omp reads) at user scope and the project's `.omp/config.yml`
-at project scope, according to the preset the host is on:
+status line. On `show`, install edits your omp settings, `~/.omp/agent/config.yml` (`config.yaml`
+where that is the file omp reads), according to the preset the host is on:
 
 - **No preset set** (a file with no `statusLine` included): install writes `preset: custom` with the
   default preset's own left segments plus `status`, its right segments and its segment options, so
@@ -348,7 +351,7 @@ cratylus install [options]
 | `--all`                   | Install every practice, without asking                                                                                                                                                                                                                                                                                                      |
 | `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                                                                        |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked) |
-| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                                                                                                                      |
+| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no operator's own setting (default: at user scope, asked where the status line hides it) (choices: "show", "hide")                                     |
 | `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                                                                                                              |
 | `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                                                                                                                   |
 | `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                                                                                                                        |

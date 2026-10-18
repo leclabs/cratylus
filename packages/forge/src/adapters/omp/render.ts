@@ -152,8 +152,8 @@ const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
 /** A project's settings file omp reads beside the user's, relative to the project's
- *  `.omp`: `config.yml`. A project installation reads its model roles there, binding
- *  none (decision 0312), and writes the status line choice there. */
+ *  `.omp`: `config.yml`. A project installation reads its model roles and status
+ *  line there and writes neither (decision 0313). */
 const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
 
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A

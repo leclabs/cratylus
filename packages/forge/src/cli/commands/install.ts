@@ -120,7 +120,10 @@ import {
   readManifest,
   rootFiles,
 } from '../../deploy/index.js';
-import { readModelRoles } from '../../deploy/read-model-roles.js';
+import {
+  hidesSessionAgent,
+  readModelRoles,
+} from '../../deploy/read-settings.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import {
   type OfferedRuleset,
@@ -432,11 +435,17 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   });
   if ('refused' in placement) throw new Refusal(placement.refused);
   const { harnessDir, root, base } = placement;
-  // A project installation binds no models: a tier's model is each operator's own
-  // setting, and the project is shared with every operator in it (decision 0312).
+  // A project installation writes no operator's own setting: a tier's model and how
+  // the session shows its agent are each operator's, and the project is shared with
+  // every operator in it (decision 0313).
   if (scope === 'project' && opts.modelRoles !== undefined) {
     throw new Refusal(
       `--model-roles: a project installation binds no models, a model being each operator's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
+    );
+  }
+  if (scope === 'project' && opts.agentStatus !== undefined) {
+    throw new Refusal(
+      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each operator's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
@@ -709,18 +718,16 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   }
   // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
   // Asked only where the host hides it and it was neither told nor answered before
-  // (decision 0113); the answer is the host's own setting from then on.
+  // (decision 0113); the answer is the host's own setting from then on. A project
+  // installation neither asks nor writes it: it reads the project's settings over the
+  // user's, and where they hide the agent names showing it as a next step, to settle
+  // at user scope (decision 0313).
   const statusHost =
     adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
   const statusFile =
-    statusHost === undefined
+    statusHost === undefined || scope === 'project'
       ? undefined
-      : hostConfigPath(
-          scope === 'project'
-            ? statusHost.projectConfigRels
-            : statusHost.configRels,
-          harnessDir,
-        );
+      : hostConfigPath(statusHost.configRels, harnessDir);
   // Hidden: the host turned the row beneath the editor off, and its layout does not
   // list the segment that shows the session's agent inside the line instead.
   const hidden =
@@ -730,7 +737,18 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     hidesExtensionStatus(readFileSync(statusFile, 'utf8')) &&
     ensureStatusSegment(statusFile, statusHost, { dry: true }).state !==
       'present';
-  const answeredBefore = prior?.answered?.includes('agentStatus') === true;
+  const hiddenInProject =
+    statusHost !== undefined &&
+    scope === 'project' &&
+    hidesSessionAgent(
+      [
+        hostConfigPath(statusHost.configRels, harnessDirIn(adapter, opts.home)),
+        hostConfigPath(statusHost.projectConfigRels, harnessDir),
+      ],
+      statusHost,
+    );
+  const answeredBefore =
+    scope === 'user' && prior?.answered?.includes('agentStatus') === true;
   let agentStatus: AgentStatus | undefined;
   let statusAnswered = answeredBefore;
   if (opts.agentStatus !== undefined) {
@@ -762,7 +780,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     agentStatus = (await answered(prompts.agentStatus())) ? 'show' : 'hide';
     statusAnswered = true;
   }
-  const displayOpen = hidden && !statusAnswered;
+  const displayOpen = hiddenInProject || (hidden && !statusAnswered);
 
   const placedTree: ProjectedTree = rendered.report;
   // Each capability's configuration, as the corpus's skills declare it.
@@ -1010,7 +1028,9 @@ function describe(
       : []),
     ...(found.displayOpen
       ? [
-          `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
+          project
+            ? `show the session's agent, which the project's settings over yours hide here: settle it for yourself with ${CLI_BIN} install --scope user --agent-status show, since a project installation writes no status line choice`
+            : `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
         ]
       : []),
     ...(ctx.rules.open
