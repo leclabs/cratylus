@@ -1,5 +1,21 @@
 # @cratylus/runtime
 
+## 0.18.0
+
+### Minor Changes
+
+- cf853ad: Each agent's text states what it is and does, once and positively; no instruction carries a countermeasure against a failure never seen in use.
+
+  - Canon rewords the architect's role and the `reconstitution` procedure and memory, `source-of-truth`, `honesty`, `decisive`, `conceptual-elevation`, `layman`, `bottom-line-up-front` and `read-back` values. The architect drops its role and reconstitution notes, takes a new `rectify` note, and holds `decisive`, `conceptual-elevation` and `bottom-line-up-front` at their factors' default level rather than fixed.
+  - Canon rewords the lead, reviewer, builder and check-writer roles, the `no-implementation`, `append-only`, `never-repairs`, `fixed-acceptance-criteria`, `input-untrusted` and `privacy` guardrails, the `orchestrator-workers` procedure and `management-by-exception` autonomy, each as what it does and who does what it leaves; the reviewer's description and held-out-examples notes, the lead's `ship-show-ask` note and the architect's `read-back` note say the same positively, and the lead drops its `decisive` note. No factor's default level is `fixed` any more, so no agent's text carries "(fixed)".
+  - The concept journal presents `design` as the read that recovers the design at a session's start, with `state` as its short summary, and its record as beginning at the journal's start.
+  - The persona Protocol is removed: canon no longer exports `personaProtocol`, `Agent` loses `persistence`, and an agent declaration no longer ends with a `## Protocol` section. Persona drift is judged by the operator in real use.
+  - The omp extension no longer adds the session-start reconstitution note, the "Meaning: yours" note or "The records" note to a launched session's prompt; every turn still carries the assignment forms.
+
+### Patch Changes
+
+- a33be54: The concept journal is the only home of cratylus's conceptual model, and INTRODUCTION.md is its entry point. The five static root documents (canon, vision, model, engine and architecture) are deleted, and no README or source comment points at them any longer. The repository's `AGENTS.md` is now a plain hand-authored file that sends a session to INTRODUCTION.md and the concept journal; canon's `repo-preamble` rule cell, its projection to `AGENTS.md` and the byte-lock that held them equal are removed, so `project:targets` regenerates hook targets only. The ground-conformance gate, which read the model document, is removed, and the cratylism gate no longer looks for those document names.
+
 ## 0.17.0
 
 ### Minor Changes
