@@ -267,6 +267,12 @@ export function projectorCommands(options: ProjectorOptions = {}): {
     .addOption(new Option('--all', 'Install every practice, without asking'))
     .addOption(
       new Option(
+        '--rules <names>',
+        "The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)",
+      ),
+    )
+    .addOption(
+      new Option(
         '--model-roles <roles>',
         "The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked)",
       ),
@@ -303,6 +309,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
         harness?: string;
         practices?: string;
         all?: boolean;
+        rules?: string;
         modelRoles?: string;
         agentStatus?: string;
         yes?: boolean;
@@ -317,6 +324,7 @@ export function projectorCommands(options: ProjectorOptions = {}): {
           delivered: options.delivered,
           practices: opts.practices,
           all: opts.all,
+          rules: opts.rules,
           modelRoles: opts.modelRoles,
           agentStatus: opts.agentStatus,
           yes: opts.yes,
