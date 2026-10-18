@@ -47,11 +47,8 @@
  * and the op table weakly follows — you can append to a uniform collection, merge
  * named parts, and only replace an atom.
  *
- * ALIGNMENT, NOT COLLISION, with `validate/residue.ts`'s `ResidueShape`. The rule
- * `shape ⊥ vocabulary` installs `shape` as a GENUS — structure-of, as
- * against names-of — and a genus term is supposed to recur. `<Noun>Shape` is a family
- * whose qualifier names the subject whose structure is meant; meeting one member lets
- * a reader predict the construction of the next. What would be a collision is a bare
+ * The rule `shape ⊥ vocabulary` installs `shape` as a GENUS — structure-of, as
+ * against names-of — and a genus term is supposed to recur. What would be a collision is a bare
  * `shape` field here, since `GatedField.shape` already squats that unqualified name —
  * so the `value` qualifier on the field below is LOAD-BEARING, not verbose.
  *

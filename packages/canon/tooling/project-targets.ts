@@ -1,15 +1,13 @@
 // `project-targets` — regenerate the committed DEPLOY TARGETS of the `hook` source
 // cells (`src/hooks/*.ts`) from the cells themselves: the cell owns the bytes — as a
 // TEMPLATE the projector resolves — and the committed target is a deploy-owned
-// projection of the RESOLVED bytes, byte-locked by `test/hook-rule-boundary.test.ts`.
+// projection of the RESOLVED bytes.
 //
 //   hook worker → its `worker.targetPath` (a `.sh`/`.md` the harness or `.husky/*`
 //                 dispatcher runs; executable bit set per the cell)
 //
-// `regenerateTargets({ check:true })` DIFFS instead of writing (the `--check` mode):
-// a drift between a committed target and its cell's bytes is reported, never
-// silently fixed. This is `deploy` for these locked artifacts (`inject(content(c),
-// realize(activation(class c), adapter))`) materialized into the source tree.
+// This is `deploy` for these artifacts (`inject(content(c), realize(activation(class c),
+// adapter))`) materialized into the source tree.
 
 import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
@@ -76,7 +74,7 @@ export interface CellTarget {
  * constant is the place that says which.
  *
  * NOT AN ARBITRARY PICK, and not a face the cell chose: the committed `.sh` exists
- * to be byte-locked and read in review, and every deployed copy is emitted by
+ * to be read in review, and every deployed copy is emitted by
  * `projectPluginSet` under the adapter that session actually runs — an omp host
  * receives omp bytes whatever this says. What a wrong value here would cost is a
  * reviewer reading `settings.json` in a file whose subject is an omp extension, which
@@ -91,7 +89,7 @@ export const COMMITTED_TARGET_HARNESS = 'omp';
  * (`{{fact:…}}` / `{{speech:…}}`) and the committed `.sh` is the RESOLVED bytes — the
  * same bytes `projectPluginSet` emits, from the same `resolveWorker` over the same
  * `projectionFacts()`. Regenerating from the raw template would commit a literal
- * `{{fact:runtime-bin}}` and the byte-lock would then hold the WRONG subject fixed.
+ * `{{fact:runtime-bin}}`.
  *
  * Reaching `@cratylus/forge` from here is the LICENSED edge: this is one of canon's
  * build scripts driving the projector as a tool; the divergence would be a CELL
@@ -119,17 +117,15 @@ export async function cellTargets(
 export interface RegenReport {
   /** Targets whose committed bytes DIFFER from the cell (drift). */
   readonly drift: readonly string[];
-  /** Targets written (empty in `check` mode). */
+  /** Targets written. */
   readonly written: readonly string[];
 }
 
 /**
- * Regenerate (or, in `check` mode, diff) every hook committed target from its
- * source cell. Deterministic: pure function of the cells (no clock/host).
+ * Regenerate every hook committed target from its source cell. Deterministic: pure
+ * function of the cells (no clock/host).
  */
-export async function regenerateTargets(
-  opts: { check?: boolean } = {},
-): Promise<RegenReport> {
+export async function regenerateTargets(): Promise<RegenReport> {
   const drift: string[] = [];
   const written: string[] = [];
   for (const t of await cellTargets()) {
@@ -143,13 +139,11 @@ export async function regenerateTargets(
     if (committed !== t.content) {
       drift.push(t.path);
     }
-    if (!opts.check) {
-      writeFileSync(abs, t.content);
-      if (t.executable) {
-        chmodSync(abs, 0o755);
-      }
-      written.push(t.path);
+    writeFileSync(abs, t.content);
+    if (t.executable) {
+      chmodSync(abs, 0o755);
     }
+    written.push(t.path);
   }
   return { drift, written };
 }

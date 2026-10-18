@@ -560,10 +560,6 @@ cratylus deploy --check       # is the deployed tree still what the corpus says?
 cratylus explain <filter>     # where each resolved value came from
 ```
 
-`optimize` stands beside the pipeline: it checks the accept laws on a plan an agent wrote (`REC ≽`,
-`minimal`, `conform`), writes the artifacts that pass, and records the routing manifest. It is opt-in,
-and refuses without `--plan`.
-
 ### `cratylus init`
 
 Create cratylus.config.ts, extending a plugin package.
@@ -614,26 +610,6 @@ cratylus project [options]
 | `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
 | `--harness <name>` | The agent harness to render for (choices: "claude", "omp", default: "claude")                 |
 | `--verbose`        | Also print one line per file rendered or pruned                                               |
-
-### `cratylus optimize`
-
-Check a rewrite plan for a source you wrote, and write the artifacts and routing manifest it passes.
-
-```sh
-cratylus optimize [options] <source>
-```
-
-| Argument | What it is                                     |
-| -------- | ---------------------------------------------- |
-| `source` | The source file or directory the plan rewrites |
-
-| Flag                | What it does                                                                          |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| `--plan <file>`     | The JSON plan: its register, concepts and artifacts, which an agent writes (required) |
-| `--out <dir>`       | The directory the artifacts are written to (default: "optimized")                     |
-| `--manifest <path>` | Where the routing manifest is written (default: .manifests/<source>.json)             |
-| `--prior <path>`    | A manifest accepted earlier; artifacts whose digests match it are reused              |
-| `--verbose`         | Also list every file written                                                          |
 
 ### `cratylus deploy`
 

@@ -18,7 +18,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runAdd } from '../../src/cli/commands/add.js';
 import { runInit } from '../../src/cli/commands/init.js';
 import { runInstall } from '../../src/cli/commands/install.js';
-import { runOptimize } from '../../src/cli/commands/optimize.js';
 import { runProject } from '../../src/cli/commands/project.js';
 import {
   CONFIG_PACKAGE,
@@ -230,19 +229,6 @@ describe('project writes the tree deploy reads, and says little', () => {
       /^cratylus project: .*cratylus\.config\.ts extends no plugins/,
     );
     expect(err[0]).toContain('cratylus add <package>');
-  });
-});
-
-describe('optimize fails in the register', () => {
-  it('refuses a missing --plan as one stderr line', async () => {
-    const { rc, out, err } = await capture(() =>
-      runOptimize({ source: 'anything' }),
-    );
-    expect(rc).toBe(1);
-    expect(out).toEqual([]);
-    expect(err).toHaveLength(1);
-    expect(err[0]).toMatch(/^cratylus optimize: --plan is required/);
-    expect(err[0]).toContain('--plan <file>');
   });
 });
 

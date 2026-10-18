@@ -134,7 +134,7 @@ import type { HookCell } from '../manifest.js';
 // one asks by name instead of rediscovering the blindness.
 //
 // The `workers[].content` is the TEMPLATE the committed worker at `targetPath`
-// regenerates from — resolved bytes, byte-locked by `test/hook-rule-boundary.test.ts`.
+// regenerates from — resolved bytes.
 // The committed resolution is the OMP one (`COMMITTED_TARGET_HARNESS`), because a
 // template with an adapter-relative fact has one resolution per harness and
 // `targetPath` names one file; every DEPLOYED copy is resolved for the harness that

@@ -1,8 +1,7 @@
 // ARCHITECTURE gate — the four load-bearing package-boundary properties, enforced.
 //
-// Named for the law it enforces, on this corpus's own precedent: `cratylism.test.ts`
-// is named for the principle it enforces, not for a property-noun. Five cold legs were
-// spent looking for a quality-noun and the best of them returned `import-acyclicity`,
+// Named for the law it enforces, not for a property-noun. The best quality-noun found
+// was `import-acyclicity`,
 // which is simply WRONG — the law is stricter than acyclicity. `canon` importing
 // `cratylus` introduces no cycle and is still forbidden. A sign naming a weaker
 // property than the law would mislead exactly the reader who trusted it.

@@ -137,7 +137,7 @@ function skillCapabilities(
 // ── The three invariants, as PURE functions over injected data ──────────────────
 // Pure so the convicting fixtures below travel the SAME path as the live legs. A
 // control that reached its verdict by a different mechanism proves only that the
-// mechanism works (meta-gate hazard 2).
+// mechanism works.
 
 /**
  * AXIS 1 — a `ports/<b>.ts` is in the keyspace ⟺ `<b>` is NOT

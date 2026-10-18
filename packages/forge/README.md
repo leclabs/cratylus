@@ -171,8 +171,7 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
 to drift. Every turn carries the handover form of each agent that takes a typed one; a dispatch or
-launch whose assignment is incomplete, and an `eval` call whose code dispatches a delegate (`agent(…)`,
-`workpool(…)`, `tool.task`, `tool["task"]`), are each warned of and go ahead — never refused. The
+launch whose assignment is incomplete is warned of and goes ahead — never refused. The
 extension records nothing of a dispatch or its return.
 
 ## The harness adapter port
@@ -239,7 +238,7 @@ inversion `schema` exists to end; `@cratylus/forge/resolve` re-exports `AgentPlu
 `defineAgentPlugin` only so the resolver stays addressable through one place.
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
-fragment catalogs of a plugin set), `./validate` (the doctrine-free acceptance algorithm, whose data
+fragment catalogs of a plugin set), `./validate` (the cold-decode oracle's driver, whose data
 the corpus injects), `./module-scan` and `./adapters/omp` (the OMP adapter).
 
 ## License

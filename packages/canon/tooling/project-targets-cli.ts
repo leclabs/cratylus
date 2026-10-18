@@ -1,29 +1,14 @@
 // CLI for `project-targets`: regenerate the committed hook deploy targets from
-// their source cells, or `--check` (diff-only, nonzero exit on drift). The runnable
-// half of the byte-lock (`test/hook-rule-boundary.test.ts` is the gate).
+// their source cells.
 //
-//   tsx tooling/project-targets-cli.ts            # regenerate in place
-//   tsx tooling/project-targets-cli.ts --check    # report drift, change nothing
+//   tsx tooling/project-targets-cli.ts
 
 import { regenerateTargets } from './project-targets.js';
 
-const check = process.argv.includes('--check');
-const { drift, written } = await regenerateTargets({ check });
+const { drift, written } = await regenerateTargets();
 
-if (check) {
-  if (drift.length > 0) {
-    process.stderr.write(
-      `DRIFT — ${drift.length} target(s) differ from their source cell:\n${drift
-        .map((p) => `  ${p}`)
-        .join('\n')}\nRun \`pnpm canon:project:targets\` to regenerate.\n`,
-    );
-    process.exit(1);
-  }
-  process.stdout.write('OK — every hook target matches its source cell.\n');
-} else {
-  process.stdout.write(
-    `regenerated ${written.length} hook target(s)${
-      drift.length ? ` (${drift.length} had drifted)` : ''
-    }.\n`,
-  );
-}
+process.stdout.write(
+  `regenerated ${written.length} hook target(s)${
+    drift.length ? ` (${drift.length} had drifted)` : ''
+  }.\n`,
+);

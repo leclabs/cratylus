@@ -207,7 +207,7 @@ describe('authored source is TEXT — a byte that blinds grep must not reach the
     // this test dir (hence this file, once tracked — see SCOPE IS TRACKED-NESS above),
     // and a document at the repo root that no package path would cover.
     expect(seen).toContain('packages/forge/src/adapters/omp/render.ts');
-    expect(seen).toContain('packages/canon/test/gate-convicts.test.ts');
+    expect(seen).toContain('packages/canon/test/architecture.test.ts');
     expect(seen).toContain('AGENTS.md');
     // And the reads land: the denylist excludes payloads, never authored source, so a
     // named file must come back with bytes in it rather than as an unread name.
