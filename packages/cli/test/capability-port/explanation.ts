@@ -11,7 +11,7 @@ export interface VerbExplanation {
   concept: string;
   purpose: string;
   when: string;
-  effect: 'reads' | 'appends';
+  effect: 'reads' | 'appends' | 'closes';
   parameters: ParameterExplanation[];
 }
 export interface Explanation {

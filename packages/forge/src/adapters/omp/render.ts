@@ -939,7 +939,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `verb` of the explained verbs and every explained parameter with its
  * descriptions and its schema (the distinct schemas as `anyOf` where verbs declare
  * one name differently, so none is dropped); approval `read` for a verb that reads
- * and `write` for one that appends. A call runs `<bin> <capability> <verb>
+ * and `write` for one that appends or closes. A call runs `<bin> <capability> <verb>
  * [positional] [--flag=value…]` in the session's directory and returns its output;
  * a refusal is a tool error carrying the command's own message. Every value is
  * one `--flag=value` token, so a value led by `-` reaches the command literally.
@@ -1111,7 +1111,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  concept: string;',
         '  purpose: string;',
         '  when: string;',
-        '  effect: "reads" | "appends";',
+        '  effect: "reads" | "appends" | "closes";',
         '  parameters: Parameter[];',
         '}',
         'interface Explanation {',

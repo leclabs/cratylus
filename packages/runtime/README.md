@@ -21,22 +21,28 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                        |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate` |
-| `versionSkew` | `report`                                                                                                                                     |
+| capability    | verbs                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate`, `close` |
+| `versionSkew` | `report`                                                                                                                                              |
 
 Every journal entry records who appended it (`by`: the agent making the call, named by the agent
 harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
-for, never by refusal (decision 0274): the journal is append-only because its verbs only append.
+for, never by refusal (decision 0274): the journal's verbs only append, but for `close`, which
+closes its books (decision 0315): it appends one entry bringing forward, verbatim, the entries that
+stand and naming every other entry closed, never read again, and removes every other entry file,
+which version control keeps at the commit the close names. Every reading covers the journal since
+its latest close; the closed period is read from git at that commit.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
 context's subject, relation and live concepts with the concepts each is built from, the delivered
 practice apart, and `state` is its short summary: the project's purpose, then each context's live
-concepts, each one line `name ≜ residue`, with any competing versions. The journal's record begins
-at its start. The
+concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
+from its latest closing of the books: every reading folds the entries the close brought forward
+with the period's own, so what stands reads the same after a close as before it, and the history
+readings carry `booksClosed`, naming the close and the commit holding the period before it. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
 each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or
@@ -56,7 +62,7 @@ for: `purpose` records it and, with a reason, changes it, and `state` shows it f
 context.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
-explanation, so a consumer reads which verbs read and which append as code.
+explanation, so a consumer reads which verbs read, which append and which close as code.
 
 ## Subpaths
 
@@ -110,7 +116,7 @@ throws when called as a library. Never a silent no-op.
 
 Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
 for each verb the concept of cratylus's own conceptual model it acts on, when to reach for it, and
-whether it `reads` or `appends`. `concepts` does: `cratylus concepts --explain` prints the concept
+whether it `reads`, `appends` or `closes`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus concepts <verb> --explain`
 prints one verb: `name`, `concept`, `purpose`, `when`, `effect`, and `parameters`, the positional

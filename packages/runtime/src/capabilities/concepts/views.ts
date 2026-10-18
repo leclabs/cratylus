@@ -5,6 +5,16 @@
 // Each is a pure function of the entries in append order: no clock, no
 // randomness, so the same journal answers the same every time.
 //
+// CLOSED BOOKS. A journal that closed its books folds the entries its close
+// brought forward with the period's own, so what stands reads the same after
+// a close as before it, never reading an entry any close names closed, so a
+// line of work joined later brings back nothing a close ended; the history
+// readings name the latest close and the commit holding the period before it,
+// whose entries are read from version control. A context's IDENTITY is the
+// first its latest close records, else the id of its first entry; a context
+// and a concept keep the order the latest close records; a reference to a
+// decision by its name alone binds as the close that carried it resolved it.
+//
 // A concept's CURRENT versions are those no later version of it supersedes.
 // One current version is the concept: live, or retired when it is a
 // retirement. Two or more are COMPETING versions (branches that each
@@ -46,10 +56,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
+  AcceptEntry,
+  CloseEntry,
   ContextEntry,
   DecideEntry,
   DecisionKind,
   DeprecateEntry,
+  Draft,
   EfficiencyEntry,
   Entry,
   PurposeEntry,
@@ -277,8 +290,8 @@ export class Folded {
   readonly decisions = new Map<string, DecideEntry>();
   /** The entries of the decisions each id names, in append order. */
   readonly named = new Map<string, string[]>();
-  /** The entries of the decisions whose acceptance is recorded. */
-  readonly acceptances = new Set<string>();
+  /** The acceptances recorded for each decision's entry, in append order. */
+  readonly acceptances = new Map<string, AcceptEntry[]>();
   /** The ids of the decisions superseding each decision's entry. */
   readonly supersededBy = new Map<string, string[]>();
   /** The kinds recorded for each decision's entry, in append order. */
@@ -287,9 +300,32 @@ export class Folded {
   readonly deprecations = new Map<string, DeprecateEntry>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
+  /** The closings of the journal's books, in append order. */
+  readonly closes: CloseEntry[] = [];
+  /** Every entry folded, by its id. */
+  readonly byId = new Map<string, Entry>();
+  /** For each entry that names a decision by its name alone, the entry that
+   *  name bound to, `null` where it bound to none. */
+  readonly bound = new Map<string, string | null>();
 
   constructor(entries: readonly Entry[]) {
+    // How a close resolved each reference by name alone it brought forward:
+    // the name binds so still, whatever the close took out.
+    const resolved = new Map<string, string | null>();
     for (const entry of entries)
+      if (entry.kind === 'close')
+        for (const [id, to] of Object.entries(entry.resolved))
+          resolved.set(id, to);
+    /** The entry the name `name` in the entry `id` binds to. */
+    const bind = (id: string, name: string): string | undefined => {
+      const to = resolved.has(id)
+        ? (resolved.get(id) ?? undefined)
+        : this.only(name);
+      this.bound.set(id, to ?? null);
+      return to;
+    };
+    for (const entry of entries) {
+      this.byId.set(entry.id, entry);
       switch (entry.kind) {
         case 'purpose':
           this.purposes.push(entry);
@@ -318,7 +354,7 @@ export class Folded {
             entry.supersedesEntry ??
             (entry.supersedes === null
               ? undefined
-              : this.only(entry.supersedes));
+              : bind(entry.id, entry.supersedes));
           this.decisions.set(entry.id, entry);
           if (entry.decisionKind !== undefined)
             this.kinds.set(entry.id, [
@@ -336,8 +372,12 @@ export class Folded {
           break;
         }
         case 'accept': {
-          const target = entry.entry ?? this.only(entry.decisionId);
-          if (target !== undefined) this.acceptances.add(target);
+          const target = entry.entry ?? bind(entry.id, entry.decisionId);
+          if (target !== undefined)
+            this.acceptances.set(target, [
+              ...(this.acceptances.get(target) ?? []),
+              entry,
+            ]);
           break;
         }
         case 'efficiency': {
@@ -362,7 +402,163 @@ export class Folded {
             },
           ]);
           break;
+        case 'close':
+          this.closes.push(entry);
+          break;
       }
+    }
+    // What a close took out still orders the views: each context and concept
+    // in the order first recorded, as the latest close holding it records it.
+    const reorder = <V>(map: Map<string, V>, key: (name: string) => string) => {
+      const sorted = [...map].sort(([a], [b]) => (key(a) < key(b) ? -1 : 1));
+      map.clear();
+      for (const [name, value] of sorted) map.set(name, value);
+    };
+    reorder(this.contexts, (name) => this.identity(name) as string);
+    for (const [context, concepts] of this.concepts)
+      reorder(
+        concepts,
+        (name) => this.conceptIdentity(context, name) as string,
+      );
+  }
+
+  /** The identity of `context`: the first the latest close holding it
+   *  records, else the id of its first entry; `undefined` when the journal
+   *  has none. */
+  identity(context: string): string | undefined {
+    for (const close of [...this.closes].reverse()) {
+      const recorded = own(close.identities, context);
+      if (recorded !== undefined) return recorded[0];
+    }
+    return this.contexts.get(context)?.[0]?.id;
+  }
+
+  /** Every id the journal has held for a context: each context entry's, and
+   *  each a close records as a context's. */
+  identities(): Set<string> {
+    return new Set([
+      ...[...this.contexts.values()].flat().map((entry) => entry.id),
+      ...this.closes.flatMap((close) => Object.values(close.identities).flat()),
+    ]);
+  }
+
+  /** Every id the journal has held for `context`: its identity first, then
+   *  its context entries' and each a close records for it, in id order. */
+  private identitiesOf(context: string): string[] {
+    const identity = this.identity(context) as string;
+    const others = new Set([
+      ...(this.contexts.get(context) ?? []).map((entry) => entry.id),
+      ...this.closes.flatMap((close) => own(close.identities, context) ?? []),
+    ]);
+    others.delete(identity);
+    return [identity, ...[...others].sort()];
+  }
+
+  /** The id of the first version of `name` in `context`: the one the latest
+   *  close holding it records, else its first version's; `undefined` when the
+   *  context does not have it. */
+  conceptIdentity(context: string, name: string): string | undefined {
+    for (const close of [...this.closes].reverse()) {
+      const names = own(close.concepts, context);
+      const recorded = names === undefined ? undefined : own(names, name);
+      if (recorded !== undefined) return recorded;
+    }
+    return this.versions(context, name)[0]?.id;
+  }
+
+  /** The latest closing of the books, which the history readings name; none
+   *  while the journal does not open from one. */
+  booksClosed():
+    | {
+        readonly booksClosed: {
+          readonly entry: string;
+          readonly at: string;
+          readonly by?: string;
+          readonly commit: string;
+        };
+      }
+    | Record<string, never> {
+    const latest = this.closes.at(-1);
+    return latest === undefined
+      ? {}
+      : {
+          booksClosed: {
+            entry: latest.id,
+            at: latest.at,
+            ...(latest.by === undefined ? {} : { by: latest.by }),
+            commit: latest.commit,
+          },
+        };
+  }
+
+  /** The close of this journal's books at `commit`, its period having held
+   *  the entries `held`: what it brings forward, what it names closed, each
+   *  context's identities, each concept's first version, and how each
+   *  reference by name alone it brings forward bound. */
+  closing(commit: string, held: readonly string[]): Draft<CloseEntry> {
+    const broughtForward = this.standingEntries();
+    const carried = new Set(broughtForward.map((entry) => entry.id));
+    return {
+      kind: 'close',
+      commit,
+      broughtForward,
+      closed: held.filter((id) => !carried.has(id)),
+      identities: Object.fromEntries(
+        [...this.contexts.keys()].map((name) => [
+          name,
+          this.identitiesOf(name),
+        ]),
+      ),
+      concepts: Object.fromEntries(
+        [...this.concepts].map(([context, names]) => [
+          context,
+          Object.fromEntries(
+            [...names.keys()].map((name) => [
+              name,
+              this.conceptIdentity(context, name) as string,
+            ]),
+          ),
+        ]),
+      ),
+      resolved: Object.fromEntries(
+        broughtForward.flatMap((entry) =>
+          this.bound.has(entry.id)
+            ? [[entry.id, this.bound.get(entry.id) ?? null]]
+            : [],
+        ),
+      ),
+    };
+  }
+
+  /** What a close brings forward, verbatim and in id order: the current
+   *  purpose entries; each context's current descriptions (every entry of a
+   *  context none of whose descriptions is current); each concept's current
+   *  versions, a retirement included; and each standing decision with the
+   *  acceptances recorded for it and the classification governing its kind,
+   *  where one does. */
+  private standingEntries(): Entry[] {
+    const carried: Entry[] = [...this.currentPurposes()];
+    for (const [name, recorded] of this.contexts) {
+      const current = this.currentDescriptions(name);
+      carried.push(...(current.length === 0 ? recorded : current));
+    }
+    for (const [context, names] of this.concepts)
+      for (const name of names.keys()) {
+        const standing = this.standing(context, name) as Standing;
+        carried.push(
+          ...(standing.is === 'competing'
+            ? standing.current
+            : [standing.current]),
+        );
+      }
+    for (const decision of this.decisionViews().filter(stands)) {
+      carried.push(this.decisions.get(decision.entry) as DecideEntry);
+      carried.push(...(this.acceptances.get(decision.entry) ?? []));
+      const governing = this.kinds.get(decision.entry)?.at(-1)?.entry;
+      if (governing !== undefined && governing !== decision.entry)
+        carried.push(this.byId.get(governing) as Entry);
+    }
+    return carried.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
   /** The entry of the one decision `id` names among those folded so far;
@@ -566,6 +762,14 @@ export class Folded {
       };
     });
   }
+}
+
+/** The value `record` holds as its own under `key`, never one it inherits. */
+function own<V>(
+  record: Readonly<Record<string, V>>,
+  key: string,
+): V | undefined {
+  return Object.hasOwn(record, key) ? record[key] : undefined;
 }
 
 /** What a version that states its concept says. */

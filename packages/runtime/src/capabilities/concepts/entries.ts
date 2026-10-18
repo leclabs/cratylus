@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The ENTRIES of the concept journal: what each appending verb records, one
-// entry per file, never edited, moved or deleted.
+// The ENTRIES of the concept journal: what each verb records, one entry per
+// file, never edited or moved, and removed only when the journal's books close.
 //
 // Every entry carries its `id`, a ULID that names its file and orders it, `at`,
 // the moment its id was minted, and, when known, `by`, who appended it: the
 // acting agent, else git's user. The project's purpose (`purpose`), what the
 // project is for, and a context's description (`context`) change like a
 // concept does: a later one with its reason supersedes the current ones, the
-// earlier kept in the journal. A concept
+// earlier kept in the journal until its books close. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id and records realization, and its acceptance (`accept`) and its
@@ -16,6 +16,13 @@
 // a classification of a decision's kind and a cut's effort figures are read as
 // recorded, the latest classification governing a decision's kind and the
 // latest figures for a cut being its figures, and shown only as history.
+//
+// Closing the books (`close`) records the commit at HEAD holding the closed
+// period, the entries it brings forward, verbatim, the entries the period
+// ended, which no reading reads again, each context's identities, the id of
+// each concept's first version, which keep the order the views list them in,
+// and how each reference by a decision's name alone bound; every other entry
+// file then leaves the journal, kept by version control.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -158,6 +165,27 @@ export interface EfficiencyEntry extends Stamped {
   readonly tokens: number | null;
 }
 
+/** The closing of the journal's books: the full sha of the commit at HEAD
+ *  holding the closed period; the entries brought forward, verbatim as
+ *  recorded and in id order; the id of every entry the period held that it
+ *  does not bring forward, and every entry a close before it named closed,
+ *  which no reading reads again; for each context,
+ *  by its name, the id of every context entry the journal has held for it,
+ *  earlier closes' included, its identity first and the rest in id order; the id of the
+ *  first version of each concept brought forward, by its context and name,
+ *  which order the views as they were ordered before; and, for each entry
+ *  brought forward that names a decision by its name alone, the entry that
+ *  name bound to, or `null` where it bound to none. */
+export interface CloseEntry extends Stamped {
+  readonly kind: 'close';
+  readonly commit: string;
+  readonly broughtForward: readonly object[];
+  readonly closed: readonly string[];
+  readonly identities: Readonly<Record<string, readonly string[]>>;
+  readonly concepts: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  readonly resolved: Readonly<Record<string, string | null>>;
+}
+
 export type Entry =
   | PurposeEntry
   | ContextEntry
@@ -166,12 +194,19 @@ export type Entry =
   | AcceptEntry
   | ClassifyEntry
   | DeprecateEntry
-  | EfficiencyEntry;
+  | EfficiencyEntry
+  | CloseEntry;
 
 /** Whether a field's value fits its place in an entry. */
 type Fits = (value: unknown) => boolean;
 
 const text: Fits = (value) => typeof value === 'string';
+/** Whether `value` is a plain object each of whose values fits `fits`. */
+const dictionary = (value: unknown, fits: Fits): boolean =>
+  typeof value === 'object' &&
+  value !== null &&
+  !Array.isArray(value) &&
+  Object.values(value).every(fits);
 const texts: Fits = (value) => Array.isArray(value) && value.every(text);
 const count: Fits = (value) => typeof value === 'number';
 const optional =
@@ -274,6 +309,18 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     rounds: count,
     wholeCheckRuns: count,
     tokens: (value) => value === null || count(value),
+  },
+  close: {
+    at: text,
+    commit: text,
+    broughtForward: (value) =>
+      Array.isArray(value) &&
+      value.every((v) => typeof v === 'object' && v !== null),
+    closed: texts,
+    identities: (value) => dictionary(value, texts),
+    concepts: (value) => dictionary(value, (names) => dictionary(names, text)),
+    resolved: (value) =>
+      dictionary(value, (entry) => entry === null || text(entry)),
   },
 };
 
