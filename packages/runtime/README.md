@@ -29,10 +29,11 @@ names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 Every journal entry records who appended it (`by`: the agent making the call, named by the agent
 harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
 for, never by refusal (decision 0274): the journal's verbs only append, but for `close`, which
-closes its books (decision 0315): it appends one entry bringing forward, verbatim, the entries that
-stand and naming every other entry closed, never read again, and removes every other entry file,
-which version control keeps at the commit the close names. Every reading covers the journal since
-its latest close; the closed period is read from git at that commit.
+closes its books as event sourcing does (decision 0316): it opens a new period with one entry per
+current version of each standing item, of the item's own kind, superseding nothing and carrying
+`broughtForward`, the commit at HEAD holding the closed period, then removes every other entry
+file, which version control keeps at that commit. Every reading covers the journal since its
+latest close; the closed period is read from git at that commit.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
@@ -40,9 +41,10 @@ its latest close; the closed period is read from git at that commit.
 context's subject, relation and live concepts with the concepts each is built from, the delivered
 practice apart, and `state` is its short summary: the project's purpose, then each context's live
 concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
-from its latest closing of the books: every reading folds the entries the close brought forward
-with the period's own, so what stands reads the same after a close as before it, and the history
-readings carry `booksClosed`, naming the close and the commit holding the period before it. The
+from its latest closing of the books: every reading reads the openings as it reads any entries,
+so what stands reads the same after a close as before it, and the history readings carry
+`booksClosed`, naming the close and the commit holding the period before it, and mark each opening
+they list `broughtForward`. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
 each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or

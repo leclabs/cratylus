@@ -1,10 +1,14 @@
-// Closing the concept journal's books (decision 0314): one call appends a close
-// entry bringing forward what stands and removes every other entry file, which
-// version control keeps at the commit the close names. These hold that every
-// reading of what stands answers the same after a close as before, that the
-// history readings name the close, that each refusal changes nothing, that a
-// later close carries again, that appending and a delivered context's identity
-// survive a close, and that a close joins a line of work that appended.
+// Closing the concept journal's books as event sourcing practises it
+// (decision 0316): one call opens a new period with one opening entry per
+// current version of each standing item, of the item's own kind, superseding
+// nothing and naming the commit at HEAD that holds the closed period, and
+// removes every other entry file, which version control keeps. These hold that
+// the journal then holds its openings and nothing else, that every reading of
+// what stands answers as before, that the history readings name the close and
+// mark its openings, that each refusal changes nothing, that a later close
+// opens again with nothing growing, that the command closes, that appending
+// and a delivered context's identity survive a close, and that a line of work
+// that branched before a close joins it.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -20,11 +24,14 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { Command } from 'commander';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CLI_BIN } from '../src/bin-name.js';
 import { deliverContext } from '../src/capabilities/concepts/delivered.js';
 import { JOURNAL } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import { explain } from '../src/explanation.js';
+import { capabilityCommands } from '../src/main.js';
 import { ulid } from '../src/ulid.js';
 
 let sandbox: string;
@@ -65,7 +72,17 @@ const snapshot = () =>
   Object.fromEntries(
     files().map((name) => [name, readFileSync(join(dir(), name), 'utf8')]),
   );
-/** Write `body` as an entry recorded by an earlier workflow; its id. */
+/** Every entry the journal's files hold, in id order. */
+const entryFiles = () =>
+  files().map(
+    (name) =>
+      JSON.parse(readFileSync(join(dir(), name), 'utf8')) as Record<
+        string,
+        unknown
+      > & { id: string; kind: string },
+  );
+/** Write `body` as an entry recorded by an earlier workflow or another line
+ *  of work; its id. */
 const recorded = (body: object): string => {
   const id = ulid();
   mkdirSync(dir(), { recursive: true });
@@ -94,6 +111,19 @@ const decide = (id: string, status: string, ...more: string[]) =>
     ...more,
   ) as { id: string };
 const idOf = (entry: unknown) => (entry as { id: string }).id;
+const worded = (verb: string, name: string, where: string, wording: string) =>
+  idOf(
+    concepts(
+      verb,
+      name,
+      '--context',
+      where,
+      '--wording',
+      wording,
+      '--reason',
+      'Because.',
+    ),
+  );
 
 /** The readings of what stands, which a close leaves as they were. */
 const STANDING = [
@@ -105,7 +135,20 @@ const STANDING = [
   ['decisions', '--open'],
   ['decisions', '--context', 'booking'],
 ];
-const standing = () => STANDING.map((argv) => concepts(...argv));
+/** `value` without what a close renews or leaves in the closed period: the
+ *  entry ids it names, and the example files a decision's entry was recorded
+ *  keeping, which an opening decision does not carry. */
+const renewed = (value: unknown): unknown =>
+  Array.isArray(value)
+    ? value.map(renewed)
+    : typeof value === 'object' && value !== null
+      ? Object.fromEntries(
+          Object.entries(value)
+            .filter(([key]) => key !== 'entry' && key !== 'keeps')
+            .map(([key, v]) => [key, renewed(v)]),
+        )
+      : value;
+const standing = () => STANDING.map((argv) => renewed(concepts(...argv)));
 
 /** The history readings, which name the latest close. */
 const HISTORY = [
@@ -115,18 +158,34 @@ const HISTORY = [
   ['decisions', '--history'],
 ];
 
-/** A journal with history: purposes, two contexts one changed, superseded,
- *  competing and retired concepts, decisions superseded, deprecated, open,
- *  accepted by acceptance, recorded accepted and classified, and efficiency
- *  figures; each entry that stands, and each that does not, by its id. */
+/** The fields an opening of each kind may hold: none grows with the number
+ *  of closes or of the entries a period held. */
+const FIELDS: Record<string, readonly string[]> = {
+  purpose: ['statement', 'reason', 'supersedes'],
+  context: ['name', 'subject', 'relation', 'reason', 'identity', 'supersedes'],
+  define: ['context', 'name', 'wording', 'builtFrom', 'reason', 'supersedes'],
+  retire: ['context', 'name', 'reason', 'supersedes'],
+  decide: [
+    'decisionId',
+    'context',
+    'title',
+    'situation',
+    'decision',
+    'consequences',
+    'status',
+    'supersedes',
+    'decisionKind',
+  ],
+};
+
+/** A journal with history: purposes, a context changed and one whose
+ *  descriptions compete, superseded, competing (a retirement among them) and
+ *  retired concepts, decisions superseded, deprecated, open, accepted by
+ *  acceptance, recorded accepted and classified, and efficiency figures. */
 function seed() {
-  const purposeFirst = idOf(concepts('purpose', '--statement', 'Book seats.'));
-  const purpose = idOf(
-    concepts('purpose', '--statement', 'Book and pay.', '--reason', 'Pay.'),
-  );
-  const bookingFirst = idOf(
-    concepts('context', 'booking', '--subject', 'Booking.'),
-  );
+  concepts('purpose', '--statement', 'Book seats.');
+  concepts('purpose', '--statement', 'Book and pay.', '--reason', 'Pay.');
+  const booking = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
   const fleet = idOf(
     concepts(
       'context',
@@ -137,35 +196,27 @@ function seed() {
       'Beside.',
     ),
   );
-  const booking = idOf(
-    concepts(
-      'context',
-      'booking',
-      '--subject',
-      'Booking seats.',
-      '--reason',
-      'Sharper.',
-    ),
+  concepts(
+    'context',
+    'booking',
+    '--subject',
+    'Booking seats.',
+    '--reason',
+    'Sharper.',
   );
-  const worded = (verb: string, name: string, where: string, wording: string) =>
-    idOf(
-      concepts(
-        verb,
-        name,
-        '--context',
-        where,
-        '--wording',
-        wording,
-        '--reason',
-        'Because.',
-      ),
-    );
-  const holdFirst = worded('define', 'hold', 'booking', 'A hold.');
+  for (const subject of ['Trucks.', 'Vans.'])
+    recorded({
+      kind: 'context',
+      name: 'fleet',
+      subject,
+      relation: 'Beside.',
+      reason: 'A line of work.',
+      supersedes: [fleet],
+    });
+  worded('define', 'hold', 'booking', 'A hold.');
   const slot = worded('define', 'slot', 'booking', 'A slot.');
-  // Each superseded after a later concept or context was first recorded, so
-  // a close keeps the order the views list them in only by recording it.
-  const hold = worded('supersede', 'hold', 'booking', 'A short hold.');
-  const sibling = (wording: string) =>
+  worded('supersede', 'hold', 'booking', 'A short hold.');
+  for (const wording of ['A wide slot.', 'A narrow slot.'])
     recorded({
       kind: 'supersede',
       context: 'booking',
@@ -175,22 +226,45 @@ function seed() {
       reason: 'A line of work.',
       supersedes: [slot],
     });
-  const competing = [sibling('A wide slot.'), sibling('A narrow slot.')];
-  const gone = [
-    worded('define', 'gone', 'booking', 'Gone soon.'),
-    idOf(
-      concepts('retire', 'gone', '--context', 'booking', '--reason', 'Gone.'),
-    ),
-  ];
-  const truck = worded('define', 'truck', 'fleet', 'A truck.');
-  const d1 = decide('d1', 'open').id;
-  const d1Accepted = idOf(concepts('accept', 'd1'));
-  const d2 = decide('d2', 'accepted', '--supersedes', 'd1').id;
-  const d3 = decide('d3', 'open').id;
-  const d3Deprecated = idOf(concepts('deprecate', 'd3', '--reason', 'Done.'));
-  const d4 = decide('d4', 'open').id;
-  const d4Accepted = idOf(concepts('accept', 'd4', '--reason', 'Agreed.'));
-  const d5 = decide('d5', 'open').id;
+  worded('define', 'gone', 'booking', 'Gone soon.');
+  concepts('retire', 'gone', '--context', 'booking', '--reason', 'Gone.');
+  const lane = worded('define', 'lane', 'booking', 'A lane.');
+  recorded({
+    kind: 'supersede',
+    context: 'booking',
+    name: 'lane',
+    wording: 'A fast lane.',
+    builtFrom: [],
+    reason: 'A line of work.',
+    supersedes: [lane],
+  });
+  recorded({
+    kind: 'retire',
+    context: 'booking',
+    name: 'lane',
+    reason: 'Another line of work.',
+    supersedes: [lane],
+  });
+  concepts(
+    'define',
+    'truck',
+    '--context',
+    'fleet',
+    '--wording',
+    'A truck.',
+    '--reason',
+    'Because.',
+    '--built-from',
+    'hold',
+  );
+  decide('d1', 'open');
+  concepts('accept', 'd1');
+  decide('d2', 'accepted', '--supersedes', 'd1');
+  decide('d3', 'open');
+  concepts('deprecate', 'd3', '--reason', 'Done.');
+  decide('d4', 'open');
+  concepts('accept', 'd4', '--reason', 'Agreed.');
+  decide('d5', 'open');
   const told = recorded({
     kind: 'decide',
     decisionId: 'told',
@@ -202,21 +276,16 @@ function seed() {
     status: 'open',
     supersedes: null,
     decisionKind: 'meaning',
+    keeps: ['booking/1'],
   });
-  const classifiedFirst = recorded({
-    kind: 'classify',
-    decisionId: 'told',
-    entry: told,
-    decisionKind: 'meaning',
-  });
-  const classified = recorded({
+  recorded({
     kind: 'classify',
     decisionId: 'told',
     entry: told,
     decisionKind: 'realization',
     reason: 'It constrains.',
   });
-  const efficiency = recorded({
+  recorded({
     kind: 'efficiency',
     context: 'booking',
     cut: 'c1',
@@ -225,73 +294,62 @@ function seed() {
     wholeCheckRuns: 1,
     tokens: null,
   });
-  return {
-    carried: [
-      purpose,
-      booking,
-      fleet,
-      hold,
-      ...competing,
-      truck,
-      gone[1] as string,
-      d2,
-      d4,
-      d4Accepted,
-      d5,
-      told,
-      classified,
-    ].sort(),
-    dropped: [
-      purposeFirst,
-      bookingFirst,
-      holdFirst,
-      slot,
-      gone[0] as string,
-      d1,
-      d1Accepted,
-      d3,
-      d3Deprecated,
-      classifiedFirst,
-      efficiency,
-    ],
-    bookingFirst,
-    booking,
-    fleet,
-    holdFirst,
-    slot,
-    truck,
-    goneFirst: gone[0] as string,
-  };
+  return { booking, fleet };
 }
 
-/** The close entry the journal's one file holds. */
-const closeFile = () => {
-  const [name] = files();
-  return JSON.parse(readFileSync(join(dir(), name as string), 'utf8')) as {
-    id: string;
-    kind: string;
-    commit: string;
-    broughtForward: { id: string }[];
-    closed: string[];
-    identities: Record<string, string[]>;
-    resolved: Record<string, string | null>;
-    concepts: Record<string, Record<string, string>>;
-  };
-};
+/** What a close of `seed`'s journal opens, in order. */
+const OPENED = (booking: string, fleet: string) => [
+  { kind: 'purpose', statement: 'Book and pay.', reason: 'Pay.' },
+  {
+    kind: 'context',
+    name: 'booking',
+    subject: 'Booking seats.',
+    relation: '',
+    reason: 'Sharper.',
+    identity: booking,
+  },
+  { kind: 'context', name: 'fleet', subject: 'Trucks.', identity: fleet },
+  { kind: 'context', name: 'fleet', subject: 'Vans.', identity: fleet },
+  {
+    kind: 'define',
+    context: 'booking',
+    name: 'hold',
+    wording: 'A short hold.',
+    builtFrom: [],
+    reason: 'Because.',
+  },
+  { kind: 'define', name: 'slot', wording: 'A wide slot.' },
+  { kind: 'define', name: 'slot', wording: 'A narrow slot.' },
+  { kind: 'define', name: 'lane', wording: 'A fast lane.' },
+  { kind: 'retire', name: 'lane', reason: 'Another line of work.' },
+  {
+    kind: 'define',
+    context: 'fleet',
+    name: 'truck',
+    wording: 'A truck.',
+    builtFrom: ['hold'],
+  },
+  {
+    kind: 'decide',
+    decisionId: 'd2',
+    title: 'T d2',
+    status: 'accepted',
+    supersedes: null,
+    decisionKind: 'realization',
+  },
+  { kind: 'decide', decisionId: 'd4', status: 'accepted' },
+  { kind: 'decide', decisionId: 'd5', status: 'open' },
+  {
+    kind: 'decide',
+    decisionId: 'told',
+    status: 'open',
+    decisionKind: 'realization',
+  },
+];
 
 describe('closing the books', () => {
-  it('leaves the close alone, what stands as it was, and the closed period at its commit', () => {
-    const {
-      carried,
-      dropped,
-      bookingFirst,
-      booking,
-      fleet,
-      holdFirst,
-      slot,
-      truck,
-      goneFirst,
-    } = seed();
+  it('leaves one opening per current version of each standing item, what stands as it was, and the closed period at its commit', () => {
+    const { booking, fleet } = seed();
     const head = commit();
     const before = standing();
     const contents = snapshot();
@@ -302,35 +360,75 @@ describe('closing the books', () => {
 
     const answer = concepts('close') as Record<string, unknown>;
 
-    expect(files()).toEqual([`${answer.id}.json`]);
-    expect(answer).toMatchObject({
-      kind: 'close',
+    const openings = entryFiles();
+    expect(openings).toMatchObject(OPENED(booking, fleet));
+    expect(answer).toEqual({
+      at: openings[0]?.at,
+      ...(openings[0]?.by === undefined ? {} : { by: openings[0].by }),
       commit: head,
-      broughtForward: carried.length,
-      closed: dropped.length,
+      openings: openings.length,
       removed: Object.keys(contents).length,
     });
-    const close = closeFile();
-    expect(close.broughtForward.map((e) => e.id)).toEqual(carried);
-    expect(close.closed).toEqual([...dropped].sort());
-    // Each entry is brought forward verbatim, as its file held it.
-    for (const entry of close.broughtForward)
-      expect(entry).toEqual(JSON.parse(contents[`${entry.id}.json`] as string));
-    expect(close.identities).toEqual({
-      booking: [bookingFirst, booking],
-      fleet: [fleet],
+    // Nothing else stays: every file is an opening, none an earlier entry.
+    expect(files()).toEqual(openings.map((o) => `${o.id}.json`));
+    const last = Object.keys(contents).sort().at(-1) as string;
+    for (const opening of openings) {
+      expect(`${opening.id}.json` > last).toBe(true);
+      expect(opening.at).toBe(answer.at);
+      expect(opening.broughtForward).toBe(head);
+      expect(opening.supersedes).toEqual(opening.kind === 'decide' ? null : []);
+      expect(
+        Object.keys(opening).filter(
+          (key) =>
+            !['id', 'at', 'by', 'kind', 'broughtForward'].includes(key) &&
+            !FIELDS[opening.kind]?.includes(key),
+        ),
+        opening.kind,
+      ).toEqual([]);
+    }
+    // The same answers, each list in the same order, competing versions still
+    // competing.
+    expect(standing()).toEqual(before);
+    expect(concepts('design', '--context', 'booking')).toMatchObject({
+      contexts: [
+        {
+          competing: [
+            { name: 'slot', versions: [{}, {}] },
+            {
+              name: 'lane',
+              versions: [{ wording: 'A fast lane.' }, { retired: true }],
+            },
+          ],
+        },
+      ],
     });
-    expect(close.resolved).toEqual({});
-    expect(close.concepts).toEqual({
-      booking: { hold: holdFirst, slot, gone: goneFirst },
-      fleet: { truck },
+    expect(concepts('state', '--context', 'fleet')).toMatchObject({
+      contexts: [{ subject: null, competingDescriptions: [{}, {}] }],
     });
-    // The same answers, each list in the same order.
-    expect(JSON.stringify(standing())).toBe(JSON.stringify(before));
+    // The history readings name the close and mark each opening they list.
     for (const argv of HISTORY)
       expect(concepts(...argv), argv.join(' ')).toMatchObject({
-        booksClosed: { entry: close.id, at: answer.at, commit: head },
+        booksClosed: { at: answer.at, commit: head },
       });
+    expect(concepts('history', 'hold', '--context', 'booking')).toMatchObject({
+      versions: [{ kind: 'define', broughtForward: head }],
+    });
+    expect(concepts('history', '--context', 'booking')).toEqual({
+      context: 'booking',
+      versions: [
+        expect.objectContaining({
+          subject: 'Booking seats.',
+          broughtForward: head,
+        }),
+      ],
+      booksClosed: expect.anything(),
+    });
+    for (const d of (
+      concepts('decisions', '--history') as {
+        decisions: Record<string, unknown>[];
+      }
+    ).decisions)
+      expect(d.broughtForward).toBe(head);
     for (const argv of [['state'], ['design'], ['decisions'], ['leakage']])
       expect(concepts(...argv)).not.toHaveProperty('booksClosed');
     for (const [name, content] of Object.entries(contents))
@@ -342,7 +440,7 @@ describe('closing the books', () => {
       ).toBe(content);
   });
 
-  it('is explained as closing, taking nothing', () => {
+  it('is explained as closing, taking nothing, and closes from the command', async () => {
     expect(
       explain(JOURNAL).verbs.find((v) => v.name === 'close'),
     ).toMatchObject({
@@ -350,6 +448,31 @@ describe('closing the books', () => {
       effect: 'closes',
       parameters: [],
     });
+    concepts('context', 'booking', '--subject', 'Booking.');
+    const head = commit();
+    const out: string[] = [];
+    vi.spyOn(process.stdout, 'write').mockImplementation((s) => {
+      out.push(String(s));
+      return true;
+    });
+    const cwd = process.cwd();
+    try {
+      process.chdir(repo);
+      const host = new Command(CLI_BIN).enablePositionalOptions();
+      for (const command of capabilityCommands()) host.addCommand(command);
+      await host.parseAsync(['concepts', 'close'], { from: 'user' });
+    } finally {
+      process.chdir(cwd);
+      vi.restoreAllMocks();
+    }
+    expect(JSON.parse(out.join(''))).toMatchObject({
+      commit: head,
+      openings: 1,
+      removed: 1,
+    });
+    expect(entryFiles()).toMatchObject([
+      { kind: 'context', broughtForward: head },
+    ]);
   });
 
   describe('refuses, changing nothing', () => {
@@ -494,58 +617,61 @@ describe('closing the books', () => {
     });
   });
 
-  it('closes again after new entries, carrying again and removing the first close', () => {
-    seed();
+  it('closes again after one more change, opening again with nothing grown', () => {
+    const { booking, fleet } = seed();
     commit();
-    const first = idOf(concepts('close'));
+    concepts('close');
+    const first = entryFiles();
     commit();
-    const hold = idOf(
-      concepts(
-        'supersede',
-        'hold',
-        '--context',
-        'booking',
-        '--wording',
-        'A brief hold.',
-        '--reason',
-        'Shorter.',
-      ),
-    );
+    worded('supersede', 'hold', 'booking', 'A brief hold.');
     const head = commit();
     const before = standing();
     const answer = concepts('close') as Record<string, unknown>;
-    expect(files()).toEqual([`${answer.id}.json`]);
-    expect(answer).toMatchObject({ commit: head, removed: 2 });
-    const ids = closeFile().broughtForward.map((e) => e.id);
-    expect(ids).toContain(hold);
-    expect(ids).not.toContain(first);
-    expect(JSON.stringify(standing())).toBe(JSON.stringify(before));
+    const second = entryFiles();
+    expect(answer).toMatchObject({
+      commit: head,
+      openings: first.length,
+      removed: first.length + 1,
+    });
+    expect(second).toMatchObject(
+      OPENED(booking, fleet).map((o) =>
+        o.kind === 'define' && o.name === 'hold'
+          ? { ...o, wording: 'A brief hold.' }
+          : o,
+      ),
+    );
+    expect(standing()).toEqual(before);
+    // Each opening of an unchanged item is the first close's, but for its id,
+    // its moment and the commit it names.
+    const bare = ({
+      id: _id,
+      at: _at,
+      broughtForward: _commit,
+      ...rest
+    }: Record<string, unknown>) => rest;
+    second.forEach((opening, i) => {
+      expect(opening.broughtForward).toBe(head);
+      if (opening.name !== 'hold')
+        expect(bare(opening)).toEqual(
+          bare(first[i] as Record<string, unknown>),
+        );
+    });
     expect(concepts('history', 'hold', '--context', 'booking')).toMatchObject({
-      booksClosed: { entry: answer.id, commit: head },
+      versions: [{ wording: 'A brief hold.', broughtForward: head }],
+      booksClosed: { at: answer.at, commit: head },
     });
   });
 
-  it('appends after a close, past it, superseding, accepting and deprecating what it carried', () => {
+  it('appends after a close, past its openings, superseding, accepting and deprecating what it opened', () => {
     seed();
     commit();
-    const close = idOf(concepts('close'));
-    const hold = idOf(
-      concepts(
-        'supersede',
-        'hold',
-        '--context',
-        'booking',
-        '--wording',
-        'A brief hold.',
-        '--reason',
-        'Shorter.',
-      ),
-    );
-    expect(hold > close).toBe(true);
+    concepts('close');
+    const last = files().at(-1) as string;
+    const hold = worded('supersede', 'hold', 'booking', 'A brief hold.');
+    expect(`${hold}.json` > last).toBe(true);
     concepts('accept', 'd5');
     concepts('deprecate', 'told', '--reason', 'Stated by the concepts.');
     const d6 = decide('d6', 'open', '--supersedes', 'd4').id;
-    expect(files()).toHaveLength(5);
     const design = concepts('design', '--context', 'booking') as {
       contexts: { concepts: { name: string; wording: string }[] }[];
     };
@@ -567,24 +693,32 @@ describe('closing the books', () => {
       d6: 'open',
     });
     expect(decisions.decisions.at(-1)?.entry).toBe(d6);
-    // A concept retired before the close is brought back by a supersession.
-    concepts(
-      'supersede',
-      'gone',
-      '--context',
-      'booking',
-      '--wording',
-      'Back again.',
-      '--reason',
-      'Needed.',
+    // A concept retired before the close is not carried: it returns by define.
+    expect(() => worded('supersede', 'gone', 'booking', 'Back.')).toThrow(
+      /has no concept 'gone'/,
     );
+    worded('define', 'gone', 'booking', 'Back again.');
     expect(
       (concepts('design', '--context', 'booking') as typeof design).contexts[0]
         ?.concepts,
     ).toContainEqual({ name: 'gone', wording: 'Back again.', builtFrom: [] });
   });
 
-  it('keeps a delivered context’s identity, and the journal holding it, across a close', () => {
+  it('compares a version only with versions it replaces: an opening replaces none', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    worded('define', 'hold', 'booking', 'A hold.');
+    worded('supersede', 'hold', 'booking', 'A hold. And more.');
+    const extending = () =>
+      (concepts('leakage') as { warnings: { rule: string }[] }).warnings.filter(
+        (w) => w.rule === 'only extends the version it replaces',
+      );
+    expect(extending()).toHaveLength(1);
+    commit();
+    concepts('close');
+    expect(extending()).toEqual([]);
+  });
+
+  it('keeps a delivered context’s identity, and the journal holding it, across closes', () => {
     const first = idOf(
       concepts(
         'context',
@@ -603,33 +737,25 @@ describe('closing the books', () => {
       '--reason',
       'Sharper.',
     );
-    concepts(
-      'define',
-      'part',
-      '--context',
-      'workflow',
-      '--wording',
-      'A part.',
-      '--reason',
-      'First.',
-    );
-    const delivered = deliverContext({
-      from: repo,
-      context: 'workflow',
-      origin: 'cratylus',
-      version: '1.0.0',
-    });
-    expect(delivered.identity).toBe(first);
-    commit();
-    concepts('close');
-    expect(
+    worded('define', 'part', 'workflow', 'A part.');
+    const deliver = () =>
       deliverContext({
         from: repo,
         context: 'workflow',
         origin: 'cratylus',
         version: '1.0.0',
-      }),
-    ).toEqual(delivered);
+      });
+    const delivered = deliver();
+    expect(delivered.identity).toBe(first);
+    commit();
+    concepts('close');
+    expect(deliver()).toEqual(delivered);
+    commit();
+    worded('define', 'piece', 'workflow', 'A piece.');
+    commit();
+    concepts('close');
+    expect(deliver().identity).toBe(first);
+    expect(entryFiles()[0]).toMatchObject({ kind: 'context', identity: first });
     // The journal still holds the context it delivers: shown among its own.
     const state = dispatchConcepts(['state'], {
       from: repo,
@@ -638,186 +764,69 @@ describe('closing the books', () => {
     expect(state).not.toHaveProperty('practice');
     expect(state.contexts).toMatchObject([{ name: 'workflow' }]);
   });
+});
 
-  it('joins a line of work that appended after the close’s base as the union of their files', () => {
-    seed();
-    commit();
+describe('a close joined with a line of work that branched before it', () => {
+  const join_ = (other: string) =>
+    git('merge', '-q', '--no-ff', '--no-edit', other);
+  /** Record on a branch `other` from here what `work` records, close on
+   *  `main`, and join `other`. */
+  const branchedThenClosed = (work: () => void) => {
+    commit('base');
     git('checkout', '-q', '-b', 'other');
-    concepts(
-      'supersede',
-      'hold',
-      '--context',
-      'booking',
-      '--wording',
-      'A brief hold.',
-      '--reason',
-      'Shorter.',
-    );
-    decide('d7', 'open', '--supersedes', 'd5');
+    work();
     commit('other');
-    const joined = standing();
     git('checkout', '-q', 'main');
     concepts('close');
     commit('close');
-    git('merge', '-q', '--no-ff', '--no-edit', 'other');
-    expect(files()).toHaveLength(3);
-    expect(JSON.stringify(standing())).toBe(JSON.stringify(joined));
-    const decisions = concepts('decisions', '--history') as {
-      decisions: { id: string; status: string }[];
-    };
-    expect(decisions.decisions).toContainEqual(
-      expect.objectContaining({ id: 'd5', status: 'superseded' }),
-    );
-  });
-
-  describe('reads what a close brings forward as it reads an entry file', () => {
-    const close = (broughtForward: object[]) =>
-      recorded({
-        kind: 'close',
-        commit: '0'.repeat(40),
-        broughtForward,
-        closed: [],
-        identities: {},
-        concepts: {},
-        resolved: {},
-      });
-    const context = (id: string) => ({
-      id,
-      at: '2026-01-01T00:00:00.000Z',
-      kind: 'context',
-      name: 'booking',
-      subject: 'Booking.',
-      relation: '',
-    });
-
-    it('refuses a malformed entry of a known kind, naming the close’s file', () => {
-      const id = ulid();
-      const file = close([{ ...context(id), subject: 3 }]);
-      expect(() => concepts('state')).toThrow(
-        `concepts state: the entry ${id} brought forward by the journal entry design/journal/${file}.json is a context entry this runtime cannot read: subject is missing or malformed`,
-      );
-    });
-
-    it('reads past an entry of a newer kind or value, counting it', () => {
-      close([
-        context(ulid()),
-        { id: ulid(), at: '2026-01-01T00:00:00.000Z', kind: 'forecast' },
-      ]);
-      expect(concepts('state')).toMatchObject({
-        contexts: [{ name: 'booking', subject: 'Booking.' }],
-        uninterpreted: { kinds: { forecast: 1 } },
-      });
-    });
-
-    it('reads an entry a file and a close both hold once', () => {
-      const id = ulid();
-      mkdirSync(dir(), { recursive: true });
-      writeFileSync(join(dir(), `${id}.json`), JSON.stringify(context(id)));
-      close([context(id)]);
-      expect(concepts('history', '--context', 'booking')).toMatchObject({
-        versions: [{ id }],
-      });
-    });
-  });
-});
-
-describe('a close joined with another line of work', () => {
-  const define = (name: string, verb = 'define', wording = `A ${name}.`) =>
-    idOf(
-      concepts(
-        verb,
-        name,
-        '--context',
-        'booking',
-        '--wording',
-        wording,
-        '--reason',
-        'Because.',
-      ),
-    );
-  const standingIds = () =>
-    (concepts('decisions') as { decisions: { entry: string }[] }).decisions.map(
-      (d) => d.entry,
-    );
-  const join_ = (other: string) =>
-    git('merge', '-q', '--no-ff', '--no-edit', other);
+    join_('other');
+  };
 
   beforeEach(() => {
     concepts('context', 'booking', '--subject', 'Booking.');
   });
 
-  it('keeps a retirement one line closed competing with a version the other recorded', () => {
-    define('x');
-    commit('base');
-    git('checkout', '-q', '-b', 'other');
-    define('x', 'supersede', 'A wider x.');
-    commit('other');
-    git('checkout', '-q', 'main');
-    concepts('retire', 'x', '--context', 'booking', '--reason', 'Gone.');
-    commit('retire');
-    concepts('close');
-    commit('close');
-    join_('other');
-    expect(concepts('design', '--history')).toMatchObject({
+  it('reads a version superseding a closed one as competing with its opening, until one settles them', () => {
+    worded('define', 'x', 'booking', 'An x.');
+    branchedThenClosed(() => worded('supersede', 'x', 'booking', 'A wider x.'));
+    expect(concepts('design')).toMatchObject({
       contexts: [
         {
           concepts: [],
           competing: [
             {
               name: 'x',
-              versions: [
-                { wording: 'A wider x.' },
-                { retired: true, reason: 'Gone.' },
-              ],
+              versions: [{ wording: 'A wider x.' }, { wording: 'An x.' }],
             },
           ],
         },
       ],
     });
+    worded('supersede', 'x', 'booking', 'A settled x.');
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ concepts: [{ name: 'x', wording: 'A settled x.' }] }],
+    });
   });
 
-  it('never reads again a decision one close ended, though another carried it', () => {
-    const d = decide('d', 'open').id;
-    commit('base');
-    git('checkout', '-q', '-b', 'other');
-    concepts('close');
-    commit('other close');
-    git('checkout', '-q', 'main');
-    concepts('deprecate', 'd', '--reason', 'Done.');
-    commit('deprecate');
-    concepts('close');
-    commit('close');
-    join_('other');
-    expect(files()).toHaveLength(2);
-    expect(standingIds()).not.toContain(d);
+  it('binds an acceptance, deprecation or supersession of a closed decision entry by its name', () => {
+    for (const id of ['d', 'e', 'f']) decide(id, 'open');
+    branchedThenClosed(() => {
+      concepts('accept', 'd');
+      concepts('deprecate', 'e', '--reason', 'Done.');
+      decide('g', 'open', '--supersedes', 'f');
+    });
+    const decisions = concepts('decisions', '--history') as {
+      decisions: { id: string; status: string; supersededBy: string[] }[];
+    };
+    expect(
+      Object.fromEntries(decisions.decisions.map((d) => [d.id, d.status])),
+    ).toEqual({ d: 'accepted', e: 'deprecated', f: 'superseded', g: 'open' });
   });
 
-  it('never reads again a superseded decision one close ended, carried by the other line', () => {
-    const d1 = decide('d1', 'open').id;
-    commit('base');
-    git('checkout', '-q', '-b', 'other');
-    concepts('close');
-    commit('other close');
-    git('checkout', '-q', 'main');
-    decide('d2', 'open', '--supersedes', 'd1');
-    concepts('deprecate', 'd2', '--reason', 'Done.');
-    commit('d2');
-    concepts('close');
-    commit('close');
-    join_('other');
-    expect(standingIds()).not.toContain(d1);
-    expect(standingIds()).toEqual([]);
-  });
-
-  it('binds a reference by name alone as it bound before the close', () => {
-    const legacy = (id: string, body: object) =>
-      writeFileSync(
-        join(dir(), `${id}.json`),
-        JSON.stringify({ id, at: '2026-01-01T00:00:00.000Z', ...body }),
-      );
+  it('binds none where two decisions share the name', () => {
     const decision = {
       kind: 'decide',
-      decisionId: 'd1',
+      decisionId: 'd',
       context: 'booking',
       title: 'T',
       situation: 'S',
@@ -826,168 +835,68 @@ describe('a close joined with another line of work', () => {
       status: 'open',
       supersedes: null,
     };
-    legacy('01A00000000000000000000001', decision);
-    legacy('01A00000000000000000000002', decision);
-    legacy('01A00000000000000000000003', {
-      ...decision,
-      decisionId: 'd2',
-      supersedes: 'd1',
-    });
-    legacy('01A00000000000000000000004', {
-      kind: 'deprecate',
-      decisionId: 'd1',
-      entry: '01A00000000000000000000001',
-      reason: 'Done.',
-    });
-    const before = concepts('decisions');
-    expect(standingIds()).toEqual([
-      '01A00000000000000000000002',
-      '01A00000000000000000000003',
-    ]);
-    commit();
-    concepts('close');
-    expect(closeFile().resolved).toEqual({
-      '01A00000000000000000000003': null,
-    });
-    expect(concepts('decisions')).toEqual(before);
+    const one = recorded(decision);
+    recorded(decision);
+    branchedThenClosed(() =>
+      recorded({ kind: 'accept', decisionId: 'd', entry: one }),
+    );
+    expect(
+      (
+        concepts('decisions') as { decisions: { status: string }[] }
+      ).decisions.map((d) => d.status),
+    ).toEqual(['open', 'open']);
   });
 
-  it('keeps a delivered context the journal holds through a close of a joined context', () => {
-    concepts('purpose', '--statement', 'Book.');
-    commit('root');
-    git('checkout', '-q', '-b', 'other');
-    const theirs = idOf(
-      concepts('context', 'workflow', '--subject', 'Theirs.', '--relation', ''),
+  it('keeps a context’s identity when a change joined from that line is its earliest entry', () => {
+    const first = idOf(
+      concepts('context', 'workflow', '--subject', 'Ours.', '--relation', ''),
     );
-    concepts(
-      'define',
-      'part',
-      '--context',
-      'workflow',
-      '--wording',
-      'A part.',
-      '--reason',
-      'First.',
-    );
+    worded('define', 'part', 'workflow', 'A part.');
     const delivered = deliverContext({
       from: repo,
       context: 'workflow',
       origin: 'cratylus',
       version: '1.0.0',
     });
-    expect(delivered.identity).toBe(theirs);
-    commit('theirs');
-    git('checkout', '-q', 'main');
-    const ours = idOf(
-      concepts('context', 'workflow', '--subject', 'Ours.', '--relation', ''),
-    );
-    commit('ours');
-    join_('other');
-    const settled = idOf(
+    branchedThenClosed(() =>
       concepts(
         'context',
         'workflow',
         '--subject',
-        'Settled.',
-        '--relation',
-        '',
+        'Theirs.',
         '--reason',
-        'Settle.',
+        'Theirs.',
       ),
     );
-    commit('settled');
-    const read = () =>
-      dispatchConcepts(['state'], { from: repo, delivered: [delivered] });
-    const before = read();
-    expect(before).not.toHaveProperty('practice');
-    concepts('close');
-    expect(closeFile().identities.workflow).toEqual(
-      [ours, theirs, settled].sort(),
+    const state = dispatchConcepts(['state', '--context', 'workflow'], {
+      from: repo,
+      delivered: [delivered],
+    });
+    expect(state).not.toHaveProperty('practice');
+    expect(state).toMatchObject({
+      contexts: [
+        {
+          name: 'workflow',
+          subject: null,
+          competingDescriptions: [{ subject: 'Theirs.' }, { subject: 'Ours.' }],
+        },
+      ],
+    });
+    concepts(
+      'context',
+      'workflow',
+      '--subject',
+      'Settled.',
+      '--reason',
+      'Settle.',
     );
-    expect(read()).toEqual(before);
-  });
-
-  it('keeps each concept’s order by its own recorded first version, whatever its name', () => {
-    define('first');
-    commit();
-    concepts('close');
-    commit();
-    define('constructor');
-    define('last');
-    const order = () =>
-      (
-        concepts('design') as { contexts: { concepts: { name: string }[] }[] }
-      ).contexts[0]?.concepts.map((c) => c.name);
-    expect(order()).toEqual(
-      ['booking', 'first', 'constructor', 'last'].slice(1),
-    );
-    commit();
-    concepts('close');
     expect(
-      Object.hasOwn(closeFile().concepts.booking ?? {}, 'constructor'),
-    ).toBe(true);
-    expect(order()).toEqual(['first', 'constructor', 'last']);
-  });
-
-  it('names closed again what an earlier close ended, so a line still carrying it cannot bring it back', () => {
-    const d1 = decide('d1', 'open').id;
-    commit('base');
-    git('checkout', '-q', '-b', 'other');
-    concepts('close');
-    commit('other close');
-    git('checkout', '-q', 'main');
-    concepts('deprecate', 'd1', '--reason', 'Done.');
-    commit('deprecate');
-    concepts('close');
-    commit('close');
-    concepts('purpose', '--statement', 'Book.');
-    commit('purpose');
-    concepts('close');
-    commit('close again');
-    expect(closeFile().closed).toContain(d1);
-    join_('other');
-    expect(standingIds()).not.toContain(d1);
-  });
-
-  it('keeps a context’s identity and order through a close of two joined closes', () => {
-    concepts('purpose', '--statement', 'Book.');
-    commit('root');
-    git('checkout', '-q', '-b', 'other');
-    const theirs = idOf(
-      concepts('context', 'shared', '--subject', 'Shared.', '--relation', ''),
-    );
-    commit('theirs');
-    git('checkout', '-q', 'main');
-    concepts('context', 'alpha', '--subject', 'Alpha.', '--relation', '');
-    const ours = idOf(
-      concepts('context', 'shared', '--subject', 'Shared.', '--relation', ''),
-    );
-    commit('ours');
-    git('checkout', '-q', 'other');
-    concepts('close');
-    commit('their close');
-    git('checkout', '-q', 'main');
-    concepts('close');
-    commit('our close');
-    join_('other');
-    const delivered = () =>
       deliverContext({
         from: repo,
-        context: 'shared',
+        context: 'workflow',
         origin: 'cratylus',
         version: '1.0.0',
-      }).identity;
-    const order = () =>
-      (concepts('state') as { contexts: { name: string }[] }).contexts.map(
-        (c) => c.name,
-      );
-    expect(delivered()).toBe(ours);
-    expect(order()).toEqual(['booking', 'alpha', 'shared']);
-    concepts('purpose', '--statement', 'Book more.', '--reason', 'More.');
-    commit('purpose');
-    concepts('close');
-    expect(closeFile().identities.shared).toEqual([ours, theirs]);
-    expect(delivered()).toBe(ours);
-    expect(order()).toEqual(['booking', 'alpha', 'shared']);
+      }).identity,
+    ).toBe(first);
   });
 });
