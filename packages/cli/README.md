@@ -50,17 +50,17 @@ and installs only the practices it is named, or every practice when told `--all`
 Five decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
-| Decision                                  | Flag                                    | Asked when                                                                       | Where nothing is asked                                   |
-| ----------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Which agent harness                       | `--harness omp`                         | absent, and the host has no omp directory                                        | none: refused                                            |
-| Which scope                               | `--scope <user\|project>`               | absent, on a terminal, where the project here is not your home                   | user                                                     |
-| Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                  | none: refused, whatever `--yes` says                     |
-| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                     | the choice the last install recorded, else none          |
-| Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
+| Decision                                  | Flag                                    | Asked when                                                                                      | Where nothing is asked                                   |
+| ----------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Which agent harness                       | `--harness omp`                         | absent, and the host has no omp directory                                                       | none: refused                                            |
+| Which scope                               | `--scope <user\|project>`               | absent, on a terminal, where the project here is not your home                                  | user                                                     |
+| Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                                 | none: refused, whatever `--yes` says                     |
+| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                                    | the choice the last install recorded, else none          |
+| Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | at user scope, a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
 question asks about each tier, then each persona, that your config does not bind; leaving one
-unbound is an answer.
+unbound is an answer. A project installation asks no model question.
 Unless a flag settled every decision, the preview ends with that last question. Answering no, or
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
@@ -88,10 +88,18 @@ is relative, so a clone anywhere resolves it, and every teammate's omp loads it 
 Upgrade it and uninstall it from inside the project with `--scope project`.
 
 Each scope leaves the other alone. A project install, upgrade or uninstall writes nothing under your
-home: the models and the status line choice it settles are the project's `.omp/config.yml`, and an
-earlier installation under your home is left for a user install to take back. A user install,
-upgrade or uninstall leaves every project installation as it is, and a project one leaves the user
+home: the status line choice it settles is the project's `.omp/config.yml`, and an earlier
+installation under your home is left for a user install to take back. A user install, upgrade or
+uninstall leaves every project installation as it is, and a project one leaves the user
 installation and every other project's.
+
+A project installation binds no models. It is shared through the project, and a tier's model is
+each operator's own setting, so binding one there would impose your models on the whole team: it
+asks no model question and writes no `modelRoles` entry, in the project or anywhere else, and
+`--model-roles` with `--scope project` is refused. It reads, without writing, the project's
+`.omp/config.yml` and your `~/.omp/agent/config.yml`, and names as your next step each tier the
+agents fall back to that neither binds, for you to bind in your own settings, by hand or with
+`cratylus install --scope user --model-roles <tier=model,…>`.
 
 Inside a project that has one, the `cratylus` command you run yourself, naming no installation,
 reads the project installation; elsewhere it reads yours.
@@ -138,15 +146,14 @@ rewritten with a model. So two kinds of role decide the model: a tier the agents
 (`frontier`, `frontier-other-family`, …), and the role named for an agent, which wins over its tier
 where you bind it.
 
-On a terminal, install asks for a model for each tier, and each persona's role, that your omp
-settings do not bind under `modelRoles` (`~/.omp/agent/config.yml`; at project scope the project's
-`.omp/config.yml`), and writes each answer there as an
-ordinary entry of yours (`frontier: "openai/gpt-6"`). `--model-roles` settles the
+On a terminal, a user install asks for a model for each tier, and each persona's role, that your
+omp settings do not bind under `modelRoles` (`~/.omp/agent/config.yml`), and writes each answer
+there as an ordinary entry of yours (`frontier: "openai/gpt-6"`). `--model-roles` settles the
 decision instead, keyed by a tier or an agent's name (`frontier=openai/gpt-6,builder=google/gemini-3-pro`);
 `--model-roles default` binds nothing. Nothing install binds for you is recorded as cratylus's, so
 installing again, upgrading and uninstalling all keep it, and you change it by editing your config.
 A role your config already binds is never asked and never changed; a `--model-roles` entry for it is
-left as you set it, and said so.
+left as you set it, and said so. A project installation binds no models (above).
 
 Where install is neither told nor able to ask (no terminal, or `--yes`), it places everything else
 and ends by naming, as your next step, each tier the installed agents fall back to that your config
@@ -175,7 +182,7 @@ omp's own surfaces only refer into it, the way `omp plugin link` does. At user s
 
 Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
 
-Install writes nothing else of yours, with two exceptions, both in omp's settings for the scope: `~/.omp/agent/config.yml` at user scope, the project's `.omp/config.yml` at project scope. The models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
+Install writes nothing else of yours, with two exceptions, both in omp's settings for the scope: `~/.omp/agent/config.yml` at user scope, the project's `.omp/config.yml` at project scope. At user scope the models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's; at project scope none do. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
 **Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
@@ -207,9 +214,11 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
   says, or run install from a directory with no config.
 - `cancelled; nothing was written, so run it again to install`: you cancelled a question.
 
-At project scope install also refuses where the project is your home, and where the project's
-`.cratylus/omp` holds files and no installation record: that is an author's render tree
-(`cratylus project` below), which a project root never shares a directory with.
+At project scope install also refuses where the project is your home; where the project's
+`.cratylus/omp` holds files and no installation record, which is an author's render tree
+(`cratylus project` below) that a project root never shares a directory with; and where
+`--model-roles` is given (`--model-roles: a project installation binds no models, …`): bind your
+models at user scope instead.
 
 ## Starting a session as an agent
 
@@ -283,7 +292,7 @@ so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 ## The host's model routing on omp
 
-An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in your omp settings (`~/.omp/agent/config.yml`, or the project's `.omp/config.yml` for a project installation) wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in that file (decision 0112), which upgrade and uninstall keep. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
+An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (decision 0112), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 
 ## The host runtime config
 
@@ -306,7 +315,7 @@ cratylus uninstall --harness omp --home <dir>      # another user's installation
 
 `cratylus uninstall --harness omp` removes the user installation's owned root, whole, edits and additions inside it included; and every reference into it, found from where it points rather than from the root's record, so none is left dangling when you have edited or removed the root or its record: each link in `~/.omp/plugins/node_modules` that points into the root, and each dependency entry in `~/.omp/plugins/package.json` that names it (the file too where install created it and nothing else is in it). It also takes back an earlier installation by its own record, as install does. The `modelRoles` entries in your config stay, the ones install bound as you chose included, and so does your status line, shown or hidden as you answered: they are your settings, not cratylus's. Everything you placed or changed outside the root is left, your own entries on those same surfaces included, and what was left is named, with why. Your projects' journals and files are never touched, and neither is another user's installation. Restart omp afterwards to drop what it still has loaded.
 
-With `--scope project` it does the same for the project the working directory is in, found as install finds it: it removes `<project>/.cratylus/omp` and the references into it in `<project>/.omp/plugins`, the `.gitignore` block install added there included (and nothing else of that file; the file itself only where install created it and nothing else is left), keeps the project's `.omp/config.yml` settings as yours, and writes nothing under your home. Each scope's uninstall leaves the other's installations as they are.
+With `--scope project` it does the same for the project the working directory is in, found as install finds it: it removes `<project>/.cratylus/omp` and the references into it in `<project>/.omp/plugins`, the `.gitignore` block install added there included (and nothing else of that file; the file itself only where install created it and nothing else is left), and `<project>/.omp` itself where install created it and nothing is left in it (an `.omp/` that was there before install stays); it keeps the project's `.omp/config.yml` settings as yours, and writes nothing under your home. Each scope's uninstall leaves the other's installations as they are.
 
 ## Exit codes and streams
 
@@ -331,19 +340,19 @@ Install the bundled corpus into an agent harness on this machine, asking what yo
 cratylus install [options]
 ```
 
-| Flag                      | What it does                                                                                                                                                                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                    |
-| `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project") |
-| `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                                                                      |
-| `--all`                   | Install every practice, without asking                                                                                                                                                                                                                                                |
-| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                  |
-| `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in the host's own settings; or 'default' to bind none (default: each tier and persona role the host does not bind is asked)                                        |
-| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                                                                |
-| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                                                        |
-| `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                                                             |
-| `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                                                                  |
-| `--home <dir>`            | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                                                                      |
+| Flag                      | What it does                                                                                                                                                                                                                                                                                                                                |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                                                                          |
+| `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project")                                                       |
+| `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                                                                                                                            |
+| `--all`                   | Install every practice, without asking                                                                                                                                                                                                                                                                                                      |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                                                                        |
+| `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked) |
+| `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own setting (default: asked where the status line hides it) (choices: "show", "hide")                                                                                                                                                      |
+| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                                                                                                              |
+| `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                                                                                                                   |
+| `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                                                                                                                        |
+| `--home <dir>`            | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                                                                                                                            |
 
 ### `cratylus uninstall`
 

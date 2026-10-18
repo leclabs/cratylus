@@ -1,8 +1,8 @@
-// Installation scopes (decision 0311): install and uninstall act for the user, by
-// default, or inside one project. A project installation lives wholly in the project —
-// its owned root `<project>/.cratylus/omp`, and relative references in
+// Installation scopes (decisions 0311, 0312): install and uninstall act for the user,
+// by default, or inside one project. A project installation lives wholly in the
+// project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
-// and leaves the user's installation as it is, as the user's leaves it.
+// binds no models, and leaves the user's installation as it is, as the user's leaves it.
 
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
@@ -39,17 +39,20 @@ const BLOCK =
 
 // One agents directory for the whole file: a module once imported is not read again.
 const agents = tmp('install-scope-agents-');
-writeFileSync(
-  join(agents, 'alpha.ts'),
-  fixtureAgentSource('alpha', {
-    routing: { tier: 'frontier', effort: 'high' },
-  }),
-);
+for (const [name, tier] of [
+  ['alpha', 'frontier'],
+  ['beta', 'fast'],
+  ['gamma', 'frontier-other-family'],
+] as const)
+  writeFileSync(
+    join(agents, `${name}.ts`),
+    fixtureAgentSource(name, { routing: { tier, effort: 'high' } }),
+  );
 const corpus: ProjectablePlugin = {
   name: 'scope-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
-  practices: fixturePractices(['alpha']),
+  practices: fixturePractices(['alpha', 'beta', 'gamma']),
 };
 
 let home: string;
@@ -82,7 +85,6 @@ const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     cwd,
     corpus: corpus as never,
     practices: FIXTURE_PRACTICE,
-    modelRoles: 'default',
     interactive: false,
     version: '1.0.0',
     ...extra,
@@ -250,33 +252,84 @@ describe('install at project scope', () => {
     expect(snapshot(plugins())).toEqual(referencesBefore);
   });
 
-  it('binds model roles in the project settings, keeping and not asking a role that file binds', async () => {
+  it('binds no model role: asks no model question and writes no modelRoles, in the project or the home', async () => {
     const homeConfig = join(home, '.omp', 'agent', 'config.yml');
     writeFileSync(homeConfig, 'theme: dark\n');
+    mkdirSync(join(repo, '.omp'));
+    writeFileSync(join(repo, '.omp', 'config.yml'), 'theme: light\n');
+    const homeBefore = snapshot(home);
+    const asked: string[] = [];
+    const prompts = answers({
+      routes: async (questions) => {
+        asked.push(...questions.map((q) => q.role));
+        return { frontier: 'prov/big' };
+      },
+    });
     expect(
-      await install({ scope: 'project', modelRoles: 'frontier=prov/big' }),
+      await install({ scope: 'project', interactive: true, prompts }),
     ).toBe(0);
+    expect(asked).toEqual([]);
     expect(readFileSync(join(repo, '.omp', 'config.yml'), 'utf8')).toBe(
+      'theme: light\n',
+    );
+    expect(snapshot(home)).toEqual(homeBefore);
+    expect(
+      Object.values(snapshot(repo)).some((text) => text.includes('modelRoles')),
+    ).toBe(false);
+  });
+
+  it('refuses --model-roles, naming the user scope, and writes nothing', async () => {
+    for (const modelRoles of ['frontier=prov/big', 'default']) {
+      const homeBefore = snapshot(home);
+      const repoBefore = snapshot(repo);
+      out = '';
+      expect(await install({ scope: 'project', modelRoles })).toBe(1);
+      expect(out).toContain(
+        'cratylus install: --model-roles: a project installation binds no models',
+      );
+      expect(out).toContain(
+        '`cratylus install --scope user --model-roles <role=model,…>`',
+      );
+      expect(snapshot(home)).toEqual(homeBefore);
+      expect(snapshot(repo)).toEqual(repoBefore);
+    }
+  });
+
+  it("names as next steps exactly the tiers neither the project's nor the user's settings bind, to bind at user scope", async () => {
+    const homeConfig = join(home, '.omp', 'agent', 'config.yml');
+    writeFileSync(homeConfig, 'modelRoles:\n  fast: "prov/small"\n');
+    mkdirSync(join(repo, '.omp'));
+    writeFileSync(
+      join(repo, '.omp', 'config.yml'),
       'modelRoles:\n  frontier: "prov/big"\n',
     );
-    expect(readFileSync(homeConfig, 'utf8')).toBe('theme: dark\n');
+    expect(await install({ scope: 'project' })).toBe(0);
+    expect(out).toContain(
+      `bind a model to the tier frontier-other-family in your own settings, under modelRoles in ${homeConfig} or with cratylus install --scope user --model-roles <tier=model,…>`,
+    );
+    expect(out).not.toMatch(/bind a model to [^\n]*\b(fast|frontier),/);
+    expect(out).not.toMatch(/bind a model to the tier (fast|frontier) /);
+    expect(readFileSync(homeConfig, 'utf8')).toBe(
+      'modelRoles:\n  fast: "prov/small"\n',
+    );
+  });
 
+  it('leaves a user install asking for each unbound tier and binding the answer in the user settings', async () => {
     let asked: string[] = [];
     const prompts = answers({
       routes: async (questions) => {
         asked = questions.map((q) => q.role);
-        return {};
+        return { frontier: 'prov/big' };
       },
     });
+    expect(await install({ scope: 'user', interactive: true, prompts })).toBe(
+      0,
+    );
+    expect(asked).toEqual(['fast', 'frontier', 'frontier-other-family']);
     expect(
-      await install({
-        scope: 'project',
-        interactive: true,
-        modelRoles: undefined,
-        prompts,
-      }),
-    ).toBe(0);
-    expect(asked).not.toContain('frontier');
+      readFileSync(join(home, '.omp', 'agent', 'config.yml'), 'utf8'),
+    ).toBe('modelRoles:\n  frontier: "prov/big"\n');
+    expect(existsSync(join(repo, '.omp'))).toBe(false);
   });
 });
 
@@ -290,6 +343,30 @@ describe('uninstall at project scope', () => {
     expect(existsSync(plugins())).toBe(false);
     expect(snapshot(home)).toEqual(homeBefore);
     expect(record(userRoot()).scope).toBe('user');
+  });
+
+  it('removes the project’s .omp/ where install created it and it is left empty', async () => {
+    expect(await install({ scope: 'project' })).toBe(0);
+    expect(uninstall({ scope: 'project' })).toBe(0);
+    expect(existsSync(join(repo, '.omp'))).toBe(false);
+  });
+
+  it('keeps a .omp/ that was there before install, and one install created that holds the host’s files', async () => {
+    mkdirSync(join(repo, '.omp'));
+    expect(await install({ scope: 'project' })).toBe(0);
+    expect(await install({ scope: 'project', version: '1.1.0' })).toBe(0);
+    expect(uninstall({ scope: 'project' })).toBe(0);
+    expect(snapshot(join(repo, '.omp'))).toEqual({});
+    expect(existsSync(join(repo, '.omp'))).toBe(true);
+
+    const other = tmp('install-scope-other-');
+    mkdirSync(join(other, '.git'));
+    expect(await install({ scope: 'project', cwd: other })).toBe(0);
+    writeFileSync(join(other, '.omp', 'config.yml'), 'theme: light\n');
+    expect(uninstall({ scope: 'project', cwd: other })).toBe(0);
+    expect(snapshot(join(other, '.omp'))).toEqual({
+      'config.yml': 'theme: light\n',
+    });
   });
 
   it('keeps a host .gitignore and package.json byte for byte', async () => {

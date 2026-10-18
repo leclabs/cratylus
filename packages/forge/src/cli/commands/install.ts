@@ -431,6 +431,13 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   });
   if ('refused' in placement) throw new Refusal(placement.refused);
   const { harnessDir, root, base } = placement;
+  // A project installation binds no models: a tier's model is each operator's own
+  // setting, and the project is shared with every operator in it (decision 0312).
+  if (scope === 'project' && opts.modelRoles !== undefined) {
+    throw new Refusal(
+      `--model-roles: a project installation binds no models, a model being each operator's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
+    );
+  }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
   // an author's render tree, which no installation takes over (decision 0311).
   if (scope === 'project' && holdsRenderTree(root)) {
@@ -604,6 +611,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // The model each tier the agents fall back to, and each persona's own role, runs on
   // (decision 0112): told by flag, or asked where the host binds none, and bound as the
   // host's own setting. A role the host binds is its own: never asked, never changed.
+  // A project installation binds none: it reads the project's settings and the user's,
+  // writing neither, and names each tier neither binds (decision 0312).
   const routing = adapter.roleRouting;
   const agentModels = tree.agentModels;
   const agentRoles = Object.keys(agentModels).sort();
@@ -615,17 +624,19 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     }
   }
   const tierRoles = [...tierAgents.keys()].sort();
+  // The user's settings, which a user installation binds models in.
   const configFile =
     routing === undefined
       ? undefined
-      : hostConfigPath(
-          scope === 'project' ? routing.projectConfigRels : routing.configRels,
-          harnessDir,
-        );
+      : hostConfigPath(routing.configRels, harnessDirIn(adapter, opts.home));
+  const projectConfig =
+    routing === undefined || scope !== 'project'
+      ? undefined
+      : hostConfigPath(routing.projectConfigRels, harnessDir);
   const hostBound = new Map(
-    configFile === undefined
-      ? []
-      : addModelRoles(configFile, [], { dry: true }).host,
+    [projectConfig, configFile].flatMap((file) =>
+      file === undefined ? [] : addModelRoles(file, [], { dry: true }).host,
+    ),
   );
 
   const choices: Record<string, string> = {};
@@ -656,7 +667,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         }
       }
     }
-  } else if (routing !== undefined) {
+  } else if (routing !== undefined && scope === 'user') {
     const options = [...new Set(hostBound.values())]
       .filter((m) => !m.startsWith('@'))
       .sort();
@@ -752,6 +763,15 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     (await resolveSkills(plugins)).map((s) => s.skill),
   );
 
+  // Whether this project installation made the project's harness directory, which its
+  // uninstall then removes where it is left empty (decision 0312); an installation
+  // that replaces another keeps what that one recorded.
+  const createdHarnessDir =
+    scope === 'project' &&
+    (prior !== null
+      ? prior.createdHarnessDir === true
+      : !existsSync(harnessDir));
+
   const apply = (dry: boolean): Findings => {
     const found = emptyFindings();
     found.warnings.push(...rendered.warnings);
@@ -829,6 +849,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         ...(chosen === undefined ? {} : { practices: chosen }),
         ...(rulesDecided ? { rules } : {}),
         references: linked.references,
+        ...(createdHarnessDir ? { createdHarnessDir: true as const } : {}),
         ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
       },
       dry,
@@ -896,7 +917,8 @@ function describe(
       dropped: readonly string[];
       open: boolean;
     };
-    /** The host config file holding its model roles, where the harness has one. */
+    /** The user's host config file holding model roles, where the harness has one:
+     *  where a user installation binds them, and a project one names to bind them in. */
     config: string | undefined;
     dry: boolean;
   },
@@ -974,7 +996,9 @@ function describe(
     `start or restart ${adapter.name}`,
     ...(found.unbound.length > 0
       ? [
-          `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
+          project
+            ? `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} in your own settings, under modelRoles in ${ctx.config} or with ${CLI_BIN} install --scope user --model-roles <tier=model,…>: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, neither the project's settings nor yours bind a model to ${found.unbound.length === 1 ? 'it' : 'them'}, and a project installation binds none`
+            : `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
         ]
       : []),
     ...(found.displayOpen
