@@ -5,6 +5,13 @@
 // Each is a pure function of the entries in append order: no clock, no
 // randomness, so the same journal answers the same every time.
 //
+// CLOSED BOOKS. A journal that closed its books folds the entries its close
+// brought forward with the period's own, so what stands reads the same after
+// a close as before it; the history readings name the latest close and the
+// commit holding the period before it, whose entries are read from version
+// control. A context's IDENTITY is the one its latest close records, else
+// the id of its first entry.
+//
 // A concept's CURRENT versions are those no later version of it supersedes.
 // One current version is the concept: live, or retired when it is a
 // retirement. Two or more are COMPETING versions (branches that each
@@ -46,6 +53,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type {
+  AcceptEntry,
+  CloseEntry,
   ContextEntry,
   DecideEntry,
   DecisionKind,
@@ -277,8 +286,8 @@ export class Folded {
   readonly decisions = new Map<string, DecideEntry>();
   /** The entries of the decisions each id names, in append order. */
   readonly named = new Map<string, string[]>();
-  /** The entries of the decisions whose acceptance is recorded. */
-  readonly acceptances = new Set<string>();
+  /** The acceptances recorded for each decision's entry, in append order. */
+  readonly acceptances = new Map<string, AcceptEntry[]>();
   /** The ids of the decisions superseding each decision's entry. */
   readonly supersededBy = new Map<string, string[]>();
   /** The kinds recorded for each decision's entry, in append order. */
@@ -287,9 +296,14 @@ export class Folded {
   readonly deprecations = new Map<string, DeprecateEntry>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
+  /** The closings of the journal's books, in append order. */
+  readonly closes: CloseEntry[] = [];
+  /** Every entry folded, by its id. */
+  readonly byId = new Map<string, Entry>();
 
   constructor(entries: readonly Entry[]) {
-    for (const entry of entries)
+    for (const entry of entries) {
+      this.byId.set(entry.id, entry);
       switch (entry.kind) {
         case 'purpose':
           this.purposes.push(entry);
@@ -337,7 +351,11 @@ export class Folded {
         }
         case 'accept': {
           const target = entry.entry ?? this.only(entry.decisionId);
-          if (target !== undefined) this.acceptances.add(target);
+          if (target !== undefined)
+            this.acceptances.set(target, [
+              ...(this.acceptances.get(target) ?? []),
+              entry,
+            ]);
           break;
         }
         case 'efficiency': {
@@ -362,7 +380,109 @@ export class Folded {
             },
           ]);
           break;
+        case 'close':
+          this.closes.push(entry);
+          break;
       }
+    }
+    // What a close took out still orders the views: each context and concept
+    // in the order first recorded, as the latest close holding it records it.
+    const reorder = <V>(map: Map<string, V>, key: (name: string) => string) => {
+      const sorted = [...map].sort(([a], [b]) => (key(a) < key(b) ? -1 : 1));
+      map.clear();
+      for (const [name, value] of sorted) map.set(name, value);
+    };
+    reorder(this.contexts, (name) => this.identity(name) as string);
+    for (const [context, concepts] of this.concepts)
+      reorder(
+        concepts,
+        (name) => this.conceptIdentity(context, name) as string,
+      );
+  }
+
+  /** The identity of `context`: the one the latest close holding it records,
+   *  else the id of its first entry; `undefined` when the journal has none. */
+  identity(context: string): string | undefined {
+    for (const close of [...this.closes].reverse())
+      if (Object.hasOwn(close.identities, context))
+        return close.identities[context];
+    return this.contexts.get(context)?.[0]?.id;
+  }
+
+  /** The id of the first version of `name` in `context`: the one the latest
+   *  close holding it records, else its first version's; `undefined` when the
+   *  context does not have it. */
+  conceptIdentity(context: string, name: string): string | undefined {
+    for (const close of [...this.closes].reverse()) {
+      const recorded = close.concepts[context]?.[name];
+      if (recorded !== undefined) return recorded;
+    }
+    return this.versions(context, name)[0]?.id;
+  }
+
+  /** The latest closing of the books, which the history readings name; none
+   *  while the journal does not open from one. */
+  booksClosed():
+    | {
+        readonly booksClosed: {
+          readonly entry: string;
+          readonly at: string;
+          readonly by?: string;
+          readonly commit: string;
+        };
+      }
+    | Record<string, never> {
+    const latest = this.closes.at(-1);
+    return latest === undefined
+      ? {}
+      : {
+          booksClosed: {
+            entry: latest.id,
+            at: latest.at,
+            ...(latest.by === undefined ? {} : { by: latest.by }),
+            commit: latest.commit,
+          },
+        };
+  }
+
+  /** What a close brings forward, verbatim and in id order: the current
+   *  purpose entries; each context's current descriptions (every entry of a
+   *  context none of whose descriptions is current); each concept's current
+   *  versions unless it stands retired; and each standing decision with the
+   *  acceptances recorded for it and the classification governing its kind,
+   *  where one does. */
+  standingEntries(): Entry[] {
+    const carried: Entry[] = [...this.currentPurposes()];
+    for (const [name, recorded] of this.contexts) {
+      const current = this.currentDescriptions(name);
+      carried.push(...(current.length === 0 ? recorded : current));
+    }
+    for (const [context, name] of this.carriedConcepts()) {
+      const standing = this.standing(context, name) as Standing;
+      carried.push(
+        ...(standing.is === 'competing'
+          ? standing.current
+          : [standing.current]),
+      );
+    }
+    for (const decision of this.decisionViews().filter(stands)) {
+      carried.push(this.decisions.get(decision.entry) as DecideEntry);
+      carried.push(...(this.acceptances.get(decision.entry) ?? []));
+      const governing = this.kinds.get(decision.entry)?.at(-1)?.entry;
+      if (governing !== undefined && governing !== decision.entry)
+        carried.push(this.byId.get(governing) as Entry);
+    }
+    return carried.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  }
+
+  /** Each concept a close brings forward, by its context and name: every one
+   *  that does not stand retired. */
+  carriedConcepts(): [context: string, name: string][] {
+    return [...this.concepts].flatMap(([context, concepts]) =>
+      [...concepts.keys()]
+        .filter((name) => this.standing(context, name)?.is !== 'retired')
+        .map((name): [string, string] => [context, name]),
+    );
   }
 
   /** The entry of the one decision `id` names among those folded so far;

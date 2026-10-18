@@ -646,7 +646,7 @@ describe('omp tool definitions', () => {
     });
     const verb = (
       name: string,
-      effect: 'reads' | 'appends',
+      effect: 'reads' | 'appends' | 'closes',
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
@@ -674,6 +674,7 @@ describe('omp tool definitions', () => {
           parameter('open', { type: 'boolean' }),
         ]),
         verb('refuse', 'appends', []),
+        verb('shut', 'closes', []),
       ],
     };
 
@@ -686,9 +687,11 @@ describe('omp tool definitions', () => {
         'look',
         'put',
         'refuse',
+        'shut',
       ]);
       expect(tool?.approval({ verb: 'look' })).toBe('read');
       expect(tool?.approval({ verb: 'put' })).toBe('write');
+      expect(tool?.approval({ verb: 'shut' })).toBe('write');
     });
 
     it('offers every capability as a device', async () => {
@@ -975,7 +978,7 @@ describe('omp tool definitions', () => {
         const all = TOOLS.map((n) => [
           n,
           // The version tool explains one verb alone, so it takes no `verb`.
-          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
+          n === 'version_skew' ? undefined : ['look', 'put', 'refuse', 'shut'],
         ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),

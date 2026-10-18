@@ -67,6 +67,7 @@ const VERBS = [
   'decide',
   'accept',
   'deprecate',
+  'close',
 ];
 
 /** Each verb's parameters, as the realization contract names them. */
@@ -93,6 +94,7 @@ const PARAMETERS: Record<string, string[]> = {
   ],
   accept: ['id', 'reason'],
   deprecate: ['id', 'reason'],
+  close: [],
 };
 
 describe('concepts --explain', () => {
@@ -134,7 +136,9 @@ describe('concepts --explain', () => {
       expect(explained.effect).toBe(
         ['state', 'design', 'history', 'decisions', 'leakage'].includes(verb)
           ? 'reads'
-          : 'appends',
+          : verb === 'close'
+            ? 'closes'
+            : 'appends',
       );
       expect(explained.parameters.map((p) => p.name)).toEqual(PARAMETERS[verb]);
       for (const text of [explained.purpose, explained.when])
@@ -212,6 +216,7 @@ describe('concepts --explain', () => {
       decide: 'decision',
       accept: 'decision',
       deprecate: 'decision',
+      close: 'closing the books',
     });
     const live = designAt(repositoryRoot).live;
     expect(unanchored(explain(JOURNAL), live)).toEqual([]);
@@ -415,8 +420,12 @@ describe('what the explanation calls required is what the verb refuses without',
     return words;
   }
 
+  // Closing the books takes no parameter, and closes only a committed journal:
+  // `closing-the-books.test.ts` holds it.
   const cases = explain(JOURNAL)
-    .verbs.filter((verb) => !['context', 'purpose'].includes(verb.name))
+    .verbs.filter(
+      (verb) => !['context', 'purpose', 'close'].includes(verb.name),
+    )
     .flatMap((verb) => [
       [verb.name, undefined] as const,
       ...verb.parameters.map((p) => [verb.name, p.name] as const),

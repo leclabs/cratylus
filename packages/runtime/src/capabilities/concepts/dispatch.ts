@@ -19,8 +19,10 @@
 //   supersede  record a version superseding every current one
 //   retire     record a concept's retirement
 //   decide     record a decision of realization, open or accepted
-//   accept     record the acceptance of an open decision
 //   deprecate  record that a standing decision no longer applies, with why
+//   close      close the journal's books: bring what stands forward into one
+//              entry naming the commit that holds the closed period, and
+//              remove every other entry, which version control keeps
 //
 // WHAT STANDS. A decision stands while it is open or accepted, until a later
 // decision supersedes it or a later entry deprecates it. Every example file
@@ -34,7 +36,9 @@
 // classifications of a decision's kind, a decision recorded about a cut or
 // naming example files it keeps, each read by its own status alone, and the
 // efficiency entries recorded for cuts, the past effort a context's own
-// history shows.
+// history shows. Since the journal's latest closing of the books, the history
+// is the period since that close, and the history readings name it and the
+// commit holding the period before it.
 //
 // A query appends nothing and prints JSON; when it read past entries written by
 // a newer runtime in the journal, its answer also carries `uninterpreted`,
@@ -46,15 +50,20 @@
 // `warnings`, and nothing is refused for any of them. A decision records
 // realization and is never warned. A context's own words include each plain
 // word its current subject names, though never a command, a quotation in code
-// type or a flag that holds it. Every refusal is one line opening with
-// `concepts <verb>:`, thrown before anything is appended.
+// type or a flag that holds it. Closing the books appends its close entry,
+// then removes every other entry file, and prints the close entry with the
+// number of entries it brought forward and of files it removed; it closes only
+// a journal committed as it stands. No verb edits an entry. Every refusal is
+// one line opening with `concepts <verb>:`, thrown before anything changes.
 //
 // The capability EXPLAINS ITSELF from the declarations below: its name and when
 // to reach for it, and for each verb the concept it acts on, its purpose, when to
-// reach for it, whether it reads or appends, and each parameter it takes. Its
-// help prints the same declarations, and its calls are read against them.
+// reach for it, whether it reads, appends or closes, and each parameter it
+// takes. Its help prints the same declarations, and its calls are read against
+// them.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { execFileSync } from 'node:child_process';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import {
@@ -74,7 +83,7 @@ import {
   qualifiedName,
 } from './delivered.js';
 import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
-import { type Journal, journalAt } from './journal.js';
+import { JOURNAL_DIR, type Journal, journalAt } from './journal.js';
 import {
   type Leak,
   type Passage,
@@ -366,13 +375,22 @@ export const VERBS = {
       }),
     },
   },
+  close: {
+    concept: 'closing the books',
+    effect: 'closes',
+    purpose:
+      'Close the journal’s books: record one entry naming the commit that holds the period now closed and bringing forward, verbatim, what stands (the project’s current purpose, each bounded context’s current description and identity, each concept’s current versions unless it stands retired, and each standing decision with the acceptances recorded for it and the classification governing its kind), then take every other entry out of the journal, kept by version control at that commit; every reading answers what stands as before, and the history readings name the close and its commit',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal differs from the commit at HEAD, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
+    positional: null,
+    flags: {},
+  },
 } as const satisfies VerbFlags<string, ExplainedVerb>;
 
 /** The concept journal, as it explains itself. */
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; and to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made, so the journal holds the design from its start on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 
@@ -422,10 +440,11 @@ function answerOf(
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
   /** The delivered contexts shown: each this journal does not hold itself, by
-   *  the identity of the entry that first recorded it. */
-  const held = new Set(
-    [...folded.contexts.values()].flat().map((entry) => entry.id),
-  );
+   *  the identity of the entry that first recorded it, or one a close records. */
+  const held = new Set([
+    ...[...folded.contexts.values()].flat().map((entry) => entry.id),
+    ...folded.closes.flatMap((close) => Object.values(close.identities)),
+  ]);
   const shown = delivered.filter((d) => !held.has(d.identity));
   /** The shown delivered context `--context` names, if it names one. */
   const deliveredNamed = (): DeliveredContext | undefined => {
@@ -648,12 +667,13 @@ function answerOf(
         return {
           ...folded.contextHistory(where),
           ...(efficiency.length === 0 ? {} : { efficiency }),
+          ...folded.booksClosed(),
         };
       }
       const name = read.named('concept');
       if (folded.versions(where, name).length === 0)
         throw refuse(`the bounded context '${where}' has no concept '${name}'`);
-      return folded.history(where, name);
+      return { ...folded.history(where, name), ...folded.booksClosed() };
     }
     case 'design': {
       const covered = covering();
@@ -662,6 +682,7 @@ function answerOf(
           covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
         ),
         contexts: covered.own.map((where) => shownDesign(folded.design(where))),
+        ...(history ? folded.booksClosed() : {}),
       };
     }
     case 'decisions': {
@@ -679,6 +700,7 @@ function answerOf(
               (history || stands(d)),
           )
           .map((d) => (history ? d : standingDecision(d))),
+        ...(history ? folded.booksClosed() : {}),
       };
     }
     case 'purpose': {
@@ -886,6 +908,73 @@ function answerOf(
         entry,
         reason,
       });
+    }
+    case 'close': {
+      const git = (...words: string[]) =>
+        execFileSync('git', words, {
+          cwd: journal.root,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        }).trim();
+      let commit: string;
+      try {
+        commit = git('rev-parse', '--verify', '--quiet', 'HEAD^{commit}');
+      } catch {
+        throw refuse(
+          'the repository has no commit at HEAD to hold the closed period; commit the journal first',
+        );
+      }
+      if (
+        git(
+          'status',
+          '--porcelain',
+          '--untracked-files=all',
+          '--',
+          JOURNAL_DIR,
+        ) !== ''
+      )
+        throw refuse(
+          `${JOURNAL_DIR} differs from the commit at HEAD: an entry is uncommitted, changed or removed; commit the journal first`,
+        );
+      if (journal.readPast().kinds.size > 0)
+        throw refuse(
+          'the journal holds entries written by a newer runtime, which this one reads past; close it with that runtime',
+        );
+      const files = journal.files();
+      if (files.length === 0)
+        throw refuse('the journal holds no entry; there is nothing to close');
+      if (files.every((file) => file.kind === 'close'))
+        throw refuse(
+          'nothing is recorded since the journal’s latest close; there is nothing to close',
+        );
+      const { entry, removed } = journal.close({
+        kind: 'close',
+        commit,
+        broughtForward: folded.standingEntries(),
+        identities: Object.fromEntries(
+          [...folded.contexts.keys()].map((name) => [
+            name,
+            folded.identity(name) as string,
+          ]),
+        ),
+        concepts: folded
+          .carriedConcepts()
+          .reduce<Record<string, Record<string, string>>>(
+            (byContext, [context, name]) => {
+              byContext[context] = {
+                ...byContext[context],
+                [name]: folded.conceptIdentity(context, name) as string,
+              };
+              return byContext;
+            },
+            {},
+          ),
+      });
+      return {
+        ...entry,
+        broughtForward: entry.broughtForward.length,
+        closed: removed,
+      };
     }
   }
 }
