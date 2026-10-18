@@ -1,15 +1,21 @@
 // The host runtime config — what the projection told this host: each capability's
 // configuration. A config carrying none says nothing.
 
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterAll, afterEach, describe, expect, it } from 'vitest';
-import { loadRuntimeConfig } from '../src/runtime-config.js';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
+import { dispatchVersionSkew } from '../src/capabilities/version-skew/index.js';
+import {
+  installationRoot,
+  installationScope,
+  loadRuntimeConfig,
+} from '../src/runtime-config.js';
 
 const ENV = 'AGENT_RUNTIME_CONFIG';
 afterEach(() => {
   delete process.env[ENV];
+  vi.unstubAllEnvs();
 });
 
 const scratch: string[] = [];
@@ -56,5 +62,93 @@ describe('the host runtime config', () => {
     writeFileSync(cfg, '{ not json');
     process.env[ENV] = cfg;
     expect(loadRuntimeConfig()).toBeNull();
+  });
+});
+
+describe('the installation the command reads', () => {
+  /** An installation at `root`: its version, and its record saying `scope` where
+   *  `record` is given; an author's render tree where `record` is false. */
+  function place(
+    root: string,
+    record: { scope?: string } | false = {},
+  ): string {
+    mkdirSync(root, { recursive: true });
+    writeFileSync(join(root, 'package.json'), '{"version":"2.4.0"}');
+    if (record !== false)
+      writeFileSync(join(root, 'installation.json'), JSON.stringify(record));
+    return root;
+  }
+  /** A home holding the user's installation, and a project under it whose
+   *  working directory is two levels down. */
+  function host(): {
+    home: string;
+    user: string;
+    project: string;
+    cwd: string;
+  } {
+    const base = tmp();
+    const home = join(base, 'home');
+    const user = place(join(home, '.cratylus', 'omp'), { scope: 'user' });
+    const project = join(home, 'work', 'app');
+    const cwd = join(project, 'src', 'deep');
+    mkdirSync(cwd, { recursive: true });
+    vi.stubEnv('HOME', home);
+    vi.stubEnv('CRATYLUS_INSTALLATION', '');
+    return { home, user, project, cwd };
+  }
+
+  it('is the project installation nearest above the working directory, over the home’s', () => {
+    const { project, cwd, user } = host();
+    const installed = place(join(project, '.cratylus', 'omp'), {
+      scope: 'project',
+    });
+    expect(installationRoot(cwd)).toBe(installed);
+    expect(installationRoot(project)).toBe(installed);
+    expect(installationRoot(join(project, '..'))).toBe(user);
+  });
+
+  it('is never an author’s render tree, which has no installation record', () => {
+    const { project, cwd, user } = host();
+    place(join(project, '.cratylus', 'omp'), false);
+    expect(installationRoot(cwd)).toBe(user);
+  });
+
+  it('is never a tree whose record says no project scope', () => {
+    const { project, cwd, user } = host();
+    place(join(project, '.cratylus', 'omp'), {});
+    expect(installationRoot(cwd)).toBe(user);
+  });
+
+  it('is the one $CRATYLUS_INSTALLATION names, over a project installation', () => {
+    const { project, cwd } = host();
+    place(join(project, '.cratylus', 'omp'), { scope: 'project' });
+    const named = place(join(tmp(), 'named'));
+    vi.stubEnv('CRATYLUS_INSTALLATION', named);
+    expect(installationRoot(cwd)).toBe(named);
+  });
+
+  it('records its scope, a record without one, or none, reading as the user’s', () => {
+    const base = tmp();
+    expect(
+      installationScope(place(join(base, 'p'), { scope: 'project' })),
+    ).toBe('project');
+    expect(installationScope(place(join(base, 'u'), { scope: 'user' }))).toBe(
+      'user',
+    );
+    expect(installationScope(place(join(base, 'old'), {}))).toBe('user');
+    expect(installationScope(place(join(base, 'none'), false))).toBe('user');
+  });
+
+  it('is reported with its scope and root by versionSkew report', () => {
+    const root = place(join(tmp(), 'app', '.cratylus', 'omp'), {
+      scope: 'project',
+    });
+    vi.stubEnv('CRATYLUS_INSTALLATION', root);
+    expect(dispatchVersionSkew(['report'], { version: '2.5.0' })).toEqual({
+      artifacts: '2.4.0',
+      command: '2.5.0',
+      scope: 'project',
+      installation: root,
+    });
   });
 });

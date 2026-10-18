@@ -58,7 +58,10 @@
 import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
-import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
+import {
+  INSTALLATION_ENV,
+  INSTALLATION_RECORD_FILE,
+} from '@cratylus/runtime/runtime-config';
 import type { Agent, Rule } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
@@ -1134,6 +1137,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '  return "an unrecorded version";',
         '}',
+        `const INSTALLATION_RECORD = ${JSON.stringify(INSTALLATION_RECORD_FILE)};`,
+        "// The scope this installation records of itself: one project's own, or the user's, which a",
+        '// record that says neither, or none at all, is: one installed before there were scopes.',
+        'function recordedScope(): "user" | "project" {',
+        '  try {',
+        '    const { scope } = JSON.parse(readFileSync(`${INSTALLATION}/${INSTALLATION_RECORD}`, "utf8")) as { scope?: unknown };',
+        '    if (scope === "project") return "project";',
+        '  } catch {',
+        "    // the user's",
+        '  }',
+        '  return "user";',
+        '}',
         '// VERSION SKEW, said at every session start before any tool is called: the build that',
         '// projected this installation, as it records itself, against the version the reached',
         '// command answers for itself, whichever is older, and any capability the command lacks.',
@@ -1142,6 +1157,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const reached = async (): Promise<string> => (await run(["--version"])).trim();',
         'async function warnSkew(session: Session): Promise<void> {',
         '  const artifacts = projected();',
+        '  const scope = recordedScope();',
         '  let command: string;',
         '  try {',
         '    command = await reached();',
@@ -1153,8 +1169,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    lacking.size === 0',
         '      ? ""',
         '      : ` It does not provide ${[...lacking].map(([c, why]) => `${c} (${why})`).join(", ")}, which this installation expects, so ${lacking.size === 1 ? "that is" : "those are"} not offered.`;',
+        '  // A project installation is installed again in its project: the directory holding its `.cratylus/`.',
+        '  const remedy =',
+        '    scope === "project"',
+        '      ? `${COMMAND} install --harness omp --scope project, run in ${dirname(dirname(INSTALLATION))}`',
+        '      : `${COMMAND} install --harness omp`;',
         '  session.ui.notify(',
-        '    `${COMMAND} version skew: this installation was projected by ${COMMAND} ${artifacts}, but the ${COMMAND} command its capabilities run is ${command}.${missing} Install again with the ${COMMAND} in use: ${COMMAND} install --harness omp`,',
+        '    `${COMMAND} version skew: this ${scope} installation (${INSTALLATION}) was projected by ${COMMAND} ${artifacts}, but the ${COMMAND} command its capabilities run is ${command}.${missing} Install again with the ${COMMAND} in use: ${remedy}`,',
         '    "warning",',
         '  );',
         '}',
@@ -1584,9 +1605,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
         '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: Session) {',
         '        // The version tool reports what each side holds of itself: the version this installation',
-        '        // records, and the one the reached command answers now.',
-        '        if (capability === SKEW)',
-        '          return { content: [{ type: "text" as const, text: JSON.stringify({ artifacts: projected(), command: await reached() }, null, 2) }] };',
+        '        // records, with its scope and root, and the one the reached command answers now.',
+        '        if (capability === SKEW) {',
+        '          const report = { artifacts: projected(), command: await reached(), scope: recordedScope(), installation: INSTALLATION };',
+        '          return { content: [{ type: "text" as const, text: JSON.stringify(report, null, 2) }] };',
+        '        }',
         "        // A refusal is a tool error carrying the command's own message.",
         '        try {',
         '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal, actor(ctx));',
