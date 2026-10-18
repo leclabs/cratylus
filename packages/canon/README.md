@@ -45,9 +45,7 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | `fragments` | the factor value modules, filed one per factor directory                                             |
 | `agents`    | the composed agents: six generic holders of their roles, and three personas                          |
 | `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes                  |
-| `hooks`     | the hook cells, each carrying its verbatim worker payload                                            |
 | `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
-| `plumbing`  | what every practice is installed with and none is offered as, declared beside them                   |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of that
 corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
@@ -113,8 +111,7 @@ also named exports, for a corpus that composes agents of its own over these role
 An assignment and a deliverable are values of their factors, and each carries its contract as JSON
 Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
 the value's anchor). Composition copies the pair onto the agent as `contract`. Each handoff states
-what it must contain, so one passed without a part shows what is missing (`?` marks an optional
-field, `[≥1]` a list that may not be empty):
+what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
 | Role         | Assignment                                                                                                                                                     | Deliverable                                                        |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
@@ -130,11 +127,9 @@ acceptance criterion (or, for a task, what done means) with whether it holds and
 the cost in agent runs by role, tokens and elapsed time. A code review's `verdict` is `approve` or
 `changes`. The architect's handoffs are a person's — free-text intent in, a read-back to the
 operator out (where things stand, and what it recommends) — so it carries no contract. An agent
-harness binds the deliverable as its own output schema, shows the assignment form when an agent is
-dispatched or launched, and checks the assignment given (one fenced `assignment` JSON block in the
-dispatch text) with the schema package's `checkAssignment`, warning of each missing or ill-typed
-field, of the closest form where there are alternatives; it never refuses the dispatch or the launch
-for it (0142(3)).
+harness binds the deliverable as its own output schema and shows every session, each turn, the
+assignment form of each agent that takes one: one fenced `assignment` JSON block in the dispatch
+text.
 
 ## Evaluation and persona drift
 

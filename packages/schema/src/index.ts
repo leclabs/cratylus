@@ -586,8 +586,8 @@ export interface Agent {
    * it returns. Copied by the corpus's own fold from the contracts its assignment
    * and deliverable values carry. Absent ⇒ its handoff is free text.
    *
-   * A harness binds the deliverable as its own output schema, shows the assignment
-   * when the agent is dispatched or launched, and warns when it is incomplete.
+   * A harness binds the deliverable as its own output schema and shows the
+   * assignment form to a session that may dispatch the agent.
    */
   readonly contract?: AgentContract;
   /**
@@ -754,13 +754,7 @@ export {
   resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
-export {
-  type AgentContract,
-  type ContractCheck,
-  type JsonSchema,
-  assignmentIn,
-  checkAssignment,
-} from './contract.js';
+export type { AgentContract, JsonSchema } from './contract.js';
 
 // The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
 // shapes it types. The MEMBERS are the corpus's, so there is nothing else here to

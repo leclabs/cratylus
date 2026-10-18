@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The corpus's practices and their plumbing.
+// The corpus's practices.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Plumbing, Practice } from '@cratylus/schema';
+import type { Practice } from '@cratylus/schema';
 
 export const PRACTICES: readonly Practice[] = [
   {
@@ -20,7 +20,6 @@ export const PRACTICES: readonly Practice[] = [
       'formalize',
       'create-agent',
       'create-skill',
-      'introspect',
     ],
   },
   {
@@ -41,7 +40,3 @@ export const PRACTICES: readonly Practice[] = [
     preselected: true,
   },
 ];
-
-export const PLUMBING: Plumbing = {
-  hooks: ['deploy-drift-notice'],
-};
