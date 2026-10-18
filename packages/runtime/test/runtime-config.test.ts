@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { dispatchVersionSkew } from '../src/capabilities/version-skew/index.js';
 import {
+  NoInstallationError,
   installationRoot,
   installationScope,
   loadRuntimeConfig,
@@ -105,6 +106,33 @@ describe('the installation the command reads', () => {
     expect(installationRoot(cwd)).toBe(installed);
     expect(installationRoot(project)).toBe(installed);
     expect(installationRoot(join(project, '..'))).toBe(user);
+  });
+
+  it('is the nearest of nested project installations: the inner from inside it, the outer from outside it', () => {
+    const { project, cwd } = host();
+    const outer = place(join(project, '.cratylus', 'omp'), {
+      scope: 'project',
+    });
+    const nested = join(project, 'packages', 'inner');
+    const inner = place(join(nested, '.cratylus', 'omp'), {
+      scope: 'project',
+    });
+    mkdirSync(join(nested, 'src'), { recursive: true });
+    expect(installationRoot(join(nested, 'src'))).toBe(inner);
+    expect(installationRoot(nested)).toBe(inner);
+    expect(installationRoot(cwd)).toBe(outer);
+    expect(installationRoot(join(project, 'packages'))).toBe(outer);
+  });
+
+  it('never takes the home’s own .cratylus as a project installation, even where its record says project', () => {
+    const { home, cwd } = host();
+    // The home's record says project; were the walk to take it, it would be the one
+    // project installation there. The home rule sees two installations and refuses.
+    place(join(home, '.cratylus', 'omp'), { scope: 'project' });
+    place(join(home, '.cratylus', 'other'), { scope: 'user' });
+    expect(() => installationRoot(cwd)).toThrow(NoInstallationError);
+    expect(() => installationRoot(cwd)).toThrow(/2 installations under/);
+    expect(() => installationRoot(home)).toThrow(/2 installations under/);
   });
 
   it('is never an author’s render tree, which has no installation record', () => {

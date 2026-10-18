@@ -1133,7 +1133,7 @@ describe('omp tool definitions', () => {
     }
     const ALL = OMP_CAPABILITY_TOOLS;
     const remedy =
-      /Install again with the cratylus in use: cratylus install --harness omp$/;
+      /Install again with the cratylus in use: cratylus install --harness omp --scope user$/;
     const projectRemedy = (project: string) =>
       `Install again with the cratylus in use: cratylus install --harness omp --scope project, run in ${project}`;
 
