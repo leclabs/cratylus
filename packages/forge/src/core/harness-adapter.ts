@@ -568,6 +568,10 @@ export interface StatusLayout {
 export interface StatusSegmentHost {
   /** The host config files that hold the layout, harness-home relative, in read order. */
   readonly configRels: readonly string[];
+  /** The project's config files that hold it, relative to the project's harness
+   *  directory (`<project>/.omp`), in read order: what a project installation reads,
+   *  and never writes, since it writes no operator's own setting (decision 0313). */
+  readonly projectConfigRels: readonly string[];
   /** The segment an extension's status renders in. */
   readonly segment: string;
   /** The name of the preset in effect when the host names none — and the one it may
@@ -584,6 +588,10 @@ export interface RoleRouting {
   /** The host config files that hold the model roles, relative to the harness home,
    *  in the harness's read order: it reads the first that exists. */
   readonly configRels: readonly string[];
+  /** The project's config files that hold them, relative to the project's harness
+   *  directory (`<project>/.omp`), in read order: what a project installation reads,
+   *  and never writes, since it binds no models (decision 0312). */
+  readonly projectConfigRels: readonly string[];
   /** The model role a tier is bound by in the host's table. */
   tierRole(tier: string): string;
   /** The model an agent falls back to, for the tier and effort it holds. */

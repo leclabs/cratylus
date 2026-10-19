@@ -8,15 +8,17 @@
 // and its live concepts, each at its current version: no history, no decisions, no
 // retired or competing material, nothing time-dependent. Its provenance is the
 // origin that delivers it, the release's version, the context's name and its
-// IDENTITY: the id of the entry that first recorded it, which holds whatever the
-// context is later described as or called.
+// IDENTITY: the identity the earliest of its entries carrying one carries,
+// which a closing of the books carries into each period it opens, else the id
+// of its earliest entry; it holds whatever the context is later described as
+// or called.
 //
 // THE VIEWS show a delivered context APART from the project's own contexts, in
 // the place of its own `practiceOf` gives (`practice`), labelled as the practice
 // the project's agents work by and offered before the project's contexts; never
 // among them nor in the project's context map. It is named by its origin
 // (`<origin>:<context>`) and marked delivered and read-only, unless the journal
-// being read holds a context entry whose id is its identity: that journal owns
+// being read holds a context whose identity is its identity: that journal owns
 // the context, which is then part of its design and shown among its own. Nothing
 // is ever appended to a project's journal for a delivered context.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -61,8 +63,8 @@ export function deliverContext(opts: {
 }): DeliveredContext {
   const refuse = (message: string) => new Error(`deliverContext: ${message}`);
   const folded = new Folded(journalAt(opts.from, refuse).entries());
-  const [first] = folded.contexts.get(opts.context) ?? [];
-  if (first === undefined)
+  const identity = folded.identity(opts.context);
+  if (identity === undefined)
     throw refuse(`the journal has no bounded context '${opts.context}'`);
   const design = folded.design(opts.context);
   if (design.subject === null || design.relation === null)
@@ -77,7 +79,7 @@ export function deliverContext(opts: {
     origin: opts.origin,
     version: opts.version,
     context: opts.context,
-    identity: first.id,
+    identity,
     subject: design.subject,
     relation: design.relation,
     concepts: design.concepts.map(({ name, wording, builtFrom }) => ({

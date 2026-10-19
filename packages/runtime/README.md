@@ -21,22 +21,32 @@ runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES`
 names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
 `runtime: { capability: … }`.
 
-| capability    | verbs                                                                                                                                        |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate` |
-| `versionSkew` | `report`                                                                                                                                     |
+| capability    | verbs                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `concepts`    | `state`, `design`, `history`, `decisions`, `leakage`, `purpose`, `context`, `define`, `supersede`, `retire`, `decide`, `accept`, `deprecate`, `close` |
+| `versionSkew` | `report`                                                                                                                                              |
 
 Every journal entry records who appended it (`by`: the agent making the call, named by the agent
 harness in `CRATYLUS_AGENT`, else git's user). Version history is held by code review, as each change's risk calls
-for, never by refusal (decision 0274): the journal is append-only because its verbs only append.
+for, never by refusal (decision 0274): the journal's verbs only append, but for `close`, which
+closes its books as event sourcing does (decision 0316): it opens a new period with one entry per
+current version of each standing item, of the item's own kind, superseding nothing and carrying
+`broughtForward`, the commit at HEAD holding the closed period, then removes every other entry
+file, which version control keeps at that commit. Every reading covers the journal since its
+latest close; the closed period is read from git at that commit.
 
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
 context's subject, relation and live concepts with the concepts each is built from, the delivered
 practice apart, and `state` is its short summary: the project's purpose, then each context's live
-concepts, each one line `name ≜ residue`, with any competing versions. The journal's record begins
-at its start. The
+concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
+from its latest closing of the books: every reading reads the openings as it reads any entries,
+so the design and each standing decision's meaning and status read the same after a close as
+before it; each decision's `entry` is renewed as its opening's id, and the cut or example files
+(`keeps`) a legacy decision's entry recorded stay in the closed period. The history readings carry
+`booksClosed`, naming the close and the commit holding the period before it, and mark each opening
+they list `broughtForward`. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
 each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or
@@ -56,7 +66,7 @@ for: `purpose` records it and, with a reason, changes it, and `state` shows it f
 context.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
-explanation, so a consumer reads which verbs read and which append as code.
+explanation, so a consumer reads which verbs read, which append and which close as code.
 
 ## Subpaths
 
@@ -110,7 +120,7 @@ throws when called as a library. Never a silent no-op.
 
 Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
 for each verb the concept of cratylus's own conceptual model it acts on, when to reach for it, and
-whether it `reads` or `appends`. `concepts` does: `cratylus concepts --explain` prints the concept
+whether it `reads`, `appends` or `closes`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus concepts <verb> --explain`
 prints one verb: `name`, `concept`, `purpose`, `when`, `effect`, and `parameters`, the positional
@@ -125,16 +135,22 @@ verb does not take.
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
 corpus's skills declared it. The installation (`installationRoot`) is the one
-`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else the one
-root under `~/.cratylus/`. A config without configuration says nothing. A capability that needs its
+`$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
+walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
+holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one
+root under `~/.cratylus/`. A tree without `installation.json`, an author's render, is no
+installation. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
+
+`installationScope` reads an installation's scope, `user` or `project`, from its
+`installation.json`; a record that says none, or no record, is the user's.
 
 ## Version skew
 
-`versionSkew report` prints `{ artifacts, command, installation }`: the version recorded in the
-installation's `package.json` by the cratylus that projected it, and the version of the command,
-which the program holding the commands hands in (`capabilityCommands({ version })`). It chooses
-between no builds.
+`versionSkew report` prints `{ artifacts, command, scope, installation }`: the version recorded in
+the installation's `package.json` by the cratylus that projected it, the version of the command,
+which the program holding the commands hands in (`capabilityCommands({ version })`), and the
+installation's scope and root. It chooses between no builds.
 
 ## The bin name
 

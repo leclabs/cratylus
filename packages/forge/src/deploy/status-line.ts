@@ -80,7 +80,7 @@ export function restoreHostStatusLine(
 /** omp's own name for the preset that reads its segment lists from the host's config.
  *  Under any other preset — the default one included — omp lays out the preset's own
  *  segments and ignores `leftSegments` altogether. */
-const CUSTOM_PRESET = 'custom';
+export const CUSTOM_PRESET = 'custom';
 
 /** omp's key for the row it prints beneath the editor repeating each extension's
  *  status; on by default. */

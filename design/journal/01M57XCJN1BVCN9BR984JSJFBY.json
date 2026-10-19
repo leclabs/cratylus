@@ -1,0 +1,16 @@
+{
+  "id": "01M57XCJN1BVCN9BR984JSJFBY",
+  "at": "2026-10-18T16:26:46.305Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0314",
+  "context": "workflow",
+  "title": "The journal's verbs append, and one closes its books: the period's standing entries carried forward, the closed period's files removed, version control their archive",
+  "situation": "The architect defined closing the books: one call by anyone, through the command or the tool, deterministic and by the capability alone, the closed period's entries leaving the journal and kept in version control. Decision 0298 had the journal's tool offer readings and appending verbs only; the operator recommended pruning the closed period's entry files with git as the archive.",
+  "decision": "(1) The concepts capability gains the verb close, of effect closes (beside reads and appends), taking nothing; the command and the tool built from its explanation offer it to everyone. (2) A close appends one entry of kind close holding: the commit at HEAD that holds the closed period; the entries brought forward, verbatim and in id order: the current purpose statements, each context's current descriptions, each concept's current versions unless it stands retired, and each standing decision with the acceptances recorded for it and the classification governing its kind; and each context's identity, the id of the entry that first recorded it. It then removes every other entry file, an earlier close included. (3) Every reading folds the brought-forward entries with the period's own, in id order, one per id, so what stands reads the same after a close as before it; a context's identity is the one its latest close records, else its first entry's; the history readings name the latest close and the commit holding the period before it. (4) A close refuses, changing nothing, where the journal's directory differs from HEAD in anything (an entry uncommitted, changed or removed), where there is no commit, where it read past entries of a newer runtime, where the journal holds no entry, and where nothing was recorded since the latest close. (5) Every other verb only appends, and no verb edits an entry.",
+  "consequences": "Supersedes 0298. Closed periods are retrieved from version control at the commit each close names, a chain back to the journal's start. Two lines of work that closed or appended separately still join as the union of their files. One builder; review Ask.",
+  "status": "accepted",
+  "supersedes": "0298",
+  "supersedesEntry": "01M53MC94GH75312MPQPS6MP2S",
+  "decisionKind": "realization"
+}

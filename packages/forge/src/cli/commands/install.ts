@@ -35,6 +35,16 @@
 // taken back by its own record as part of the run, leaving what the host placed or
 // changed.
 //
+// AT ONE OF TWO SCOPES (decision 0311). For the user, by default, as above. For a
+// project (`--scope project`), the root is `<project>/.cratylus/<harness>` and the
+// references are the project's own (omp: `<project>/.omp/plugins`), each relative, so
+// the project commits them for its team, and in that project omp loads the project's
+// installation in place of the user's. A project install writes nothing under the
+// home: no earlier installation is taken back, and the operator's choices are read
+// from and written to the project's settings (omp: `<project>/.omp/config.yml`). On a
+// terminal the scope is asked where it was not told and the project is not the home,
+// the user's preselected; `--yes`, or no terminal, takes the user's.
+//
 // THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
 // which harness, which of the corpus's practices, which of its rules, and which model
 // each tier the agents fall back to, and each persona's own role, runs on. Each has a
@@ -73,7 +83,11 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join } from 'node:path';
+import { join, relative, resolve } from 'node:path';
+import {
+  INSTALLATION_RECORD_FILE,
+  type InstallScope,
+} from '@cratylus/runtime/runtime-config';
 import { mergeManifest } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
@@ -97,13 +111,20 @@ import {
   capabilityConfiguration,
   ensureStatusSegment,
   hidesExtensionStatus,
+  holdsRenderTree,
   linkOwnedRoot,
   ownedRootIn,
   placeOwnedRoot,
+  placementOf,
+  projectOf,
   readInstallationRecord,
   readManifest,
   rootFiles,
 } from '../../deploy/index.js';
+import {
+  readModelRoles,
+  sessionAgentHiding,
+} from '../../deploy/read-settings.js';
 import { harnessDirIn } from '../../deploy/scope.js';
 import {
   type OfferedRuleset,
@@ -129,6 +150,10 @@ type AgentStatus = 'show' | 'hide';
 export interface InstallCmdOpts {
   /** Harness adapter name (`--harness`). Absent: the one the host has, or asked. */
   harness?: string;
+  /** `--scope`: where the installation is, the user's or the project's of `cwd`.
+   *  Absent: asked on a terminal where the project is not the home, the user's
+   *  preselected; else the user's. */
+  scope?: InstallScope;
   /** The corpus this CLI was composed with, imported statically by its owner. */
   corpus?: AgentPlugin;
   /** The declared version of the build doing the install, recorded in the owned root
@@ -393,8 +418,44 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     );
   }
   const adapter = adapterByName(harness);
-  const harnessDir = harnessDirIn(adapter, opts.home);
-  const root = ownedRootIn(adapter, opts.home);
+
+  // ── WHICH SCOPE ──────────────────────────────────────────────────────────────
+  // Told by flag; else asked on a terminal where the project of the working directory
+  // is not the home, the user's preselected; else the user's (decision 0311).
+  const home = resolve(opts.home ?? homedir());
+  const project = projectOf(cwd, home);
+  let scopeAsked = false;
+  let scope: InstallScope = opts.scope ?? 'user';
+  if (opts.scope === undefined && interactive && project !== home) {
+    scope = await answered(prompts.scope(project));
+    scopeAsked = true;
+  }
+  const placement = placementOf(adapter, scope, {
+    cwd,
+    ...(opts.home === undefined ? {} : { home: opts.home }),
+  });
+  if ('refused' in placement) throw new Refusal(placement.refused);
+  const { harnessDir, root, base } = placement;
+  // A project installation writes no operator's own setting: a tier's model and how
+  // the session shows its agent are each operator's, and the project is shared with
+  // every operator in it (decision 0313).
+  if (scope === 'project' && opts.modelRoles !== undefined) {
+    throw new Refusal(
+      `--model-roles: a project installation binds no models, a model being each operator's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
+    );
+  }
+  if (scope === 'project' && opts.agentStatus !== undefined) {
+    throw new Refusal(
+      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each operator's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
+    );
+  }
+  // A project's `.cratylus/<harness>` that holds files and no installation record is
+  // an author's render tree, which no installation takes over (decision 0311).
+  if (scope === 'project' && holdsRenderTree(root)) {
+    throw new Refusal(
+      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; render that tree elsewhere with \`${CLI_BIN} project --out <dir>\`, or move it away, and install again`,
+    );
+  }
   // The installation this one replaces: its record, under the owned root.
   const prior = readInstallationRecord(root);
 
@@ -439,7 +500,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       warn: (line) => warnings.push(line),
       // The hooks print each skill's directory, so what fits the harness's output cap
       // depends on this path; the projection cannot know it, install does.
-      hostHome: opts.home ?? homedir(),
+      hostHome: base,
       ...(practices !== undefined ? { practices } : {}),
       rules,
     });
@@ -458,12 +519,14 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const declaredList =
     declaredNames.length === 0 ? 'none' : list(declaredNames);
   // What is installed here: the practices the last install recorded (in its owned
-  // root, or an earlier installation's deploy record) that this corpus still declares.
-  // A host with none recorded is a fresh one.
+  // root, or, for the user, an earlier installation's deploy record) that this corpus
+  // still declares. A host with none recorded is a fresh one.
   const recorded =
     prior !== null
       ? (prior.practices ?? null)
-      : readManifest(harnessDir).practices;
+      : scope === 'user'
+        ? readManifest(harnessDir).practices
+        : null;
   const installed =
     recorded === null ? [] : declaredNames.filter((n) => recorded.includes(n));
   const preselection =
@@ -472,9 +535,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       : declared.filter((p) => p.preselected).map((p) => p.name);
   const nothingChosen = (): Refusal =>
     new Refusal(
-      `no practice was chosen (declared: ${declaredList}); installing none is not installing everything, so to take it all out run ${CLI_BIN} uninstall --harness ${adapter.name}`,
+      `no practice was chosen (declared: ${declaredList}); installing none is not installing everything, so to take it all out run ${uninstallCommand(adapter, scope)}`,
     );
-  let open = opts.harness === undefined;
+  let open = opts.harness === undefined || scopeAsked;
   let chosen: string[] | undefined;
   if (opts.all === true && opts.practices !== undefined) {
     throw new Refusal(
@@ -559,6 +622,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // The model each tier the agents fall back to, and each persona's own role, runs on
   // (decision 0112): told by flag, or asked where the host binds none, and bound as the
   // host's own setting. A role the host binds is its own: never asked, never changed.
+  // A project installation binds none: it reads the project's settings and the user's,
+  // writing neither, and names each tier neither binds (decision 0312).
   const routing = adapter.roleRouting;
   const agentModels = tree.agentModels;
   const agentRoles = Object.keys(agentModels).sort();
@@ -570,14 +635,25 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     }
   }
   const tierRoles = [...tierAgents.keys()].sort();
+  // The user's settings, which a user installation binds models in.
   const configFile =
     routing === undefined
       ? undefined
-      : hostConfigPath(routing.configRels, harnessDir);
+      : hostConfigPath(routing.configRels, harnessDirIn(adapter, opts.home));
+  // What the host binds: at user scope, as the writer finds it, since only what it
+  // can extend is asked and bound; at project scope, nothing is written, so both
+  // files are read whole, in whatever layout they bind in.
   const hostBound = new Map(
-    configFile === undefined
+    routing === undefined || configFile === undefined
       ? []
-      : addModelRoles(configFile, [], { dry: true }).host,
+      : scope === 'project'
+        ? [
+            ...readModelRoles(
+              hostConfigPath(routing.projectConfigRels, harnessDir),
+            ),
+            ...readModelRoles(configFile),
+          ]
+        : addModelRoles(configFile, [], { dry: true }).host,
   );
 
   const choices: Record<string, string> = {};
@@ -608,7 +684,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         }
       }
     }
-  } else if (routing !== undefined) {
+  } else if (routing !== undefined && scope === 'user') {
     const options = [...new Set(hostBound.values())]
       .filter((m) => !m.startsWith('@'))
       .sort();
@@ -643,11 +719,14 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   }
   // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
   // Asked only where the host hides it and it was neither told nor answered before
-  // (decision 0113); the answer is the host's own setting from then on.
+  // (decision 0113); the answer is the host's own setting from then on. A project
+  // installation neither asks nor writes it: it reads the project's settings over the
+  // user's, and where they hide the agent names showing it as a next step: in the
+  // project's file, where its own keys hide it, else at user scope (decision 0313).
   const statusHost =
     adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
   const statusFile =
-    statusHost === undefined
+    statusHost === undefined || scope === 'project'
       ? undefined
       : hostConfigPath(statusHost.configRels, harnessDir);
   // Hidden: the host turned the row beneath the editor off, and its layout does not
@@ -659,7 +738,25 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     hidesExtensionStatus(readFileSync(statusFile, 'utf8')) &&
     ensureStatusSegment(statusFile, statusHost, { dry: true }).state !==
       'present';
-  const answeredBefore = prior?.answered?.includes('agentStatus') === true;
+  // At project scope: whether the user's settings, with the project's over them, hide
+  // the session's agent, which keys of each file do, and whether a user installation
+  // has recorded the answer, which a user install then never applies again.
+  const userStatusFile =
+    statusHost === undefined
+      ? undefined
+      : hostConfigPath(statusHost.configRels, harnessDirIn(adapter, opts.home));
+  const projectStatusFile =
+    statusHost === undefined || scope !== 'project'
+      ? undefined
+      : hostConfigPath(statusHost.projectConfigRels, harnessDir);
+  const projectHiding =
+    statusHost === undefined ||
+    userStatusFile === undefined ||
+    projectStatusFile === undefined
+      ? undefined
+      : sessionAgentHiding(userStatusFile, projectStatusFile, statusHost);
+  const answeredBefore =
+    scope === 'user' && prior?.answered?.includes('agentStatus') === true;
   let agentStatus: AgentStatus | undefined;
   let statusAnswered = answeredBefore;
   if (opts.agentStatus !== undefined) {
@@ -699,17 +796,30 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     (await resolveSkills(plugins)).map((s) => s.skill),
   );
 
+  // Whether this project installation made the project's harness directory, which its
+  // uninstall then removes where it is left empty (decision 0312); an installation
+  // that replaces another keeps what that one recorded.
+  const createdHarnessDir =
+    scope === 'project' &&
+    (prior !== null
+      ? prior.createdHarnessDir === true
+      : !existsSync(harnessDir));
+
   const apply = (dry: boolean): Findings => {
     const found = emptyFindings();
     found.warnings.push(...rendered.warnings);
     found.left.push(...left);
     found.detail.push(`corpus: ${source}`, `harness: ${harness} → ${root}`);
     // An earlier installation first: what it placed on the harness's own surfaces is
-    // taken back by its record, so what follows meets the host's own files.
-    const earlier = removeEarlierInstallation(adapter, {
-      ...(opts.home === undefined ? {} : { home: opts.home }),
-      dryRun: dry,
-    });
+    // taken back by its record, so what follows meets the host's own files. It was
+    // only ever the user's, and a project install writes nothing under the home.
+    const earlier =
+      scope === 'user'
+        ? removeEarlierInstallation(adapter, {
+            ...(opts.home === undefined ? {} : { home: opts.home }),
+            dryRun: dry,
+          })
+        : undefined;
     if (earlier !== undefined) {
       found.earlier = earlier.removed.length;
       for (const r of earlier.removed)
@@ -747,7 +857,14 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     found.unbound.push(
       ...tierRoles.filter((t) => !hostBound.has(t) && !bound.has(t)),
     );
-    const linked = linkOwnedRoot({ adapter, harnessDir, root, prior, dry });
+    const linked = linkOwnedRoot({
+      adapter,
+      harnessDir,
+      root,
+      scope,
+      prior,
+      dry,
+    });
     found.references.push(
       ...linked.references.map((r) => join(harnessDir, r.path)),
     );
@@ -761,9 +878,11 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       ...(opts.delivered === undefined ? {} : { delivered: opts.delivered }),
       configuration,
       record: {
+        scope,
         ...(chosen === undefined ? {} : { practices: chosen }),
         ...(rulesDecided ? { rules } : {}),
         references: linked.references,
+        ...(createdHarnessDir ? { createdHarnessDir: true as const } : {}),
         ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
       },
       dry,
@@ -776,11 +895,28 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const show = (found: Findings, dry: boolean): void => {
     for (const line of describe(found, {
       adapter,
+      scope,
+      base,
       root,
       tree: placedTree,
       practices: decided,
       rules: { chosen: rules, dropped: droppedRules, open: rulesOpen },
       config: configFile,
+      ...(projectHiding === undefined ||
+      userStatusFile === undefined ||
+      projectStatusFile === undefined
+        ? {}
+        : {
+            agentHidden: {
+              projectFile: projectStatusFile,
+              userFile: userStatusFile,
+              ...projectHiding,
+              userAnswered:
+                readInstallationRecord(
+                  ownedRootIn(adapter, opts.home),
+                )?.answered?.includes('agentStatus') === true,
+            },
+          }),
       dry,
     })) {
       say(line);
@@ -812,6 +948,9 @@ function describe(
   found: Findings,
   ctx: {
     adapter: HarnessAdapter;
+    scope: InstallScope;
+    /** The home, or the project, the root is in. */
+    base: string;
     root: string;
     tree: ProjectedTree;
     /** The practices installed and those taken out, or `undefined` where the corpus
@@ -826,16 +965,28 @@ function describe(
       dropped: readonly string[];
       open: boolean;
     };
-    /** The host config file holding its model roles, where the harness has one. */
+    /** The user's host config file holding model roles, where the harness has one:
+     *  where a user installation binds them, and a project one names to bind them in. */
     config: string | undefined;
+    /** At project scope, where the settings hide the session's agent: each settings
+     *  file and the keys in it that hide it, and whether a user installation has
+     *  recorded the answer, so a user install would not apply it again. */
+    agentHidden?: {
+      projectFile: string;
+      userFile: string;
+      projectKeys: readonly string[];
+      userKeys: readonly string[];
+      userAnswered: boolean;
+    };
     dry: boolean;
   },
 ): string[] {
   const { adapter, tree, dry } = ctx;
+  const project = ctx.scope === 'project';
   const lines = [
     dry
-      ? `${CLI_BIN} would install into ${adapter.name}, under ${ctx.root}:`
-      : `${CLI_BIN} is installed in ${adapter.name}, under ${ctx.root}:`,
+      ? `${CLI_BIN} would install into ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`
+      : `${CLI_BIN} is installed in ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (ctx.practices !== undefined) {
@@ -856,7 +1007,9 @@ function describe(
   }
   if (found.references.length > 0) {
     lines.push(
-      `  ${adapter.name} ${dry ? 'would load' : 'loads'} it in every project, by ${list(found.references)}`,
+      project
+        ? `  ${adapter.name} ${dry ? 'would load' : 'loads'} it in the project ${ctx.base}, in place of your user installation, by ${list(found.references)}`
+        : `  ${adapter.name} ${dry ? 'would load' : 'loads'} it in every project, by ${list(found.references)}`,
     );
   }
   if (found.earlier > 0) {
@@ -901,7 +1054,9 @@ function describe(
     `start or restart ${adapter.name}`,
     ...(found.unbound.length > 0
       ? [
-          `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
+          project
+            ? `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} in your own settings, under modelRoles in ${ctx.config} or with ${CLI_BIN} install --scope user --model-roles <tier=model,…>: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, neither the project's settings nor yours bind a model to ${found.unbound.length === 1 ? 'it' : 'them'}, and a project installation binds none`
+            : `bind a model to ${found.unbound.length === 1 ? 'the tier' : 'each tier'} ${list(found.unbound)} under modelRoles in ${ctx.config}: the installed agents fall back to ${found.unbound.length === 1 ? 'it' : 'them'}, and the host binds no model to ${found.unbound.length === 1 ? 'it' : 'them'}`,
         ]
       : []),
     ...(found.displayOpen
@@ -909,15 +1064,37 @@ function describe(
           `choose whether the status line should show the session's agent, which your ${adapter.name} settings hide: run install again on a terminal to be asked, or pass --agent-status show (or --agent-status hide to keep it hidden)`,
         ]
       : []),
+    ...(ctx.agentHidden === undefined
+      ? []
+      : [
+          ctx.agentHidden.projectKeys.length > 0
+            ? `show the session's agent, which the project's settings hide by ${list(ctx.agentHidden.projectKeys)} in ${ctx.agentHidden.projectFile}: that is the project's setting, to change there, and a project installation writes no status line choice`
+            : ctx.agentHidden.userAnswered
+              ? `show the session's agent, which your own settings hide by ${list(ctx.agentHidden.userKeys)} in ${ctx.agentHidden.userFile}: that is your own setting, answered at an earlier user install, to change there, and a project installation writes no status line choice`
+              : `show the session's agent, which your own settings hide: ${CLI_BIN} install --scope user --agent-status show, since a project installation writes no status line choice`,
+        ]),
     ...(ctx.rules.open
       ? [
           `choose the rules your agents follow in every project (rulesets: ${list(tree.rulesets.map((s) => s.name))}): run install again on a terminal to be asked, or pass --rules <ruleset-or-rule,…> (or --rules none)`,
         ]
       : []),
-    `to remove it all: ${CLI_BIN} uninstall --harness ${adapter.name}`,
+    ...(project
+      ? [
+          `commit ${relative(ctx.base, ctx.root)} and ${adapter.home} to share it with everyone working in ${ctx.base}`,
+        ]
+      : []),
+    `to remove it all: ${uninstallCommand(adapter, ctx.scope)}${project ? `, run in ${ctx.base}` : ''}`,
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;
+}
+
+/** The command that takes back the installation of `adapter` at `scope`. */
+function uninstallCommand(
+  adapter: HarnessAdapter,
+  scope: InstallScope,
+): string {
+  return `${CLI_BIN} uninstall --harness ${adapter.name}${scope === 'project' ? ' --scope project' : ''}`;
 }
 
 /** The host config file a harness reads its settings from: the FIRST that exists,

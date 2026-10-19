@@ -109,11 +109,16 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
     all: true,
     rules: 'none',
     modelRoles: 'default',
+    scope: 'user',
     interactive: true,
     prompts: {
       harness: async () => {
         asked.push('harness');
         return 'omp';
+      },
+      scope: async () => {
+        asked.push('scope');
+        return 'user';
       },
       practices: async (offered) => {
         asked.push('practices');
@@ -158,6 +163,10 @@ it('delivery/5 — after an answer interactive install asks only missing informa
       harness: async () => {
         record('harness');
         return 'omp';
+      },
+      scope: async () => {
+        record('scope');
+        return 'user';
       },
       practices: async (offered) => {
         record('practices');
@@ -637,6 +646,8 @@ it('delivery/15 — restoring the current command and reinstalling resolves real
     expect(await versions(after)).toEqual({
       artifacts: '2.5.0',
       command: '2.5.0',
+      scope: 'user',
+      installation: owned(h),
     });
     expect(after.notifications.filter((n) => n.level === 'warning')).toEqual(
       [],

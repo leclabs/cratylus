@@ -58,7 +58,10 @@
 import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
-import { INSTALLATION_ENV } from '@cratylus/runtime/runtime-config';
+import {
+  INSTALLATION_ENV,
+  INSTALLATION_RECORD_FILE,
+} from '@cratylus/runtime/runtime-config';
 import type { Agent, Rule } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
@@ -148,6 +151,11 @@ const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
  *  config.yml is absent: omp reads the first that exists and never merges the two. */
 const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
+/** A project's settings file omp reads beside the user's, relative to the project's
+ *  `.omp`: `config.yml`. A project installation reads its model roles and status
+ *  line there and writes neither (decision 0313). */
+const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
+
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
@@ -155,6 +163,7 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
  *  role only as the operator answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   tierRole: (tier) => tier,
   agentRole: ({ tier, effort }) => `@${tier}:${effort}`,
 };
@@ -197,6 +206,7 @@ export const ompDispatchIsolation: DispatchIsolation = {
  *  separator is carried. */
 export const ompStatusSegment: StatusSegmentHost = {
   configRels: OMP_CONFIG_RELS,
+  projectConfigRels: OMP_PROJECT_CONFIG_RELS,
   segment: 'status',
   defaultPreset: 'default',
   defaultLayout: {
@@ -835,7 +845,7 @@ const TURN_EXEC: readonly string[] = [
   '      }',
   '      const envelope = join(dir, "envelope.json");',
   '      writeFileSync(envelope, JSON.stringify({ session_id: sessionId, cwd: pi.cwd, ...full }));',
-  '      return verdictOf(await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]));',
+  '      return verdictOf(await pi.exec("sh", ["-c", `${SET_INSTALLATION}${cmd} < ${envelope}`, "sh", INSTALLATION]));',
   '    } finally {',
   '      rmSync(dir, { recursive: true, force: true });',
   '    }',
@@ -866,9 +876,10 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
       ? [
           "import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
           "import { tmpdir } from 'node:os';",
-          "import { join } from 'node:path';",
+          "import { dirname, join } from 'node:path';",
         ]
-      : []),
+      : ["import { dirname } from 'node:path';"]),
+    "import { fileURLToPath } from 'node:url';",
     // `ExtensionAPI`, NOT `HookAPI`. omp's own `docs/hooks.md` closes with the
     // fact this module got wrong: "The package root does not re-export `HookAPI`;
     // import legacy hook types from the hooks subpath." A default export is an
@@ -878,6 +889,14 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     // who typechecked an emitted module.
     "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
+    // THE WORKERS ARE THIS INSTALLATION'S. A hook command names its worker under
+    // `$<INSTALLATION_ENV>`, and every exec sets it to the root this module sits in, so
+    // a project's installation runs its own workers beside the user's, wherever the
+    // project is. The root goes in as the script's `$1`, never spliced into its text.
+    '// The installation this module was placed in: the root above its `extensions/`.',
+    'const INSTALLATION = dirname(dirname(fileURLToPath(import.meta.url)));',
+    `const SET_INSTALLATION = ${JSON.stringify(`export ${INSTALLATION_ENV}="$1"; `)};`,
+    '',
     ...(needsTurn ? TURN_BRIDGE : []),
     'export default function (pi: ExtensionAPI) {',
     // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
@@ -886,9 +905,9 @@ function ompExtensionModule(governs: string, registrations: string[]): string {
     // load with "Spread syntax requires ...iterable[Symbol.iterator] to be a
     // function" — measured against the installed binary, invisible to a stubbed
     // `pi`. There is no `shell` option either (`ExecOptions` is signal · timeout ·
-    // cwd), and the commands are shell text carrying `$HOME`, so the shell is
-    // named explicitly.
-    '  const exec = (cmd: string) => pi.exec("sh", ["-c", cmd]);',
+    // cwd), and the commands are shell text carrying the installation's variable, so
+    // the shell is named explicitly.
+    '  const exec = (cmd: string) => pi.exec("sh", ["-c", `${SET_INSTALLATION}${cmd}`, "sh", INSTALLATION]);',
     ...(needsTurn ? TURN_EXEC : []),
     ...registrations,
     '}',
@@ -920,7 +939,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `verb` of the explained verbs and every explained parameter with its
  * descriptions and its schema (the distinct schemas as `anyOf` where verbs declare
  * one name differently, so none is dropped); approval `read` for a verb that reads
- * and `write` for one that appends. A call runs `<bin> <capability> <verb>
+ * and `write` for one that appends or closes. A call runs `<bin> <capability> <verb>
  * [positional] [--flag=value…]` in the session's directory and returns its output;
  * a refusal is a tool error carrying the command's own message. Every value is
  * one `--flag=value` token, so a value led by `-` reaches the command literally.
@@ -1092,7 +1111,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  concept: string;',
         '  purpose: string;',
         '  when: string;',
-        '  effect: "reads" | "appends";',
+        '  effect: "reads" | "appends" | "closes";',
         '  parameters: Parameter[];',
         '}',
         'interface Explanation {',
@@ -1134,6 +1153,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '  return "an unrecorded version";',
         '}',
+        `const INSTALLATION_RECORD = ${JSON.stringify(INSTALLATION_RECORD_FILE)};`,
+        "// The scope this installation records of itself: one project's own, or the user's, which a",
+        '// record that says neither, or none at all, is: one installed before there were scopes.',
+        'function recordedScope(): "user" | "project" {',
+        '  try {',
+        '    const { scope } = JSON.parse(readFileSync(`${INSTALLATION}/${INSTALLATION_RECORD}`, "utf8")) as { scope?: unknown };',
+        '    if (scope === "project") return "project";',
+        '  } catch {',
+        "    // the user's",
+        '  }',
+        '  return "user";',
+        '}',
         '// VERSION SKEW, said at every session start before any tool is called: the build that',
         '// projected this installation, as it records itself, against the version the reached',
         '// command answers for itself, whichever is older, and any capability the command lacks.',
@@ -1142,6 +1173,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'const reached = async (): Promise<string> => (await run(["--version"])).trim();',
         'async function warnSkew(session: Session): Promise<void> {',
         '  const artifacts = projected();',
+        '  const scope = recordedScope();',
         '  let command: string;',
         '  try {',
         '    command = await reached();',
@@ -1153,8 +1185,14 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    lacking.size === 0',
         '      ? ""',
         '      : ` It does not provide ${[...lacking].map(([c, why]) => `${c} (${why})`).join(", ")}, which this installation expects, so ${lacking.size === 1 ? "that is" : "those are"} not offered.`;',
+        '  // Each remedy names its scope, so it is never asked; a project installation is installed',
+        '  // again in its project: the directory holding its `.cratylus/`.',
+        '  const remedy =',
+        '    scope === "project"',
+        '      ? `${COMMAND} install --harness omp --scope project, run in ${dirname(dirname(INSTALLATION))}`',
+        '      : `${COMMAND} install --harness omp --scope user`;',
         '  session.ui.notify(',
-        '    `${COMMAND} version skew: this installation was projected by ${COMMAND} ${artifacts}, but the ${COMMAND} command its capabilities run is ${command}.${missing} Install again with the ${COMMAND} in use: ${COMMAND} install --harness omp`,',
+        '    `${COMMAND} version skew: this ${scope} installation (${INSTALLATION}) was projected by ${COMMAND} ${artifacts}, but the ${COMMAND} command its capabilities run is ${command}.${missing} Install again with the ${COMMAND} in use: ${remedy}`,',
         '    "warning",',
         '  );',
         '}',
@@ -1584,9 +1622,11 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '      approval: (args: Record<string, unknown>) => (verbOf(args)?.effect === "reads" ? "read" : "write"),',
         '      async execute(_id: string, args: Record<string, unknown>, signal: AbortSignal | undefined, _update: unknown, ctx: Session) {',
         '        // The version tool reports what each side holds of itself: the version this installation',
-        '        // records, and the one the reached command answers now.',
-        '        if (capability === SKEW)',
-        '          return { content: [{ type: "text" as const, text: JSON.stringify({ artifacts: projected(), command: await reached() }, null, 2) }] };',
+        '        // records, with its scope and root, and the one the reached command answers now.',
+        '        if (capability === SKEW) {',
+        '          const report = { artifacts: projected(), command: await reached(), scope: recordedScope(), installation: INSTALLATION };',
+        '          return { content: [{ type: "text" as const, text: JSON.stringify(report, null, 2) }] };',
+        '        }',
         "        // A refusal is a tool error carrying the command's own message.",
         '        try {',
         '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal, actor(ctx));',
@@ -1646,10 +1686,11 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // agent declaration names one of its own, so no event can be narrowed to one
   // agent. A hook an agent composes is reported, never widened to every session.
   scopes: () => false,
-  // `$HOME` and not a resolved path: the emitted module is read at RUN time on
-  // whatever host it lands on, so it must not bake in the projecting machine's home.
+  // `$<INSTALLATION_ENV>` and not a resolved path: the emitted module is read at RUN
+  // time wherever its installation lands (a user's home, or a project a clone moved),
+  // and sets the variable to its own root for every hook it runs.
   hookCommand: (anchor, workerFilename) =>
-    `sh "$HOME/.${CLI_BIN}/omp/hooks/${anchor}/${workerFilename}"`,
+    `sh "$${INSTALLATION_ENV}/hooks/${anchor}/${workerFilename}"`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),

@@ -344,7 +344,14 @@ async function deployOwned(
   outcome.earlier = earlier?.removed.length ?? 0;
   for (const r of earlier?.removed ?? []) log(`earlier: ${r.what}`);
   const prior = readInstallationRecord(root);
-  const linked = linkOwnedRoot({ adapter, harnessDir, root, prior, dry });
+  const linked = linkOwnedRoot({
+    adapter,
+    harnessDir,
+    root,
+    scope: 'user',
+    prior,
+    dry,
+  });
   for (const l of linked.left) throw new Error(`${l.what}: ${l.why}`);
   const files = rootFiles(adapter, readRenderTree(tree));
   let plugins = opts.plugins;
@@ -365,6 +372,7 @@ async function deployOwned(
             (await resolveSkills(plugins)).map((s) => s.skill),
           ),
     record: {
+      scope: 'user',
       ...(prior?.practices === undefined ? {} : { practices: prior.practices }),
       references: linked.references,
       ...(prior?.answered === undefined ? {} : { answered: prior.answered }),

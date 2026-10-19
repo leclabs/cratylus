@@ -384,6 +384,8 @@ export async function versions(extension: Loaded) {
   return toolJSON(await extension.call('version_skew')) as {
     artifacts: string;
     command: string;
+    scope: 'user' | 'project';
+    installation: string;
   };
 }
 export function skew(

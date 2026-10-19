@@ -646,7 +646,7 @@ describe('omp tool definitions', () => {
     });
     const verb = (
       name: string,
-      effect: 'reads' | 'appends',
+      effect: 'reads' | 'appends' | 'closes',
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
@@ -674,6 +674,7 @@ describe('omp tool definitions', () => {
           parameter('open', { type: 'boolean' }),
         ]),
         verb('refuse', 'appends', []),
+        verb('shut', 'closes', []),
       ],
     };
 
@@ -686,9 +687,11 @@ describe('omp tool definitions', () => {
         'look',
         'put',
         'refuse',
+        'shut',
       ]);
       expect(tool?.approval({ verb: 'look' })).toBe('read');
       expect(tool?.approval({ verb: 'put' })).toBe('write');
+      expect(tool?.approval({ verb: 'shut' })).toBe('write');
     });
 
     it('offers every capability as a device', async () => {
@@ -975,7 +978,7 @@ describe('omp tool definitions', () => {
         const all = TOOLS.map((n) => [
           n,
           // The version tool explains one verb alone, so it takes no `verb`.
-          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
+          n === 'version_skew' ? undefined : ['look', 'put', 'refuse', 'shut'],
         ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),
@@ -1010,27 +1013,37 @@ describe('omp tool definitions', () => {
   });
 
   describe('says version skew at every start, from the versions each side holds of itself', () => {
-    /** The emitted module placed in an installation projected by `projected`, beside
-     *  a `cratylus` on PATH that answers `--version` with `command` and explains only
-     *  the capabilities in `explains`. Each start's warnings, in order. */
+    /** The emitted module placed in an installation projected by `projected`, whose
+     *  record says `scope` (no record where it is absent), beside a `cratylus` on PATH
+     *  that answers `--version` with `command` and explains only the capabilities in
+     *  `explains`. Each start's warnings, in order. */
     async function started(opts: {
       projected: string;
       command: string;
       explains: readonly string[];
       starts?: number;
+      scope?: 'user' | 'project' | null;
     }): Promise<{
       warnings: string[][];
       tools: string[];
       report: () => Promise<unknown>;
+      root: string;
+      project: string;
     }> {
       const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
       tmp.push(dir);
-      const root = join(dir, 'root');
+      const project = join(dir, 'project');
+      const root = join(project, '.cratylus', 'omp');
       mkdirSync(join(root, 'extensions'), { recursive: true });
       writeFileSync(
         join(root, 'package.json'),
         JSON.stringify({ name: 'cratylus-omp', version: opts.projected }),
       );
+      if (opts.scope !== undefined)
+        writeFileSync(
+          join(root, 'installation.json'),
+          JSON.stringify(opts.scope === null ? {} : { scope: opts.scope }),
+        );
       const bin = join(dir, 'bin');
       mkdirSync(bin);
       const explanation = {
@@ -1119,11 +1132,13 @@ describe('omp tool definitions', () => {
           (await version?.('id', {}, undefined, undefined, { cwd: dir }))
             ?.content[0]?.text ?? 'null',
         );
-      return { warnings, tools, report };
+      return { warnings, tools, report, root, project };
     }
     const ALL = OMP_CAPABILITY_TOOLS;
     const remedy =
-      /Install again with the cratylus in use: cratylus install --harness omp/;
+      /Install again with the cratylus in use: cratylus install --harness omp --scope user$/;
+    const projectRemedy = (project: string) =>
+      `Install again with the cratylus in use: cratylus install --harness omp --scope project, run in ${project}`;
 
     it('is silent where both are the same version, and offers every capability', async () => {
       const { warnings, tools } = await started({
@@ -1135,19 +1150,64 @@ describe('omp tool definitions', () => {
       expect(tools).toHaveLength(ALL.length);
     });
 
-    it('warns at each of two starts where the command is newer, naming both and the remedy', async () => {
-      const { warnings } = await started({
+    it('warns at each of two starts where the command is newer, naming both, the user scope and root, and the remedy', async () => {
+      const { warnings, root } = await started({
         projected: '2.4.0',
         command: '2.5.0',
         explains: ALL,
         starts: 2,
+        scope: 'user',
       });
       for (const said of warnings) {
         expect(said).toHaveLength(1);
+        expect(said[0]).toContain(`this user installation (${root})`);
         expect(said[0]).toContain('projected by cratylus 2.4.0');
         expect(said[0]).toContain('run is 2.5.0');
         expect(said[0]).toMatch(remedy);
       }
+    });
+
+    it('warns of a skewed project installation naming the project scope, its root and the project remedy', async () => {
+      const { warnings, root, project, report } = await started({
+        projected: '2.4.0',
+        command: '2.5.0',
+        explains: ALL,
+        scope: 'project',
+      });
+      expect(warnings[0]).toHaveLength(1);
+      expect(warnings[0]?.[0]).toContain(`this project installation (${root})`);
+      expect(warnings[0]?.[0]).toContain('projected by cratylus 2.4.0');
+      expect(warnings[0]?.[0]?.endsWith(projectRemedy(project))).toBe(true);
+      expect(await report()).toEqual({
+        artifacts: '2.4.0',
+        command: '2.5.0',
+        scope: 'project',
+        installation: root,
+      });
+    });
+
+    it('reads an installation whose record says no scope, or which has no record, as the user installation', async () => {
+      for (const scope of [null, undefined]) {
+        const { warnings, report, root } = await started({
+          projected: '2.4.0',
+          command: '2.5.0',
+          explains: ALL,
+          scope,
+        });
+        expect(warnings[0]?.[0]).toContain(`this user installation (${root})`);
+        expect(warnings[0]?.[0]).toMatch(remedy);
+        expect(await report()).toMatchObject({ scope: 'user' });
+      }
+    });
+
+    it('is silent for a project installation where both are the same version', async () => {
+      const { warnings } = await started({
+        projected: '2.4.0',
+        command: '2.4.0',
+        explains: ALL,
+        scope: 'project',
+      });
+      expect(warnings).toEqual([[]]);
     });
 
     it('warns where the command is older, as where it is newer', async () => {
@@ -1164,7 +1224,7 @@ describe('omp tool definitions', () => {
 
     it('warns against a command that predates the version tool, still loading, offering the version tool the artifacts carry, which reports both', async () => {
       const older = ALL.filter((c) => c !== 'versionSkew');
-      const { warnings, tools, report } = await started({
+      const { warnings, tools, report, root } = await started({
         projected: '3.1.0',
         command: '3.0.0',
         explains: older,
@@ -1178,7 +1238,12 @@ describe('omp tool definitions', () => {
       expect(warnings[0]?.[0]).toContain('run is 3.0.0');
       expect(warnings[0]?.[0]).not.toContain('does not provide');
       expect(warnings[0]?.[0]).toMatch(remedy);
-      expect(await report()).toEqual({ artifacts: '3.1.0', command: '3.0.0' });
+      expect(await report()).toEqual({
+        artifacts: '3.1.0',
+        command: '3.0.0',
+        scope: 'user',
+        installation: root,
+      });
     });
 
     it('warns where the command lacks a capability the installation expects, though it answers the same version', async () => {

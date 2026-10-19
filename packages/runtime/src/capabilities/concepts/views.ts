@@ -5,6 +5,18 @@
 // Each is a pure function of the entries in append order: no clock, no
 // randomness, so the same journal answers the same every time.
 //
+// CLOSED BOOKS. A close opens a new period with an entry per current version
+// of each standing item, each an ordinary entry of its item's kind superseding
+// nothing, so every fold reads the period from its openings as it reads any
+// entries; nothing of the closed period is read. A context's IDENTITY is the
+// identity its earliest entry carrying one carries, else its earliest entry's
+// id. The history readings name the latest opening's close, `booksClosed`, with
+// the commit holding the closed period, and mark each opening they list as
+// brought forward from it. A version joined from a line of work that branched
+// before a close supersedes versions the journal does not hold, so it competes
+// with its item's opening; a reference to a decision's entry the journal does
+// not hold binds by the decision's name where one decision has it.
+//
 // A concept's CURRENT versions are those no later version of it supersedes.
 // One current version is the concept: live, or retired when it is a
 // retirement. Two or more are COMPETING versions (branches that each
@@ -50,6 +62,7 @@ import type {
   DecideEntry,
   DecisionKind,
   DeprecateEntry,
+  Draft,
   EfficiencyEntry,
   Entry,
   PurposeEntry,
@@ -143,6 +156,8 @@ export interface DecisionView {
   readonly keeps?: readonly string[];
   /** Why it is deprecated, where it is. */
   readonly deprecation?: Deprecation;
+  /** The commit it was brought forward from, where its entry is an opening. */
+  readonly broughtForward?: string;
   readonly id: string;
   readonly entry: string;
 }
@@ -239,6 +254,7 @@ export interface HistoryView {
     readonly builtFrom?: readonly string[];
     readonly reason: string;
     readonly supersedes: readonly string[];
+    readonly broughtForward?: string;
   }[];
 }
 
@@ -252,6 +268,7 @@ export interface ContextHistoryView {
     readonly relation: string;
     readonly reason?: string;
     readonly supersedes: readonly string[];
+    readonly broughtForward?: string;
   }[];
 }
 
@@ -287,9 +304,31 @@ export class Folded {
   readonly deprecations = new Map<string, DeprecateEntry>();
   /** Each context's cuts by name, each with its latest efficiency entry. */
   readonly efficiencies = new Map<string, Map<string, EfficiencyEntry>>();
+  /** The latest opening entry, where a close opened the journal's period. */
+  private opening: Entry | undefined;
 
   constructor(entries: readonly Entry[]) {
+    // Every decision the journal holds, by its name: a reference to an entry
+    // it does not hold, one a close took out, binds by the decision's name,
+    // where one decision has it.
+    const held = new Map<string, string[]>();
     for (const entry of entries)
+      if (entry.kind === 'decide')
+        held.set(entry.decisionId, [
+          ...(held.get(entry.decisionId) ?? []),
+          entry.id,
+        ]);
+    const decisions = new Set([...held.values()].flat());
+    /** The decision a reference to the entry `ref` of the decision `name`
+     *  binds to; one by name alone binds among the decisions folded so far. */
+    const bind = (ref: string | undefined, name: string) => {
+      if (ref === undefined) return this.only(name);
+      if (decisions.has(ref)) return ref;
+      const named = held.get(name) ?? [];
+      return named.length === 1 ? named[0] : undefined;
+    };
+    for (const entry of entries) {
+      if (broughtForward(entry) !== undefined) this.opening = entry;
       switch (entry.kind) {
         case 'purpose':
           this.purposes.push(entry);
@@ -315,10 +354,9 @@ export class Folded {
         }
         case 'decide': {
           const target =
-            entry.supersedesEntry ??
-            (entry.supersedes === null
+            entry.supersedes === null
               ? undefined
-              : this.only(entry.supersedes));
+              : bind(entry.supersedesEntry, entry.supersedes);
           this.decisions.set(entry.id, entry);
           if (entry.decisionKind !== undefined)
             this.kinds.set(entry.id, [
@@ -336,7 +374,7 @@ export class Folded {
           break;
         }
         case 'accept': {
-          const target = entry.entry ?? this.only(entry.decisionId);
+          const target = bind(entry.entry, entry.decisionId);
           if (target !== undefined) this.acceptances.add(target);
           break;
         }
@@ -348,10 +386,12 @@ export class Folded {
           cuts.set(entry.cut, entry);
           break;
         }
-        case 'deprecate':
-          if (!this.deprecations.has(entry.entry))
-            this.deprecations.set(entry.entry, entry);
+        case 'deprecate': {
+          const target = bind(entry.entry, entry.decisionId);
+          if (target !== undefined && !this.deprecations.has(target))
+            this.deprecations.set(target, entry);
           break;
+        }
         case 'classify':
           this.kinds.set(entry.entry, [
             ...(this.kinds.get(entry.entry) ?? []),
@@ -363,6 +403,111 @@ export class Folded {
           ]);
           break;
       }
+    }
+  }
+
+  /** The identity of `context`: the one its earliest entry carrying one
+   *  carries, else its earliest entry's id; `undefined` when the journal has
+   *  no such context. */
+  identity(context: string): string | undefined {
+    const recorded = this.contexts.get(context) ?? [];
+    return (
+      recorded.find((c) => c.identity !== undefined)?.identity ??
+      recorded[0]?.id
+    );
+  }
+
+  /** The latest closing of the books, which the history readings name: when
+   *  its openings were written, who closed, and the commit holding the closed
+   *  period; none while no close opened the journal's period. */
+  booksClosed():
+    | {
+        readonly booksClosed: {
+          readonly at: string;
+          readonly by?: string;
+          readonly commit: string;
+        };
+      }
+    | Record<string, never> {
+    const opening = this.opening;
+    return opening === undefined
+      ? {}
+      : {
+          booksClosed: {
+            at: opening.at,
+            ...(opening.by === undefined ? {} : { by: opening.by }),
+            commit: broughtForward(opening) as string,
+          },
+        };
+  }
+
+  /** The opening entries of a close at `commit`, in the order the readings
+   *  list what they open: the purpose; each context; each live concept,
+   *  context by context; each standing decision. One per current version, so
+   *  competing versions still compete, each superseding nothing and brought
+   *  forward from `commit`; a retired concept, a superseded or deprecated
+   *  decision, an acceptance, a classification and a cut's figures stay in
+   *  the closed period. */
+  openings(commit: string): Draft[] {
+    const opened = { supersedes: [], broughtForward: commit } as const;
+    const drafts: Draft[] = this.currentPurposes().map((p) => ({
+      kind: 'purpose',
+      statement: p.statement,
+      ...(p.reason === undefined ? {} : { reason: p.reason }),
+      ...opened,
+    }));
+    for (const name of this.contexts.keys()) {
+      const identity = this.identity(name) as string;
+      for (const c of this.currentDescriptions(name))
+        drafts.push({
+          kind: 'context',
+          name,
+          subject: c.subject,
+          relation: c.relation,
+          ...(c.reason === undefined ? {} : { reason: c.reason }),
+          identity,
+          ...opened,
+        });
+    }
+    for (const context of new Set([
+      ...this.contexts.keys(),
+      ...this.concepts.keys(),
+    ]))
+      for (const name of this.concepts.get(context)?.keys() ?? []) {
+        const standing = this.standing(context, name) as Standing;
+        if (standing.is === 'retired') continue;
+        for (const v of standing.is === 'live'
+          ? [standing.current]
+          : standing.current)
+          drafts.push(
+            v.kind === 'retire'
+              ? { kind: 'retire', context, name, reason: v.reason, ...opened }
+              : {
+                  kind: 'define',
+                  context,
+                  name,
+                  wording: v.wording,
+                  builtFrom: [...v.builtFrom],
+                  reason: v.reason,
+                  ...opened,
+                },
+          );
+      }
+    for (const view of this.decisionViews().filter(stands))
+      drafts.push({
+        kind: 'decide',
+        decisionId: view.id,
+        context: view.context,
+        title: view.title,
+        situation: view.situation,
+        decision: view.decision,
+        consequences: view.consequences,
+        status: view.status === 'accepted' ? 'accepted' : 'open',
+        supersedes: null,
+        ...(view.kind === null ? {} : { decisionKind: view.kind }),
+        broughtForward: commit,
+      });
+    return drafts;
   }
 
   /** The entry of the one decision `id` names among those folded so far;
@@ -502,6 +647,7 @@ export class Folded {
           : { wording: v.wording, builtFrom: [...v.builtFrom] }),
         reason: v.reason,
         supersedes: [...v.supersedes],
+        ...marked(v),
       })),
     };
   }
@@ -518,6 +664,7 @@ export class Folded {
         relation: c.relation,
         ...(c.reason === undefined ? {} : { reason: c.reason }),
         supersedes: [...(c.supersedes ?? [])],
+        ...marked(c),
       })),
     };
   }
@@ -561,11 +708,23 @@ export class Folded {
         ...(d.cut === undefined ? {} : { cut: d.cut }),
         ...(d.keeps === undefined ? {} : { keeps: [...d.keeps] }),
         ...(deprecation === undefined ? {} : { deprecation }),
+        ...marked(d),
         id: d.decisionId,
         entry: d.id,
       };
     });
   }
+}
+
+/** The commit `entry` was brought forward from, where it is an opening. */
+function broughtForward(entry: Entry): string | undefined {
+  return 'broughtForward' in entry ? entry.broughtForward : undefined;
+}
+
+/** `entry`'s mark as brought forward, where it is an opening: none else. */
+function marked(entry: Entry): { readonly broughtForward?: string } {
+  const commit = broughtForward(entry);
+  return commit === undefined ? {} : { broughtForward: commit };
 }
 
 /** What a version that states its concept says. */

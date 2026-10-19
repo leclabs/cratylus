@@ -75,11 +75,11 @@ export {
 // references the harness's own surfaces hold into it.
 export {
   type DeliveredDocument,
-  INSTALLATION_RECORD,
   type InstallationRecord,
   type OwnedReference,
   type PlaceRootResult,
   type RenderedFile,
+  holdsRenderTree,
   linkOwnedRoot,
   ownedRootIn,
   placeOwnedRoot,
@@ -88,6 +88,13 @@ export {
   rootFiles,
   unlinkOwnedRoot,
 } from './owned-root.js';
+
+// Where an installation is: for the user, or inside one project.
+export {
+  type Placement,
+  placementOf,
+  projectOf,
+} from './install-scope.js';
 
 export {
   applyPrune,

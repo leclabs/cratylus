@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The ENTRIES of the concept journal: what each appending verb records, one
-// entry per file, never edited, moved or deleted.
+// The ENTRIES of the concept journal: what each verb records, one entry per
+// file, never edited or moved, and removed only when the journal's books close.
 //
 // Every entry carries its `id`, a ULID that names its file and orders it, `at`,
 // the moment its id was minted, and, when known, `by`, who appended it: the
 // acting agent, else git's user. The project's purpose (`purpose`), what the
 // project is for, and a context's description (`context`) change like a
 // concept does: a later one with its reason supersedes the current ones, the
-// earlier kept in the journal. A concept
+// earlier kept in the journal until its books close. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id and records realization, and its acceptance (`accept`) and its
@@ -16,6 +16,13 @@
 // a classification of a decision's kind and a cut's effort figures are read as
 // recorded, the latest classification governing a decision's kind and the
 // latest figures for a cut being its figures, and shown only as history.
+//
+// Closing the books opens a new period: one OPENING entry per current version
+// of each standing item, of the item's own kind, superseding nothing and
+// carrying `broughtForward`, the full sha of the commit at HEAD holding the
+// closed period, and, for a context, its `identity`; every other entry file
+// then leaves the journal, kept by version control. An opening is otherwise an
+// ordinary entry, so a runtime that does not know the field reads it as one.
 //
 // An entry of a kind named here is read only when it carries every field its
 // kind's shape requires; an entry of a kind not named here, or of a known kind
@@ -36,7 +43,9 @@ interface Stamped {
  *  with no reason; a later one changes it, with the `reason` it was written,
  *  naming the current entries it supersedes (one when settled, all when
  *  competing). Entries written before contexts could change carry no reason,
- *  and those written before descriptions could compete no `supersedes`. */
+ *  and those written before descriptions could compete no `supersedes`. An
+ *  opening carries `identity`, the context's identity, which it keeps across
+ *  periods. */
 export interface ContextEntry extends Stamped {
   readonly kind: 'context';
   readonly name: string;
@@ -44,6 +53,8 @@ export interface ContextEntry extends Stamped {
   readonly relation: string;
   readonly reason?: string;
   readonly supersedes?: readonly string[];
+  readonly identity?: string;
+  readonly broughtForward?: string;
 }
 
 /** The project's purpose: what the project is for, in plain words. The first
@@ -55,6 +66,7 @@ export interface PurposeEntry extends Stamped {
   readonly statement: string;
   readonly reason?: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** A version of a concept that states it: its first (`define`) or one that
@@ -67,15 +79,18 @@ export interface WordedEntry extends Stamped {
   readonly builtFrom: readonly string[];
   readonly reason: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
-/** The retirement of a concept, superseding every current version. */
+/** The retirement of a concept, superseding every current version; an opening
+ *  only where it competes with another current version. */
 export interface RetireEntry extends Stamped {
   readonly kind: 'retire';
   readonly context: string;
   readonly name: string;
   readonly reason: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** A version of a concept: what `history` lists. */
@@ -111,6 +126,7 @@ export interface DecideEntry extends Stamped {
   readonly decisionKind?: DecisionKind;
   readonly cut?: string;
   readonly keeps?: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** The acceptance of an open decision: its name, and its entry (absent on
@@ -196,6 +212,7 @@ const worded = {
   builtFrom: texts,
   reason: text,
   supersedes: texts,
+  broughtForward: optional(text),
 } as const;
 
 /** Every kind of entry the journal holds, and the fields an entry of it must
@@ -206,6 +223,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     statement: text,
     reason: optional(text),
     supersedes: texts,
+    broughtForward: optional(text),
   },
   context: {
     at: text,
@@ -214,6 +232,8 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     relation: text,
     reason: optional(text),
     supersedes: optional(texts),
+    identity: optional(text),
+    broughtForward: optional(text),
   },
   define: worded,
   supersede: worded,
@@ -223,6 +243,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     name: text,
     reason: text,
     supersedes: texts,
+    broughtForward: optional(text),
   },
   decide: {
     at: text,
@@ -238,6 +259,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     decisionKind: optional(text),
     cut: optional(text),
     keeps: optional(texts),
+    broughtForward: optional(text),
   },
   accept: {
     at: text,
