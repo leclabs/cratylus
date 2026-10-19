@@ -1,5 +1,11 @@
 # @cratylus/canon
 
+## 0.21.0
+
+### Minor Changes
+
+- a3bc415: Every cratylus agent now shows a mark of its own when launched, and no two share one. The six role holders gain theirs: architect 🏛️, lead 🧭, builder 🔨, reviewer 🔍, check-writer 🧪 and illustrator 🖍️; kino 🎬, mav ✈️ and nico 📐 keep theirs.
+
 ## 0.20.0
 
 ### Minor Changes
