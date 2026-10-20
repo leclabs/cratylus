@@ -1,4 +1,4 @@
-// An agent declaring `a`, `e` and `ghost`: `ghost` names no cell in any
+// An agent declaring `a`, `e` and `ghost`: `ghost` names no skill in any
 // roster, so it is kept and never expanded.
 import type { FixtureAgent } from '../../../../fixture-manifest.js';
 

@@ -4,9 +4,9 @@
 // `catalog/index.ts` names this exact hazard on the scan it guards: a value that
 // carries its own enforcement is an OBJECT, and a `typeof === 'string'` filter
 // DROPS IT silently, leaving a catalog that under-reports and reads exactly like
-// a smaller corpus. `bodyOf` reaches the declaration face of either shape, which
-// is why the scan is correct — but no corpus in this repo held an enforcing
-// dimension value, so nothing ever demonstrated it. A hazard the source names and
+// a smaller canon. `bodyOf` reaches the declaration face of either shape, which
+// is why the scan is correct — but the canon in this repo held no enforcing
+// value, so nothing ever demonstrated it. A hazard the source names and
 // no fixture reproduces is an untested claim.
 
 import type { FixtureValue } from '../../fixture-manifest.js';

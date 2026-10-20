@@ -17,7 +17,7 @@ for (const name of ['alpha', 'beta'])
   writeFileSync(join(agents, `${name}.ts`), fixtureAgentSource(name));
 // The renamed practice is not preselected and the other one is, so keeping it can
 // only come from the record.
-const corpus: ProjectablePlugin = {
+const canon: ProjectablePlugin = {
   name: 'practices-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
@@ -58,7 +58,7 @@ const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     harness: 'omp',
     home,
     cwd: home,
-    corpus: corpus as never,
+    canon: canon as never,
     interactive: false,
     version: '1.0.0',
     ...extra,
@@ -151,6 +151,6 @@ describe('a user install over an earlier deploy record naming a former practice 
 it('refuses a former name given to --practices, listing the declared practices', async () => {
   expect(await install({ practices: 'former' })).toBe(1);
   expect(out).toContain(
-    "--practices: 'former' is no practice of this corpus (declared: renamed, other)",
+    "--practices: 'former' is no practice of this canon (declared: renamed, other)",
   );
 });

@@ -21,7 +21,7 @@ export function tmp(prefix: string): string {
   return d;
 }
 
-/** The one practice a fixture corpus declares: every agent it has, preselected. A
+/** The one practice a fixture canon declares: every agent it has, preselected. A
  *  run that installs it takes the whole fixture, as a run without practices would. */
 export const FIXTURE_PRACTICE = 'fixture';
 export function fixturePractices(agents: readonly string[]): Practice[] {
@@ -36,7 +36,7 @@ export function fixturePractices(agents: readonly string[]): Practice[] {
 }
 
 /** The source of a fixture agent module `<name>.ts` over {@link FIXTURE_MANIFEST}:
- *  no mark, an empty key, every dimension explicitly empty but the required
+ *  no mark, an empty key, every factor explicitly empty but the required
  *  guardrails, and the identity facts `extra` names (`routing`, `dispatches`, …). */
 export function fixtureAgentSource(
   name: string,

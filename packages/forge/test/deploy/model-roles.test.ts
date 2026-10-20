@@ -83,7 +83,7 @@ describe('install — model roles', () => {
   let agents: string;
   let out: string;
   const config = () => join(home, '.omp', 'agent', 'config.yml');
-  /** The corpus at `efforts`, each version in a directory of its own: a module once
+  /** The canon at `efforts`, each version in a directory of its own: a module once
    *  imported is not read again in this process. */
   const design = (efforts: Record<string, string> = {}) => {
     agents = mkdtempSync(join(root, 'agents-'));
@@ -111,7 +111,7 @@ describe('install — model roles', () => {
       harness: 'omp',
       home,
       cwd,
-      corpus: plugin() as never,
+      canon: plugin() as never,
       practices: FIXTURE_PRACTICE,
       ...extra,
     });

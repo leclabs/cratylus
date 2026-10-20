@@ -13,7 +13,7 @@ import {
   projectPluginSet,
 } from '../../src/project/index.js';
 import {
-  FIXTURE_DIMENSION_NAMES,
+  FIXTURE_FACTOR_NAMES,
   FIXTURE_MANIFEST,
 } from '../fixture-manifest.js';
 
@@ -22,7 +22,7 @@ afterAll(() => {
   for (const r of roots) rmSync(r, { recursive: true, force: true });
 });
 
-const EMPTY_FIELDS = FIXTURE_DIMENSION_NAMES.map(
+const EMPTY_FIELDS = FIXTURE_FACTOR_NAMES.map(
   (d) => `  ${d.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())}: [],`,
 ).join('\n');
 

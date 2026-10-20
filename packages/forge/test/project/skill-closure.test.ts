@@ -4,7 +4,7 @@
 //
 // The fixture roster (`fixtures-closure/base`): `a` composes `b` and `d`, `b`
 // composes `c` and `d`, `c` composes `a` back, `d`, `e` and `f` compose nothing.
-// `chain` declares `a`, `e` and `ghost` (no cell), `bare` declares nothing. The
+// `chain` declares `a`, `e` and `ghost` (no skill), `bare` declares nothing. The
 // `override` plugin ships a `d` that composes `f`.
 
 import { join } from 'node:path';
@@ -33,7 +33,7 @@ const override: ProjectablePlugin = {
   skills: join(fixtures, 'override', 'skills'),
 };
 
-// Declared first (`a`, `e`, `ghost`), then breadth-first in each cell's
+// Declared first (`a`, `e`, `ghost`), then breadth-first in each skill's
 // declaration order: `a` adds `b` and `d`, `b` adds `c` (its `d` is already
 // there), and `c`'s `a` closes the cycle adding nothing. `ghost` is kept and
 // never expanded. A depth-first walk would put `c` before `d`.
@@ -71,7 +71,7 @@ describe('omp — `autoloadSkills` carries the closure', () => {
     expect(fence(agent('bare'))).not.toContain('autoloadSkills');
   });
 
-  it("a later plugin's same-name cell changes the closure", async () => {
+  it("a later plugin's same-name skill changes the closure", async () => {
     const { agent } = await project('omp', [base, override]);
     expect(fence(agent('chain')).split('\n')).toContain(
       `autoloadSkills: [${[...CLOSURE, 'f'].map((s) => `"${s}"`).join(', ')}]`,
