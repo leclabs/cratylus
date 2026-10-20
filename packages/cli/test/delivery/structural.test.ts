@@ -61,13 +61,13 @@ it('delivery/1 — one user installation is offered in existing and later projec
   expect(
     Object.keys(tree(join(owned(h), 'agents'))).filter((p) => p.endsWith('.md'))
       .length,
-    'installed corpus agents',
+    'installed canon agents',
   ).toBeGreaterThan(0);
   expect(
     Object.keys(tree(join(owned(h), 'skills'))).filter((p) =>
       p.endsWith('/SKILL.md'),
     ).length,
-    'installed corpus skills',
+    'installed canon skills',
   ).toBeGreaterThan(0);
   for (const cwd of projects)
     expect(tree(cwd)).not.toHaveProperty(
@@ -105,7 +105,7 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
     harness: 'omp',
     home: h.home,
     cwd: h.cwd,
-    corpus: canon,
+    canon,
     all: true,
     rules: 'none',
     modelRoles: 'default',
@@ -157,7 +157,7 @@ it('delivery/5 — after an answer interactive install asks only missing informa
     harness: 'omp',
     home: h.home,
     cwd: h.cwd,
-    corpus: canon,
+    canon,
     interactive: true,
     prompts: {
       harness: async () => {

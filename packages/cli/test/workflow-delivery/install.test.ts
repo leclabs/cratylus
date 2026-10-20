@@ -124,7 +124,7 @@ it('delivery/5 — uninstall removes delivered material with the root and leaves
   ): void {
     expect(rootRemains, 'the owned root leaves').toBe(false);
     expect(documentRemains, 'the delivered document leaves').toBe(false);
-    expect(journal, 'the project journal has no delivered residue').toEqual(
+    expect(journal, 'the project journal keeps nothing delivered').toEqual(
       before,
     );
   }

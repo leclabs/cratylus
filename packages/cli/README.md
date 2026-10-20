@@ -11,7 +11,7 @@ It needs Node 22 or later.
 ## Use
 
 ```sh
-cratylus install                     # the guided run: put the bundled corpus on this machine, no project needed
+cratylus install                     # the guided run: put the canon cratylus ships on this machine, no project needed
 cratylus install --scope project     # the same for the project you are in, to commit and share with its team
 omp --agent architect                # start here: the architect
 cratylus uninstall --harness omp     # take away what install placed
@@ -36,8 +36,8 @@ capabilities that agents and skills call.
 cratylus install
 ```
 
-`cratylus install` puts the bundled corpus's agents and skills into omp, for you or for one project
-(the scope, below). It always installs the corpus this command is built with, and needs no
+`cratylus install` puts the agents and skills of the canon cratylus ships into omp, for you or for one project
+(the scope, below). It always installs the canon this command is built with, and needs no
 config. It looks for omp by its directory (`~/.omp`).
 
 The run is short. It asks only what you have not said, shows what it will place before it places
@@ -80,7 +80,7 @@ same name). `--scope user|project` chooses, and user is the default: on a termin
 user preselected, wherever the project here is not your home; under `--yes` or with no terminal it
 takes user.
 
-The project is the directory omp anchors a project's plugins at, found from the working directory:
+The project is the directory omp roots a project's plugins at, found from the working directory:
 the nearest directory above it holding `.omp/`, your home's excepted, else the nearest holding
 `.git`, else the working directory itself. Project scope is refused where that is your home.
 
@@ -117,13 +117,13 @@ reads the project installation; elsewhere it reads yours.
 
 A practice is a way of working that install offers as one choice: the agents and skills that
 carry it, installed together. On a terminal, install asks one question that lists each practice with its
-description, the practices already installed here ticked (on a fresh host, the one the corpus
+description, the practices already installed here ticked (on a fresh host, the one the canon
 preselects).
 
 `--practices <name,…>` names the practices to install, as in
 `--practices intent-based-delegation`, and `--all` takes every one. They are refused together, and
 so is a name no practice answers to; that refusal lists the
-practices the corpus declares. Without a terminal and with neither flag, `install` refuses before
+practices the canon declares. Without a terminal and with neither flag, `install` refuses before
 writing anything and lists them too: what it installed last time is a default for a question, never
 an answer to one. An empty choice is refused as well (`--practices ''`, or every practice unticked),
 since none is not every; to take it all out, run `cratylus uninstall --harness <h>`.
@@ -175,14 +175,14 @@ Everything install places for you lives under one root it owns: at user scope `~
 
 ```text
 ~/.cratylus/omp/
-  agents/<name>.md          the corpus's agent definitions
-  skills/<name>/…           the corpus's skills
+  agents/<name>.md          the canon's agent definitions
+  skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks the corpus declares, and the dispatch isolation where an agent needs it
+  extensions/…              the session hooks the canon declares, and the dispatch isolation where an agent needs it
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
-  runtime.json              each capability's configuration, where the corpus declares any
+  runtime.json              each capability's configuration, where the canon declares any
   delivered/cratylus/<context>.json
                             each context this release delivers, read-only: cratylic context design, then workflow
   installation.json         its scope (user or project), what install did outside the root, and the practices and rules installed
@@ -196,7 +196,7 @@ Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/c
 
 **Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
-**Session hooks.** The corpus names 31 canonical lifecycle events; omp realizes 9 of them by a native event of its own. The rest have no native peer there and are refused or skipped with a warning rather than faked.
+**Session hooks.** The canon names 31 canonical lifecycle events; omp realizes 9 of them by a native event of its own. The rest have no native peer there and are refused or skipped with a warning rather than faked.
 
 **An isolated agent's dispatch.** An agent may declare a worktree of its own; none of the bundled agents does. omp's agent definition has no field for isolation, so install does what omp offers: a dispatch of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's checkout and never writes the main checkout. What it built is kept as the branch `omp/task/<id>` in your repository, not applied. The copy is made from the dispatcher's HEAD and its uncommitted work, and omp takes no ref to start it from; building off the bound plan's line is the agent's own work. Where the checkout has uncommitted work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once per such agent and install prints the same in its summary. For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied, until you change the settings.
 
@@ -213,7 +213,7 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
   with `--harness omp`.
 - `no terminal to ask which practices to install; …`: add `--practices` with the names it lists, or
   `--all`.
-- `--practices: '<name>' is no practice of this corpus (declared: …)`, and `no practice was chosen`:
+- `--practices: '<name>' is no practice of this canon (declared: …)`, and `no practice was chosen`:
   name only declared practices, and at least one.
 - `--practices and --all were both given`: give one.
 - `--model-roles: '<name>' is no tier or agent of this install (tiers: …; agents: …)`: an entry must
@@ -263,7 +263,7 @@ configuration is only ever added to, and `--dry-run` says what would be set and 
 
 The badge is the status cratylus's extension sets for a session started with
 `omp --agent` (the section on starting a session as an agent), so install places no badge of its
-own, and makes room for it wherever it places that extension, whether or not the corpus delivers any
+own, and makes room for it wherever it places that extension, whether or not the canon delivers any
 agent: any session may be started as any agent definition omp discovers. An extension's status shows
 inside the status line only where the host's layout lists omp's `status` segment, and omp reads a
 segment list (`statusLine.leftSegments`) only under `statusLine.preset: custom`. Under any other
@@ -303,7 +303,7 @@ An agent's definition names its own model role first, then the tier and effort i
 
 ## The host runtime config
 
-Each capability's configuration, where the corpus's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is read no more, and the next user install or uninstall takes its parts out.
+Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is read no more, and the next user install or uninstall takes its parts out.
 
 ## Version skew
 
@@ -341,7 +341,7 @@ Every command and every capability verb answers `--help`; this reference is that
 
 ### `cratylus install`
 
-Install the bundled corpus into an agent harness on this machine, asking what you have not said.
+Install the canon cratylus ships, its agents, skills and rules, into an agent harness on this machine, asking what you have not said.
 
 ```sh
 cratylus install [options]
