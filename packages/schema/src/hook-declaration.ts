@@ -1,5 +1,5 @@
-// `HookCell` is a source cell for a harness lifecycle event and its worker payload.
-// The cell names canonical events; a corpus narrows that vocabulary, and the
+// `HookDeclaration` is a hook's source declaration: a harness lifecycle event and its
+// worker payload. It names canonical events; the canon narrows that vocabulary, and the
 // harness adapter supplies the native event binding and invocation.
 //
 // Worker templates may name projector-owned facts and declared speech. Projection
@@ -15,13 +15,13 @@ export type HookSubstrate = Substrate;
  * A value only PROJECTION knows, named by a worker template as `{{fact:<name>}}`.
  *
  * A CLOSED SET OF NAMES, never of values. The projector owns every value (see
- * `projectionFacts()` in the projector); this union states only WHICH facts a cell
+ * `projectionFacts()` in the projector); this union states only WHICH facts a hook
  * may ask for, so a typo is a compile error and an unknown name is a resolve-time
  * throw.
  *
  * "ADDING A MEMBER COSTS THE PROJECTOR ONE ENTRY AND NOTHING ELSE" holds only where
  * the value already has a home to bind, as `runtime-bin` did; minting a home for one
- * that has none is a SIGNIFICATION act, not a table edit. The estimate stands for the
+ * that has none is a NAMING act, not a table edit. The estimate stands for the
  * PROJECTOR'S side of the seam and nowhere else.
  *
  * Adapter-relative facts take the harness's own name and hook-config filename from
@@ -42,7 +42,7 @@ export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
  * One string a hook SPEAKS to an agent — bytes that land in a reader's context,
  * addressed from the worker template as `{{speech:<id>}}`.
  *
- * It has a declared home because it is the only cell content scored at R=LLM that
+ * It has a declared home because it is the only hook content scored at R=LLM that
  * had none: it lived as `printf` bodies inside shell workers, reachable only by
  * parsing shell, which is a proxy for the property rather than the property.
  * OPERATOR diagnostics (`>&2`) are not speech; neither is shell plumbing.
@@ -72,17 +72,17 @@ export interface HookWorker {
 }
 
 /**
- * A `hook` source cell (source grain), carrying its verbatim worker payloads.
+ * A `hook` source declaration (source grain), carrying its verbatim worker payloads.
  *
- * `E` is the CORPUS'S event vocabulary. Left at its default this cell accepts
- * any `EventName`, which is all this package can say; a corpus aliases it against
+ * `E` is the CANON'S event vocabulary. Left at its default this declaration accepts
+ * any `EventName`, which is all this package can say; the canon aliases it against
  * its own declared tuple and gets the compile error back.
  */
-export interface HookCell<E extends EventName = EventName> {
-  /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
+export interface HookDeclaration<E extends EventName = EventName> {
+  /** Stable id → `hooks/<id>/`; the hook's term `term(c)` (== the filename). */
   readonly id: string;
-  /** σ*-signified canonical identity (`body = ⟨α, residue⟩`). */
-  readonly residue: string;
+  /** The correction written beside the term (`body = ⟨term, correction⟩`). */
+  readonly correction: string;
   /** Which substrate the event fires in. */
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that trigger the hook (≥1). */
@@ -97,7 +97,7 @@ export interface HookCell<E extends EventName = EventName> {
   /**
    * WHICH worker is the entry point — a `workers[].filename`, never a path and
    * never a command. The adapter turns ⟨id, entry⟩ into the invocation its harness
-   * needs; a cell that spelled that out would have chosen a face.
+   * needs; a declaration that spelled that out would have chosen a face.
    */
   readonly entry: string;
   /** Timeout in seconds; adapter default when omitted. */
@@ -109,7 +109,7 @@ export interface HookCell<E extends EventName = EventName> {
    * worker template. Absent on a hook that says nothing to a reader.
    */
   readonly speech?: readonly HookMessage[];
-  /** Anchors this cell references. */
+  /** Terms this hook references. */
   readonly refs?: readonly string[];
 }
 
@@ -133,9 +133,9 @@ const PLACEHOLDER = /\{\{([^{}]*)\}\}/g;
 /**
  * Resolve one worker TEMPLATE into the bytes that deploy.
  *
- * PURE: a function of the worker, the projector's fact table, and the cell's
+ * PURE: a function of the worker, the projector's fact table, and the hook's
  * speech — no clock, no host, no file. That is what keeps the byte-anchor an anchor
- * when its subject moved from the cell's literal to the resolved bytes.
+ * when its subject moved from the declaration's literal to the resolved bytes.
  *
  * IT THROWS ON AN UNKNOWN PLACEHOLDER, and that is the load-bearing half. A silent
  * pass-through would ship a literal `{{fact:runtime-bin}}` into a deployed `.sh`,
@@ -171,7 +171,7 @@ export function resolveWorker(
         const text = said.get(id);
         if (text === undefined) {
           throw new Error(
-            `${where}, which is not one of the cell's speech ids (${said_ids}).`,
+            `${where}, which is not one of the hook's speech ids (${said_ids}).`,
           );
         }
         return text;
@@ -185,28 +185,30 @@ export function resolveWorker(
 }
 
 /**
- * Lift a harness-substrate hook cell into the `Hook` config-IR. A `git`-substrate
+ * Lift a harness-substrate hook declaration into the `Hook` config-IR. A `git`-substrate
  * hook fires in git's process and is rejected here — it must not reach
- * settings.json. Doctrine-free: references no specific cell, and no specific event.
+ * settings.json. Doctrine-free: references no specific hook, and no specific event.
  */
 export function hookIrOf(
-  cell: HookCell,
+  declaration: HookDeclaration,
   hookCommand: (id: string, entry: string) => string,
 ): Hook {
-  if (cell.substrate !== 'harness') {
+  if (declaration.substrate !== 'harness') {
     throw new Error(
-      `hookIrOf: '${cell.id}' is substrate=${cell.substrate}; only harness hooks serialize to settings.json`,
+      `hookIrOf: '${declaration.id}' is substrate=${declaration.substrate}; only harness hooks serialize to settings.json`,
     );
   }
-  if (!cell.workers.some((w) => w.filename === cell.entry)) {
+  if (!declaration.workers.some((w) => w.filename === declaration.entry)) {
     throw new Error(
-      `hookIrOf: '${cell.id}' names entry '${cell.entry}', which is not one of its workers (${cell.workers.map((w) => w.filename).join(', ') || 'none'}). An entry naming nothing deploys a hook that invokes a missing file.`,
+      `hookIrOf: '${declaration.id}' names entry '${declaration.entry}', which is not one of its workers (${declaration.workers.map((w) => w.filename).join(', ') || 'none'}). An entry naming nothing deploys a hook that invokes a missing file.`,
     );
   }
   return {
-    id: cell.id,
-    events: [...cell.events] as [EventName, ...EventName[]],
-    command: hookCommand(cell.id, cell.entry),
-    ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),
+    id: declaration.id,
+    events: [...declaration.events] as [EventName, ...EventName[]],
+    command: hookCommand(declaration.id, declaration.entry),
+    ...(declaration.timeout !== undefined
+      ? { timeout: declaration.timeout }
+      : {}),
   };
 }
