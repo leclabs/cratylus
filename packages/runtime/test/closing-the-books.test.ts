@@ -757,13 +757,15 @@ describe('closing the books', () => {
     concepts('close');
     expect(deliver().identity).toBe(first);
     expect(entryFiles()[0]).toMatchObject({ kind: 'context', identity: first });
-    // The journal still holds the context it delivers: shown among its own.
+    // The journal still holds the context it delivers: its own copy in its place.
     const state = dispatchConcepts(['state'], {
       from: repo,
       delivered: [delivered],
     }) as Record<string, unknown>;
-    expect(state).not.toHaveProperty('practice');
-    expect(state.contexts).toMatchObject([{ name: 'workflow' }]);
+    expect(state).toMatchObject({
+      practice: { contexts: [{ name: 'workflow' }] },
+      contexts: [],
+    });
   });
 });
 
@@ -874,15 +876,20 @@ describe('a close joined with a line of work that branched before it', () => {
       from: repo,
       delivered: [delivered],
     });
-    expect(state).not.toHaveProperty('practice');
     expect(state).toMatchObject({
-      contexts: [
-        {
-          name: 'workflow',
-          subject: null,
-          competingDescriptions: [{ subject: 'Theirs.' }, { subject: 'Ours.' }],
-        },
-      ],
+      practice: {
+        contexts: [
+          {
+            name: 'workflow',
+            subject: null,
+            competingDescriptions: [
+              { subject: 'Theirs.' },
+              { subject: 'Ours.' },
+            ],
+          },
+        ],
+      },
+      contexts: [],
     });
     concepts(
       'context',

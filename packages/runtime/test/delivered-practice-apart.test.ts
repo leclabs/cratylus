@@ -1,13 +1,14 @@
 // Decision 0220: a project's design is its own contexts. The practice the
 // installation delivers is shown apart from them, read first, never in the
-// project's context map; a journal holding that context itself reads its own as
-// part of its design. The design state carries no decision; the decisions
-// reading leads each with its title, its id only a reference.
+// project's context map; decision 0320: a journal holding a delivered context
+// itself reads its own copy in the delivered context's place, as part of its
+// design. The design state carries no decision; the decisions reading leads
+// each with its title, its id only a reference.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 
 type Answer = {
@@ -166,7 +167,7 @@ it('a view of one context shows only what it names: the project’s, or the prac
   }
 });
 
-it('a journal holding the delivered context itself reads its own, among its contexts and first, with no practice apart', () => {
+it('a journal holding the delivered context itself reads its own copy in its place in the practice, unmarked, then its other contexts', () => {
   booking();
   const own = command([
     'context',
@@ -176,22 +177,124 @@ it('a journal holding the delivered context itself reads its own, among its cont
   ]) as { id: string };
   const held = [{ ...delivered, identity: own.id }];
   for (const verb of ['state', 'design']) {
-    const answer = command([verb], held) as Answer;
-    expect(answer.contexts.map((c) => c.name)).toEqual(['workflow', 'booking']);
-    expect(answer).not.toHaveProperty('practice');
-  }
-  // Without delivery the design answers the same, each context unchanged: only
-  // the order of its contexts differs, the delivered one first.
-  const [heldDesign, undelivered] = [held, []].map((d) => {
-    const answer = command(['design'], d) as Answer;
-    return {
-      ...answer,
-      contexts: [...answer.contexts].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
+    const answer = command([verb], held) as Answer & {
+      practice: { contexts: Record<string, unknown>[] };
     };
+    expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
+    expect(answer.practice.contexts.map((c) => c.name)).toEqual(['workflow']);
+    expect(answer.practice.contexts[0]).not.toHaveProperty('delivered');
+    expect(answer.practice.contexts[0]).not.toHaveProperty('readOnly');
+    const one = command([verb, '--context', 'workflow'], held) as Answer;
+    expect(one.contexts).toEqual([]);
+    expect(one.practice?.contexts.map((c) => c.name)).toEqual(['workflow']);
+  }
+  // Without delivery the design answers the same contexts, each unchanged:
+  // only its place differs, the own copy in the practice place.
+  const heldDesign = command(['design'], held) as Answer;
+  const undelivered = command(['design'], []) as Answer;
+  expect(undelivered).not.toHaveProperty('practice');
+  expect([
+    ...(heldDesign.practice?.contexts ?? []),
+    ...heldDesign.contexts,
+  ]).toEqual(
+    [...undelivered.contexts].sort((a, b) =>
+      a.name === 'workflow' ? -1 : b.name === 'workflow' ? 1 : 0,
+    ),
+  );
+});
+
+describe('an upstream and a downstream delivered context', () => {
+  const upstream = {
+    ...delivered,
+    context: 'cratylic context design',
+    identity: '01ARZ3NDEKTSV4RRFFQ69G5F01',
+    position: 0,
+    subject: 'Terms and their corrections.',
+  };
+  const downstream = delivered;
+  /** Record the project's own copy of `context`, returning its identity. */
+  const ownCopy = (context: string) =>
+    (
+      command(['context', context, '--subject', `Our ${context}.`]) as {
+        id: string;
+      }
+    ).id;
+  /** The names `verb` reads, in the practice place and in contexts, given
+   *  the delivered contexts `given`, which the test hands in downstream
+   *  first so only their positions order them. */
+  const reads = (verb: string, given: (typeof delivered)[]) => {
+    const answer = command([verb], given) as Answer;
+    return {
+      practice: answer.practice?.contexts.map((c) => c.name),
+      contexts: answer.contexts.map((c) => c.name),
+    };
+  };
+
+  it.each(['state', 'design'])(
+    '%s reads a project’s own upstream copy, then the delivered downstream one, before its other contexts',
+    (verb) => {
+      booking();
+      const identity = ownCopy('cratylic context design');
+      expect(reads(verb, [downstream, { ...upstream, identity }])).toEqual({
+        practice: ['cratylic context design', 'cratylus:workflow'],
+        contexts: ['booking'],
+      });
+    },
+  );
+
+  it.each(['state', 'design'])(
+    '%s reads both own copies in the delivered order where the project holds both',
+    (verb) => {
+      const down = ownCopy('workflow');
+      booking();
+      const up = ownCopy('cratylic context design');
+      expect(
+        reads(verb, [
+          { ...downstream, identity: down },
+          { ...upstream, identity: up },
+        ]),
+      ).toEqual({
+        practice: ['cratylic context design', 'workflow'],
+        contexts: ['booking'],
+      });
+    },
+  );
+
+  it.each(['state', 'design'])(
+    '%s reads both delivered, upstream first, where the project holds neither',
+    (verb) => {
+      booking();
+      expect(reads(verb, [downstream, upstream])).toEqual({
+        practice: ['cratylus:cratylic context design', 'cratylus:workflow'],
+        contexts: ['booking'],
+      });
+    },
+  );
+
+  it('records into an own copy as into any of the project’s contexts', () => {
+    const identity = ownCopy('cratylic context design');
+    const given = [downstream, { ...upstream, identity }];
+    command(
+      [
+        'define',
+        'term',
+        '--context',
+        'cratylic context design',
+        '--wording',
+        'The name a concept is called by.',
+        '--reason',
+        'First.',
+      ],
+      given,
+    );
+    const answer = command(['state'], given) as Answer & {
+      practice: { contexts: { name: string; concepts: string[] }[] };
+    };
+    expect(answer.practice.contexts[0]).toMatchObject({
+      name: 'cratylic context design',
+      concepts: ['term ≜ The name a concept is called by.'],
+    });
   });
-  expect(heldDesign).toEqual(undelivered);
 });
 
 it('decisions lead with their title, ids only as references, read apart from the design state', () => {

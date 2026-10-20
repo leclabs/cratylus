@@ -38,8 +38,9 @@ latest close; the closed period is read from git at that commit.
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
-context's subject, relation and live concepts with the concepts each is built from, the delivered
-practice apart, and `state` is its short summary: the project's purpose, then each context's live
+context's subject, relation and live concepts with the concepts each is built from, the practice
+place first (each delivered context in the delivered order, upstream first, or the project's own copy
+of it in its place), and `state` is its short summary: the project's purpose, then each context's live
 concepts, each one line `term ≜ correction`, with any competing versions. The journal's record runs
 from its latest closing of the books: every reading reads the openings as it reads any entries,
 so the design and each standing decision's meaning and status read the same after a close as

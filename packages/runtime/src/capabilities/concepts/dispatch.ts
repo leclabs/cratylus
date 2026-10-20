@@ -2,11 +2,12 @@
 // The concepts capability's VERB SURFACE — `concepts <verb> [args]`.
 //
 //   state      the design state, for a model to read: the project's purpose,
-//              the delivered practice apart, then each of its own contexts'
+//              the practice place (each delivered context, or its own copy in
+//              its place, in the delivered order), then each of its other contexts'
 //              subject, relation, live concepts each as `term ≜ correction`, and
 //              competing versions; what a session reads first to reconstitute
-//   design     the delivered practice apart, then the current design of each of
-//              the project's own contexts, each concept with its parts
+//   design     the practice place, then the current design of each of the
+//              project's other contexts, each concept with its parts
 //   history    every version of one concept, or of a context's description
 //              with the effort recorded for its past work
 //   decisions  the decisions with their status, each by its title first
@@ -144,8 +145,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and apart from the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “term ≜ correction”, and the competing versions none has settled, each such a line or “term retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
-    when: 'For the project’s purpose and a short summary of the design, at the start of a session or after it was compacted, beside the design that recovers it; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and outside its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
+      'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by: each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts each as one line “term ≜ correction”, and the competing versions none has settled, each such a line or “term retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
+    when: 'For the project’s purpose and a short summary of the design, at the start of a session or after it was compacted, beside the design that recovers it; a delivered context, named by its origin and context, marked delivered and read-only, is not part of the project’s design nor in its context map; where this journal holds that context itself, its own copy stands in the delivered context’s place, under its own name, unmarked, part of the project’s design and recorded into as any of its contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -157,8 +158,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design as it stands, the read that recovers it at a session’s start: the delivered practice the project’s agents work by in a place of its own (practice), then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts, each by its current meaning with the concepts it is built from, and competing versions; with history, also retired concepts and why each live concept’s version was written',
-    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
+      'Read the design as it stands, the read that recovers it at a session’s start: in a place of its own (practice), the practice the project’s agents work by, each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts, each by its current meaning with the concepts it is built from, and competing versions; with history, also retired concepts and why each live concept’s version was written',
+    when: 'First, at the start of a session or after it was compacted, for the practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, a delivered context marked delivered and read-only, and the project’s own copy of one, read in its place, part of that design',
     positional: null,
     flags: {
       context: valueFlag(
@@ -394,7 +395,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show first, in a place of their own (practice), the practice the project’s agents work by, every context the installation delivers in the delivered order, upstream first, each named by origin and context and marked delivered and read-only, apart from the project’s design; where the project’s journal holds such a context itself, its own copy stands in that place, under its own name, unmarked, part of its design and recorded into as any of its contexts, and the project’s other contexts follow. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 
@@ -432,6 +433,19 @@ export function dispatchConcepts(
     : { ...(answer as object), uninterpreted: report };
 }
 
+/** A context in the practice place: a delivered one, or this journal's own
+ *  copy of it, by its own name. */
+type Placed =
+  | { readonly delivered: DeliveredContext }
+  | { readonly own: string };
+
+/** The contexts a reading covers: those in the practice place, then this
+ *  journal's others. */
+interface Covered {
+  readonly practice: readonly Placed[];
+  readonly contexts: readonly string[];
+}
+
 /** What `verb`, given `args`, answers from `journal` and the contexts
  *  `delivered` holds. */
 function answerOf(
@@ -449,24 +463,27 @@ function answerOf(
   const byIdentity = new Map(
     [...folded.contexts.keys()].map((name) => [folded.identity(name), name]),
   );
-  /** This journal's contexts that are delivered ones, in the delivered order. */
-  const ownDelivered = ordered.flatMap((d) => {
+  /** The practice place, in the delivered order: each delivered context, or
+   *  this journal's own copy of it where it holds one, in its place. */
+  const practice: Placed[] = ordered.map((d) => {
     const name = byIdentity.get(d.identity);
-    return name === undefined ? [] : [name];
+    return name === undefined ? { delivered: d } : { own: name };
   });
-  /** This journal's contexts as read: the delivered ones it holds first, in
-   *  the delivered order, then the rest in record order. */
-  const contextsRead = [
-    ...ownDelivered,
-    ...[...folded.contexts.keys()].filter((n) => !ownDelivered.includes(n)),
-  ];
-  /** The delivered contexts shown: each whose identity is none of this
-   *  journal's contexts'. */
-  const shown = ordered.filter((d) => !byIdentity.has(d.identity));
-  /** The shown delivered context `--context` names, if it names one. */
+  /** This journal's own copies of delivered contexts, in the delivered order. */
+  const ownCopies = practice.flatMap((p) => ('own' in p ? [p.own] : []));
+  /** This journal's other contexts, in record order. */
+  const others = [...folded.contexts.keys()].filter(
+    (n) => !ownCopies.includes(n),
+  );
+  /** The delivered context `--context` names, if it names one this journal
+   *  holds no copy of. */
   const deliveredNamed = (): DeliveredContext | undefined => {
     const name = args.flags.get('context')?.[0];
-    return shown.find((d) => qualifiedName(d) === name);
+    return practice.flatMap((p) =>
+      'delivered' in p && qualifiedName(p.delivered) === name
+        ? [p.delivered]
+        : [],
+    )[0];
   };
 
   /** The recorded context `--context` names, given once. */
@@ -478,19 +495,23 @@ function answerOf(
       );
     return name;
   };
-  /** The contexts a query covers: the one `--context` names, else all; the
-   *  journal's own, and the delivered ones shown. */
-  const covering = (): {
-    own: string[];
-    delivered: readonly DeliveredContext[];
-  } => {
-    if (!args.flags.has('context'))
-      return { own: contextsRead, delivered: shown };
+  /** The contexts a query covers: the one `--context` names, else all; those
+   *  in the practice place, and this journal's others. */
+  const covering = (): Covered => {
+    if (!args.flags.has('context')) return { practice, contexts: others };
     const named = deliveredNamed();
-    return named === undefined
-      ? { own: [context()], delivered: [] }
-      : { own: [], delivered: [named] };
+    if (named !== undefined)
+      return { practice: [{ delivered: named }], contexts: [] };
+    const where = context();
+    return ownCopies.includes(where)
+      ? { practice: [{ own: where }], contexts: [] }
+      : { practice: [], contexts: [where] };
   };
+  /** The journal's own contexts `covered` covers, as they are read. */
+  const ownCovered = (covered: Covered): string[] => [
+    ...covered.practice.flatMap((p) => ('own' in p ? [p.own] : [])),
+    ...covered.contexts,
+  ];
   /** The current versions a new version of `name` in `where` supersedes;
    *  refuses a concept the context does not have, or, unless `revive`, a
    *  retired one. */
@@ -605,13 +626,21 @@ function answerOf(
       const covered = covering();
       return {
         ...folded.purpose(),
-        ...practiceOf(covered.delivered.map(deliveredState)),
-        contexts: covered.own.map((where) => designState(folded.design(where))),
+        ...practiceOf(
+          covered.practice.map((p) =>
+            'own' in p
+              ? designState(folded.design(p.own))
+              : deliveredState(p.delivered),
+          ),
+        ),
+        contexts: covered.contexts.map((where) =>
+          designState(folded.design(where)),
+        ),
       };
     }
     case 'leakage': {
       // Only the journal's own contexts: a delivered one is read, never recorded here.
-      const covered = covering().own;
+      const covered = ownCovered(covering());
       const recorded = covered.flatMap((where) => {
         const words = own(where);
         return [
@@ -696,9 +725,15 @@ function answerOf(
       const covered = covering();
       return {
         ...practiceOf(
-          covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
+          covered.practice.map((p) =>
+            'own' in p
+              ? shownDesign(folded.design(p.own))
+              : shownDesign(deliveredDesign(p.delivered)),
+          ),
         ),
-        contexts: covered.own.map((where) => shownDesign(folded.design(where))),
+        contexts: covered.contexts.map((where) =>
+          shownDesign(folded.design(where)),
+        ),
         ...(history ? folded.booksClosed() : {}),
       };
     }

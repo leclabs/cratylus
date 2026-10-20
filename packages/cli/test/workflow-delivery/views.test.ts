@@ -85,9 +85,13 @@ it.each(['workflow', 'branch-practice'])(
     ownSource(h, name);
     const before = snapshot(h.cwd);
     for (const verb of ['design', 'state']) {
-      const { contexts: answer, practice } = views(h, verb);
-      // Held by the project, it is part of its design: not in the practice apart.
+      const { contexts, practice } = views(h, verb);
+      // Held by the project, it is part of its design: its own copy, unmarked,
+      // stands in the delivered context's place in the practice.
       expect(practice.map((c) => c.name)).not.toContain(qualified);
+      expect(contexts).toEqual([]);
+      const answer = practice.filter((c) => !('delivered' in c));
+      expect(practice.at(-1)?.name).toBe(name);
       assertSourceView(answer, name);
       // Suppression already holds vacuously on a reader that ignores all delivery.
       // Prove the same assertions reject a duplicate and a delivered override.
@@ -266,14 +270,13 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
   ownSource(h);
   git(h.cwd, 'add', 'design');
   git(h.cwd, 'commit', '-m', 'Source workflow');
-  expect(
-    views(h, 'design')
-      .contexts.map((c) => c.name)
-      .sort(),
-  ).toEqual(['booking', 'workflow']);
-  expect(views(h, 'design').practice.map((c) => c.name)).not.toContain(
-    qualified,
-  );
+  const held = () => {
+    const { contexts, practice } = views(h, 'design');
+    expect(contexts.map((c) => c.name)).toEqual(['booking']);
+    expect(practice.map((c) => c.name)).toContain('workflow');
+    expect(practice.map((c) => c.name)).not.toContain(qualified);
+  };
+  held();
   git(h.cwd, 'switch', 'journal');
   expect(views(h, 'design').contexts.map((c) => c.name)).toEqual(['booking']);
   assertDelivered(
@@ -281,14 +284,7 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
     'design',
   );
   git(h.cwd, 'switch', 'source');
-  expect(
-    views(h, 'design')
-      .contexts.map((c) => c.name)
-      .sort(),
-  ).toEqual(['booking', 'workflow']);
-  expect(views(h, 'design').practice.map((c) => c.name)).not.toContain(
-    qualified,
-  );
+  held();
 });
 
 it('workflow/10 — the first project context records only itself and retains the delivered view', () => {
