@@ -11,8 +11,8 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
@@ -20,15 +20,15 @@ const FORMAL_BLOCK = `D    ≜ distinction space ⟨structured knowledge to draw
 cl   ≜ closure ⟨smallest concept containing a set of priors⟩
 C    ≜ concept lattice ⟨the cl-closed subsets of D⟩
 priors(w,κ) ≜ understanding w carries before any definition, read in κ ⟨associations · connotations · structured-knowledge unpacked from w with κ's name and subject, not its surface wording⟩
-Names  ≜ the readable signifiers
+Names  ≜ the readable terms
 dec  : Names × bounded-context ⇀ ℘(D) @ signify
 σ*     @ signify
 κ, fired @ signify ⟨w is read in κ, the bounded context under probe⟩
-w      ≜ a signifier under probe ⟨w ∈ Names⟩
+w      ≜ a term under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
 probe : Names × bounded-context → ℘(D) × C
-K @ cold-decode-oracle
+K ⟨the knowledge a reader holds · ∅ in the cold read⟩ @ cratylic context design
 frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licenced-to-refuse⟩
 parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
 Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩
@@ -63,11 +63,11 @@ free(head(w)) ⇒ fired(w,κ) ⊇ fired(mod(w),κ) ⟨an unbound head takes the 
 
 ∀ w ∈ W(c) : probe(w, κ(c)) ↦ evidence about c ⟨harvest-the-rejects : concept(w, κ(c)) of a REJECTED w constrains D(c)⟩
 W(c) seeded from the ARTIFACT ⟨invoked verb · declared inverse · deferred-to cell⟩ ≺ minted candidates
-    ⟨a real concept's sign is FOUND ; mint is the LAST resort, ¬ the first⟩` as SkillExpression;
+    ⟨a real concept's term is FOUND ; mint is the LAST resort, ¬ the first⟩` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
-  description: `use this skill to probe a signifier — read out the priors a word, phrase, or candidate name fires in the reader, read in its bounded context (\`fired\`, signify's decoder \`dec\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
+  description: `Find out what a term says to the model before relying on it — read what a word or candidate name evokes in its domain, given nothing else (a cold read) and in the place it will be read, and the concept that reading picks out, with what it leaves missing and what it makes spurious. Reach for it to test candidate terms or to discover the concept a name already carries; a term worth keeping is then settled by signify.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
   preamble: primePrinciple,

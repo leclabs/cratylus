@@ -11,19 +11,19 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const materialize: Skill = {
   name: 'materialize',
-  description: `use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization \`F\`, emit the bipartite normal form \`CSF\` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.`,
+  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its correction, and each other concept by the terms of the concepts it is built from, never restating them, in a form chosen before writing, separate files or one document. Reach for it once concepts have their Cratylic names and must become context.`,
   formalBlock: `C ≜ concept lattice
 prim : C → 𝔹
 fac : C → ℘(℘(C))
 ≺ ≜ shortlex order over factorizations
-anchor : C → sign ∪ {⊥}
+anchor : C → term ∪ {⊥}
 gloss : C → text
 kind : C → Kinds
 Kinds ≜ the closed kind set

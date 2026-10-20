@@ -5,7 +5,7 @@ import { signify } from '../signify/skill.js';
 
 export const formalize: Skill = {
   name: 'formalize',
-  description: `use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, name each as a symbol (a core agent dimension name or value by its signify anchor, minted or boundary-bound; any other term as the industry's own), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.`,
+  description: `State a process, a practice or a skill exactly — each concept by its term, with the laws that hold between them and no prose that explains, accepted only when the process can be rebuilt from the statement at least as faithfully as from the prose. Reach for it when a procedure must read the same to every model, leaving no missing or spurious meaning to infer.`,
   formalBlock: `prose ≜ the source text
 E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
@@ -26,7 +26,7 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
-s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation answers to no cold decode⟩
+s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation answers to no cold read⟩
 
 reconstruct(B) ≽ prose
 reconstruct(B) ⋡ prose ⇒ ⊥` as SkillExpression,

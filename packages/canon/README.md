@@ -127,15 +127,16 @@ use; no agent carries countermeasure text against it.
 
 The first principle, the dense `cratylism` axiom, has its one literal home in
 `genus/prime-principle.ts` and is not stamped on every cell. It rides only the cells whose laws apply
-it: the skills that name concepts by anchor, optimal sign or cold decode set it as their `preamble`,
-and an agent carries it once, in plain words, as the `cratylism` stance of the role it holds, where
-that role states it. A cell that does not use it
-never holds a host's own authored surfaces to this corpus's naming axiom. The axiom is scoped: the
-cold-decode oracle decides signs only for the corpus's core agent factor names and values, the
-terminology it was built to discover, reading each sign in its bounded context and judging it by the
-workflow's residue. Every other term is the industry's own, used as the industry understands it, and
-no consumer surface is held to the oracle. It is intrinsic to those cells'
-projected bytes, so it survives deployment into a foreign repository rather than depending on
+it: the skills that give a concept its term, judge a term by its semantic gap or confirm it by a cold
+read set it as their `preamble`, and an agent carries it once, in plain words, as the `cratylism`
+stance of the role it holds, where that role states it. A cell that does not use it never holds a
+host's own authored surfaces to this corpus's naming axiom. The axiom states cratylism as cratylic
+context design holds it: names are natural to the model, whose semantic space is the universe of
+discourse, so each concept takes its Cratylic name, the term leaving the smallest semantic gap read in
+its bounded context; intuition proposes and a cold read confirms; the name is found, never coined, a
+coined name only where no established term covers the concept; its correction is stated beside it,
+each side of the gap once; and a kept name short of it is recorded as such. It is intrinsic to those
+cells' projected bytes, so it survives deployment into a foreign repository rather than depending on
 ambient context.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the

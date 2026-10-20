@@ -11,28 +11,28 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept within its bounded context, discovered by cold decode against the model's priors, never coined, for the corpus's core agent dimension names and values alone; stage 2 of exemplify, independently invocable.`,
+  description: `Give a concept its Cratylic name — the term that leaves the smallest semantic gap in its bounded context, found among the names the model already gives it and confirmed by a cold read, never coined where an established term covers it; one term per concept in a context, its correction stated beside it. Reach for it when a concept needs a name, or when a name's reading leaves meaning missing or makes meaning spurious.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
 Names       ≜ the shared symbol space
 <_lex       : total order on Names
 concept-record ≜ ⟨gloss, anchor, factorization⟩
-κ           : C → bounded-context ⟨the context c is read in · part of its sign's address⟩
+κ           : C → bounded-context ⟨the context c is read in · part of its term's address⟩
 fired       : Names × bounded-context → ℘(D) ⟨fired(n, κ) : what n invokes read in κ⟩
 dec         : Names × bounded-context ⇀ ℘(D)
 circ(n,c)   ⇔ fired(n, κ(c)) = D(c)
 |n|         ≜ LLM-native description-length
-residue(n,c) ≜ residue @ workflow ⟨c named n · n read in κ(c)⟩
+gap(n,c)    ≜ the semantic gap of n for c ⟨missing meaning ∪ spurious meaning⟩ @ cratylic context design ⟨c named n · n read in κ(c)⟩
 σ*          : C → Names
-σ*(c)       ≜ argmin_{n} ⟨residue(n,c), |n|, n⟩ ⟨the smallest residue in κ(c) · |n| then n break a tie⟩
+σ*(c)       ≜ argmin_{n} ⟨gap(n,c), |n|, n⟩ ⟨the smallest semantic gap in κ(c) · |n| then n break a tie⟩
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ circ(∘ M, c)
 Art         ≜ the corpus's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
@@ -65,9 +65,9 @@ c ∉ dom(α) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Anchors assigned c :
 ¬circ(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)), ¬ about cᵢ ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-residue(c) ≜ residue(α(c), c)
-∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩ ⟨d ∈ residue(c) ∩ D(c) stated ; d ∈ residue(c) ∧ d ∉ D(c) stated denied⟩
-residue(c) = ∅ ⇒ c enters as α(c) alone
+correction(c) ≜ the correction of α(c) for c @ cratylic context design ⟨gap(α(c), c) closed : its missing meaning stated · its spurious meaning stated denied⟩
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), correction(c)⟩ ⟨d ∈ gap(α(c), c) ∩ D(c) stated ; d ∈ gap(α(c), c) ∧ d ∉ D(c) stated denied⟩
+correction(c) = ∅ ⇒ c enters as α(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c), κ(c))
 
 conform(a)  ⇔  register(a) = σ*

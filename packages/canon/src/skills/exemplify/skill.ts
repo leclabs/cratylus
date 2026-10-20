@@ -11,8 +11,8 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
@@ -23,12 +23,12 @@ produce            : sources → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify ⟨a core name or value takes its σ* anchor · any other term keeps the industry's own⟩
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
-R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, given f's signifiers + inline ≜ with its bounded context's name and subject, nothing of intent(f))
+R_cold(f)          ≜ the isolated cold read of fragment f (a naive reader, zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
 body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
 K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds
-core               ≜ the corpus's core agent dimension names and values ⟨every other cell answers to no cold decode⟩
-R_cold, decode_warm, coldpass, K @ cold-decode-oracle
+core               ≜ the corpus's core agent dimension names and values ⟨every other cell answers to no cold read⟩
+R_cold, decode_warm, coldpass, K ⟨the cold read⟩ @ cratylic context design
 minimal            @ signify
 conform            @ signify
 Cells              ≜ the authored cells of the corpus exemplified, self included
@@ -52,7 +52,7 @@ accept(k)    ≜ ⊥ , ¬valid(k)` as SkillExpression;
 
 export const exemplify: Skill = {
   name: 'exemplify',
-  description: `optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-record, then gate on accept, cold-decoding only the core agent dimension names and values; emits the R3 routing manifest that catches the dropped idea.`,
+  description: `Restate a body of context, an agent, a skill or a document, in Cratylic names — find its concepts, give each its term with its correction, and write it back built from them, keeping each piece only when its cold read gives the meaning intended and every idea of the source has a place. Reach for it when context written as freeform prose should carry its concepts by name, shorter and with its spurious meaning excluded.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
   preamble: primePrinciple,
