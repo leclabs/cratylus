@@ -43,10 +43,13 @@
 // description, recorded differently they are COMPETING, none chosen, until a
 // later entry of the name supersedes them all. The design shows only the
 // current description; every earlier one stays in the context's history. A
-// context is RETIRED while its current entries are retirements alone: no
-// reading of the design shows it or its concepts, its decisions are history,
-// and a close carries nothing of it; a later description with its reason,
-// superseding the retirement, brings it back as it stood.
+// context is RETIRED while its one current entry is a retirement: no reading
+// of the design shows it or its concepts, its decisions are history, and a
+// close carries nothing of it; a later description with its reason,
+// superseding the retirement, brings it back as it stood. A retirement current
+// beside another current entry COMPETES with it as a description does, marked
+// retired with its reason, until a later description or retirement supersedes
+// them all.
 //
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
@@ -118,13 +121,19 @@ export interface Description {
   readonly relation: string;
 }
 
+/** One of a context's competing descriptions; a retirement among them carries
+ *  `retired` and its reason. */
+export type CompetingDescription =
+  | Description
+  | { readonly retired: true; readonly reason: string };
+
 /** A context's design; `subject` and `relation` are `null` while its
  *  description is competing, each competing one listed in append order. */
 export interface ContextView {
   readonly name: string;
   readonly subject: string | null;
   readonly relation: string | null;
-  readonly competingDescriptions: readonly Description[];
+  readonly competingDescriptions: readonly CompetingDescription[];
   readonly concepts: readonly ConceptView[];
   readonly competing: readonly {
     readonly name: string;
@@ -298,6 +307,7 @@ export interface ContextHistoryView {
         readonly retired: true;
         readonly reason: string;
         readonly supersedes: readonly string[];
+        readonly broughtForward?: string;
       }
   )[];
 }
@@ -496,14 +506,16 @@ export class Folded {
   }
 
   /** The opening entries of a close at `commit`, in the order the readings
-   *  list what they open: the purpose; each context; each live concept,
-   *  context by context, under its current name, each built-from reference by
-   *  its concept's current name; each standing decision. One per current
+   *  list what they open: the purpose; each context, a retirement competing
+   *  with its description opening beside it; each live concept, context by
+   *  context, under its current name, each built-from reference by its
+   *  concept's current name; each standing decision. One per current
    *  version, so competing versions still compete, each superseding nothing
-   *  and brought forward from `commit`; a retired concept, a superseded or
-   *  deprecated decision, an acceptance, a classification and a cut's figures
-   *  stay in the closed period. A close is refused before while any concept's
-   *  current versions name it differently (`namesCompeting`). */
+   *  and brought forward from `commit`; a retired context with its concepts
+   *  and decisions, a retired concept, a superseded or deprecated decision,
+   *  an acceptance, a classification and a cut's figures stay in the closed
+   *  period. A close is refused before while any concept's current versions
+   *  name it differently (`namesCompeting`). */
   openings(commit: string): Draft[] {
     const opened = { supersedes: [], broughtForward: commit } as const;
     const drafts: Draft[] = this.currentPurposes().map((p) => ({
@@ -515,16 +527,25 @@ export class Folded {
     for (const name of this.contexts.keys()) {
       if (this.retired(name)) continue;
       const identity = this.identity(name) as string;
-      for (const c of this.currentDescriptions(name))
-        drafts.push({
-          kind: 'context',
-          name,
-          subject: c.subject,
-          relation: c.relation,
-          ...(c.reason === undefined ? {} : { reason: c.reason }),
-          identity,
-          ...opened,
-        });
+      for (const c of this.currentEntries(name))
+        drafts.push(
+          c.kind === 'retire-context'
+            ? {
+                kind: 'retire-context',
+                context: name,
+                reason: c.reason,
+                ...opened,
+              }
+            : {
+                kind: 'context',
+                name,
+                subject: c.subject,
+                relation: c.relation,
+                ...(c.reason === undefined ? {} : { reason: c.reason }),
+                identity,
+                ...opened,
+              },
+        );
     }
     for (const context of new Set([
       ...this.contexts.keys(),
@@ -648,23 +669,35 @@ export class Folded {
     return recorded.filter((c) => !superseded.has(c.id));
   }
 
-  /** The retirements of `context` no later description of it supersedes. */
+  /** The retirements of `context` no later description or retirement of it
+   *  supersedes. */
   currentRetirements(context: string): readonly RetireContextEntry[] {
+    const retirements = this.retirements.get(context) ?? [];
     const superseded = new Set(
-      (this.contexts.get(context) ?? []).flatMap((c) => c.supersedes ?? []),
+      [...(this.contexts.get(context) ?? []), ...retirements].flatMap(
+        (c) => c.supersedes ?? [],
+      ),
     );
-    return (this.retirements.get(context) ?? []).filter(
-      (r) => !superseded.has(r.id),
-    );
+    return retirements.filter((r) => !superseded.has(r.id));
   }
 
-  /** Whether `context` is retired: its current entries are retirements
-   *  alone. */
+  /** Whether `context` is retired: its one current entry is a retirement. */
   retired(context: string): boolean {
     return (
       this.currentDescriptions(context).length === 0 &&
-      this.currentRetirements(context).length > 0
+      this.currentRetirements(context).length === 1
     );
+  }
+
+  /** The current descriptions and retirements of `context`, in append
+   *  order. */
+  currentEntries(
+    context: string,
+  ): readonly (ContextEntry | RetireContextEntry)[] {
+    return [
+      ...this.currentDescriptions(context),
+      ...this.currentRetirements(context),
+    ].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
   /** The distinct descriptions of `context`'s current entries, in append
@@ -725,12 +758,31 @@ export class Folded {
   /** The current design of `context`, a context the journal has. */
   design(context: string): ContextView {
     const descriptions = this.descriptions(context);
-    const settled = descriptions.length === 1 ? descriptions[0] : undefined;
+    const retirements = this.currentRetirements(context);
+    const settled =
+      descriptions.length === 1 && retirements.length === 0
+        ? descriptions[0]
+        : undefined;
+    /** The competing descriptions, alike ones once, and retirements, in
+     *  append order. */
+    const competing: CompetingDescription[] = [];
+    for (const c of this.currentEntries(context))
+      if (c.kind === 'retire-context')
+        competing.push({ retired: true, reason: c.reason });
+      else if (
+        !competing.some(
+          (d) =>
+            'subject' in d &&
+            d.subject === c.subject &&
+            d.relation === c.relation,
+        )
+      )
+        competing.push({ subject: c.subject, relation: c.relation });
     const view = {
       name: context,
       subject: settled?.subject ?? null,
       relation: settled?.relation ?? null,
-      competingDescriptions: settled === undefined ? descriptions : [],
+      competingDescriptions: settled === undefined ? competing : [],
       concepts: [] as ConceptView[],
       competing: [] as ContextView['competing'][number][],
       retired: [] as ContextView['retired'][number][],
@@ -808,6 +860,7 @@ export class Folded {
               retired: true as const,
               reason: c.reason,
               supersedes: [...c.supersedes],
+              ...marked(c),
             }
           : {
               id: c.id,

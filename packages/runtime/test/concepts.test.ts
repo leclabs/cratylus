@@ -1186,7 +1186,7 @@ describe('retiring a bounded context', () => {
     ).toMatchObject({
       subject: 'Booking.',
       relation: 'Upstream.',
-      supersedes: [retirement.id],
+      supersedes: [retirement.id, described],
     });
     expect(concepts('state', '--context', 'booking')).toMatchObject({
       contexts: [
@@ -1195,6 +1195,76 @@ describe('retiring a bounded context', () => {
     });
     expect(decisions().map((d) => d.id)).toEqual(['d1']);
     expect(retire()).toMatchObject({ kind: 'retire-context' });
+  });
+
+  it('a retirement and a description both current compete until settled', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Booking elsewhere.',
+        relation: 'Upstream.',
+        reason: 'Another line of work.',
+        supersedes: [described],
+      }),
+    );
+    expect(names(concepts('state'))).toEqual(['booking', 'fleet']);
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [
+        {
+          subject: null,
+          relation: null,
+          competingDescriptions: [
+            { retired: true, reason: 'Dropped.' },
+            { subject: 'Booking elsewhere.', relation: 'Upstream.' },
+          ],
+          concepts: ['hold ≜ A hold lasts ten minutes.'],
+        },
+      ],
+    });
+    expect(decisions().map((d) => d.id)).toEqual(['d1']);
+    // Retiring it again settles both: it is then retired.
+    expect(retire().supersedes).toEqual([elsewhere, retirement.id]);
+    expect(names(concepts('state'))).toEqual(['fleet']);
+  });
+
+  it('a description with a reason settles a competing retirement', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Booking elsewhere.',
+        relation: 'Upstream.',
+        reason: 'Another line of work.',
+        supersedes: [described],
+      }),
+    );
+    expect(
+      concepts(
+        'context',
+        'booking',
+        '--subject',
+        'Booking.',
+        '--reason',
+        'Settled.',
+      ),
+    ).toMatchObject({ supersedes: [elsewhere, retirement.id, described] });
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [{ subject: 'Booking.', relation: 'Upstream.' }],
+    });
+    expect(concepts('state', '--context', 'booking')).not.toMatchObject({
+      contexts: [{ competingDescriptions: expect.anything() }],
+    });
   });
 
   it('refuses an unknown, an already retired or a delivered context', () => {

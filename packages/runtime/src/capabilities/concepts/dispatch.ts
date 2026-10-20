@@ -182,7 +182,7 @@ export const VERBS = {
     concept: 'concept',
     effect: 'reads',
     purpose:
-      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and each retirement of the context with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
@@ -201,7 +201,7 @@ export const VERBS = {
     concept: 'decision',
     effect: 'reads',
     purpose:
-      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it, since the journal’s latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier decisions. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason',
+      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it, since the journal’s latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier decisions. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason; a retired bounded context’s decisions are listed only with history',
     when: 'Once the design state is read, for the standing decisions the work needs, before acting on a choice or after recording or accepting a decision; with history, to see how a choice was reached or why one no longer applies',
     positional: null,
     flags: {
@@ -402,7 +402,7 @@ export const VERBS = {
     concept: 'closing the books',
     effect: 'closes',
     purpose:
-      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired concept, a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
+      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity, and a retirement of it competing with that description, so the two still compete; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired bounded context with its concepts and decisions, a retired concept, a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
     when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close, or while a concept’s competing versions give it different terms, until a supersede settles them',
     positional: null,
     flags: {},
@@ -876,10 +876,16 @@ function answerOf(
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
+        // A retirement's own descriptions too, so a runtime that reads past
+        // retirements sees one current description.
         supersedes: [
-          ...folded.currentDescriptions(name),
-          ...folded.currentRetirements(name),
-        ].map((c) => c.id),
+          ...new Set([
+            ...folded.currentDescriptions(name).map((c) => c.id),
+            ...folded
+              .currentRetirements(name)
+              .flatMap((r) => [r.id, ...r.supersedes]),
+          ]),
+        ],
       };
       const found = described(name, draft, [
         ...(subject === undefined ? [] : (['subject'] as const)),
@@ -956,7 +962,10 @@ function answerOf(
           kind: 'retire-context',
           context: where,
           reason,
-          supersedes: folded.currentDescriptions(where).map((c) => c.id),
+          supersedes: [
+            ...folded.currentDescriptions(where),
+            ...folded.currentRetirements(where),
+          ].map((c) => c.id),
         });
       }
       const given = read.named('concept');

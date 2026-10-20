@@ -108,12 +108,14 @@ export interface RetireEntry extends Stamped {
 }
 
 /** The retirement of a bounded context, with the `reason` it leaves the
- *  design, superseding its current descriptions; never an opening. */
+ *  design, superseding its current descriptions and retirements; an opening
+ *  only where it competes with a current description. */
 export interface RetireContextEntry extends Stamped {
   readonly kind: 'retire-context';
   readonly context: string;
   readonly reason: string;
   readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
 }
 
 /** A version of a concept: what `history` lists. */
@@ -275,6 +277,7 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     context: text,
     reason: text,
     supersedes: texts,
+    broughtForward: optional(text),
   },
   decide: {
     at: text,

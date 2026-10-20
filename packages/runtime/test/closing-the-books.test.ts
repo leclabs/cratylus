@@ -489,6 +489,51 @@ describe('closing the books', () => {
     expect(entryFiles()).toHaveLength(1);
   });
 
+  it('opens a retirement competing with a description beside it, so they still compete', () => {
+    const first = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    // Another line of work changed the description the retirement superseded.
+    recorded({
+      kind: 'context',
+      name: 'booking',
+      subject: 'Booking elsewhere.',
+      relation: '',
+      reason: 'Elsewhere.',
+      supersedes: [first],
+    });
+    const head = commit();
+    const before = concepts('state');
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      {
+        kind: 'retire-context',
+        context: 'booking',
+        reason: 'Dropped.',
+        supersedes: [],
+        broughtForward: head,
+      },
+      {
+        kind: 'context',
+        name: 'booking',
+        identity: first,
+        broughtForward: head,
+      },
+      { kind: 'define', name: 'hold', broughtForward: head },
+    ]);
+    expect(concepts('state')).toEqual(before);
+    expect(before).toMatchObject({
+      contexts: [
+        {
+          competingDescriptions: [
+            { retired: true, reason: 'Dropped.' },
+            { subject: 'Booking elsewhere.' },
+          ],
+        },
+      ],
+    });
+  });
+
   describe('refuses, changing nothing', () => {
     const refused = (words: RegExp) => {
       const before = snapshot();

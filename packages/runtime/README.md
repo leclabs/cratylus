@@ -68,7 +68,10 @@ context. `retire` without a concept retires a bounded context of the project's o
 reason: no reading of the design shows it or its concepts, its decisions show only with
 `--history`, its own history lists the retirement, nothing is recorded into it until `context`
 with a reason brings it back as it stood, and a delivered context it held the place of shows
-again.
+again. A retirement recorded on one line of work beside a description on another competes with
+it, listed among the context's competing descriptions as retired with its reason, until a later
+description or retirement settles them; closing the books carries nothing of a retired context,
+and opens a competing retirement beside the description it competes with.
 
 A concept is renamed by a version of its own kind (decision 0322): `supersede --rename` appends a
 `rename` entry, a supersession whose `name` is the new one and whose `was` is the name it renames.
