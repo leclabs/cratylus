@@ -32,10 +32,11 @@ circ(n,c)   ⇔ fired(n, κ(c)) = D(c)
 |n|         ≜ LLM-native description-length
 gap(n,c)    ≜ the semantic gap of n for c ⟨missing meaning ∪ spurious meaning⟩ @ cratylic context design ⟨c named n · n read in κ(c)⟩
 covers(n,c) ⇔ n read in κ(c) addresses c ⟨gap(n,c) closable by a correction supplying its missing meaning ∧ excluding its spurious meaning, ¬ excluding n's core meaning⟩
+Est         : bounded-context → ℘(Names) ⟨Est(κ) : the terms established in κ's domain⟩
 σ*          : C → Names
-σ*(c)       ≜ argmin_{n : covers(n,c)} ⟨gap(n,c), |n|, n⟩ ⟨the smallest semantic gap in κ(c) among the terms covering c · |n| then n break a tie⟩
+σ*(c)       ≜ argmin_{n ∈ Est(κ(c)) : covers(n,c)} ⟨gap(n,c), |n|, n⟩ ⟨the smallest semantic gap in κ(c) among the established terms covering c · |n| then n break a tie⟩
 mint        : C ⇀ Names
-mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ covers(∘ M, c)
+mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ covers(∘ M, c) ∧ ∘ M ∉ Est(κ(c))
 Art         ≜ the corpus's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
 α           : C ↣ Names ⟨injective within each κ, ¬ across · dom(α) ≜ every concept the text carries, less those excluded below⟩
 register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
@@ -44,7 +45,7 @@ verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at pro
 ∀ c ∈ dom(α) : α(c) ≜ σ*(c)
 Anchors ≜ { ⟨α(c), κ(c)⟩ | c ∈ dom(α) } ⟨the assigned-anchor set, each anchor with its context⟩
 dom(dec) = { ⟨α(p), κ(p)⟩ | prim(p) } ;  dec(α(p), κ(p)) = fired(α(p), κ(p))
-{ n : covers(n,c) } = ∅ ⇒ σ*(c) = mint(c) ⟨coined only where no established term covers c⟩
+{ n ∈ Est(κ(c)) : covers(n,c) } = ∅ ⇒ σ*(c) = mint(c) ⟨coined only where no established term covers c⟩
 
 name(k)  fills  anchor(k) ≜ α(gloss(k)) ;  gloss(k) preserved ;  factorization(k) untouched
 
@@ -55,7 +56,7 @@ cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ) ∨ (α(cᵢ) = α(cⱼ) ∧ κ(cᵢ
 ≺ ≜ shortlex over (C, <_N)
 
 c ∉ dom(α) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Anchors assigned c :
-    { n : covers(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
+    { n ∈ Est(κ(c)) : covers(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the partition was wrong ↦ conceptualize
         ⟨α(cᵢ), α(cⱼ) taken at DIFFERENT altitudes is still this collision⟩
 

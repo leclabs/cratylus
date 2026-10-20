@@ -23,7 +23,7 @@ priors(w,κ) ≜ understanding w carries before any definition, read in κ ⟨as
 Names  ≜ the readable terms
 dec  : Names × bounded-context ⇀ ℘(D) @ signify
 σ*     @ signify
-κ, fired, covers, gap @ signify ⟨w is read in κ, the bounded context under probe⟩
+κ, fired, covers, gap, Est @ signify ⟨w is read in κ, the bounded context under probe⟩
 w      ≜ a term under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
@@ -41,8 +41,8 @@ probe(w,κ) ≜ ⟨ fired(w,κ) · concept(w,κ) ⟩ ⟨w with κ's name and sub
 probe(w,κ) ↾ W ≜ w read in κ amid W ⟨the distractors' priors leak into the read ⇒ CONTRAST, ¬ priors(w,κ)⟩
 experiment(c) ≜ { w ∈ W(c) | covers(w, c) ↾ W(c) } ⊨ DIAGNOSTIC ⟨w read in κ(c) amid W(c) ; narrows W(c) ; ¬ decides σ*⟩
 coverage : { w ∈ Names | fired(w, κ(c)) ≠ ∅ ∧ covers(w, c) } ⊆ W(c)
-crystallize : σ*(c) = w ⇔ w ∈ experiment(c) ∧ covers(w, c) ∧ ∄ n ∈ W(c) : covers(n, c) ∧ ⟨gap(n,c), |n|, n⟩ < ⟨gap(w,c), |w|, w⟩
-              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w, κ(c))⟩
+crystallize : σ*(c) = w ⇔ w ∈ experiment(c) ∩ Est(κ(c)) ∧ covers(w, c) ∧ ∄ n ∈ W(c) ∩ Est(κ(c)) : covers(n, c) ∧ ⟨gap(n,c), |n|, n⟩ < ⟨gap(w,c), |w|, w⟩
+              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w, κ(c)) ; a mint is settled through signify, ¬ crystallized⟩
 
 probe(w,κ | K) ≜ probe(w,κ) taken at K ⟨probe is MEASURED, ¬ read-off : a FAMILY over K, ¬ one value⟩
 probe(w,κ | ∅) ⊨ self-sufficiency ⟨cold : does w, given κ's name and subject, circumscribe carrying ZERO corpus?⟩
