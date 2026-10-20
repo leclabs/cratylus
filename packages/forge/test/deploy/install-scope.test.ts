@@ -49,7 +49,7 @@ for (const [name, tier] of [
     join(agents, `${name}.ts`),
     fixtureAgentSource(name, { routing: { tier, effort: 'high' } }),
   );
-const corpus: ProjectablePlugin = {
+const canon: ProjectablePlugin = {
   name: 'scope-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
@@ -84,7 +84,7 @@ const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     harness: 'omp',
     home,
     cwd,
-    corpus: corpus as never,
+    canon: canon as never,
     practices: FIXTURE_PRACTICE,
     interactive: false,
     version: '1.0.0',

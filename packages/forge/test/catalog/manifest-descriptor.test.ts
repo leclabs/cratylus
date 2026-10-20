@@ -1,35 +1,35 @@
-// A dimension CATALOG is SINGLE-SOURCED against the per-dimension branded-string
+// A factor CATALOG is SINGLE-SOURCED against the per-factor branded-string
 // TYPE aliases it derives. This file is the RUNTIME guard over the FIXTURE
-// corpus's catalog (`test/fixture-manifest.ts`): the keyset is exactly its 22
-// fragment-dimension literals — no missing dimension, no extra key, no drift
+// canon's catalog (`test/fixture-manifest.ts`): the keyset is exactly its 22
+// factor literals — no missing factor, no extra key, no drift
 // between the descriptor and the value dirs it files against
-// (`test/fixture-dimensions/`).
+// (`test/fixture-factors/`).
 //
-// BOTH halves under test belong to the FIXTURE corpus. Forge ships no catalog and
-// no dimension dirs — WHICH dimensions exist is a corpus's fact — so this suite is
-// a corpus like any other and gates its OWN descriptor against its OWN value dirs.
-// It deliberately does NOT read a sibling package's dirs: that would make a corpus
-// discovering a dimension a red suite HERE, which is the inversion forge exists to
-// refuse. What is proven is the SHAPE law ANY corpus's catalog owes — a law a
-// fixture corpus demonstrates and a single real corpus's own suite cannot.
+// BOTH halves under test belong to the FIXTURE canon. Forge ships no catalog and
+// no factor dirs — WHICH factors exist is a canon's fact — so this suite
+// declares a canon like any other and gates its OWN descriptor against its OWN value dirs.
+// It deliberately does NOT read a sibling package's dirs: that would make the canon
+// discovering a factor a red suite HERE, which is the inversion forge exists to
+// refuse. What is proven is the SHAPE law ANY canon's catalog owes — a law a
+// fixture canon demonstrates and the real canon's own suite cannot.
 
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  FIXTURE_DIMENSION_NAMES,
+  FIXTURE_FACTOR_NAMES,
   FIXTURE_MANIFEST,
-  type FixtureDimension,
+  type FixtureFactor,
 } from '../fixture-manifest.js';
 
-// The 22 fragment-dimension literals, copied here as the INDEPENDENT oracle (this
-// list is authored from the `Dimension` union in the manifest doc; if the union
+// The 22 factor literals, copied here as the INDEPENDENT oracle (this
+// list is authored from the `Factor` union in the manifest doc; if the union
 // grows/shrinks this test must be updated alongside `MANIFEST`, which is
-// exactly the point — adding a dimension forces touching its metadata AND this
+// exactly the point — adding a factor forces touching its metadata AND this
 // assertion together). Name, description, mark and key are identity details, not
-// dimensions, so none of them is a key.
-const THE_22: readonly FixtureDimension[] = [
+// factors, so none of them is a key.
+const THE_22: readonly FixtureFactor[] = [
   'autonomy',
   'role',
   'formality',
@@ -65,9 +65,9 @@ interface Meta {
   readonly slots?: readonly { readonly name: string }[];
 }
 
-/** The descriptor↔corpus comparison, as a function of the two sets, so a
- *  synthetic DRIFTED corpus can be handed to the same code the live leg runs. */
-function corpusDrift(
+/** The descriptor↔canon comparison, as a function of the two sets, so a
+ *  synthetic DRIFTED canon can be handed to the same code the live leg runs. */
+function canonDrift(
   dirs: readonly string[],
   declared: readonly string[],
 ): { missing: string[]; extra: string[] } {
@@ -81,7 +81,7 @@ function corpusDrift(
 
 /** The legality predicate over one descriptor entry: a named group, the closed
  *  repertoire/arity/level/projection vocabularies, and slots exactly on a `slots`
- *  dimension. */
+ *  factor. */
 function illegalMeta(m: Meta): string[] {
   const bad: string[] = [];
   if (m.group.trim() === '') bad.push('group=(empty)');
@@ -98,24 +98,24 @@ function illegalMeta(m: Meta): string[] {
   return bad;
 }
 
-describe('a dimension catalog', () => {
-  it('has exactly the 22 dimensions as keys (no missing, no extra)', () => {
-    expect([...FIXTURE_DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
+describe('a factor catalog', () => {
+  it('has exactly the 22 factors as keys (no missing, no extra)', () => {
+    expect([...FIXTURE_FACTOR_NAMES].sort()).toEqual([...THE_22].sort());
     expect(Object.keys(FIXTURE_MANIFEST)).toHaveLength(22);
   });
 
   it('every group/repertoire/arity/level/projection is a legal value', () => {
-    for (const dimension of FIXTURE_DIMENSION_NAMES) {
-      expect(illegalMeta(FIXTURE_MANIFEST[dimension]), dimension).toEqual([]);
+    for (const factor of FIXTURE_FACTOR_NAMES) {
+      expect(illegalMeta(FIXTURE_MANIFEST[factor]), factor).toEqual([]);
     }
-    expect(FIXTURE_DIMENSION_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
+    expect(FIXTURE_FACTOR_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
-  it('the six set dimensions are exactly the set-arity entries', () => {
-    const setDimensions = FIXTURE_DIMENSION_NAMES.filter(
-      (o: FixtureDimension) => FIXTURE_MANIFEST[o].arity === 'set',
+  it('the six set factors are exactly the set-arity entries', () => {
+    const setFactors = FIXTURE_FACTOR_NAMES.filter(
+      (o: FixtureFactor) => FIXTURE_MANIFEST[o].arity === 'set',
     );
-    expect([...setDimensions].sort()).toEqual(
+    expect([...setFactors].sort()).toEqual(
       [
         'autonomy',
         'guardrails',
@@ -127,38 +127,38 @@ describe('a dimension catalog', () => {
     );
   });
 
-  it("matches the fixture corpus's own dimension dirs (no descriptor↔corpus drift)", () => {
+  it("matches the fixture canon's own factor dirs (no descriptor↔canon drift)", () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const fixtureDimensions = join(here, '..', 'fixture-dimensions');
-    const dirs = readdirSync(fixtureDimensions, { withFileTypes: true })
+    const fixtureFactors = join(here, '..', 'fixture-factors');
+    const dirs = readdirSync(fixtureFactors, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
       .sort();
     expect(dirs.length).toBeGreaterThan(0); // a listing that read nothing is DARK
-    expect(corpusDrift(dirs, FIXTURE_DIMENSION_NAMES)).toEqual({
+    expect(canonDrift(dirs, FIXTURE_FACTOR_NAMES)).toEqual({
       missing: [],
       extra: [],
     });
   });
 
   // ── The gate BITES — otherwise it is green whether or not the two agree ──────
-  it('is non-vacuous — a drifted corpus and an illegal descriptor entry are both CONVICTED', () => {
-    // A corpus that lost a dimension dir and gained an unrecognized one: the two
+  it('is non-vacuous — a drifted canon and an illegal descriptor entry are both CONVICTED', () => {
+    // A canon that lost a factor dir and gained an unrecognized one: the two
     // failure modes the live comparison exists to catch, neither of which the
-    // clean corpus can exhibit.
-    // `telepathy` is deliberately not a DimensionName — that is the whole point of
+    // clean canon can exhibit.
+    // `telepathy` is deliberately not a FactorName — that is the whole point of
     // the fixture — so the array is widened to string rather than the literal union.
-    const drifted: string[] = ([...FIXTURE_DIMENSION_NAMES] as string[])
+    const drifted: string[] = ([...FIXTURE_FACTOR_NAMES] as string[])
       .filter((d) => d !== 'memory')
       .concat('telepathy')
       .sort();
-    expect(corpusDrift(drifted, FIXTURE_DIMENSION_NAMES)).toEqual({
+    expect(canonDrift(drifted, FIXTURE_FACTOR_NAMES)).toEqual({
       missing: ['memory'],
       extra: ['telepathy'],
     });
-    // EXONERATES: the clean corpus is genuinely clean, not merely unexamined.
+    // EXONERATES: the clean canon is genuinely clean, not merely unexamined.
     expect(
-      corpusDrift([...FIXTURE_DIMENSION_NAMES], FIXTURE_DIMENSION_NAMES),
+      canonDrift([...FIXTURE_FACTOR_NAMES], FIXTURE_FACTOR_NAMES),
     ).toEqual({
       missing: [],
       extra: [],

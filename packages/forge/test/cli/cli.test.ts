@@ -49,7 +49,7 @@ describe('guided install confirmation', () => {
     const fixtures = fileURLToPath(
       new URL('../project/fixtures', import.meta.url),
     );
-    const corpus = {
+    const canon = {
       name: 'fixture',
       manifest: FIXTURE_MANIFEST,
       agents: join(fixtures, 'agents'),
@@ -68,7 +68,7 @@ describe('guided install confirmation', () => {
     });
     expect(
       await runInstall({
-        corpus: corpus as never,
+        canon: canon as never,
         home,
         cwd,
         harness: 'omp',
