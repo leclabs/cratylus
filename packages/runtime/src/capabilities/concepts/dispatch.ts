@@ -876,14 +876,14 @@ function answerOf(
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
-        // A retirement's own descriptions too, so a runtime that reads past
-        // retirements sees one current description.
+        // Bringing it back supersedes the retirements' descriptions too, so a
+        // runtime that reads past retirements sees one current description.
         supersedes: [
           ...new Set([
             ...folded.currentDescriptions(name).map((c) => c.id),
             ...folded
               .currentRetirements(name)
-              .flatMap((r) => [r.id, ...r.supersedes]),
+              .flatMap((r) => (retired ? [r.id, ...r.supersedes] : [r.id])),
           ]),
         ],
       };

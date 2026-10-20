@@ -1231,6 +1231,41 @@ describe('retiring a bounded context', () => {
     expect(names(concepts('state'))).toEqual(['fleet']);
   });
 
+  it('a context retired on two joined lines of work is retired', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'retire-context',
+        context: 'booking',
+        reason: 'Dropped elsewhere.',
+        supersedes: [described],
+      }),
+    );
+    for (const reading of [['state'], ['design'], ['design', '--history']])
+      expect(names(concepts(...reading)), reading.join(' ')).toEqual(['fleet']);
+    expect(decisions()).toEqual([]);
+    expect(decisions('--history').map((d) => d.id)).toEqual(['d1']);
+    refused(
+      ['retire', '--context', 'booking', '--reason', 'R'],
+      /'booking' is already retired/,
+    );
+    refused(
+      ['retire', 'hold', '--context', 'booking', '--reason', 'R'],
+      /'booking' is retired; bring it back/,
+    );
+    // Bringing it back supersedes both retirements and what they superseded.
+    expect(
+      concepts('context', 'booking', '--reason', 'Needed again.'),
+    ).toMatchObject({
+      subject: 'Booking.',
+      supersedes: [retirement.id, described, elsewhere],
+    });
+  });
+
   it('a description with a reason settles a competing retirement', () => {
     const retirement = retire();
     const elsewhere = '01Z00000000000000000000001';
@@ -1256,7 +1291,7 @@ describe('retiring a bounded context', () => {
         '--reason',
         'Settled.',
       ),
-    ).toMatchObject({ supersedes: [elsewhere, retirement.id, described] });
+    ).toMatchObject({ supersedes: [elsewhere, retirement.id] });
     expect(concepts('state', '--context', 'booking')).toMatchObject({
       contexts: [{ subject: 'Booking.', relation: 'Upstream.' }],
     });

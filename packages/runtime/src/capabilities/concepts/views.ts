@@ -43,13 +43,13 @@
 // description, recorded differently they are COMPETING, none chosen, until a
 // later entry of the name supersedes them all. The design shows only the
 // current description; every earlier one stays in the context's history. A
-// context is RETIRED while its one current entry is a retirement: no reading
-// of the design shows it or its concepts, its decisions are history, and a
-// close carries nothing of it; a later description with its reason,
-// superseding the retirement, brings it back as it stood. A retirement current
-// beside another current entry COMPETES with it as a description does, marked
-// retired with its reason, until a later description or retirement supersedes
-// them all.
+// context is RETIRED while every current entry of it is a retirement, one or
+// several: no reading of the design shows it or its concepts, its decisions
+// are history, and a close carries nothing of it; a later description with
+// its reason, superseding the retirements, brings it back as it stood. A
+// retirement current beside a current description COMPETES with it as a
+// description does, marked retired with its reason, until a later
+// description or retirement supersedes them all.
 //
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
@@ -686,11 +686,12 @@ export class Folded {
     return retirements.filter((r) => !superseded.has(r.id));
   }
 
-  /** Whether `context` is retired: its one current entry is a retirement. */
+  /** Whether `context` is retired: every current entry of it, one or
+   *  several, is a retirement. */
   retired(context: string): boolean {
     return (
       this.currentDescriptions(context).length === 0 &&
-      this.currentRetirements(context).length === 1
+      this.currentRetirements(context).length > 0
     );
   }
 

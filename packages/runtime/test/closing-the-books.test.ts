@@ -489,6 +489,26 @@ describe('closing the books', () => {
     expect(entryFiles()).toHaveLength(1);
   });
 
+  it('carries nothing of a context retired on two joined lines of work', () => {
+    const first = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    decide('d1', 'accepted');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    recorded({
+      kind: 'retire-context',
+      context: 'booking',
+      reason: 'Dropped elsewhere.',
+      supersedes: [first],
+    });
+    const head = commit();
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      { kind: 'context', name: 'fleet', broughtForward: head },
+    ]);
+    expect(entryFiles()).toHaveLength(1);
+  });
+
   it('opens a retirement competing with a description beside it, so they still compete', () => {
     const first = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
     worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
