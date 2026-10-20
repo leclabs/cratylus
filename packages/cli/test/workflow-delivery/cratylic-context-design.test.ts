@@ -69,7 +69,7 @@ it.each(verbs)(
 );
 
 it.each([
-  ['user', 'corpus-authoring'],
+  ['user', 'cratylic-context-design'],
   ['project', 'intent-based-delegation'],
 ])(
   'delivery/2 — a %s install declining every ruleset still delivers cratylic context design beside workflow',

@@ -6,9 +6,10 @@ import type { Practice } from '@cratylus/schema';
 
 export const PRACTICES: readonly Practice[] = [
   {
-    name: 'corpus-authoring',
+    name: 'cratylic-context-design',
+    formerNames: ['corpus-authoring'],
     description:
-      'Author the corpus of named concepts itself: discover the signs a model already holds and canonize them.',
+      'Practise cratylic context design: find the concepts a design needs, give each its Cratylic name, the term the model already reads closest to the meaning, with only the correction its reading needs, confirmed by a cold read.',
     agents: [],
     skills: [
       'signify',

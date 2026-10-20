@@ -237,6 +237,9 @@ export interface OfferedPractice {
   readonly description: string;
   /** A fresh install selects it unless the operator declines. */
   readonly preselected: boolean;
+  /** The names it was offered under before; an earlier install that recorded one
+   *  installed it. Empty when it was never renamed. */
+  readonly formerNames: readonly string[];
 }
 
 /** A declared ruleset as an install offers it: whole, rule by rule, or not at all. */
@@ -1175,6 +1178,7 @@ export async function projectPluginSet(
       name: p.name,
       description: p.description,
       preselected: p.preselected === true,
+      formerNames: p.formerNames ?? [],
     })),
     rulesets: rulesets.map((r) => ({
       name: r.name,

@@ -788,6 +788,13 @@ export interface Layout {
 export interface Practice {
   /** The name an install offers and a render is asked for. Unique in the set. */
   readonly name: string;
+  /**
+   * The names this practice was offered under before. An install over an earlier one
+   * that recorded a former name counts it as this practice: kept, and recorded under
+   * `name` from then on. A former name is no name an install offers or a render is
+   * asked for. Absent ⇒ none.
+   */
+  readonly formerNames?: readonly string[];
   /** σ_human* — the one line an install shows a consumer deciding whether to take it. */
   readonly description: string;
   /** The agents this practice installs, by name. */

@@ -448,15 +448,26 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     declaredNames.length === 0 ? 'none' : list(declaredNames);
   // What is installed here: the practices the last install recorded (in its owned
   // root, or, for the user, an earlier installation's deploy record) that this corpus
-  // still declares. A host with none recorded is a fresh one.
+  // still declares, a former name of one counting as the practice that now holds it
+  // (decision 0332). A host with none recorded is a fresh one.
   const recorded =
     prior !== null
       ? (prior.practices ?? null)
       : scope === 'user'
         ? readManifest(harnessDir).practices
         : null;
+  const formerlyRecorded = (p: (typeof declared)[number]): string[] =>
+    recorded === null || recorded.includes(p.name)
+      ? []
+      : p.formerNames.filter((n) => recorded.includes(n));
   const installed =
-    recorded === null ? [] : declaredNames.filter((n) => recorded.includes(n));
+    recorded === null
+      ? []
+      : declared
+          .filter(
+            (p) => recorded.includes(p.name) || formerlyRecorded(p).length > 0,
+          )
+          .map((p) => p.name);
   const preselection =
     installed.length > 0
       ? installed
@@ -543,7 +554,19 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const removed = installed.filter(
     (n) => !(chosen ?? declaredNames).includes(n),
   );
-  const decided = chosen === undefined ? undefined : { chosen, removed };
+  // Each practice kept that the earlier install recorded by a former name, named once.
+  const taken = chosen;
+  const carried =
+    taken === undefined
+      ? []
+      : declared
+          .filter((p) => taken.includes(p.name))
+          .flatMap((p) => {
+            const from = formerlyRecorded(p);
+            return from.length > 0 ? [{ from, to: p.name }] : [];
+          });
+  const decided =
+    taken === undefined ? undefined : { chosen: taken, removed, carried };
   const tree: ProjectedTree = rendered.report;
 
   // ── WHICH MODELS ─────────────────────────────────────────────────────────────
@@ -881,10 +904,15 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The practices installed and those taken out, or `undefined` where the corpus
-     *  declares none. */
+    /** The practices installed, those taken out, and those kept that the earlier
+     *  install recorded by a former name, or `undefined` where the corpus declares
+     *  none. */
     practices:
-      | { chosen: readonly string[]; removed: readonly string[] }
+      | {
+          chosen: readonly string[];
+          removed: readonly string[];
+          carried: readonly { from: readonly string[]; to: string }[];
+        }
       | undefined;
     /** The rules placed, those of an earlier choice no longer offered, and whether the
      *  choice is still open: offered, but neither told, recorded nor asked. */
@@ -918,11 +946,17 @@ function describe(
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (ctx.practices !== undefined) {
+    const carried =
+      ctx.practices.carried.length > 0
+        ? `; ${dry ? 'would carry over' : 'carried over'} ${list(ctx.practices.carried.map((c) => `${list(c.from)} as ${c.to}`))}`
+        : '';
     const removed =
       ctx.practices.removed.length > 0
         ? `; ${dry ? 'would remove' : 'removed'} ${list(ctx.practices.removed)}`
         : '';
-    lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
+    lines.push(
+      `  practices: ${list(ctx.practices.chosen)}${carried}${removed}`,
+    );
   }
   if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
     const dropped =
