@@ -25,7 +25,7 @@ export {
 } from './render.js';
 
 // The canonical→native event map and the ACT bindings beside it. Exported so a
-// corpus gate can assert every key is a declared member — and, here specifically,
+// gate of this repository can assert every key is a declared member — and, here specifically,
 // that no entry carries an `unnarrowed` loss, because omp's hook surface is CODE
 // and can narrow on anything the event carries.
 export {

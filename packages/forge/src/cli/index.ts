@@ -31,13 +31,13 @@ export type { DeliveredDocument } from '../deploy/index.js';
 
 /** What the commands are built with. */
 export interface ProjectorOptions {
-  /** The corpus `install` installs — the PLUGIN ITSELF, not a specifier to resolve.
+  /** The canon `install` installs — the PLUGIN ITSELF, not a specifier to resolve.
    *
    *  Passed by whoever composes the program, which imports it statically. `forge`
-   *  names no corpus of its own: it installs what it is handed and refuses when
+   *  names no canon of its own: it installs what it is handed and refuses when
    *  handed nothing. Taking the object rather than a string is what removes a
    *  run-time resolution — and therefore a run-time failure mode — from the path. */
-  readonly corpus?: ProjectablePlugin;
+  readonly canon?: ProjectablePlugin;
   /** The declared version of the build the commands are held in: what `install`
    *  records in the owned root as the version that projected it. */
   readonly version?: string;
@@ -55,14 +55,14 @@ const harnessOption = (description: string): Option =>
   new Option('--harness <name>', description).choices(HARNESS_NAMES);
 
 /**
- * The projector's commands — installing the corpus and taking it away again — in the
+ * The projector's commands — installing the canon and taking it away again — in the
  * order its help lists them, so the program that owns the `bin` holds no list of
  * command names of its own.
  */
 export function projectorCommands(options: ProjectorOptions = {}): Command[] {
   const install = new Command('install')
     .description(
-      'Install the bundled corpus into an agent harness on this machine, asking what you have not said',
+      'Install the canon cratylus ships, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
     )
     .addOption(
       harnessOption(
@@ -138,7 +138,7 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
         process.exitCode = await runInstall({
           harness: opts.harness,
           scope: opts.scope,
-          corpus: options.corpus,
+          canon: options.canon,
           version: options.version,
           delivered: options.delivered,
           practices: opts.practices,

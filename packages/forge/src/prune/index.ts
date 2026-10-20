@@ -20,7 +20,7 @@ import {
 } from 'node:path';
 
 /** Root-relative POSIX paths written for one group, keyed by the group's name: in
- *  an earlier installation's deploy record, a cell name within one kind. */
+ *  an earlier installation's deploy record, the name of an agent, skill or hook within one kind. */
 export type KindRecord = Record<string, string[]>;
 
 /**
