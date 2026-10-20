@@ -6,8 +6,7 @@
      `semantic-engineering-research-candidates.md` until 2026-07-26, when `semantic engineering`
      was disconfirmed by cold decode — a genus collision with ontology engineering / Semantic Web
      and with PLT formal-semantics engineering — leaving the discipline with no discovered Cratylic name
-     at that date. One was found on 2026-08-05: `latent lexicography`, admitted by argmin over
-     candidates, blind reverse decode and an occupancy check.
+     at that date. The discipline is now named `cratylic context design`.
      The title does not move with it. -->
 
 - [The Platonic Representation Hypothesis](https://arxiv.org/abs/2405.07987)
