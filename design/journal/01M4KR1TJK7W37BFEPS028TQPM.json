@@ -1,8 +1,0 @@
-{
-  "id": "01M4KR1TJK7W37BFEPS028TQPM",
-  "at": "2026-10-10T20:28:42.451Z",
-  "kind": "accept",
-  "decisionId": "0026",
-  "entry": "01M4J70D46RY81J56G48FJ67WJ",
-  "reason": "Realized by cut 5 (check quality), released in dev a9982e20: offline proof wired into the freeze, the never-assertion rule, implementation leakage warnings; spanning examples and sweep-on-find recorded in work package and judgment. Efficiency: 1 build and 1 fix round, 3 whole-check runs, 4 architect check-rulings."
-}

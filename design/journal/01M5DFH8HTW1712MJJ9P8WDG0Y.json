@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0Y",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "code review",
+  "wording": "of any change, not only code, by exactly one non-author, against its user story's acceptance criteria and examples, held-out ones included; a contrived way around a check is a finding on that check, not on the change",
+  "builtFrom": [],
+  "reason": "Approving or naming findings is what the name already says, and never repairing is the reviewer's own value; that there is one reviewer is stated here once, no longer under Ship/Show/Ask, and held-out examples are named as part of what it judges against.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

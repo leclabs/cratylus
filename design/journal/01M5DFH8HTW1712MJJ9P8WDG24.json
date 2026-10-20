@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG24",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "agents",
+  "name": "skill",
+  "wording": "one practice of an agent's procedure, loaded when it applies; never restates a capability's own explanation",
+  "builtFrom": [],
+  "reason": "Cell was retired as the canon's source unit, realization; how a skill reaches a harness is stated by delivery's projection.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

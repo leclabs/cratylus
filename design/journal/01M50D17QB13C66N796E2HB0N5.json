@@ -1,9 +1,0 @@
-{
-  "id": "01M50D17QB13C66N796E2HB0N5",
-  "at": "2026-10-15T18:26:16.427Z",
-  "by": "architect",
-  "kind": "deprecate",
-  "decisionId": "0198",
-  "entry": "01M4VS5ZAQQE7NH51HS5HP55HM",
-  "reason": "The completion check is retired, so the form of a commit declaring a cut complete no longer matters."
-}

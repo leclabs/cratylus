@@ -1,0 +1,16 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG2W",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0244",
+  "context": "agents",
+  "title": "A different model family is preferred, never required",
+  "situation": "The operator, 2026-10-15, confirmed after two read-backs: the workflow becomes intent-based delegation instead of a prescribed procedure. The assayers are replaced by reviewers.",
+  "decision": "Reviewers, the illustrator and the check-writer run on another model family than the builders where one is available, and on any available model otherwise. Unavailability of a family never stops the work.",
+  "consequences": "None beyond the role bindings.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

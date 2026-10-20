@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG02",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "efficiency",
+  "wording": "the share of effort realizing the meaning: every agent run on a user story or task, however launched, by role, tokens and elapsed time as the harness records them",
+  "builtFrom": [],
+  "reason": "Stopping and reporting a run far beyond its size is the lead's own value, management by exception, stated by the canon that composes it; efficiency keeps only what is measured.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

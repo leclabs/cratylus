@@ -1,0 +1,16 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG2P",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0023",
+  "context": "delivery",
+  "title": "Omp only",
+  "situation": "Supporting several harnesses split attention before the substrate worked. Decision 0012 was seeded into the workflow context because it decides no concept; a decision belongs to the context it decides about, and omp only is about how the corpus reaches a harness, so it belongs to delivery (architect's ruling of 2026-10-10). It is re-recorded here, superseding 0012.",
+  "decision": "omp is the only supported harness. The Claude Code adapter and its tests are deleted; forge's adapter seam stays, with omp as its one implementation. Parity is a later decision.",
+  "consequences": "Capability port (decision 0009) keeps future parity cheap.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

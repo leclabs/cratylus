@@ -1,8 +1,0 @@
-{
-  "id": "01M4PBY925W82JET9Q2BA4V7JF",
-  "at": "2026-10-11T20:54:46.597Z",
-  "kind": "accept",
-  "decisionId": "0121",
-  "entry": "01M4P885EC8QX6JMQ487XZC4KE",
-  "reason": "Check-ruling by the architect: the examples fix that the change is refused before anything is appended, not the line's form; the command's name may precede it."
-}

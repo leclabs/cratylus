@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG1Y",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "agents",
+  "name": "role",
+  "wording": "a team function stated as a default profile, one per agent, so a dispatcher knows what comes back; carries who it is, what it decides and answers for, never a workflow's steps, so no example can be read off it",
+  "builtFrom": [],
+  "reason": "Comparing the readings: the design held that no example should be readable straight off a role's text, which the restated concept had dropped.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

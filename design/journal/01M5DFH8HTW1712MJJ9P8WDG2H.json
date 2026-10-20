@@ -1,0 +1,16 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG2H",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "cratylic context design",
+  "name": "cold read",
+  "wording": "by a fresh model given only the term and its domain, saying what it means; whatever its reading leaves missing or makes spurious goes into the correction; only the writer confirms the intended meaning, only a cold read reveals the model's",
+  "builtFrom": [
+    "term",
+    "correction"
+  ],
+  "reason": "INTRODUCTION's confirmation step; read cold it lands as reading text with none of the writer's context, missing that the reader gets the term and domain alone and what the reading feeds; it replaces the coined cold-decode oracle, which a small model does not know.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

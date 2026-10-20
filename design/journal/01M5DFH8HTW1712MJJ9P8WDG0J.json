@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0J",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "outcome",
+  "wording": "the lead's handoff when a user story or a task with no story ends: merged or dropped, each criterion with its evidence, meaning questions raised, follow-ups, cost against the rough cost; the architect accepts the story done once it has experienced the realization of the story's meaning, the outcome guiding it there, never standing in for it; anything unfinished is a follow-up, never an open state",
+  "builtFrom": [],
+  "reason": "A story is done when the realization of its meaning can be experienced; the lead's account of the work is evidence, never the experience itself.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}
