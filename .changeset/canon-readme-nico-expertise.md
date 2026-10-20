@@ -1,4 +1,4 @@
 ---
 ---
 
-Canon's README names nico's expertise as the canon and latent lexicography, as nico's own description does.
+Canon's README names nico's expertise as nico's own description does.

@@ -23,7 +23,7 @@ priors(w,κ) ≜ understanding w carries before any definition, read in κ ⟨as
 Names  ≜ the readable terms
 dec  : Names × bounded-context ⇀ ℘(D) @ signify
 cratylic @ signify
-κ, fired, covers, gap, Est @ signify ⟨w is read in κ, the bounded context under probe⟩
+κ, τ, fired, covers, gap, Est @ signify ⟨w is read in κ, the bounded context under probe⟩
 w      ≜ a term under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
@@ -33,7 +33,7 @@ frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licence
 parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
 Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩
 head(w) · mod(w) ≜ w's head ∧ its modifier ⟨compound w⟩
-free(h)  ⇔ h alone is unbound in the canon
+free(h,κ) ⇔ ∄ c' ∈ dom(τ) : κ(c') = κ ∧ τ(c') = h ∧ c' ≠ c ⟨h is no other concept's term in κ, the context it is read in, whatever project the skill is used in⟩
 fired(w,κ) ≜ priors(w,κ)
 fired(a, κ) = dec(a, κ) , ⟨a, κ⟩ ∈ dom(dec)
 concept(w,κ) ≜ cl(fired(w,κ))
@@ -59,7 +59,7 @@ frame = produce-a-candidate ⇒ ∄ observable ∅ ⟨an obliged producer ALWAYS
     ∀ k imposed by a failing read : a passing read under a varied frame RETRACTS k
 
 fired(w,κ) ⊨ sweep(parts(w)) vs Idiom ⟨the WINNER swept, ¬ only the rejects⟩
-free(head(w)) ⇒ fired(w,κ) ⊇ fired(mod(w),κ) ⟨an unbound head takes the modifier's priors through it⟩
+free(head(w), κ) ⇒ fired(w,κ) ⊇ fired(mod(w),κ) ⟨a free head takes the modifier's priors through it⟩
 
 ∀ w ∈ W(c) : probe(w, κ(c)) ↦ evidence about c ⟨harvest-the-rejects : concept(w, κ(c)) of a REJECTED w constrains D(c)⟩
 W(c) seeded from the ARTIFACT ⟨invoked verb · declared inverse · deferred-to piece⟩ ≺ minted candidates
