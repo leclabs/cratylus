@@ -1,0 +1,14 @@
+{
+  "id": "01M5D0BY9BV35PYZ8VDPYZVY2F",
+  "at": "2026-10-20T15:55:03.339Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "bounded context",
+  "wording": "holds every concept it models, each in exactly one context, whose subject is the domain its terms are read in; one architect may hold several, never merging their models; retired whole when the design drops it, its history kept",
+  "builtFrom": [],
+  "reason": "Restated whole rather than extended.",
+  "supersedes": [
+    "01M5D0BNDS5D4XPDACKPPP3MWH"
+  ]
+}
