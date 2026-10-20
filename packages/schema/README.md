@@ -134,7 +134,7 @@ harness. It imports nothing.
 
 `SkillDeploy.runtime` names the runtime capability a skill is a face of and, optionally, the
 `configuration` that capability receives: a `JsonValue`, with no opinion here about any
-capability's keys. `deploy` gathers the `configuration`
+capability's keys. `install` gathers the `configuration`
 from every skill of the resolved plugin set and emits it into the host runtime config keyed by
 capability, beside the event vocabulary; the runtime's `loadRuntimeConfig` lifts it. Meaning a
 capability needs therefore lives in the corpus and reaches the runtime as configuration, never as a

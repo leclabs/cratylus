@@ -336,7 +336,7 @@ export type { SkillExpression };
 //     compile error at the cell;
 //   · forge   receives it as DATA on the plugin (`AgentPlugin.events`) and keys
 //     its own harness maps over it;
-//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED — `deploy`
+//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED — `install`
 //     writes the host config, `dispatch` validates against it.
 // Only the first is a compiler-enforced derivation; the other two cross package
 // boundaries the type system cannot, which is what `test/event-vocabulary.test.ts`

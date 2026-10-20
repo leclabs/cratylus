@@ -10,27 +10,13 @@ markdown an agent harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
 _means_, never how either is carried. Installing the corpus on a machine, and choosing among
-its practices, is [the `cratylus` README](../cli/README.md)'s. This README is for the author of a
-corpus, or of a plugin that extends this one.
+its practices, is [the `cratylus` README](../cli/README.md)'s. This README is for whoever works on
+the corpus.
 
-## Using it
+## What it is to the command
 
-```bash
-npm install cratylus @cratylus/canon
-```
-
-The package's default export is canon as an agent-plugin. A consumer `extends` it from a
-`cratylus.config.ts` and projects it with the `cratylus` command:
-
-```ts
-import { defineConfig } from 'cratylus';
-import canon from '@cratylus/canon';
-
-export default defineConfig({
-  extends: [canon],
-  patches: [],
-});
-```
+The package's default export is canon as an agent-plugin: the corpus the `cratylus` command is
+built with, which `cratylus install` projects and places.
 
 Addressing is by **imported binding**, never a string id. That holds one level down too: a role or
 persona cell imports each value it states, so composition is checked by the compiler rather than
@@ -48,9 +34,8 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of that
-corpus's agent design. The manifest rides the plugin rather than living in the projector, so a
-consumer can extend this design — or add a factor to it — without editing the tool that renders
-it. The shapes those cells are authored against, and `defineAgentPlugin` that declares the plugin,
+corpus's agent design. The manifest rides the plugin rather than living in the projector, so the
+design — and a factor added to it — changes without editing the tool that renders it. The shapes those cells are authored against, and `defineAgentPlugin` that declares the plugin,
 are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents

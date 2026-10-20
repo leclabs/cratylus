@@ -25,7 +25,6 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
   type ProjectablePlugin,
   projectPluginSet,
@@ -104,8 +103,6 @@ describe('projectionFacts describes OMP', () => {
 
   it('binds every fact the schema declares', () => {
     expect(Object.keys(omp).sort()).toEqual([
-      'deploy-bin',
-      'deploy-check-drift-code',
       'harness-hooks-file',
       'harness-name',
       'runtime-bin',
@@ -116,12 +113,6 @@ describe('projectionFacts describes OMP', () => {
   it('carries OMP’s name and hooks file', () => {
     expect(omp['harness-name']).toBe('omp');
     expect(omp['harness-hooks-file']).toBe(adapterByName('omp').hooksFile);
-  });
-  it('carries the drift exit code as the string a shell compares', () => {
-    expect(omp['deploy-check-drift-code']).toBe(
-      String(DEPLOY_CHECK_EXIT.drift),
-    );
-    expect(new Set(Object.values(DEPLOY_CHECK_EXIT)).size).toBe(3);
   });
 });
 

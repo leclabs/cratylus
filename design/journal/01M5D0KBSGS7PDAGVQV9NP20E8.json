@@ -1,0 +1,15 @@
+{
+  "id": "01M5D0KBSGS7PDAGVQV9NP20E8",
+  "at": "2026-10-20T15:59:06.544Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0330",
+  "context": "delivery",
+  "title": "The cratylus command offers only using cratylus: authoring commands, the config file and the authoring skills are withdrawn",
+  "situation": "The authoring commands (init, add, compose, project, deploy, explain, catalog), the project configuration file they read (cratylus.config.ts with defineConfig) and the create-agent and create-skill skills shipped to every user, yet authoring is in no bounded context, is the least tested and stalest part, and a newcomer's session took cratylus init as step one of using cratylus. Install also took a different corpus from a cratylus.config.ts in the working directory without the user knowing. Cratylus's own development tries a build by installing the package and running install (0039), so it uses no render-tree command.",
+  "decision": "The shipped cratylus command offers install, uninstall and the capabilities only. The authoring commands are removed, not hidden, with their code, tests and documentation; so are the configuration file, its loader, scaffold and defineConfig, and canon's scaffold tooling. Install never reads a project's configuration file: it installs the corpus the command is built with. The create-agent and create-skill skills are removed; the corpus-authoring practice keeps its other skills and its name, its description no longer offering to write agents. Library code install, uninstall, the capabilities and the build use stays; code only the removed paths reached is removed. The refusal of a project installation over an earlier render tree stays (0313 (9)), naming no command; its other half, project refusing to render over an installation, goes with project.",
+  "consequences": "Supersedes nothing; 0313 (9) keeps only its install half. Tests that drove project to guard shipped behaviour drive the library or install instead. A cratylus.config.ts left in a project is ignored. Authoring, when wanted, returns as a bounded context of its own, designed fresh.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

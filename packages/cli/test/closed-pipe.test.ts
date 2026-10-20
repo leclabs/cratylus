@@ -1,6 +1,6 @@
 // A READER THAT CLOSES THE PIPE EARLY ENDS THE COMMAND QUIETLY — with success.
 //
-// `cratylus project --verbose | head -1` is how a person reads the head of a long
+// `cratylus install --dry-run --verbose | head -1` is how a person reads the head of a long
 // listing, and every Unix tool ends without a word when its reader has taken what it
 // wanted. The command line does so by ending on the EPIPE its stdout raises
 // (`endOnClosedStdout` in src/cratylus.ts). That is a fact about the process, not
@@ -16,13 +16,10 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const bin = join(here, '..', 'dist', 'cratylus.js');
-/** The repository root, where a cratylus.config.ts resolves for `project`. */
-const repoRoot = requireRepoRoot(here);
 
 interface Ended {
   readonly code: number | null;
@@ -60,15 +57,24 @@ afterAll(() => rmSync(scratch, { recursive: true, force: true }));
 describe('a reader that closes the pipe after the first line ends the command quietly', () => {
   it.each([
     [
-      'project --verbose --out <temp dir>',
-      () => ['project', '--verbose', '--out', scratch],
+      'install --dry-run --verbose --home <temp dir>',
+      () => [
+        'install',
+        '--dry-run',
+        '--verbose',
+        '--harness',
+        'omp',
+        '--all',
+        '--home',
+        scratch,
+      ],
     ],
     ['--help', () => ['--help']],
     ['concepts --help', () => ['concepts', '--help']],
   ] as const)(
     '%s',
     async (_name, words) => {
-      const { code, stderr } = await endedByReader(words(), repoRoot);
+      const { code, stderr } = await endedByReader(words(), scratch);
       expect(code).toBe(0);
       const loud = stderr
         .split('\n')

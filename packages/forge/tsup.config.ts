@@ -29,12 +29,9 @@ const libEntry: Record<string, string> = {
   // written with, and copying those strings into the reader is exactly the second
   // home this subpath prevents.
   'core/harness-adapter': 'src/core/harness-adapter.ts',
-  'deploy/index': 'src/deploy/index.ts',
   'project/index': 'src/project/index.ts',
   'catalog/index': 'src/catalog/index.ts',
-  'validate/index': 'src/validate/index.ts',
   'resolve/index': 'src/resolve/index.ts',
-  'config/index': 'src/config/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;

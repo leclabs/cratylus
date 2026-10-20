@@ -19,13 +19,9 @@ export type HookSubstrate = Substrate;
  * may ask for, so a typo is a compile error and an unknown name is a resolve-time
  * throw.
  *
- * "ADDING A MEMBER COSTS THE PROJECTOR ONE ENTRY AND NOTHING ELSE" is what this
- * doc said, and it was true of `runtime-bin` only because that value already had
- * a home to bind. Three of the four members below had none, and minting one is a
- * SIGNIFICATION act, not a table edit: `deploy-bin` needed the forge CLI's name
- * to acquire an authored home at all (it had exactly one spelling, in a manifest
- * key no module could import), and `deploy-check-drift-code` needed an exit
- * contract to exist before a code could be named. The estimate stands for the
+ * "ADDING A MEMBER COSTS THE PROJECTOR ONE ENTRY AND NOTHING ELSE" holds only where
+ * the value already has a home to bind, as `runtime-bin` did; minting a home for one
+ * that has none is a SIGNIFICATION act, not a table edit. The estimate stands for the
  * PROJECTOR'S side of the seam and nowhere else.
  *
  * Adapter-relative facts take the harness's own name and hook-config filename from
@@ -35,14 +31,10 @@ export type HookSubstrate = Substrate;
 export type ProjectionFact =
   /** The runtime executable's name on PATH (`CLI_BIN`). */
   | 'runtime-bin'
-  /** The build-time CLI's name on PATH, derived from forge's `bin` key. */
-  | 'deploy-bin'
   /** WHICH harness this projection is for — the adapter's canonical name. */
   | 'harness-name'
   /** This harness's hook-config artifact (`settings.json` / `hooks.json`). */
-  | 'harness-hooks-file'
-  /** The exit status `deploy --check` returns when it FOUND drift. */
-  | 'deploy-check-drift-code';
+  | 'harness-hooks-file';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 

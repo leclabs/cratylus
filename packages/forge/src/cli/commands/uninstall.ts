@@ -745,7 +745,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   const { root } = placement;
   const run = { dry: opts.dryRun ?? false, verbose: opts.verbose ?? false };
   // A project's `.cratylus/<harness>` holding files but no installation record, with
-  // nothing referring into it, is an author's render tree: not this command's.
+  // nothing referring into it, is an earlier render tree: not this command's.
   if (
     scope === 'project' &&
     holdsRenderTree(root) &&
@@ -753,7 +753,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
       .length === 0
   ) {
     return fail(
-      `${root} holds files but no installation record, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; nothing is removed, so remove it yourself if it is no longer wanted`,
+      `${root} holds files but no installation record, so it is an earlier render tree, not an installation; nothing is removed, so remove it yourself if it is no longer wanted`,
     );
   }
   const tally: Tally = { removed: [], left: [] };

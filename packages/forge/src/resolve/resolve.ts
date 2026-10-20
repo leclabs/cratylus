@@ -27,8 +27,8 @@
 // This engine is DOCTRINE-AGNOSTIC: it folds an already-loaded contribution model
 // and knows nothing of anatomy. `AgentPlugin` declares WHICH DIRS a plugin ships;
 // scanning those dirs into the `LoadedPlugin` fragment-nodes + contributions this
-// engine folds belongs to `catalog/` and `config/loader.ts`. This module owns the
-// fold + the LOUD resolve-time validation only.
+// engine folds belongs to `catalog/` and to projection (`discoverFragments`). This
+// module owns the fold + the LOUD resolve-time validation only.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Structural value shapes + ops ────────────────────────────────────────────
@@ -137,10 +137,10 @@ export interface ResolveConfig {
 
 /**
  * The SOURCE of one fold contribution — WHERE it came from, for provenance
- * reporting (`explain`). A plugin's originating contribution
+ * reporting. A plugin's originating contribution
  * (`kind: 'plugin'`, carrying the plugin `name`) or a consumer patch
  * (`kind: 'patch'`, carrying its `index` in the `patches` array). This is the
- * attribution `explain` reads off to say which plugin/patch a fragment came from.
+ * attribution a report reads off to say which plugin/patch a fragment came from.
  *
  * `kind` STAYS HERE, and that is the 2026-08-05 census's ruling rather than an
  * oversight. This is a discriminated UNION and `kind` is its variant tag — the one
