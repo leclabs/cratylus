@@ -13,9 +13,16 @@ It needs Node 22 or later.
 ```sh
 cratylus install                     # the guided run: put the default corpus on this machine, no project needed
 cratylus install --scope project     # the same for the project you are in, to commit and share with its team
-omp --agent mav                      # start a session as an installed agent
+omp --agent architect                # start here: the architect
 cratylus uninstall --harness omp     # take away what install placed
 ```
+
+`cratylus` with no arguments prints how to start: what the command is for, how using it starts and
+where its theory is, a line each, then a line naming `cratylus --help` for everything else, on
+stdout, exit `0`. A completed install where the architect is installed ends with the start line the
+command prints. `cratylus --explain` prints the same as JSON, `{"name", "purpose", "orientation"}`:
+the cratylus extension shows that `orientation` in every omp session, as the command says it.
+`cratylus --explain` takes no other word. `cratylus --help` opens with what it is for.
 
 The sections that follow are for whoever installs: the guided install and its two scopes, starting a
 session as an agent, the badge on the status line, the host's model routing on omp, the host runtime
@@ -234,8 +241,8 @@ those at user scope instead.
 An installed agent starts as the session itself through omp's own flag:
 
 ```sh
-omp --agent mav            # start the agent mav
-omp --agent mav -p 'hi'    # every other word on the command line is omp's own flag
+omp --agent architect            # start the agent architect
+omp --agent architect -p 'hi'    # every other word on the command line is omp's own flag
 ```
 
 Install places no launcher and links no command for it: `--agent` is cratylus's extension (see
@@ -258,7 +265,7 @@ removes them too.
 ## The badge on the status line
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
-a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
+a session that runs it: `🏛️ architect`. It shows in the top-level interactive session and never in a
 subagent's, and it carries no color. Where the host's status line hides it, a user `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. A project installation never asks or writes it: where the settings hide it, it names as your next step the project's own keys that do, to change in the project's `.omp/config.yml`, or, where your settings alone do, `cratylus install --scope user --agent-status show` (or, where your user installation already recorded an answer, the keys in your own config to change). The host's own
 configuration is only ever added to, and `--dry-run` says what would be set and writes nothing.
 
@@ -328,7 +335,8 @@ With `--scope project` it does the same for the project the working directory is
 ## Exit codes and streams
 
 A command writes its result to stdout and everything that is not the result, a failure, a warning or
-a hint, to stderr, one line each. It exits `0` on success and `1` on failure. A failure reads
+a hint, to stderr, one line each. It exits `0` on success and `1` on failure. `cratylus` with no
+arguments is no failure: it prints the orientation on stdout and exits `0`. A failure reads
 `cratylus <command>: <what went wrong>; <what to do>`, and a usage error, an unknown command or flag
 or a value outside its choices, names the word and the `--help` to read, with a nearest match when
 one is close. Colour marks only the prefix of a failure or warning, and only on a terminal with

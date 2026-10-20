@@ -954,6 +954,13 @@ const SESSION_PLACEMENT: readonly string[] = [
  * assignment form of each agent that declares an assignment schema
  * ({@link OMP_ASSIGNMENT_KEY}).
  *
+ * THE COMMAND'S ORIENTATION, SHOWN (decision 0321). At load the module runs the
+ * reached `<bin> --explain` once, beside the capabilities' own, and keeps the
+ * `orientation` it answers; every turn of every session, launched or not, main or
+ * dispatched, carries it verbatim right after omp's own system prompt, before the
+ * declaration, skills and assignment forms. The module restates no word of it; a
+ * command that cannot explain itself adds nothing and fails nothing.
+ *
  * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
  * alike, names the agent making it in `CRATYLUS_AGENT`: the
  * declaration a main session was launched as, the agent a dispatched session runs
@@ -990,8 +997,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `parseArgs`, win over the declaration's — each for its own dimension — and the
  * declaration's body is carried either way.
  *
- * THE DECLARATION'S TEXT FOLLOWS omp's own system prompt in every turn of a main
- * session launched as a declaration (never a plain one), which keeps omp's prompt whole.
+ * THE DECLARATION'S TEXT FOLLOWS omp's own system prompt and the command's orientation
+ * in every turn of a main session launched as a declaration (never a plain one), which
+ * keeps omp's prompt whole.
  *
  * Every turn's system prompt carries the declaration as prose — its name and
  * description in a sentence, then its body, never the raw front matter — then the
@@ -1048,7 +1056,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
         "// installed command's own explanation, so a newer installed package changes the tools in",
         '// the next session and this file not at all. Nothing here names an agent either: the',
-        "// declaration is the one omp's own discovery finds, read afresh for each session.",
+        "// declaration is the one omp's own discovery finds, read afresh for each session. Every",
+        "// session's prompt carries the installed command's orientation as `--explain` answers it,",
+        "// right after omp's own; nothing here words it.",
         '',
         'import { execFile } from "node:child_process";',
         'import { existsSync, readFileSync } from "node:fs";',
@@ -1171,6 +1181,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// Silent when they match; nothing here chooses between builds.',
         '// The version the reached command answers for itself, which every build of it answers.',
         'const reached = async (): Promise<string> => (await run(["--version"])).trim();',
+        "// The reached command's orientation, as it explains itself: what it is for, how using it",
+        '// starts and where its theory is. None where it cannot explain itself: an older build, a',
+        '// refusal or an answer without one adds nothing and fails nothing.',
+        'async function orientationOf(): Promise<string | undefined> {',
+        '  try {',
+        '    const { orientation } = JSON.parse(await run(["--explain"])) as { orientation?: unknown };',
+        '    return typeof orientation === "string" ? orientation : undefined;',
+        '  } catch {',
+        '    return undefined;',
+        '  }',
+        '}',
         'async function warnSkew(session: Session): Promise<void> {',
         '  const artifacts = projected();',
         '  const scope = recordedScope();',
@@ -1419,6 +1440,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    type: "string",',
         '  });',
         '  let launched: Launched | undefined;',
+        "  // The reached command's orientation, asked once, at load, beside the capabilities' own",
+        '  // explanations, and shown as it says it.',
+        '  const orientation = await orientationOf();',
         '  // What puts back each setting the current launch holds, in the order it took them.',
         '  const undo: (() => void)[] = [];',
         '',
@@ -1562,22 +1586,28 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    return launch(ctx as unknown as Session, true);',
         '  });',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
-        "  // Every turn's prompt is omp's own, then the declaration and the full instructions of the",
-        '  // skills it loads at start, so a rebuilt base prompt drops neither. In every session,',
-        '  // launched or not, main or dispatched, the turn also carries the assignment form of each',
-        '  // agent that takes a typed one.',
+        "  // Every turn's prompt is omp's own, then the reached command's orientation, then the",
+        '  // declaration and the full instructions of the skills it loads at start, so a rebuilt base',
+        '  // prompt drops none of them. In every session, launched or not, main or dispatched, the',
+        "  // turn carries the command's orientation and the assignment form of each agent that takes a",
+        '  // typed one.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
         '    const forms = await dispatchForms(session);',
+        '    const oriented = orientation === undefined ? [] : [orientation];',
+        '    const formed = forms === undefined ? [] : [forms];',
         '    if (now === undefined || session.agent?.kind !== "main")',
-        '      return forms === undefined ? undefined : { systemPrompt: [...event.systemPrompt, forms] };',
+        '      return oriented.length + formed.length === 0',
+        '        ? undefined',
+        '        : { systemPrompt: [...event.systemPrompt, ...oriented, ...formed] };',
         '    return {',
         '      systemPrompt: [',
         '        ...event.systemPrompt,',
+        '        ...oriented,',
         '        instructions(now.declaration),',
         '        ...(await skills(now.declaration)),',
-        '        ...(forms === undefined ? [] : [forms]),',
+        '        ...formed,',
         '      ],',
         '    };',
         '  });',
