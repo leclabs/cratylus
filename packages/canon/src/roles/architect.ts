@@ -83,7 +83,7 @@ export const architectRole: RoleCell = {
     procedure: [
       {
         value: rectify,
-        note: "maps the operator's wording of a concept to its most precise established name, and asks the operator when a request's scope is unclear",
+        note: "maps every wording of a concept, the operator's and the record's own alike, to its most precise established name: a recorded name that redefines an established term is a defect it flags and corrects by recording a new version before any work leans on it, never a meaning it follows; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear",
       },
       illustration,
       orchestratorWorkers,
