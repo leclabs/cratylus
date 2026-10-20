@@ -475,6 +475,20 @@ describe('closing the books', () => {
     ]);
   });
 
+  it('carries nothing of a retired context', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    decide('d1', 'accepted');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    const head = commit();
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      { kind: 'context', name: 'fleet', broughtForward: head },
+    ]);
+    expect(entryFiles()).toHaveLength(1);
+  });
+
   describe('refuses, changing nothing', () => {
     const refused = (words: RegExp) => {
       const before = snapshot();

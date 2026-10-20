@@ -15,10 +15,12 @@
 //              examples, and where a wording tells what is not its current
 //              meaning: a reading of the concept journal
 //   purpose    record the project's purpose, or, with a reason, change it
-//   context    record a bounded context, or, with a reason, change one
+//   context    record a bounded context, or, with a reason, change one or
+//              bring a retired one back
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one
-//   retire     record a concept's retirement
+//   retire     record a concept's retirement, or, without a concept, a bounded
+//              context's
 //   decide     record a decision of realization, open or accepted
 //   deprecate  record that a standing decision no longer applies, with why
 //   close      close the journal's books: open a new period with an entry per
@@ -240,8 +242,8 @@ export const VERBS = {
     concept: 'bounded context',
     effect: 'appends',
     purpose:
-      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history',
-    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, or to settle descriptions recorded differently in separate lines of work that were later joined',
+      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history; or, given a reason, bring a retired context back by a new description superseding its retirement, its subject and place carried from before it was retired where left out, its concepts and decisions then read as they stood',
+    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, to settle descriptions recorded differently in separate lines of work that were later joined, or when a retired context returns to the design',
     positional: {
       name: 'context',
       description:
@@ -301,16 +303,23 @@ export const VERBS = {
     concept: 'retirement',
     effect: 'appends',
     purpose:
-      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept',
-    when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
-    positional: concept(
-      'The concept that leaves the design, by its name in the bounded context',
-    ),
+      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept; given no concept, retire the bounded context itself with the reason: no reading of the design shows it or its concepts any more, its decisions are read only with history, its own history lists the retirement and its reason, nothing is recorded into it until the context verb with a reason brings it back as it stood, and a closing of the books carries nothing of it',
+    when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead; without a concept, when the design drops a whole bounded context of the project’s own, never a delivered one',
+    positional: {
+      ...concept(
+        'The concept that leaves the design, by its name in the bounded context; leave it out to retire the bounded context itself',
+      ),
+      optional: true,
+    },
     flags: {
-      ...inContext('concept'),
-      reason: valueFlag('Why the concept leaves the design', {
-        required: true,
-      }),
+      context: valueFlag(
+        'The bounded context the concept belongs to, or, without a concept, the one that leaves the design; one already recorded with the context verb',
+        { required: true },
+      ),
+      reason: valueFlag(
+        'Why the concept, or without one the bounded context, leaves the design',
+        { required: true },
+      ),
     },
   },
   decide: {
@@ -459,9 +468,11 @@ function answerOf(
   const read = reader(args, refuse);
   /** The delivered contexts in the delivered order (origin, position). */
   const ordered = [...delivered].sort(byDelivery);
-  /** This journal's contexts by identity. */
+  /** This journal's contexts by identity; a retired one holds no place. */
   const byIdentity = new Map(
-    [...folded.contexts.keys()].map((name) => [folded.identity(name), name]),
+    [...folded.contexts.keys()]
+      .filter((name) => !folded.retired(name))
+      .map((name) => [folded.identity(name), name]),
   );
   /** The practice place, in the delivered order: each delivered context, or
    *  this journal's own copy of it where it holds one, in its place. */
@@ -471,12 +482,12 @@ function answerOf(
   });
   /** This journal's own copies of delivered contexts, in the delivered order. */
   const ownCopies = practice.flatMap((p) => ('own' in p ? [p.own] : []));
-  /** This journal's other contexts, in record order. */
+  /** This journal's other contexts, none retired, in record order. */
   const others = [...folded.contexts.keys()].filter(
-    (n) => !ownCopies.includes(n),
+    (n) => !ownCopies.includes(n) && !folded.retired(n),
   );
   /** The delivered context `--context` names, if it names one this journal
-   *  holds no copy of. */
+   *  holds no live copy of. */
   const deliveredNamed = (): DeliveredContext | undefined => {
     const name = args.flags.get('context')?.[0];
     return practice.flatMap((p) =>
@@ -495,14 +506,24 @@ function answerOf(
       );
     return name;
   };
+  /** The recorded context `--context` names, refused while it is retired. */
+  const recordable = (): string => {
+    const name = context();
+    if (folded.retired(name))
+      throw refuse(
+        `the bounded context '${name}' is retired; bring it back with concepts context and a --reason first`,
+      );
+    return name;
+  };
   /** The contexts a query covers: the one `--context` names, else all; those
-   *  in the practice place, and this journal's others. */
+   *  in the practice place, and this journal's others; a retired one none. */
   const covering = (): Covered => {
     if (!args.flags.has('context')) return { practice, contexts: others };
     const named = deliveredNamed();
     if (named !== undefined)
       return { practice: [{ delivered: named }], contexts: [] };
     const where = context();
+    if (folded.retired(where)) return { practice: [], contexts: [] };
     return ownCopies.includes(where)
       ? { practice: [{ own: where }], contexts: [] }
       : { practice: [], contexts: [where] };
@@ -670,8 +691,10 @@ function answerOf(
         ];
       });
       const examples = visibleExamples(journal.root)
-        .filter(
-          (e) => !args.flags.has('context') || covered.includes(e.context),
+        .filter((e) =>
+          args.flags.has('context')
+            ? covered.includes(e.context)
+            : !folded.retired(e.context),
         )
         .flatMap((e) =>
           warnings(
@@ -749,7 +772,7 @@ function answerOf(
             (d) =>
               (only === undefined || d.context === only) &&
               (!open || d.status === 'open') &&
-              (history || stands(d)),
+              (history || (stands(d) && !folded.retired(d.context))),
           )
           .map((d) => (history ? d : standingDecision(d))),
         ...(history ? folded.booksClosed() : {}),
@@ -806,13 +829,24 @@ function answerOf(
         );
       if (reason.trim() === '')
         throw refuse('the reason is empty; give why the context changes');
-      if (subject === undefined && relation === undefined)
+      const retired = folded.retired(name);
+      if (subject === undefined && relation === undefined && !retired)
         throw refuse('give the --subject or --relation that changes, or both');
       if (subject !== undefined && subject.trim() === '')
         throw refuse(
           'the subject is empty; give one, or leave --subject out to keep it',
         );
-      const descriptions = folded.descriptions(name);
+      /** The descriptions a field left out is carried from: the current ones,
+       *  or, while retired, those the retirement superseded. */
+      const descriptions = retired
+        ? (folded.contexts.get(name) ?? [])
+            .filter((c) =>
+              folded
+                .currentRetirements(name)
+                .some((r) => r.supersedes.includes(c.id)),
+            )
+            .map(({ subject, relation }) => ({ subject, relation }))
+        : folded.descriptions(name);
       /** The current `field`, carried over; refused while competing
        *  descriptions differ on it, or where none is current. */
       const carried = (field: 'subject' | 'relation'): string => {
@@ -833,7 +867,10 @@ function answerOf(
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
-        supersedes: folded.currentDescriptions(name).map((c) => c.id),
+        supersedes: [
+          ...folded.currentDescriptions(name),
+          ...folded.currentRetirements(name),
+        ].map((c) => c.id),
       };
       const found = described(name, draft, [
         ...(subject === undefined ? [] : (['subject'] as const)),
@@ -845,7 +882,7 @@ function answerOf(
     case 'define':
     case 'supersede': {
       const name = read.named('concept');
-      const where = context();
+      const where = recordable();
       const wording = read.required('wording', 'the correction');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
@@ -877,8 +914,20 @@ function answerOf(
       return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'retire': {
+      if (args.positionals.length === 0) {
+        const where = context();
+        const reason = read.required('reason', 'the reason');
+        if (folded.retired(where))
+          throw refuse(`the bounded context '${where}' is already retired`);
+        return journal.append({
+          kind: 'retire-context',
+          context: where,
+          reason,
+          supersedes: folded.currentDescriptions(where).map((c) => c.id),
+        });
+      }
       const name = read.named('concept');
-      const where = context();
+      const where = recordable();
       const reason = read.required('reason', 'the reason');
       const supersedes = superseding(where, name, false);
       return journal.append({
@@ -891,7 +940,7 @@ function answerOf(
     }
     case 'decide': {
       const decisionId = read.named('decision id');
-      const where = context();
+      const where = recordable();
       const [title, situation, decision, consequences] = (
         ['title', 'situation', 'decision', 'consequences'] as const
       ).map((flag) => read.required(flag, `the ${flag}`)) as [

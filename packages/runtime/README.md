@@ -64,7 +64,11 @@ version was written, decision a decision superseded or kind recorded before the 
 shows until `design` or `decisions` is asked with `--history`, and a context's history carries
 the effort recorded for its past work. It also holds the project's purpose, what the project is
 for: `purpose` records it and, with a reason, changes it, and `state` shows it first, before any
-context.
+context. `retire` without a concept retires a bounded context of the project's own with its
+reason: no reading of the design shows it or its concepts, its decisions show only with
+`--history`, its own history lists the retirement, nothing is recorded into it until `context`
+with a reason brings it back as it stood, and a delivered context it held the place of shows
+again.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read, which append and which close as code.

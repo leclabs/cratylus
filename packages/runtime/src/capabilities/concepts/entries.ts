@@ -7,7 +7,9 @@
 // acting agent, else git's user. The project's purpose (`purpose`), what the
 // project is for, and a context's description (`context`) change like a
 // concept does: a later one with its reason supersedes the current ones, the
-// earlier kept in the journal until its books close. A concept
+// earlier kept in the journal until its books close. A context's retirement
+// (`retire-context`) supersedes its current descriptions, and a later
+// description with its reason brings it back. A concept
 // version (`define`, `supersede`, `retire`) belongs to one bounded context and
 // names the versions it supersedes; a decision (`decide`) is named by its own
 // id and records realization, and its acceptance (`accept`) and its
@@ -91,6 +93,15 @@ export interface RetireEntry extends Stamped {
   readonly reason: string;
   readonly supersedes: readonly string[];
   readonly broughtForward?: string;
+}
+
+/** The retirement of a bounded context, with the `reason` it leaves the
+ *  design, superseding its current descriptions; never an opening. */
+export interface RetireContextEntry extends Stamped {
+  readonly kind: 'retire-context';
+  readonly context: string;
+  readonly reason: string;
+  readonly supersedes: readonly string[];
 }
 
 /** A version of a concept: what `history` lists. */
@@ -177,6 +188,7 @@ export interface EfficiencyEntry extends Stamped {
 export type Entry =
   | PurposeEntry
   | ContextEntry
+  | RetireContextEntry
   | VersionEntry
   | DecideEntry
   | AcceptEntry
@@ -244,6 +256,12 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     reason: text,
     supersedes: texts,
     broughtForward: optional(text),
+  },
+  'retire-context': {
+    at: text,
+    context: text,
+    reason: text,
+    supersedes: texts,
   },
   decide: {
     at: text,

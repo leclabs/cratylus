@@ -757,3 +757,187 @@ it('refuses a working directory outside any git repository', () => {
     rmSync(outside, { recursive: true, force: true });
   }
 });
+
+describe('retiring a bounded context', () => {
+  const retire = () =>
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.') as {
+      id: string;
+      kind: string;
+      supersedes: string[];
+    };
+  let described: string;
+  beforeEach(() => {
+    described = (
+      concepts(
+        'context',
+        'booking',
+        '--subject',
+        'Booking.',
+        '--relation',
+        'Upstream.',
+      ) as { id: string }
+    ).id;
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    version('define', 'A hold lasts ten minutes.', 'First.');
+    concepts(
+      'decide',
+      'd1',
+      '--context',
+      'booking',
+      '--title',
+      'Holds expire',
+      '--situation',
+      'S',
+      '--decision',
+      'D',
+      '--consequences',
+      'C',
+      '--status',
+      'accepted',
+    );
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/holds.md'),
+      '1. (hold) Given one, when held, then `expire()` runs.\n',
+    );
+  });
+  const names = (answer: unknown) =>
+    (answer as { contexts: { name: string }[] }).contexts.map((c) => c.name);
+  const decisions = (...argv: string[]) =>
+    (concepts('decisions', ...argv) as { decisions: { id: string }[] })
+      .decisions;
+
+  it('records a retire-context entry superseding the current description', () => {
+    expect(retire()).toMatchObject({
+      kind: 'retire-context',
+      context: 'booking',
+      reason: 'Dropped.',
+      supersedes: [described],
+    });
+  });
+
+  it('leaves it out of every reading of the design, its history kept', () => {
+    const retirement = retire();
+    for (const reading of [['state'], ['design'], ['design', '--history']])
+      expect(names(concepts(...reading)), reading.join(' ')).toEqual(['fleet']);
+    expect(names(concepts('state', '--context', 'booking'))).toEqual([]);
+    const leakage = concepts('leakage') as { warnings: unknown[] };
+    expect(JSON.stringify(leakage.warnings)).not.toContain('booking');
+    expect(decisions()).toEqual([]);
+    expect(decisions('--history').map((d) => d.id)).toEqual(['d1']);
+    expect(concepts('history', '--context', 'booking')).toMatchObject({
+      versions: [
+        { id: described, subject: 'Booking.' },
+        {
+          id: retirement.id,
+          retired: true,
+          reason: 'Dropped.',
+          supersedes: [described],
+        },
+      ],
+    });
+    expect(concepts('history', 'hold', '--context', 'booking')).toMatchObject({
+      versions: [{ kind: 'define' }],
+    });
+  });
+
+  it('refuses recording into it, naming the remedy', () => {
+    retire();
+    const into =
+      /^concepts \w+: .*'booking' is retired; bring it back with concepts context and a --reason/;
+    refused(
+      [
+        'define',
+        'slot',
+        '--context',
+        'booking',
+        '--wording',
+        'W',
+        '--reason',
+        'R',
+      ],
+      into,
+    );
+    refused(
+      [
+        'supersede',
+        'hold',
+        '--context',
+        'booking',
+        '--wording',
+        'W',
+        '--reason',
+        'R',
+      ],
+      into,
+    );
+    refused(['retire', 'hold', '--context', 'booking', '--reason', 'R'], into);
+    refused(
+      [
+        'decide',
+        'd2',
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+      ],
+      into,
+    );
+  });
+
+  it('a context change with a reason brings it back as it stood', () => {
+    const retirement = retire();
+    expect(
+      concepts('context', 'booking', '--reason', 'Needed again.'),
+    ).toMatchObject({
+      subject: 'Booking.',
+      relation: 'Upstream.',
+      supersedes: [retirement.id],
+    });
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [
+        { name: 'booking', concepts: ['hold ≜ A hold lasts ten minutes.'] },
+      ],
+    });
+    expect(decisions().map((d) => d.id)).toEqual(['d1']);
+    expect(retire()).toMatchObject({ kind: 'retire-context' });
+  });
+
+  it('refuses an unknown, an already retired or a delivered context', () => {
+    refused(
+      ['retire', '--context', 'nowhere', '--reason', 'R'],
+      /no bounded context 'nowhere'/,
+    );
+    retire();
+    refused(
+      ['retire', '--context', 'booking', '--reason', 'R'],
+      /'booking' is already retired/,
+    );
+    const delivered = {
+      origin: 'cratylus',
+      version: '3.2.1',
+      context: 'workflow',
+      identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
+      position: 1,
+      subject: 'How the work is done.',
+      relation: '',
+      concepts: [],
+    };
+    const before = journal();
+    expect(() =>
+      dispatchConcepts(
+        ['retire', '--context', 'cratylus:workflow', '--reason', 'R'],
+        { from: repo, delivered: [delivered] },
+      ),
+    ).toThrow(/^concepts retire: .*is delivered by cratylus .*read-only/);
+    expect(journal()).toEqual(before);
+  });
+});

@@ -317,3 +317,31 @@ it('decisions lead with their title, ids only as references, read apart from the
   // A decision records realization and is never inspected for leakage.
   expect(leakage.warnings.map((w) => w.passage.kind)).not.toContain('decision');
 });
+
+it('a retired own copy of a delivered context holds no place: the delivered one shows again', () => {
+  booking();
+  const own = command([
+    'context',
+    'workflow',
+    '--subject',
+    'The project’s own workflow.',
+  ]) as { id: string };
+  const held = [{ ...delivered, identity: own.id }];
+  command(
+    [
+      'retire',
+      '--context',
+      'workflow',
+      '--reason',
+      'Dropped for the practice.',
+    ],
+    held,
+  );
+  for (const verb of ['state', 'design']) {
+    const answer = command([verb], held) as Answer;
+    expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
+    expect(answer.practice?.contexts.map((c) => c.name)).toEqual([
+      'cratylus:workflow',
+    ]);
+  }
+});
