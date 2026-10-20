@@ -71,7 +71,7 @@ named for the role, carrying nothing beyond it, its mark the role's. `holder` re
 a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
-production and generative video, nico the canon and latent lexicography, mav software
+production and generative video, nico corpus linguistics and latent lexicography, mav software
 engineering). The architect role owns the conceptual model of every context it is given, the
 canon included; a persona brings its expertise and owns nothing its role does not.
 Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
