@@ -7,7 +7,7 @@
 //
 // A CONSTRAINT HAS TWO FACES, AND ONLY ONE OF THEM IS CONTINGENT.
 //
-//   face_decl — `body`, the inline σ* declaration, read by the same reasoning it
+//   face_decl — `body`, the inline `<term> ≜ <correction>` declaration, read by the same reasoning it
 //               governs. Projected into the agent's own definition by `agentBody`
 //               for EVERY composed value, on EVERY harness, UNCONDITIONALLY.
 //   face_mech — the harness mechanism. Emitted only where the harness can express
@@ -19,7 +19,7 @@
 // was false: `face_decl` is unconditional, so a bound never projects to nothing.
 // The floor is a STEER, never silence. A rule the agent can read still governs the
 // agent — by its reasoning rather than around it — which is what every non-enforcing
-// dimension value has always been.
+// value of a factor has always been.
 //
 // So the shortfall is a DEGRADATION, not a failure, and it is reported, not thrown:
 //
@@ -48,8 +48,8 @@ import type { HarnessAdapter } from '../core/harness-adapter.js';
 
 /** A constraint's realization demand: what it is, where it fires, on what, for whom. */
 export interface Realizable {
-  /** The anchor α — what a warning names, so the reader need not search. */
-  readonly anchor: string;
+  /** The term — what a warning names, so the reader need not search. */
+  readonly term: string;
   readonly substrate: string;
   readonly events: readonly EventName[];
   /**
@@ -73,7 +73,7 @@ export type EnforcementMode = 'bound' | 'steer' | 'routed';
 
 /** One thing a harness could not carry, and why — the `skipped` half of a projection. */
 export interface Loss {
-  readonly anchor: string;
+  readonly term: string;
   readonly event: EventName;
   readonly adapter: string;
   readonly agents: readonly string[];
@@ -91,11 +91,11 @@ export interface Realization {
 }
 
 function unrealizableWarning(f: Realizable, event: string, adapter: string) {
-  return `enforcing constraint '${f.anchor}' declares event '${event}' on substrate '${f.substrate}', which the '${adapter}' adapter cannot realize. No mechanism is emitted for it. The rule still reaches the agent as a declaration and governs by its reasoning — a steer, not a bound.`;
+  return `enforcing constraint '${f.term}' declares event '${event}' on substrate '${f.substrate}', which the '${adapter}' adapter cannot realize. No mechanism is emitted for it. The rule still reaches the agent as a declaration and governs by its reasoning — a steer, not a bound.`;
 }
 
 function unscopableWarning(f: Realizable, event: string, adapter: string) {
-  return `enforcing constraint '${f.anchor}' is composed into ${f.agents.join(', ')}, but the '${adapter}' adapter cannot narrow its event '${event}' to those agents — the harness gives that hook no agent identifier to match on. Emitting it anyway would govern EVERY agent instead of the ones that composed it, so no mechanism is emitted. The rule still reaches those agents as a declaration and governs by their reasoning — a steer, not a bound.`;
+  return `enforcing constraint '${f.term}' is composed into ${f.agents.join(', ')}, but the '${adapter}' adapter cannot narrow its event '${event}' to those agents — the harness gives that hook no agent identifier to match on. Emitting it anyway would govern EVERY agent instead of the ones that composed it, so no mechanism is emitted. The rule still reaches those agents as a declaration and governs by their reasoning — a steer, not a bound.`;
 }
 
 /**
@@ -125,7 +125,7 @@ export function realizationOf(
   for (const event of f.events) {
     if (!adapter.realizes(event)) {
       losses.push({
-        anchor: f.anchor,
+        term: f.term,
         event,
         adapter: adapter.name,
         agents: f.agents,
@@ -138,7 +138,7 @@ export function realizationOf(
     // constraint some agent composes.
     if (f.agents.length > 0 && !adapter.scopes(event)) {
       losses.push({
-        anchor: f.anchor,
+        term: f.term,
         event,
         adapter: adapter.name,
         agents: f.agents,

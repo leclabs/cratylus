@@ -1,9 +1,9 @@
 // The runtime THIN SHIM emitter — the BUILD→RUNTIME seam of the projection.
-// Lives in forge (not the corpus) so the CONSUMER projection path emits
-// shims too: a plugin the consumer extends may declare `runtime:`, and its cells
+// Lives in forge (not the canon) so the CONSUMER projection path emits
+// shims too: a plugin the consumer extends may declare `runtime:`, and its skills
 // must get a reachable shim wherever they are projected from.
 //
-// When a skill cell declares `runtime: {capability}`, the projection emits, beside
+// When a skill declares `runtime: {capability}`, the projection emits, beside
 // its SKILL.md, a `scripts/<capability>.mjs` THIN SHIM. The shim is minimal: it
 // forwards its argv to the host-installed `<CLI_BIN> <capability>` CLI and
 // mirrors its exit code — NOTHING more. It is NOT a bundle of the capability impl:

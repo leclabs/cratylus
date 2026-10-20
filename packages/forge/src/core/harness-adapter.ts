@@ -12,11 +12,11 @@
 //
 // VOCABULARY — the GENUS is `artifact`: one projected file, `⟨filename, content⟩`,
 // which is what every op below returns. `surface` is kept for the sense the rest
-// of the corpus gives it — a module's exposed API extent (`resolve/`'s public
+// of this repository gives it — a module's exposed API extent (`resolve/`'s public
 // surface, a port's INTERFACE surface). `enforcingSurface` below keeps the word in
 // exactly that sense: the global config extent a harness offers, not a file.
 
-import type { Agent, Binding, DimensionManifest, Rule } from '@cratylus/schema';
+import type { Agent, Binding, FactorManifest, Rule } from '@cratylus/schema';
 import type {
   EventName,
   HarnessMechanism,
@@ -31,7 +31,7 @@ import type { ResolvedSkill } from './body.js';
  * agent — the SESSION itself.
  *
  * A harness whose enforcement is CODE has no global config file to register in, so
- * it realizes a session-scoped cell by placing a module in the scope every session
+ * it realizes a session-scoped hook by placing a module in the scope every session
  * reads. Agent scopes are keyed by agent name (a harness that places artifacts per
  * agent); this token names the session's. It is not an agent name and cannot collide
  * with one — canon agent names are cold-derived words, never `_`-prefixed.
@@ -105,12 +105,12 @@ export interface HarnessHooksProjection {
  * (`projectPluginSet`) and hands it down.
  */
 export interface AgentDefContext {
-  /** The plugin set's resolved dimension manifest — section order and field set. */
-  readonly manifest: DimensionManifest;
+  /** The plugin set's resolved factor manifest — section order and field set. */
+  readonly manifest: FactorManifest;
   /**
-   * The resolved `anchor → HarnessMechanism` map for this agent's enforcing
-   * values — INJECTED, because deploy emits `mechanism` per (fragment, adapter);
-   * it is not a field the source cell carries. A harness
+   * The resolved `term → HarnessMechanism` map for this agent's enforcing
+   * values — INJECTED, because deploy emits `mechanism` per (value, adapter);
+   * it is not a field the authored value carries. A harness
    * that attaches per-agent (claude: front-matter hooks) renders them; one that
    * declares globally ignores it and uses `enforcingSurface` instead.
    */
@@ -194,7 +194,7 @@ export interface HarnessAdapter {
   agentRel(name: string): string;
   /**
    * Where skill `<name>` lands ON THE HOST — every destination, harness-home
-   * relative, given the agent set this corpus projects.
+   * relative, given the agent set this canon projects.
    *
    * PLURAL because how many destinations a skill needs depends on how the
    * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
@@ -323,20 +323,20 @@ export interface HarnessAdapter {
    */
   scopes(event: EventName): boolean;
   /**
-   * How THIS harness invokes a cell's deployed worker — the command string its
+   * How THIS harness invokes a hook's deployed worker — the command string its
    * native hook config will carry.
    *
    * THE SEAM BETWEEN CANON AND FORGE, at its narrowest point. The canon owns what
    * a worker DOES (`content`, harness-agnostic behaviour); the harness owns WHERE
-   * it lands and HOW it is invoked. `$HOME/.claude/hooks/<anchor>/<file>` is a
-   * claude FACE, and a canon cell that spelled it out would have chosen a harness
+   * it lands and HOW it is invoked. `$HOME/.claude/hooks/<hookId>/<file>` is a
+   * claude FACE, and a canon hook declaration that spelled it out would have chosen a harness
    * — which is precisely what it did, and why a second harness's projection carried no
-   * governance at all: every cell's command named a claude path, so that harness's whole
+   * governance at all: every hook's command named a claude path, so that harness's whole
    * hooks dir was dropped rather than translated.
    *
-   * A function OF the adapter — so it is asked here, never read off the cell.
+   * A function OF the adapter — so it is asked here, never read off the hook declaration.
    */
-  hookCommand(anchor: string, workerFilename: string): string;
+  hookCommand(hookId: string, workerFilename: string): string;
   /** Project an agent vector → its subagent def file, under the set's context. */
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
@@ -365,10 +365,10 @@ export interface HarnessAdapter {
    *
    * Absent ⇒ this adapter attaches per-agent already.
    *
-   * `mechanisms` is the same injected `anchor → HarnessMechanism` map `agentDef`
+   * `mechanisms` is the same injected `term → HarnessMechanism` map `agentDef`
    * takes, and it is what an implementation needs to know WHAT COMMAND to wire —
-   * deploy emits `mechanism` per (fragment, adapter); it is never a field the
-   * source cell carries.
+   * deploy emits `mechanism` per (value, adapter); it is never a field the
+   * authored value carries.
    *
    * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** An implementation took a
    * `mechanisms` parameter and defaulted it to an empty map, and the adapter never
@@ -389,7 +389,7 @@ export interface HarnessAdapter {
     mechanisms?: ReadonlyMap<string, HarnessMechanism>,
   ): HarnessProjection | readonly HarnessProjection[] | null;
   /**
-   * Realize the SCOPE-ACTIVATED cells on a harness whose hook surface is a
+   * Realize the SCOPE-ACTIVATED hooks on a harness whose hook surface is a
    * PROGRAM rather than a config file — the `hooks` op's sibling, for the harness
    * that has no file to register in.
    *
@@ -401,21 +401,21 @@ export interface HarnessAdapter {
    * composes.
    *
    * **IT WAS MISSING, AND ITS ABSENCE WAS A SILENT DEGRADE.** Projection branched on
-   * `hooks` alone, so on omp every scope-activated cell — the stance gate, the
+   * `hooks` alone, so on omp every scope-activated hook — the stance gate, the
    * deploy-drift notice, the memory-consolidation nudge, the resume notice — was
    * warned about and dropped, and the harness deployed no mechanism whatsoever
    * while the adapter's own header claimed scope⇔realize was closed. Measured on
    * `fire`: no `~/.omp/hooks` and no per-profile `agent/extensions` dir, against
-   * all five anchors wired in the same host's `~/.claude/settings.json`.
+   * all five hooks wired in the same host's `~/.claude/settings.json`.
    *
    * `agentNames` is the projected agent set, for a harness that scopes by
    * directory and must place a copy per agent scope beside the session's ({@link
    * SESSION_SCOPE}). omp does not: its one module sits at the session scope. That is
    * not an ambient form — nothing here filters itself at runtime, and
-   * no artifact governs an agent that did not compose it; these cells compose no
+   * no artifact governs an agent that did not compose it; these hooks compose no
    * agent by construction.
    *
-   * Absent ⇒ this harness registers scope-activated cells in a config file, or
+   * Absent ⇒ this harness registers scope-activated hooks in a config file, or
    * cannot carry them at all (the degrade projection reports).
    */
   scopeActivatedSurface?(
@@ -452,7 +452,7 @@ export interface HarnessAdapter {
    * {@link SESSION_SCOPE}).
    *
    * `agents` is the COMPOSED set, each projected agent once — not its names —
-   * because what is emitted is written from the agent cells at projection.
+   * because what is emitted is written from the agent declarations at projection.
    *
    * NO LAUNCHER. Starting a session as an agent goes through the harness itself
    * (omp's `--agent`, registered by its {@link capabilitySurface} module; claude's own

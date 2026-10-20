@@ -1,16 +1,17 @@
 # @cratylus/forge
 
 The build core for [cratylus](../../README.md): it resolves a plugin set into one merged set of
-cells, renders that set into the files a harness reads, and installs them.
+agents, skills, values and hooks, renders that set into the files a harness reads, and installs
+them.
 
 This README is for whoever works on the library, or on an adapter for a harness. What an operator
 does with the `cratylus` command — install and its flags, the practices, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
 
-Agents, skills, and hooks are typed TypeScript cells inside plugin packages. `forge` resolves a
-plugin set into one merged canon, projects it into harness artifacts, and `install` places them on
-the local machine.
+Agents, skills, values and hooks are typed TypeScript declarations inside plugin packages. `forge`
+resolves a plugin set into one merged canon, projects it into harness artifacts, and `install`
+places them on the local machine.
 
 The direction matters. The canon is the source; OMP's home (`~/.omp/`) is a projection of it.
 Nothing in this pipeline reads a harness's existing configuration and treats it as truth.
@@ -23,12 +24,12 @@ resolve → project → install
 
 | Stage     | What it does                                                                                  |
 | --------- | --------------------------------------------------------------------------------------------- |
-| `resolve` | resolves the plugin set into one merged fragment set                                          |
+| `resolve` | resolves the plugin set into one merged set of agents, skills, values and hooks               |
 | `project` | renders the resolved set into a render tree, in memory (`projectPluginSet`)                   |
 | `install` | places the render tree as the owned root and refers OMP's home into it, user or project scope |
 
-Projection goes from composed cells to OMP artifacts directly, through forge's adapter port. The
-plugin set `install` projects is the corpus the `cratylus` command is built with.
+Projection goes from composed agents and skills to OMP artifacts directly, through forge's adapter
+port. The plugin set `install` projects is the canon the `cratylus` command is built with.
 
 ## Rendering a tree
 
@@ -42,10 +43,11 @@ companion get their shim emitted alongside them. A shim forwards its arguments t
 A plugin declares **practices** (`AgentPlugin.practices`): ways of working an install offers as one
 choice, each naming the agents it installs and any skills no agent carries, beside the **plumbing**
 (`AgentPlugin.plumbing`) every practice is installed with and none is offered as. `projectPluginSet`
-renders the practices it is given (`ProjectOpts.practices`); named none, it renders every cell exactly
-as a plugin set declaring no practice does, byte for byte. Given names, it renders the union of those
-practices' agents, skills they declare and compose, and hooks declared by the chosen practices or
-plugin plumbing. An empty list is refused: no practice is not every practice.
+renders the practices it is given (`ProjectOpts.practices`); named none, it renders every agent,
+skill and hook exactly as a plugin set declaring no practice does, byte for byte. Given names, it
+renders the union of those practices' agents, skills they declare and compose, and hooks declared
+by the chosen practices or plugin plumbing. An empty list is refused: no practice is not every
+practice.
 
 A chosen set must be closed under skill composition. Before anything is rendered, projection checks
 that every skill an agent is given, with what that composes, is carried by the plugin set; a set
@@ -65,8 +67,8 @@ refuse it as any unknown name.
 
 An agent's `skills` are the names it declares; what projection gives it is their **closure** over
 `composition`: the declared names first, then every skill they transitively compose, breadth-first in
-each cell's declaration order, each name once. Each composed name is resolved against the set's
-resolved skills, so a later plugin's same-name cell changes the closure, a name no plugin ships is
+each skill's declaration order, each name once. Each composed name is resolved against the set's
+resolved skills, so a later plugin's same-name skill changes the closure, a name no plugin ships is
 kept and not expanded, and a composition cycle terminates. The closure is computed once, before any
 agent is rendered; every adapter renders the list it is handed.
 
@@ -77,10 +79,11 @@ skills' full instructions in every turn's system prompt.
 ### An agent's text, and the settings its reach and model bind to
 
 An agent's text is rendered from its values: `# <mark> <name>` (the name alone without a mark), its
-description, then one section per factor group in catalog order, each value as its anchor and gloss,
-marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and model are never
-text. On OMP the definition's front matter carries `model: "@<name>"`, the model role named for the
-agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch any agent
+description, then one section per factor group in catalog order, each value as its term and
+correction, marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and
+model are never text. On OMP the definition's front matter carries `model: "@<name>"`, the model
+role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
+any agent
 (decision 0142). `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
 its own role.
@@ -91,7 +94,7 @@ A render tree is placed WHOLE as the owned root, `~/.cratylus/<harness>/` at use
 `<project>/.cratylus/<harness>/` at project scope (`deploy/owned-root.ts`): agents under `agents/`,
 skills under `skills/`, extension modules under `extensions/`, hook workers under `hooks/`, a
 `package.json` naming the modules (`omp.extensions`) and recording the version that projected it,
-`runtime.json` where the corpus configures a capability, and `installation.json`, the record of
+`runtime.json` where the canon configures a capability, and `installation.json`, the record of
 every reference placed outside the root and every host-file edit. The harness's own surfaces only
 refer into it (`linkOwnedRoot`: for omp, a link in `~/.omp/plugins/node_modules` and a dependency
 entry in `~/.omp/plugins/package.json`), so uninstall (`unlinkOwnedRoot`, then the root) removes
@@ -194,12 +197,12 @@ import { projectorCommands } from '@cratylus/forge/cli';
 
 `adapterByName` is the single selection point for a harness adapter. OMP is its one implementation;
 consumers depend on the adapter port and selector rather than on concrete rendering functions.
-The cell types and `defineAgentPlugin` are [`@cratylus/schema`](../schema/README.md)'s. They are
-no longer forge's, and importing them from the projector was the
+The declaration types and `defineAgentPlugin` are [`@cratylus/schema`](../schema/README.md)'s.
+They are no longer forge's, and importing them from the projector was the
 inversion `schema` exists to end.
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
-fragment catalogs of a plugin set), `./module-scan` and `./adapters/omp` (the OMP adapter).
+value catalogs of a plugin set), `./module-scan` and `./adapters/omp` (the OMP adapter).
 
 ## License
 

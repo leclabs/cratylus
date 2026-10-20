@@ -46,12 +46,12 @@
 // falling back to the tier and effort it holds (decision 0111). Every agent keeps
 // omp's default tools and may dispatch any agent (decision 0142).
 //
-// The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
+// The composed Target BODY is HARNESS-NEUTRAL — the agent's factor sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
 // `skillBody` from core and adds only the omp-specific FRAMING.
 
 // The bin's ONE authored home. This artifact is named after the TOOL that emits
-// it, so a rename must carry it — the same reason a cell carries `{{fact:runtime-bin}}`
+// it, so a rename must carry it — the same reason a hook worker carries `{{fact:runtime-bin}}`
 // rather than the literal. `forge → runtime` is a permitted edge; spelling the name
 // here instead would be a second home for it, which `bin-name-single-home` catches
 // and rightly refused.
@@ -115,8 +115,8 @@ export const OMP_EXTENSIONS_DIR = 'extensions';
  *  name. */
 export const OMP_PACKAGE_DIR = 'plugins';
 
-/** The emitted SCOPE-ACTIVATED module's filename: the session-wide hooks of the cells
- *  no agent composes. */
+/** The emitted SCOPE-ACTIVATED module's filename: the session-wide hooks no agent
+ *  composes. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
 /** The emitted DISPATCH ISOLATION module's filename. A second file, since it retires
@@ -259,7 +259,7 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * and SKIPS the file — a persona that silently does not exist.
  *
  * **`key` IS RESERVED.** It is the slot of an ipseic agent's key (decision 0048), and
- * every agent this corpus composes holds it empty.
+ * every agent this canon composes holds it empty.
  *
  * **`model` NAMES THE AGENT'S OWN ROLE, THEN ITS TIER AND EFFORT, NEVER A MODEL**
  * (decisions 0111, 0112). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order
@@ -293,7 +293,7 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * omp survives that by falling back to a naive `key: value` line parser and
  * logging a warning on every discovery pass, so the defect is invisible right up
  * until a description grows a `#` or a newline and the fallback loses it too.
- * Double-quoted with `"` and `\` escaped, every description this corpus can
+ * Double-quoted with `"` and `\` escaped, every description this canon can
  * produce is a legal one-line YAML scalar. Each skill name is quoted by the same
  * rule, which makes the emitted flow sequence identical in shape to the one omp's
  * own agent-definition template writes.
@@ -361,7 +361,7 @@ export function ruleToOmpMd(r: Rule): string {
 
 /** One `pi.on(...)` registration, already narrowed to its act where it has one. */
 interface OmpRegistration {
-  readonly anchor: string;
+  readonly hookId: string;
   readonly native: string;
   readonly tool: string | undefined;
   /** The tool name this act wears in the WORKER's wire contract, when it is an
@@ -373,20 +373,20 @@ interface OmpRegistration {
 }
 
 /**
- * Realize the SCOPE-ACTIVATED cells — the ones no agent composes — as one module
+ * Realize the SCOPE-ACTIVATED hooks — the ones no agent composes — as one module
  * at the SESSION scope.
  *
  * WHY THIS OP EXISTS AT ALL. Projection asked only for `hooks()`, a settings
  * fragment, and omp keeps no hook config: its loader scans each native config
  * root's `extensions/` dir, so the artifact is a module and the directory is the
- * registration. With nothing to answer, every one of canon's session-scoped cells
+ * registration. With nothing to answer, every one of canon's session-scoped hooks
  * was warned about and dropped, and this harness deployed none of them.
  *
  * ONE MODULE, in the session root every `omp` session scans natively — the same
- * reach claude's user-level `settings.json` gives these cells.
+ * reach claude's user-level `settings.json` gives these hooks.
  *
  * NOT the ambient form of an agent-composed constraint filtering itself at runtime;
- * these cells compose no agent — they bind the session — and nothing emitted for
+ * these hooks compose no agent — they bind the session — and nothing emitted for
  * them asks who is running.
  */
 export function ompScopeActivatedExtensions(
@@ -396,12 +396,12 @@ export function ompScopeActivatedExtensions(
   for (const hook of hooks) {
     for (const event of hook.events) {
       const binding = ompBindingOf(event);
-      // Unrealizable here ⇒ no registration. The cell's loss is reported by the
+      // Unrealizable here ⇒ no registration. The hook's loss is reported by the
       // projection seam; registering a handler for an event omp never fires would
       // read as coverage and deliver none.
       if (!binding) continue;
       regs.push({
-        anchor: hook.id ?? event,
+        hookId: hook.id ?? event,
         native: binding.event,
         tool: binding.matcher,
         workerTool: OMP_WORKER_TOOL[event],
@@ -427,9 +427,9 @@ export function ompScopeActivatedExtensions(
  * omp has no agent-definition field that isolates an agent (`startsInWorktree` is
  * false); isolation is a flag of the `task` call. A handler may revise the input a
  * tool runs with, so this one sets `isolated: true` on every spawn whose `agent` is
- * one the corpus declares isolated, in a batch (`tasks[]`) or a flat call, and
+ * one the canon declares isolated, in a batch (`tasks[]`) or a flat call, and
  * touches no other spawn and no other tool. The agents are named in the module at
- * projection, from the corpus's declarations; nothing here asks who is running.
+ * projection, from the canon's declarations; nothing here asks who is running.
  *
  * The flag makes sense only where `task.isolation.enabled` holds
  * ({@link ompDispatchIsolation}), which this module holds at session start as a
@@ -501,7 +501,7 @@ export function ompIsolationExtensions(
 /**
  * Every registration of one module, deduped, each rendered once.
  *
- * ONE ACT, ONE RULING. Two registrations of a cell can land on one native event and
+ * ONE ACT, ONE RULING. Two registrations of a hook can land on one native event and
  * one command — purview binds the act `subagent.dispatch.pre` (`tool_call`, tool
  * `task`) AND the unnarrowed `tool.use.pre` (`tool_call`, any tool) — and a `task` call
  * then matches both, so the same dispatch was judged twice. Claude collapses identical
@@ -594,7 +594,7 @@ function renderRegistration(
   // itself would otherwise re-open it forever.
   //
   // `turn.end` USED TO LIVE ON THIS BRANCH, and that was the whole degradation:
-  // `agent_end` is notification-only, so the corpus's one turn-end BOUND could
+  // `agent_end` is notification-only, so the canon's one turn-end BOUND could
   // only ever steer here. `session_stop` refuses for real, and carries the
   // `stop_hook_active` flag, which the bridge passes on to the worker.
   const act =
@@ -623,7 +623,7 @@ function renderRegistration(
   const session = kind ? '\n    if (ctx.agent?.kind !== "main") return;' : '';
   return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${session}${act}
   });
-  // ${r.anchor}`;
+  // ${r.hookId}`;
 }
 
 /**
@@ -781,7 +781,7 @@ const TURN_BRIDGE: readonly string[] = [
   '// nonzero `code` is a malfunction rather than a refusal, and anything that does',
   '// not parse into one of the two verdict shapes is silence.',
   '//',
-  "// FAILS OPEN AT EVERY STEP, which is the property the canon's hook cells are",
+  "// FAILS OPEN AT EVERY STEP, which is the property the canon's hooks are",
   '// written to (`fail-open ∀error`): a gate that could not run has refused',
   '// nothing, and one that answered unintelligibly has not refused either.',
   'function verdictOf(r: {',
@@ -994,7 +994,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * wins over the declaration's `thinking-level`, which wins over the level the
  * resolved selector implies. `ctx.models.resolve` is not used: it drops the level.
  * The operator's explicit `--model` and `--thinking`, read with omp's own
- * `parseArgs`, win over the declaration's — each for its own dimension — and the
+ * `parseArgs`, win over the declaration's — each for its own setting — and the
  * declaration's body is carried either way.
  *
  * THE DECLARATION'S TEXT FOLLOWS omp's own system prompt and the command's orientation
@@ -1026,7 +1026,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * hand-off configuration already armed is dropped, then on, a declared target
  * standing in that role only while omp arms it. Configuration files are defaults
  * the declaration overrides, as for a child; the operator's explicit `--advisor` and
- * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own dimension.
+ * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own setting.
  *
  * ONE KNOWN omp LIMITATION, where launch holds what the declaration says and omp's
  * own dispatch does not: `read-summarize: true` (omp's dispatch applies only
@@ -1475,7 +1475,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '',
         "  // The rest of the declaration, as omp's task dispatch resolves it for a child, each held",
-        "  // only where the operator's own command line says nothing of that dimension. Configuration",
+        "  // only where the operator's own command line says nothing of that setting. Configuration",
         '  // files are defaults the declaration overrides, as they are for a dispatched child.',
         '  async function settle(scope: Settings, declaration: AgentDefinition, operator: Args): Promise<void> {',
         '    const keep = <T>(setting: Overridable<T>, value: T) => undo.push(hold(scope, setting, value));',
@@ -1680,7 +1680,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
  * The omp realization of the `HarnessAdapter` port.
  *
  * No `hooks()`: that op returns a JSON settings fragment for a harness that keeps
- * hook config in a file, and omp keeps none. The cells no agent composes go through
+ * hook config in a file, and omp keeps none. The hooks no agent composes go through
  * code instead — `scopeActivatedSurface`, a `.ts` module at the session scope.
  *
  * No `enforcingSurface`: omp loads no module for one agent alone, so a constraint
@@ -1719,8 +1719,8 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // `$<INSTALLATION_ENV>` and not a resolved path: the emitted module is read at RUN
   // time wherever its installation lands (a user's home, or a project a clone moved),
   // and sets the variable to its own root for every hook it runs.
-  hookCommand: (anchor, workerFilename) =>
-    `sh "$${INSTALLATION_ENV}/hooks/${anchor}/${workerFilename}"`,
+  hookCommand: (hookId, workerFilename) =>
+    `sh "$${INSTALLATION_ENV}/hooks/${hookId}/${workerFilename}"`,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),
@@ -1728,7 +1728,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
   ruleDef: (r) => ({ filename: `${r.name}.md`, content: ruleToOmpMd(r) }),
   skillRel: ompSkillRel,
-  // The session module: the cells no agent composes.
+  // The session module: the hooks no agent composes.
   scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),
   // The dispatch isolation module: what this harness composes from the agents
   // beyond their definitions. Starting a session as one goes through `omp --agent`,

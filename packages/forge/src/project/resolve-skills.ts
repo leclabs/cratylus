@@ -12,20 +12,20 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Skill } from '@cratylus/schema';
-import { resolveModulePath, scanCellDirNames } from '../core/module-scan.js';
+import { resolveModulePath, scanValueDirNames } from '../core/module-scan.js';
 import type { ProjectablePlugin } from './index.js';
 
-/** One skill of the set: the winning plugin's cell under its directory name. */
+/** One skill of the set: the winning plugin's skill under its directory name. */
 export interface ContributedSkill {
-  /** The cell's directory name — the name it deploys under. */
+  /** The skill's directory name — the name it deploys under. */
   readonly name: string;
   readonly skill: Skill;
 }
 
 /**
- * Resolve the plugin set's skills, in name order. A later plugin's cell overrides
+ * Resolve the plugin set's skills, in name order. A later plugin's skill overrides
  * an earlier one's of the same name, and every override is logged: the override
- * is resolved BEFORE any cell is rendered, so it is reported rather than
+ * is resolved BEFORE any skill is rendered, so it is reported rather than
  * discovered as a clobbered file.
  */
 export async function resolveSkills(
@@ -35,7 +35,7 @@ export async function resolveSkills(
   const src = new Map<string, { dir: string; plugin: string }>();
   for (const p of plugins) {
     if (!p.skills) continue;
-    for (const n of await scanCellDirNames(p.skills, 'skill')) {
+    for (const n of await scanValueDirNames(p.skills, 'skill')) {
       const prev = src.get(n);
       if (prev) log(`  override skill ${n}: ${prev.plugin} → ${p.name}`);
       src.set(n, { dir: p.skills, plugin: p.name });
@@ -57,14 +57,14 @@ export async function resolveSkills(
  * works in; handed the closure, it starts with the whole.
  *
  * The declared names first, in their order, then every skill they transitively
- * compose, breadth-first in each cell's declaration order, each name once — so a
+ * compose, breadth-first in each skill's declaration order, each name once — so a
  * name reached twice keeps its first place and a composition cycle terminates.
  *
  * Each composed name is resolved against `roster`, the set's resolved skills,
- * never against the object a cell's module happened to import: a later plugin's
- * same-name cell is the one that deploys, so its composition is the one that
+ * never against the object a skill's module happened to import: a later plugin's
+ * same-name skill is the one that deploys, so its composition is the one that
  * counts. A name absent from the roster is kept, because the agent did name it,
- * and not expanded, because there is no cell to read its composition off.
+ * and not expanded, because there is no skill to read its composition off.
  */
 export function skillClosure(
   declared: readonly string[],
@@ -85,7 +85,7 @@ export function skillClosure(
 
 /** The `Skill` export of a skill module (the object carrying `formalBlock`). */
 async function skillOf(modPath: string): Promise<Skill> {
-  // Runtime-selected: the cell module is whatever the plugin's skill dir holds.
+  // Runtime-selected: the skill module is whatever the plugin's skill dir holds.
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
