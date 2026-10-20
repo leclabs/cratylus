@@ -1,0 +1,14 @@
+{
+  "id": "01M5D0BNDS5D4XPDACKPPP3MWH",
+  "at": "2026-10-20T15:54:54.265Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "bounded context",
+  "wording": "every concept belongs to exactly one, whose subject is the domain its terms are read in; one architect may hold several, never merging their models; a context the design no longer has is retired, its history kept",
+  "builtFrom": [],
+  "reason": "The corpus context turned out to be a misnomer whose concepts belonged elsewhere, and a context had no way to leave the design.",
+  "supersedes": [
+    "01M5BQBVYKFGXT5EJZEY6EFC5Y"
+  ]
+}
