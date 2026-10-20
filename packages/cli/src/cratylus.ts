@@ -2,17 +2,17 @@
 //
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
-// commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`concepts`, `versionSkew`), and `@cratylus/canon` the corpus `install`
-// falls back to. All three are declared dependencies and all three are imported
+// commands (`install`, `uninstall`), `@cratylus/runtime/main` one command per
+// capability (`concepts`, `versionSkew`), and `@cratylus/canon` the corpus `install`
+// installs. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
 // commands are handed this build's version, the commit beside it for a build that is
 // no release: `install` records it in what it places, and `versionSkew` reports it as
 // the command's. The projector's are also
 // handed the documents this release delivers, which its build wrote beside the bin
-// (`delivered/<origin>/<context>.json`): `install` and `deploy` place them read-only in
-// the owned root as given.
+// (`delivered/<origin>/<context>.json`): `install` places them read-only in the owned
+// root as given.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -26,9 +26,9 @@
 // <what went wrong>; <what to do>`, with exit code 1, and no stack trace. The refusal
 // of a verb a capability does not declare is the capability's own, from `verbOf`.
 //
-// A READER THAT CLOSES STDOUT EARLY ends any command quietly. `cratylus project
-// --verbose | head -1` has taken all it wants, which is not a failure: the handler is
-// installed once, before any command runs.
+// A READER THAT CLOSES STDOUT EARLY ends any command quietly. `cratylus install
+// --dry-run --verbose | head -1` has taken all it wants, which is not a failure: the
+// handler is installed once, before any command runs.
 
 import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -39,7 +39,6 @@ import {
   type DeliveredDocument,
   fail,
   projectorCommands,
-  usageExitCode,
 } from '@cratylus/forge/cli';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { capabilityCommands } from '@cratylus/runtime/main';
@@ -141,28 +140,23 @@ function register(command: Command): void {
 /**
  * The command line: the projector's commands and the capabilities under one
  * program, which stops reading options at its first command so each command's flags
- * are its own. The help lists the consumer's commands first, then the capabilities,
- * then the corpus author's commands in a group of their own; which commands are whose
- * is forge's to say, not this file's.
+ * are its own. The help lists the projector's commands first, then the capabilities.
  */
 export function commandLine(): Command {
   const program = new Command(CLI_BIN)
     .description(
-      'Project a corpus of agent semantics onto omp, and run the capabilities it installs',
+      'Install the cratylus agents on omp, and run their capabilities',
     )
     .version(VERSION, '-v, --version', 'Print the version and exit')
     .enablePositionalOptions();
-  const { consumer, author } = projectorCommands({
-    defaultCorpus: canon,
+  for (const command of projectorCommands({
+    corpus: canon,
     version: VERSION,
     delivered: deliveredDocuments(),
-  });
-  for (const command of consumer)
+  }))
     program.addCommand(command.helpGroup('Commands:'));
   for (const command of capabilityCommands({ version: VERSION }))
     program.addCommand(command.helpGroup('Capabilities:'));
-  for (const command of author)
-    program.addCommand(command.helpGroup('Corpus authoring:'));
   register(program);
   return program;
 }
@@ -225,7 +219,7 @@ export async function main(argv: readonly string[]): Promise<void> {
     if (error instanceof UsageError && error.refusal.exitCode === 0) return;
     if (!(error instanceof UsageError)) throw error;
     fail(error.command, usageLine(error));
-    process.exitCode = usageExitCode(error.command, argv);
+    process.exitCode = 1;
   }
 }
 

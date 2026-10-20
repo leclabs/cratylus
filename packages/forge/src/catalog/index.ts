@@ -1,17 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The fragment catalog enumerator.
 //
-// `enumerateCatalog(corpusDimensionsDir, manifest)` walks a corpus's `<dimension>/*.ts`
-// value modules, joins each dimension's discovered values with that dimension's runtime
-// metadata (read from the GIVEN catalog — forge ships none), and emits the
-// discovery contract:
-//
-//   { dimension, group, repertoire, arity, values: [{ slug, definiens }] }   per dimension
-//
-// forge owns the MECHANISM (it knows group/repertoire/arity);
-// the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
-// it consumes a directory of dimension-module dirs, not `packages/canon` — the same
-// split the deploy layer makes when it "consumes a render tree, not the corpus".
+// It walks each plugin's `<dimension>/*.ts` value modules and lifts each discovered
+// value to a fragment node. forge owns the MECHANISM; the corpus owns the DATA (the
+// value modules). This stays doctrine-agnostic: it consumes a directory of
+// dimension-module dirs, not `packages/canon`.
 //
 // VALUES are DISCOVERED, not listed: drop a new module under `<dimension>/` and it
 // appears with zero other edits. RUNTIME TS IMPORT: each module is a typed
@@ -23,156 +16,26 @@
 import { glob } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import {
-  type Arity,
-  type DimensionManifest,
-  type EnforcementLevel,
-  type Repertoire,
-  type Slot,
-  type Value,
-  bodyOf,
-  isDimensionValue,
-} from '@cratylus/schema';
+import type { DimensionManifest } from '@cratylus/schema';
 import {
   type Fragment,
   type ValueShape,
   validateReferenceGraph,
 } from '../resolve/resolve.js';
 
-/** The discovery contract for one dimension: its metadata + discovered values. */
-export interface CatalogEntry {
-  /** The dimension name (e.g. `address`) — the catalog's own key, so a plain
-   *  string: WHICH dimensions exist is the corpus's fact, not the projector's. */
-  readonly dimension: string;
-  /** The factor group the dimension is filed under. */
-  readonly group: string;
-  /** How the value-catalog is sourced — `latent | open | curated | fixed`. */
-  readonly repertoire: Repertoire;
-  /** How many values the dimension holds — `scalar | set | slots | attribute`. */
-  readonly arity: Arity;
-  /** The default enforcement level an entry takes; `null` when none applies. */
-  readonly level: EnforcementLevel | null;
-  /** `text` is rendered into the agent's body; `binding` compiles to harness settings. */
-  readonly projection: 'text' | 'binding';
-  /** The named slots of a `slots` dimension, in order. Absent otherwise. */
-  readonly slots?: readonly Slot[];
-  /**
-   * The discovered value bodies (each a branded-string cell, `⟨α, residue⟩`),
-   * sorted shortlex.
-   */
-  readonly values: readonly string[];
-}
-
-/**
- * Shortlex order: shorter strings first, ties broken lexicographically (the
- * order `signify` emits as `≺`). Deterministic and locale-independent.
- */
-export function shortlex(a: string, b: string): number {
-  if (a.length !== b.length) {
-    return a.length - b.length;
-  }
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-
-/**
- * Discover the value bodies under one dimension dir (`<corpusDimensionsDir>/<dimension>`).
- * A dimension value is now a branded STRING (`⟨α, residue⟩`); its dimension home is the
- * DIRECTORY, so every string export under `<dimension>/` is one of that dimension's
- * values. Imports every `*.ts` module and collects each exported string.
- */
-async function valuesOf(
-  corpusDimensionsDir: string,
-  dimension: string,
-): Promise<string[]> {
-  const dir = join(corpusDimensionsDir, dimension);
-  const out: string[] = [];
-  const seen = new Set<string>();
-  let modules: string[];
-  try {
-    modules = [];
-    // Both shapes: authored `.ts` in-workspace, built `.js` when installed. A
-    // `.ts`-only glob matched nothing in an installed package — silently.
-    for await (const p of glob('*.{ts,js,mjs}', { cwd: dir })) {
-      if (!p.endsWith('.d.ts')) modules.push(p);
-    }
-  } catch {
-    // A dimension with no module dir yet contributes no values (still listed).
-    return out;
-  }
-  for (const rel of modules.sort()) {
-    const mod = (await import(pathToFileURL(join(dir, rel)).href)) as Record<
-      string,
-      unknown
-    >;
-    for (const exported of Object.values(mod)) {
-      // A value may carry its own enforcement, in which case it is an OBJECT and
-      // a `typeof === 'string'` filter DROPS IT — silently, with the catalog
-      // simply reporting one fewer value. That is the dangerous shape: an
-      // omission, not a crash, and a catalog that under-reports reads exactly
-      // like a corpus that is smaller. `bodyOf` reaches the declaration face of
-      // either shape, so enforcing and bare values enumerate alike.
-      if (!isDimensionValue(exported)) continue;
-      const body = bodyOf(exported as Value<string>);
-      if (!seen.has(body)) {
-        seen.add(body);
-        out.push(body);
-      }
-    }
-  }
-  out.sort(shortlex);
-  return out;
-}
-
-/**
- * Enumerate the full fragment catalog of a corpus. For each of the catalog's
- * dimensions (in its declaration order), joins that dimension's metadata with the
- * values discovered under `<corpusDimensionsDir>/<dimension>/*.ts`.
- *
- * BOTH halves are now parameters — the corpus supplies the value modules AND the
- * catalog they file under. The dir was already an argument and this module already
- * called itself doctrine-agnostic; the metadata read is what finished that sentence.
- *
- * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
- *        of the per-dimension module dirs). For canon: `packages/canon/src/dimensions`.
- * @param manifest the dimension manifest to join against — REQUIRED, because forge
- *        has none to fall back to.
- */
-export async function enumerateCatalog(
-  corpusDimensionsDir: string,
-  manifest: DimensionManifest,
-): Promise<CatalogEntry[]> {
-  const entries: CatalogEntry[] = [];
-  for (const [name, meta] of Object.entries(manifest)) {
-    entries.push({
-      dimension: name,
-      group: meta.group,
-      repertoire: meta.repertoire,
-      arity: meta.arity,
-      level: meta.level,
-      projection: meta.projection,
-      ...(meta.slots === undefined ? {} : { slots: meta.slots }),
-      values: await valuesOf(corpusDimensionsDir, name),
-    });
-  }
-  return entries;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
-// Multi-plugin fragment discovery — generalize the single-corpus scan above
-// to enumerate the fragment dirs of EACH extended plugin, addressed by object
-// identity (the imported binding), namespaced per plugin.
+// Multi-plugin fragment discovery — enumerate the fragment dirs of EACH extended
+// plugin, addressed by object identity (the imported binding), namespaced per plugin.
 //
-// `enumerateCatalog` (above) discovers ONE corpus's fragment BODIES (branded
-// strings) per dimension — the human/CLI `catalog` view, kept verbatim. This layer
-// discovers the same dirs across MANY plugins and lifts each discovered value to a
+// This layer discovers the dimension dirs across MANY plugins and lifts each discovered value to a
 // **fragment NODE** (`resolve/Fragment`) whose OBJECT IDENTITY is the address
 // (a reference names a NODE, resolved LATE — never a string id, so a reference reads
 // the node's post-patch value rather than an import-time snapshot). Two
 // plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
 // is a resolution event, not a collision (per-plugin σ* invariant).
 //
-// FEEDS THE LOADER: the per-plugin `FragmentEntry[]` is what the `cratylus.config.ts`
-// loader (`config/loader.ts`) turns into the resolver's `LoadedPlugin.contributions`
+// FEEDS THE RESOLVER: the per-plugin `FragmentEntry[]` is what projection
+// (`discoverFragments`, `project/index.ts`) turns into the resolver's `LoadedPlugin.contributions`
 // (target = the node; value = the body); the resolver then keys
 // `ResolvedAgentSet.fragments` by that same node object.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -189,8 +52,8 @@ export async function enumerateCatalog(
  * source code — and a fragment's BODY is the actual source.
  *
  * `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
- * is module-resolution (which node_modules package root) — the config loader's concern
- * (`config/loader.ts`). Discovery consumes the already-resolved dir, so it stays
+ * is module-resolution (which node_modules package root) — the plugin's own
+ * concern, as canon self-locates its dirs. Discovery consumes the already-resolved dir, so it stays
  * doctrine- and resolution-agnostic.
  *
  * A PAIR ARRAY ON THE WAY IN, A KEYED MAP ON THE WAY OUT — and the asymmetry is the
@@ -303,9 +166,8 @@ function isFragmentNode(v: unknown): v is Fragment {
 }
 
 /**
- * Import every `*.ts` module under `dir` and yield each `⟨exportName, value⟩`. Unlike
- * `valuesOf` (which keeps only distinct strings for the human catalog), this preserves
- * the export NAME (the σ* anchor, for the namespaced node id) and every export shape
+ * Import every `*.ts` module under `dir` and yield each `⟨exportName, value⟩`. It
+ * preserves the export NAME (the σ* anchor, for the namespaced node id) and every export shape
  * (a string body OR a node-form `Fragment`). A missing dir contributes nothing.
  */
 async function scanDimensionModules(

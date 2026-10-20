@@ -1,21 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// PROJECTION over a RESOLVED PLUGIN SET — the missing link between `compose` and
-// `deploy`.
+// PROJECTION over a RESOLVED PLUGIN SET — the render tree `install` places.
 //
-// `compose` resolved the plugin set and wrote nothing; `deploy` required a render
-// tree; and the only producer of a render tree was a MONOREPO SCRIPT that
-// dir-scanned the corpus and bypassed the plugin resolver entirely. So a consumer
-// could install, extend, and resolve — and still not obtain a single artifact.
+// The corpus's projection is one call over the plugin set's dirs: the plugins in the
+// set are the whole of what differs between one corpus and another.
 //
-// This module closes that gap, and closes it ONCE: the corpus's own projection and
-// the consumer's projection are now the same call over the same plugin dirs. The
-// difference between "our corpus" and "a consumer's config" is only WHICH plugins
-// are in the set — which is the whole point of a build-time plugin architecture.
-//
-// RENDERING IS NOT WRITING. Projection returns the artifact tree; `writeRenderTree`
-// (./write.ts) puts it on disk. This module opens no file descriptor — that is a
-// LOAD-BEARING property, not tidiness: it is what makes "what does this plugin set
-// project?" an answerable question instead of a tmpdir excavation.
+// RENDERING IS NOT WRITING. Projection returns the artifact tree; `install` places
+// it. This module opens no file descriptor — that is a LOAD-BEARING property, not
+// tidiness: it is what makes "what does this plugin set project?" an answerable
+// question instead of a tmpdir excavation.
 //
 // AND RENDERING IS NOT SELECTING. `resolve()` folded the plugin set's fragments and
 // this projector rendered agents straight off their import bindings — two pipelines
@@ -68,10 +60,6 @@ import {
   SESSION_SCOPE,
 } from '../core/harness-adapter.js';
 import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
-// The DEFINING module, never the `deploy/` barrel: one constant is wanted here,
-// and a barrel import would drag deploy's whole lineage into every projection
-// consumer (the edge `adapters/registry` documents at length).
-import { DEPLOY_CHECK_EXIT } from '../deploy/check-exit.js';
 import {
   type LoadedPlugin,
   type PatchEntry,
@@ -108,13 +96,8 @@ import { runtimeShimContent } from './runtime-shim.js';
 export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
   return {
     'runtime-bin': CLI_BIN,
-    'deploy-bin': CLI_BIN,
     'harness-name': adapter.name,
     'harness-hooks-file': adapter.hooksFile,
-    // A NUMBER CROSSING INTO SHELL. The worker discriminates drift from the
-    // comparator's own failure by exit status, and `1` is forge's choice — not
-    // POSIX's, the way `0` is. So the one code that is ours travels by name.
-    'deploy-check-drift-code': String(DEPLOY_CHECK_EXIT.drift),
   };
 }
 
@@ -180,7 +163,7 @@ export interface ProjectOpts {
   readonly warn?: (line: string) => void;
   /**
    * The home directory these definitions will be installed under, when the caller
-   * knows it — `install` does, `project` does not. A harness whose main-session
+   * knows it, as `install` does. A harness whose main-session
    * hook prints each skill's directory (`mainSessionSkillHook`) weighs a skill
    * against its cap with this path, since a longer home is a longer output. Absent,
    * the weighing is a lower bound.
@@ -188,9 +171,9 @@ export interface ProjectOpts {
   readonly hostHome?: string;
   /**
    * The practices to render, by name. ABSENT ⇒ every cell is rendered, as a plugin
-   * set declaring no practices renders: this is what keeps `project` and every
-   * whole-corpus render byte-for-byte what they were. EMPTY ⇒ refused, before
-   * anything is rendered: no practice chosen is not every practice, and a caller
+   * set declaring no practices renders: this is what keeps every whole-corpus
+   * render byte-for-byte what it was. EMPTY ⇒ refused, before anything is
+   * rendered: no practice chosen is not every practice, and a caller
    * that means the whole corpus leaves this absent.
    *
    * Given names, exactly the union of those practices' agents and skills is
@@ -799,7 +782,7 @@ function selectRules(
 
 /**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
- * nothing — hand the result to `writeRenderTree(out, tree.files)`.
+ * nothing.
  *
  * Later plugins in `extends` order win on a name collision, so a consumer can
  * override a canon CELL by shipping one of the same name. The winner is reported,
@@ -1366,4 +1349,3 @@ export async function projectPluginSet(
 }
 
 export { emitRuntimeShim } from './runtime-shim.js';
-export { writeRenderTree } from './write.js';

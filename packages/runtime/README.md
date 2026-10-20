@@ -11,8 +11,8 @@ no corpus. It ships with the agent and runs on the host; anything corpus-specifi
 configuration the projection emitted.
 
 The commands a consumer
-types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for the
-author of a corpus whose skills route here, and for a library user of the package.
+types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for whoever
+works on the corpus whose skills route here, and for a library user of the package.
 
 ## Capabilities
 
@@ -138,7 +138,7 @@ corpus's skills declared it. The installation (`installationRoot`) is the one
 `$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
 walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
 holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one
-root under `~/.cratylus/`. A tree without `installation.json`, an author's render, is no
+root under `~/.cratylus/`. A tree without `installation.json`, an earlier render tree, is no
 installation. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
 

@@ -19,10 +19,8 @@ export const factProbe: HookCell = {
       content: [
         '#!/bin/sh',
         'CLI_BIN={{fact:runtime-bin}}',
-        'DEPLOY_BIN={{fact:deploy-bin}}',
         'HARNESS={{fact:harness-name}}',
         'HARNESS_HOOKS_FILE={{fact:harness-hooks-file}}',
-        'DRIFT_RC={{fact:deploy-check-drift-code}}',
         'exit 0',
         '',
       ].join('\n'),

@@ -1,7 +1,7 @@
 {
   "name": "cratylus",
   "version": "0.20.0",
-  "description": "The cratylus command line: install a corpus of agent semantics on omp and work through the capabilities it installs, or write and project a corpus of your own.",
+  "description": "The cratylus command line: install a corpus of agent semantics on omp and work through the capabilities it installs.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -26,7 +26,6 @@
     "commander": "catalog:"
   },
   "devDependencies": {
-    "@cratylus/tooling": "workspace:*",
     "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
     "ajv": "^8.20.0",
@@ -57,12 +56,6 @@
   },
   "homepage": "https://github.com/leclabs/cratylus#readme",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
     "./package.json": "./package.json"
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  }
 }

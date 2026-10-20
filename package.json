@@ -24,18 +24,11 @@
     "format": "biome format --write . && prettier --write \"**/*.md\"",
     "typecheck": "turbo run typecheck",
     "typecheck:test": "turbo run typecheck:test",
-    "canon:project": "pnpm canon:project:omp",
-    "canon:project:omp": "pnpm build && pnpm exec cratylus project --harness omp --out .cratylus/omp",
-    "canon:deploy:agent": "pnpm exec cratylus deploy --kind agent",
-    "canon:deploy:skill": "pnpm exec cratylus deploy --kind skill",
-    "canon:deploy:hooks": "pnpm exec cratylus deploy --kind hooks",
-    "canon:deploy": "pnpm canon:project && pnpm exec cratylus deploy",
     "changeset": "changeset",
     "version-packages": "changeset version && biome check --write . && prettier --write \"**/CHANGELOG.md\"",
     "release": "sh scripts/release.sh",
     "prepare": "husky",
     "dev": "turbo run dev --parallel",
-    "project": "pnpm canon:project:omp",
     "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {

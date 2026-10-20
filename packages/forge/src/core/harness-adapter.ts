@@ -42,12 +42,12 @@ export const SESSION_SCOPE = '_session';
  * The render tree's staging dir for SCOPED mechanism artifacts —
  * `enforcing/<scope>/<filename>`.
  *
- * Forge's own staging layout, not any harness's destination: `project` writes
- * here, `deploy` reads here and asks the adapter where each scope's copy belongs
+ * Forge's own staging layout, not any harness's destination: projection writes
+ * here, `install` reads here and asks the adapter where each scope's copy belongs
  * (`HarnessAdapter.scopedRel`). The same asymmetry as agents, and for the same
  * reason — a render tree is a thing a human diffs, and a destination is a thing a
  * harness reads. A scoped artifact staged at its DESTINATION path would have been
- * unattributable at deploy: there is no vector on disk to ask what scope a nested
+ * unattributable at install: there is no vector on disk to ask what scope a nested
  * path meant.
  */
 export const ENFORCING_STAGE_DIR = 'enforcing';
@@ -162,8 +162,8 @@ export interface HarnessAdapter {
   /**
    * The file EXTENSION this harness's agent definitions carry — `.md`.
    *
-   * `agentDef` already returns a full filename, but DEPLOY reads a render tree
-   * off disk and has no vector to ask, so it needs the extension on its own. It
+   * `agentDef` already returns a full filename, but INSTALL places a render tree
+   * by its paths and has no vector to ask, so it needs the extension on its own. It
    * once assumed `.md` outright, so a harness whose agents carry another extension
    * would have placed zero agents: it looked for `<name>.md`, found nothing, and
    * reported success.
@@ -176,8 +176,8 @@ export interface HarnessAdapter {
    * NOT the render tree's layout. Those are two different facts and conflating them
    * is what made this method necessary. The render tree is forge's own STAGING
    * layout — uniformly `agents/<name><agentExt>`, one file per agent, because that
-   * is convenient for a projector and a `--out` dir a human diffs. Where a HARNESS
-   * reads its agents from is the harness's business, and deploy's job is the map
+   * is convenient for a projector and a tree a human diffs. Where a HARNESS
+   * reads its agents from is the harness's business, and install's job is the map
    * between them. It used to be the identity map, which silently assumed every
    * harness stages the way forge does.
    *
@@ -188,8 +188,8 @@ export interface HarnessAdapter {
    * root omp discovers from and forge's flat `agents/<name>.md` staging is not
    * it.
    *
-   * REQUIRED for the same reason `agentExt` is: deploy reads a render tree off disk
-   * with no vector to ask, so it must compute the destination from the name alone.
+   * REQUIRED for the same reason `agentExt` is: install places a render tree by its
+   * paths with no vector to ask, so it must compute the destination from the name alone.
    */
   agentRel(name: string): string;
   /**
@@ -209,14 +209,14 @@ export interface HarnessAdapter {
    * The parameter stays because a FUTURE harness may still scope a reader per
    * agent, and the port cannot special-case one implementation's history.
    *
-   * REQUIRED, like `agentRel`: deploy reads a render tree off disk with no
+   * REQUIRED, like `agentRel`: install places a render tree by its paths with no
    * vector to ask, so it must compute every destination from the name alone,
    * and `skills/<name>` — forge's own staging layout — is not every harness's.
    */
   skillRel(name: string, agents: readonly string[]): readonly string[];
   /**
    * The filename of this harness's hook-config artifact — `settings.json`.
-   * Mirrors `HarnessHooksProjection.filename`; deploy needs it to
+   * Mirrors `HarnessHooksProjection.filename`; install needs it to
    * find the fragment in the render tree and to merge into the host's copy.
    */
   readonly hooksFile: string;
@@ -263,7 +263,7 @@ export interface HarnessAdapter {
    * skills the adapter cannot hook and to warn once per skill that it cannot.
    *
    * `hostHome` is the home the definitions will be installed under, when the caller
-   * knows it (`install` does; `project` does not). The hook prints each skill's
+   * knows it, as `install` does. The hook prints each skill's
    * directory, and that path is part of its output, so a longer directory is a longer
    * output. The adapter weighs the directory the hook will print, resolved from that
    * home as the hook resolves it. Absent, the size counts the path as the definition
@@ -400,7 +400,7 @@ export interface HarnessAdapter {
    * via `enforcingSurface`; this is the same accommodation for the half no agent
    * composes.
    *
-   * **IT WAS MISSING, AND ITS ABSENCE WAS A SILENT DEGRADE.** `project` branched on
+   * **IT WAS MISSING, AND ITS ABSENCE WAS A SILENT DEGRADE.** Projection branched on
    * `hooks` alone, so on omp every scope-activated cell — the stance gate, the
    * deploy-drift notice, the memory-consolidation nudge, the resume notice — was
    * warned about and dropped, and the harness deployed no mechanism whatsoever
@@ -416,7 +416,7 @@ export interface HarnessAdapter {
    * agent by construction.
    *
    * Absent ⇒ this harness registers scope-activated cells in a config file, or
-   * cannot carry them at all (the degrade `project` reports).
+   * cannot carry them at all (the degrade projection reports).
    */
   scopeActivatedSurface?(
     hooks: readonly Hook[],

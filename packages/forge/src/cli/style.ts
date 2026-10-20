@@ -78,17 +78,3 @@ export function warn(command: string, message: string): void {
 export function fail(command: string, message: string): void {
   process.stderr.write(`${failure(command, message)}\n`);
 }
-
-/** The three sinks a command that runs `runDeploy` hands it, bound to the command's
- *  name: result lines to stdout, warnings and the failure it ends with to stderr. */
-export function sinks(command: string): {
-  log: (line: string) => void;
-  warn: (message: string) => void;
-  fail: (message: string) => void;
-} {
-  return {
-    log: say,
-    warn: (message) => warn(command, message),
-    fail: (message) => fail(command, message),
-  };
-}

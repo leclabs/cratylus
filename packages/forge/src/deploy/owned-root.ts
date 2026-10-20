@@ -69,7 +69,6 @@ import {
   type HarnessAdapter,
 } from '../core/harness-adapter.js';
 import { settingsJson } from './settings-json.js';
-import type { RenderTree } from './types.js';
 
 /** One file of a render tree, or of the root: its path, its bytes, and whether it is
  *  executable. */
@@ -188,9 +187,8 @@ export function readInstallationRecord(
   }
 }
 
-/** Whether `dir` holds files but no installation record: an author's render tree
- *  (`cratylus project` writes one to `.cratylus/<harness>`), which an installation
- *  never takes over (decision 0311). */
+/** Whether `dir` holds files but no installation record: an earlier render tree,
+ *  which an installation never takes over (decision 0311). */
 export function holdsRenderTree(dir: string): boolean {
   return (
     existsSync(dir) &&
@@ -235,33 +233,6 @@ export function rootFiles(
   return placed.sort((a, b) =>
     a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
   );
-}
-
-/** A render tree on disk, read back as files: its agents, its skills, and under its
- *  hooks root the scoped artifacts and the hook workers. */
-export function readRenderTree(tree: RenderTree): RenderedFile[] {
-  const files: RenderedFile[] = [];
-  const walk = (dir: string, under: string): void => {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const abs = join(dir, entry.name);
-      const path = join(under, entry.name);
-      if (entry.isDirectory()) walk(abs, path);
-      else if (entry.isFile())
-        files.push({
-          path,
-          content: readFileSync(abs, 'utf8'),
-          ...((statSync(abs).mode & 0o111) !== 0 ? { executable: true } : {}),
-        });
-    }
-  };
-  walk(tree.agentsDir, 'agents');
-  walk(tree.skillsDir, 'skills');
-  if (tree.hooksDir !== undefined) {
-    walk(join(tree.hooksDir, ENFORCING_STAGE_DIR), ENFORCING_STAGE_DIR);
-    walk(join(tree.hooksDir, 'hooks'), 'hooks');
-  }
-  return files;
 }
 
 /** What placing the root did, or would do. */

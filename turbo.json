@@ -33,12 +33,11 @@
     },
     // `build` — the package's OWN — and not just `^build`.
     //
-    // A test tree may reference its own package through its PUBLIC specifier
-    // rather than by relative path: `canon/test/runtime-shim.test.ts` drives the
-    // shipped `cratylus project` over the repo's `cratylus.config.ts`, and that
-    // config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`.
-    // `^build` builds a package's DEPENDENCIES and never the package itself, so on
-    // a cold tree `tsc` ran against a `dist` that did not exist yet.
+    // A test tree may read its own package's build output rather than its source:
+    // `canon/test/projection-stability.test.ts` holds the skill roster in canon's
+    // `dist` to the source one. `^build` builds a package's DEPENDENCIES and never
+    // the package itself, so on a cold tree it would read a `dist` that did not
+    // exist yet.
     //
     // This surfaced the moment `typecheck:test` became a dependency of `test`:
     // canon's `test` script had always carried a manual `pnpm run build &&` for
