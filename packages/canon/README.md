@@ -3,7 +3,7 @@
 The **meaning** concern of [cratylus](../../README.md) — the canon of discovered Cratylic
 names, each read in its concept's bounded context, authored as typed TypeScript.
 
-The discipline is latent lexicography: describing the vocabulary a foundation model
+The discipline is cratylic context design: describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in the canon is
 therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
 markdown an agent harness reads is a projection of these modules.
@@ -71,7 +71,7 @@ named for the role, carrying nothing beyond it, its mark the role's. `holder` re
 a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
-production and generative video, nico latent lexicography as cratylic context design practises
+production and generative video, nico terminology work as cratylic context design practises
 it, mav software engineering). The architect role owns the conceptual model of every context it is given, the
 canon included; a persona brings its expertise and owns nothing its role does not.
 Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
