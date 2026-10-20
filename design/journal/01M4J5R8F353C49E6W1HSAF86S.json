@@ -1,8 +1,0 @@
-{
-  "id": "01M4J5R8F353C49E6W1HSAF86S",
-  "at": "2026-10-10T05:49:40.195Z",
-  "kind": "context",
-  "name": "delivery",
-  "subject": "getting the corpus onto a harness: projection to omp, install, uninstall, owned root, upgrade",
-  "relation": "the workflow's roles and skills are delivered by it; the workflow's behavioral examples run against agents as delivery installs them (contract) **workflow → delivery:** the concept journal is reachable from the cratylus command line, and in omp as a tool that a cratylus extension adds as a thin adapter over that same command, not as prose a skill restates."
-}

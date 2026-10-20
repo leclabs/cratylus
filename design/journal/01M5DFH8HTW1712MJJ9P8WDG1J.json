@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG1J",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "projection",
+  "wording": "deterministic generation of an agent harness's own files from the agents, skills and rules cratylus ships, each written once; regenerated, never edited",
+  "builtFrom": [],
+  "reason": "The corpus no longer names its source unit, which is realization; projection states what a user relies on in the product's own terms.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

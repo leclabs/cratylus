@@ -1,0 +1,16 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG38",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0324",
+  "context": "workflow",
+  "title": "A bounded context is retired by retire without a concept, as an entry of its own kind; a retirement competes only with a description",
+  "situation": "0323 counted a context retired only while its one current entry is a retirement. Code review found that a context retired on two joined lines then counts as live with no description, and a close opens only its two retirements, cutting the context and its concepts off from the journal.",
+  "decision": "As 0319, with (1), (4) and (6) restated and (7) added. (1) retire takes its concept optionally; without one it retires the bounded context named, with the reason, as an entry of its own kind, retire-context: the context, the reason, and the current descriptions and retirements it supersedes. A runtime that predates it reads it past (0297). It is refused for a context the journal does not have, one already retired, and a delivered one. (4) define, supersede, retire and decide naming a retired context are refused, naming the remedy. context with a reason brings it back by a new description superseding the retirement and every description the retirement superseded, subject and relation carried, where left out, from the description the retirement superseded; its concepts and decisions then read as they stood. accept and deprecate are not refused. (6) Closing the books carries nothing of a retired context; a retirement competing with a description opens as a retire-context entry of its own beside the description's opening, so the two still compete. (7) A context is retired while every current entry of it is a retirement, one or several recorded alike on joined lines; while a retirement and a description are both current, the context is shown with its competing descriptions, the retirement among them marked retired with its reason, until a later description or retirement supersedes them all.",
+  "consequences": "Supersedes 0323. A context retired on several joined lines is retired, and a close carries nothing of it. One builder; review Ask.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

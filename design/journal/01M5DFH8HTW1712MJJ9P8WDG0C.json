@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0C",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "check-writer",
+  "wording": "the agent the lead calls, when a user story's risk warrants it, for the checks binding its examples; never also the builder of the work they judge",
+  "builtFrom": [],
+  "reason": "The workflow keeps only the check-writer's place among the parties; when such a check is written and trusted belongs to check.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

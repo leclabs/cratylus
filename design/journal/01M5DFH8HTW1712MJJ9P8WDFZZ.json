@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDFZZ",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "decision",
+  "wording": "an architecture decision record, of realization only, never meaning: the lead's technical choice, or the operator's requirement or recommendation for it; kept among the event-sourced conceptual model's events, never part of the conceptual model; one about a user story is deprecated when the story ends",
+  "builtFrom": [],
+  "reason": "How a reading shows a decision is implementation, never meaning; the concept keeps where decisions are kept and that they are no part of the conceptual model.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

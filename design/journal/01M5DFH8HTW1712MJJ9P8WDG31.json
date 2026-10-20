@@ -1,0 +1,16 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG31",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0310",
+  "context": "development",
+  "title": "Cratylus's own branching and commit conventions",
+  "situation": "General working conventions now ship as rulesets (Git flow as published, Conventional Commits, commit discipline); AGENTS.md keeps only cratylus's own. The operator renamed the integration branch dev to develop, as published Git flow names it, and keeps merging features into develop locally.",
+  "decision": "The integration branch is develop. Feature branches branch from develop, are short-lived, and merge into develop locally without a pull request once the one check passes on the merged result. Release is a pull request from develop into main, and it is the operator's.",
+  "consequences": "The general conventions are the installed rulesets', not restated here; AGENTS.md carries this one.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

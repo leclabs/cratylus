@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG1M",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "delivered context",
+  "wording": "a cratylus bounded context shipped read-only as the practice a project's agents work by, never part of the project's conceptual model: shown apart from the project's contexts, outside its context map, and read first by a fresh session, upstream always before downstream; a project holding that context itself reads its own in its place",
+  "builtFrom": [],
+  "reason": "The lead asked which wins when a project holds an upstream delivered context itself but not the one downstream of it: upstream before downstream does, since a term must be read before the terms built on it; the project's own copy takes the delivered one's place in that order.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG1R",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "orientation",
+  "wording": "what every session on a host with cratylus installed knows of it from its start, launched as an agent or as none: what cratylus is for, that using it starts by launching the architect, and that its theory is cratylic context design; stated once by the cratylus command describing itself; answered at the level asked, the theory only when asked why, and making one's own agents never offered as how to use it",
+  "builtFrom": [],
+  "reason": "A newcomer's plain session, asked how to use cratylus, had nothing that said what it is: it searched skills and source, opened with Plato, and gave authoring as the first step.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

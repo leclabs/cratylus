@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0F",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "check",
+  "wording": "deterministic; one binding an example is written before the build and trusted only once seen failing against work that doesn't satisfy it; it binds only what that example fixes, reads nothing from the machine it runs on that the example doesn't name, and is adequate when it rejects the plausible failures the example names; never judges an agent's behaviour",
+  "builtFrom": [],
+  "reason": "When a check binding an example is written and trusted belongs to check, not to the check-writer; and the design held that such a check reads nothing from the machine the example doesn't name, which the restated concept had dropped.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

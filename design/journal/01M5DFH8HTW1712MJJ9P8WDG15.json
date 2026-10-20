@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG15",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "brownfield adoption",
+  "wording": "of the workflow: earlier records, the product and its documents are evidence for the conceptual model, never the model; the earlier record is replaced, never migrated",
+  "builtFrom": [],
+  "reason": "The steps of an adoption are procedure, never meaning; the concept keeps what earlier work counts as and what becomes of the earlier record.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

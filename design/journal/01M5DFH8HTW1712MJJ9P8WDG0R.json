@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0R",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "interrupt",
+  "wording": "at a hold point its holder, the party whose handoff it is, ends its turn with a sign-off request and resumes only on the operator's answer; under delegation of authority it takes the sign-off instead",
+  "builtFrom": [],
+  "reason": "How a hold point is detected, announced or shown to a delegator is implementation, never meaning; the concept keeps only what the interrupt is.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

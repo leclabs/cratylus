@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDFZN",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "agents",
+  "subject": "what an AI agent is and how one is composed",
+  "relation": "upstream of workflow, whose roles it composes, of canon, which writes its values, and of delivery, which binds its agents",
+  "reason": "That every context conforms to cratylic context design is stated once, by that context, not repeated by each.",
+  "identity": "01M4JVAAGB8TRP70Q6K7JMAPJH",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

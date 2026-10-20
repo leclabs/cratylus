@@ -1,9 +1,0 @@
-{
-  "id": "01M53CFZRP8ZZCSJQ2VC1WZKJ5",
-  "at": "2026-10-16T22:14:34.518Z",
-  "by": "Lance Caraccioli",
-  "kind": "deprecate",
-  "decisionId": "0216",
-  "entry": "01M4W35YMQG09WE8WXZPVXZZRM",
-  "reason": "Meaning is recorded only in concepts and the delivered values: it is stated by the delivered value's own text (packages/canon/src/dimensions/communication-style/layman.ts)."
-}

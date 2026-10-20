@@ -1,8 +1,0 @@
-{
-  "id": "01M4KK1VAXJKP6DF503YR69CKQ",
-  "at": "2026-10-10T19:01:20.349Z",
-  "kind": "accept",
-  "decisionId": "0030",
-  "entry": "01M4J70D9MN3A932QVQR4Y8Y3A",
-  "reason": "Realized 2026-10-10 by the agent catalog re-cut (0044, 0046): kino, nico and mav are composed as personas over the architect role, each with its own expertise, contexts and mark, released in dev 727baa33. Their ipseic design is the later round 0048 names. Efficiency of the re-cut: 3 rounds (build, one judgment fix, one whole-check fix), 2 whole-check runs, 9 builder dispatches in parallel."
-}
