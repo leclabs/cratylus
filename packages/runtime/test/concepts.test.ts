@@ -158,6 +158,14 @@ describe('the concept journal as a library', () => {
     });
   });
 
+  it('refuses a version with no wording, asking for its correction', () => {
+    for (const verb of ['define', 'supersede'])
+      refused(
+        [verb, 'hold', '--context', 'booking', '--reason', 'R.'],
+        new RegExp(`^concepts ${verb}: give the correction with --wording`),
+      );
+  });
+
   it('refuses a flag given twice, retiring twice, and accepting a decision that is not open', () => {
     version('define', 'A hold.', 'First.');
     refused(

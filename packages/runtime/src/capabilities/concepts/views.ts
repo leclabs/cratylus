@@ -50,7 +50,7 @@
 // entry of its context holding its figures; read with the context's history.
 //
 // The DESIGN STATE of a context is its description and its live and competing
-// concepts, each a line `name ≜ residue`; nothing else. WHAT STANDS of a
+// concepts, each a line `term ≜ correction`; nothing else. WHAT STANDS of a
 // design or a decision is what a view shows unless history is asked for: a
 // design without its retired concepts or the reason each live concept's
 // current version was written, a decision without the decisions it replaced
@@ -215,8 +215,8 @@ export function standingDesign<
 
 /** The design state of `design`'s context, for a model to read: its subject
  *  and relation, its competing descriptions only when any, its live concepts
- *  each as one line `name ≜ residue`, and each concept's competing versions
- *  as such lines, a retirement among them as `name retired`; nothing else. */
+ *  each as one line `term ≜ correction`, and each concept's competing versions
+ *  as such lines, a retirement among them as `term retired`; nothing else. */
 export function designState({
   name,
   subject,

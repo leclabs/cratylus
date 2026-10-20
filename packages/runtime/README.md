@@ -40,7 +40,7 @@ latest close; the closed period is read from git at that commit.
 [the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
 context's subject, relation and live concepts with the concepts each is built from, the delivered
 practice apart, and `state` is its short summary: the project's purpose, then each context's live
-concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
+concepts, each one line `term ≜ correction`, with any competing versions. The journal's record runs
 from its latest closing of the books: every reading reads the openings as it reads any entries,
 so the design and each standing decision's meaning and status read the same after a close as
 before it; each decision's `entry` is renewed as its opening's id, and the cut or example files
@@ -49,12 +49,12 @@ before it; each decision's `entry` is renewed as its opening's id, and the cut o
 they list `broughtForward`. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
-each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or
+each `context`, `define` and `supersede`, warn of implementation leakage: a concept's correction or
 an example naming code, files, commands, flags, identifiers, tools or libraries instead of what
 must hold. Detection is lexical and only ever warns, and never inspects a decision; a context's
 own words, its concept names and each plain word its current subject names, are never leakage,
 though a command, code span or flag holding a subject's word still is. The same warnings also
-name a concept's residue or a context's subject or relation that cites a decision by its number,
+name a concept's correction or a context's subject or relation that cites a decision by its number,
 recounts its history (what changed, what something used to be or no longer is), or only extends
 the version it replaces, keeping its wording whole and adding to it. Its views read only the
 journal and the example files, and show what stands: a decision stands until it is superseded or
