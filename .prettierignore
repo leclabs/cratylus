@@ -1,14 +1,8 @@
 node_modules/
 dist/
 .turbo/
-.forge/local/
 .claude/worktrees/
 pnpm-lock.yaml
-
-# Generated artifacts — must match their generator's output, never Prettier's:
-**/*.generated.*
-**/generated.*
-**/test/ir-bridge/canon.forge.json
 
 # The repo-root AGENTS.md is hand-authored by the operator and kept verbatim.
 /AGENTS.md

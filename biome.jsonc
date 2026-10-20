@@ -5,20 +5,10 @@
     "ignore": [
       "dist",
       "node_modules",
-      // canon now has TS source under src/ (lint it) + test/ alongside the Python
-      // toolkit and the markdown canon. Narrowed from a blanket packages/canon/**
-      // ignore when the canon inverted to TS modules (T1.1/T1.3); the non-TS
-      // trees (Python toolkit, markdown values, pipeline manifests) stay ignored.
-      "packages/canon/toolkit/**",
+      // canon's TS source under src/ and test/ is linted; its markdown (the
+      // references and the canon's prose) is not.
       "packages/canon/references/**",
-      "packages/canon/docs/**",
-      "packages/canon/ideas/**",
-      "packages/canon/.manifests/**",
       "packages/canon/**/*.md",
-      "**/*.generated.ts",
-      "**/generated.ts",
-      // emit_ir.py output (a generated IR artifact, not hand-authored source)
-      "**/ir-bridge/canon.forge.json",
       // the record store's records root (`RECORDS_ROOT`, runtime
       // `record-store/store.ts`): machine-written, immutable bytes a formatter must
       // never own

@@ -104,8 +104,9 @@ offers. Canon gives its directories as absolute paths, located against its own m
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
 `null`), and optionally the role it `holds`, its model `routing` (`{ tier, effort }`), its typed
 handoff `contract`, the `skills` it operates through and its `isolation`. The canon's own fold
-copies these from its factors because the projector is blind to which factor is which; a harness
-binds model routing per agent.
+copies `holds`, `routing` and `contract` from its factors, because the projector is blind to which
+factor is which; a harness binds model routing per agent. `skills` and `isolation` are not factors:
+a canon states them on the agent itself, and cratylus's own canon sets neither.
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic event name (`EventName`), the
 `Substrate` a constraint is realized on, the `Hook` wire shape, `NativeBinding`, and
