@@ -1,0 +1,13 @@
+{
+  "id": "01M5BPJH5XNCTB98H3FJ47QA14",
+  "at": "2026-10-20T03:44:39.101Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "corpus",
+  "subject": "none: holds no concepts",
+  "relation": "none",
+  "reason": "A misnomer: its concepts belong to cratylic context design, the pattern itself, and canon, the collection cratylus ships, and were moved there; the journal has no way to retire a context, so it is left empty.",
+  "supersedes": [
+    "01M56FCS70WAZ0WXNXZWRWJR96"
+  ]
+}

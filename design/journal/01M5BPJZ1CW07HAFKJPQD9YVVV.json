@@ -1,0 +1,14 @@
+{
+  "id": "01M5BPJZ1CW07HAFKJPQD9YVVV",
+  "at": "2026-10-20T03:44:53.292Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "conceptual model",
+  "wording": "its current state only: the purpose, the bounded contexts with their context map, each live concept as its Cratylic name and correction; what work is accepted against; the project's source of truth for its concepts, never for what an established name means: a recorded name that redefines an established term is a defect, corrected by a new version, never followed",
+  "builtFrom": [],
+  "reason": "Residue gave way to the pattern's correction. And the record had redefined semantic gap, which its architect then took as law: the record is the source of truth for which concepts the project holds, while the name each is recorded under answers to cratylism.",
+  "supersedes": [
+    "01M53P5HAT33RNETSY33JPFDK2"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "01M5BPJYW78HCY3GRMCNFARK2A",
+  "at": "2026-10-20T03:44:53.127Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "workflow",
+  "subject": "the practice cratylus ships for delegating work by intent and taking back results that realize a conceptual model, keeping the semantic gap between settled meaning and built work closed by construction, never by a proxy, a green suite or an agent's own account, nor by agents remembering",
+  "relation": "conforms to cratylic context design; practised on a user's own bounded contexts, never modelling them; its roles are agents composed in the agents context",
+  "reason": "The workflow no longer defines semantic gap, an established term owned by cratylic context design; what its old concept said, that the practice keeps the gap closed by construction, is the practice's subject. The workflow conforms to the pattern like every other context.",
+  "supersedes": [
+    "01M53H2S2GBQK8CMGA9BWEHQRG"
+  ]
+}
