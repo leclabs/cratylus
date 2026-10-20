@@ -1,24 +1,55 @@
 // The architect conforms to the pattern: its delivered profile, and every persona
 // over it, states in its own values that meaning decides which concepts a project
 // needs and each one's correction, never what an established name means, and that
-// the record's own names are inputs it checks like any other.
+// the record's own names are inputs it checks like any other. The wording lives in
+// the values alone; this test reads it from them.
 
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
+import { readBack } from '../src/dimensions/deliverable/read-back.js';
+import { sourceOfTruth } from '../src/dimensions/memory/source-of-truth.js';
+import { reconstitution } from '../src/dimensions/procedure/reconstitution.js';
+import { rectify } from '../src/dimensions/procedure/rectify.js';
+import { cratylism } from '../src/dimensions/stance/cratylism.js';
 import canon from '../src/index.js';
+import { type Dimension, MANIFEST, type Value } from '../src/manifest.js';
+import { architectRole } from '../src/roles/architect.js';
 
-const decided = {
-  meaning:
-    "- meaning (which concepts a project needs and each one's correction, never what an established name means, which is the universe of discourse's; user stories and examples; and accepting a story done): **D** — decides",
-  'source-of-truth':
-    "- **source-of-truth** — the concept journal is the one record of the design's concepts and their corrections; anything remembered yields to it; the names they are recorded under answer to cratylism, never to the record",
-  rectify:
-    "- **rectify** (maps every wording of a concept, the operator's and the record's own alike, to its most precise established name: a recorded name that redefines an established term is a defect it flags and corrects by recording a new version before any work leans on it, never a meaning it follows; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear) —",
-  cratylism:
-    '- **cratylism** — a name is natural to the model, its meaning already fixed by the universe of discourse, never by a project or its record; so each concept takes its Cratylic name with only its correction, a kept name short of it is recorded as such, and no coined label is trusted to carry meaning',
-  reconstitution:
-    "- **reconstitution** — at every start, reads the concept journal's design as it stands, the delivered practice first, upstream before downstream, and the project's own record against it, then the recent work in version control, and tells the operator where things stand, so it works from what is recorded rather than from memory",
+/** A value `name ≜ body`, which renders as `- **name** … — body`. */
+function parts(value: Value<Dimension>): { name: string; body: string } {
+  const text: string = typeof value === 'string' ? value : value.body;
+  const [name = '', body = ''] = text.split(' ≜ ');
+  return { name, body };
+}
+
+const meaningGloss = MANIFEST['decision-rights'].slots.find(
+  (s) => s.name === 'meaning',
+)?.gloss;
+
+const rectifyEntry = architectRole.values.procedure?.find(
+  (p) => typeof p === 'object' && 'value' in p && p.value === rectify,
+);
+const rectifyNote =
+  rectifyEntry && 'note' in rectifyEntry ? rectifyEntry.note : undefined;
+
+/** Each decided value, as a predicate on a rendered line. */
+const decided: Record<string, (line: string) => boolean> = {
+  meaning: (l) => l.startsWith(`- meaning (${meaningGloss}): **D**`),
+  rectify: (l) =>
+    l.startsWith(`- **${parts(rectify).name}** (${rectifyNote}) — `),
+  ...Object.fromEntries(
+    Object.entries({ sourceOfTruth, reconstitution, cratylism, readBack }).map(
+      ([key, value]) => {
+        const { name, body } = parts(value);
+        return [
+          key,
+          (l: string) =>
+            l.startsWith(`- **${name}**`) && l.endsWith(` — ${body}`),
+        ];
+      },
+    ),
+  ),
 };
 
 describe('the architect conforms to the pattern', async () => {
@@ -26,15 +57,27 @@ describe('the architect conforms to the pattern', async () => {
     plugins: [canon],
     adapter: adapterByName('omp'),
   });
+  const lines = (agent: string): string[] =>
+    (
+      tree.files.find((f) => f.path === `agents/${agent}.md`)?.content ?? ''
+    ).split('\n');
+  const architect = lines('architect');
 
-  for (const agent of ['architect', 'mav', 'nico', 'kino']) {
-    it(`${agent}'s omp definition carries the decided values`, () => {
-      const rendered = tree.files.find(
-        (f) => f.path === `agents/${agent}.md`,
-      )?.content;
-      expect(rendered, `${agent} is projected`).toBeDefined();
-      for (const [factor, line] of Object.entries(decided)) {
-        expect(rendered, `${agent}: ${factor}`).toContain(line);
+  it("the architect's definition carries each decided value", () => {
+    expect(meaningGloss).toBeDefined();
+    expect(rectifyNote).toBeDefined();
+    for (const [key, holds] of Object.entries(decided)) {
+      expect(architect.filter(holds), key).toHaveLength(1);
+    }
+  });
+
+  for (const persona of ['mav', 'nico', 'kino']) {
+    it(`${persona} renders the architect's line for each decided value`, () => {
+      const own = lines(persona);
+      for (const [key, holds] of Object.entries(decided)) {
+        const line = architect.find(holds);
+        expect(line, key).toBeDefined();
+        expect(own, `${persona}: ${key}`).toContain(line);
       }
     });
   }
