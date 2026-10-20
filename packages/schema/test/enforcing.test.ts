@@ -3,7 +3,7 @@ import {
   type Value,
   bodyOf,
   enforcing,
-  isDimensionValue,
+  isFactorValue,
 } from '../src/index.js';
 
 type Guardrails = Value<'guardrails'>;
@@ -42,26 +42,26 @@ describe('enforcing — derived from the shape, never from a stored flag', () =>
   });
 });
 
-describe('isDimensionValue — the guard against a SILENT catalog drop', () => {
+describe('isFactorValue — the guard against a SILENT catalog drop', () => {
   it('admits both shapes of value', () => {
-    expect(isDimensionValue(bare)).toBe(true);
-    expect(isDimensionValue(bound)).toBe(true);
+    expect(isFactorValue(bare)).toBe(true);
+    expect(isFactorValue(bound)).toBe(true);
   });
 
   it('rejects a non-value export, which is what the old string test was doing', () => {
     // The catalog scans whole modules, so "not a string" was double-duty for
     // "not a value". Replacing it with a truthy object check would admit these.
-    expect(isDimensionValue({ id: 'a-hook-cell', workers: [] })).toBe(false);
-    expect(isDimensionValue({})).toBe(false);
-    expect(isDimensionValue(null)).toBe(false);
-    expect(isDimensionValue(undefined)).toBe(false);
-    expect(isDimensionValue(42)).toBe(false);
+    expect(isFactorValue({ id: 'a-hook-declaration', workers: [] })).toBe(false);
+    expect(isFactorValue({})).toBe(false);
+    expect(isFactorValue(null)).toBe(false);
+    expect(isFactorValue(undefined)).toBe(false);
+    expect(isFactorValue(42)).toBe(false);
   });
 
   it('is SHAPE-checked: body and events must both be present and well-typed', () => {
-    expect(isDimensionValue({ body: 'x', events: ['e'] })).toBe(true);
-    expect(isDimensionValue({ body: 'x' })).toBe(false); // no events
-    expect(isDimensionValue({ events: ['e'] })).toBe(false); // no body
-    expect(isDimensionValue({ body: 1, events: ['e'] })).toBe(false); // body not prose
+    expect(isFactorValue({ body: 'x', events: ['e'] })).toBe(true);
+    expect(isFactorValue({ body: 'x' })).toBe(false); // no events
+    expect(isFactorValue({ events: ['e'] })).toBe(false); // no body
+    expect(isFactorValue({ body: 1, events: ['e'] })).toBe(false); // body not prose
   });
 });
