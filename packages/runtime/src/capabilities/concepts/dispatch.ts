@@ -79,6 +79,7 @@ import {
 import { verbOf } from '../plan/argv.js';
 import {
   type DeliveredContext,
+  byDelivery,
   deliveredDesign,
   deliveredState,
   marksOf,
@@ -442,12 +443,26 @@ function answerOf(
 ): unknown {
   const folded = new Folded(journal.entries());
   const read = reader(args, refuse);
+  /** The delivered contexts in the delivered order (origin, position). */
+  const ordered = [...delivered].sort(byDelivery);
+  /** This journal's contexts by identity. */
+  const byIdentity = new Map(
+    [...folded.contexts.keys()].map((name) => [folded.identity(name), name]),
+  );
+  /** This journal's contexts that are delivered ones, in the delivered order. */
+  const ownDelivered = ordered.flatMap((d) => {
+    const name = byIdentity.get(d.identity);
+    return name === undefined ? [] : [name];
+  });
+  /** This journal's contexts as read: the delivered ones it holds first, in
+   *  the delivered order, then the rest in record order. */
+  const contextsRead = [
+    ...ownDelivered,
+    ...[...folded.contexts.keys()].filter((n) => !ownDelivered.includes(n)),
+  ];
   /** The delivered contexts shown: each whose identity is none of this
    *  journal's contexts'. */
-  const owned = new Set(
-    [...folded.contexts.keys()].map((name) => folded.identity(name)),
-  );
-  const shown = delivered.filter((d) => !owned.has(d.identity));
+  const shown = ordered.filter((d) => !byIdentity.has(d.identity));
   /** The shown delivered context `--context` names, if it names one. */
   const deliveredNamed = (): DeliveredContext | undefined => {
     const name = args.flags.get('context')?.[0];
@@ -470,7 +485,7 @@ function answerOf(
     delivered: readonly DeliveredContext[];
   } => {
     if (!args.flags.has('context'))
-      return { own: [...folded.contexts.keys()], delivered: shown };
+      return { own: contextsRead, delivered: shown };
     const named = deliveredNamed();
     return named === undefined
       ? { own: [context()], delivered: [] }

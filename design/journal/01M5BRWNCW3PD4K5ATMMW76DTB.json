@@ -1,0 +1,16 @@
+{
+  "id": "01M5BRWNCW3PD4K5ATMMW76DTB",
+  "at": "2026-10-20T04:25:08.252Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0317",
+  "context": "delivery",
+  "title": "Delivered contexts carry provenance and an upstream-first position; a project holding one reads its own, first",
+  "situation": "Cratylic context design is delivered beside the workflow and is upstream of it, so a fresh session reads it and the readings show it first. Decision 0301 gave a delivered context its origin, release version and identity, and nothing that orders several; ordering by file name only happened to put the upstream one first.",
+  "decision": "A delivered context carries its origin, its release's version, its identity (the identity of the context's earliest entry carrying one, else that entry's id) and its position, its 0-based place in upstream-first order within its origin; the release delivers cratylic context design at 0 and workflow at 1, each at every install scope whatever rulesets are chosen. Every reading orders delivered contexts by origin, then position, never by file name. A project whose journal holds an entry with a delivered context's identity reads the context as its own, part of its design, and the delivered copy is not shown apart; among the project's own contexts, those whose identity is a delivered context's come first in delivered order, then the rest in record order. A delivered document without a position is refused, naming the remedy: install again with the cratylus in use.",
+  "consequences": "Supersedes 0301. Cratylus's own repository reads cratylic context design, then workflow, from its journal; every other project reads both as delivered, read-only, in that order. An installation projected by an earlier cratylus must be installed again before its journal readings work. Closing the books still writes openings in record order.",
+  "status": "accepted",
+  "supersedes": "0301",
+  "supersedesEntry": "01M53MC9AAMHWG89VZANENENRP",
+  "decisionKind": "realization"
+}

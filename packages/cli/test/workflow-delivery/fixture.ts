@@ -1,7 +1,20 @@
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { expect } from 'vitest';
 import { type Host, host, success } from '../capability-port/fixture.js';
+import {
+  type Design,
+  query,
+  repositoryRoot,
+  snapshot,
+} from '../concept-journal/fixture.js';
 export { type Host, success } from '../capability-port/fixture.js';
 export { git, snapshot } from '../concept-journal/fixture.js';
 
@@ -10,6 +23,8 @@ export interface Delivered {
   version: string;
   context: string;
   identity: string;
+  /** The context's place, upstream first, among those its origin delivers. */
+  position: number;
   subject: string;
   relation: string;
   concepts: { name: string; wording: string; builtFrom: string[] }[];
@@ -31,6 +46,7 @@ export const document: Delivered = {
   version: '7.8.9',
   context: 'workflow',
   identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
+  position: 1,
   subject: 'The released workflow subject.',
   relation: 'The released workflow relation.',
   concepts: [
@@ -43,6 +59,18 @@ export const document: Delivered = {
   ],
 };
 export const qualified = 'cratylus:workflow';
+/** The context upstream of every other cratylus delivers, read before workflow. */
+export const upstream: Delivered = {
+  origin: 'cratylus',
+  version: '7.8.9',
+  context: 'cratylic context design',
+  identity: '01ARZ3NDEKTSV4RRFFQ69G5F01',
+  position: 0,
+  subject: 'The released cratylic context design subject.',
+  relation: 'The released cratylic context design relation.',
+  concepts: [{ name: 'term', wording: 'The released term.', builtFrom: [] }],
+};
+export const upstreamQualified = 'cratylus:cratylic context design';
 export function installed(): Host {
   const h = host();
   success(h.install);
@@ -51,11 +79,17 @@ export function installed(): Host {
 export function owned(h: Host): string {
   return join(h.home, '.cratylus/omp');
 }
-export function deliveredPath(h: Host): string {
-  return join(owned(h), 'delivered/cratylus/workflow.json');
+/** Where `context`'s delivered document is under the installation `root`:
+ *  named by the context as recorded, spaces included. */
+export function deliveredPath(
+  h: Host,
+  context = 'workflow',
+  root = owned(h),
+): string {
+  return join(root, `delivered/cratylus/${context}.json`);
 }
 export function putDocument(h: Host, value = document, root = owned(h)): void {
-  const path = join(root, 'delivered/cratylus/workflow.json');
+  const path = deliveredPath(h, value.context, root);
   mkdirSync(dirname(path), { recursive: true });
   // A fixture installation supplies a document independently of the build check.
   // Unlinking is unnecessary: the owner can set its own fixture's mode first.
@@ -67,8 +101,54 @@ export function putDocument(h: Host, value = document, root = owned(h)): void {
   writeFileSync(path, JSON.stringify(value));
   chmodSync(path, 0o444);
 }
-export function readDocument(h: Host): Delivered {
-  return JSON.parse(readFileSync(deliveredPath(h), 'utf8'));
+export function readDocument(h: Host, context = 'workflow'): Delivered {
+  return JSON.parse(readFileSync(deliveredPath(h, context), 'utf8'));
+}
+/** Expects the installation `h` reaches to hold the release's projection of
+ *  the repository's own `context`, at `position`, read-only: its current design,
+ *  with its identity, the one its earliest entry carrying one carries, else its
+ *  earliest entry's id; returns it. */
+export function expectReleased(
+  h: Host,
+  context: string,
+  position: number,
+): Delivered {
+  const path = deliveredPath(h, context);
+  expect(
+    existsSync(path),
+    `the release ships delivered/cratylus/${context}.json under its owned root`,
+  ).toBe(true);
+  const actual = readDocument(h, context);
+  const source = query<Design>(repositoryRoot, 'design', '--context', context)
+    .contexts[0]!;
+  const recorded = Object.values(snapshot(repositoryRoot))
+    .map((bytes) => JSON.parse(Buffer.from(bytes, 'base64').toString()))
+    .filter((entry) => entry.kind === 'context' && entry.name === context)
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const identity =
+    recorded.find((entry) => entry.identity !== undefined)?.identity ??
+    recorded[0]?.id;
+  const version = success(h.command(['--version'])).trim();
+  expect({
+    ...actual,
+    concepts: [...actual.concepts].sort((a, b) => a.name.localeCompare(b.name)),
+  }).toEqual({
+    origin: 'cratylus',
+    version,
+    context,
+    identity,
+    position,
+    subject: source.subject,
+    relation: source.relation,
+    concepts: source.concepts
+      .map(({ name, wording, builtFrom }) => ({ name, wording, builtFrom }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  });
+  expect(
+    statSync(path).mode & 0o222,
+    'no owner, group or other write bit',
+  ).toBe(0);
+  return actual;
 }
 /** A view's answer: the project's own `contexts`, its design and context map,
  *  and apart from them the delivered `practice` (none where it shows none),
@@ -104,7 +184,7 @@ export function assertDelivered(
 ): void {
   expect(context, `${verb} includes the delivered context`).toBeDefined();
   expect(context).toMatchObject({
-    name: qualified,
+    name: `${value.origin}:${value.context}`,
     delivered: {
       origin: value.origin,
       version: value.version,

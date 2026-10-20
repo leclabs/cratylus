@@ -32,6 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
 import {
   type DeliveredContext,
+  byDelivery,
   deliveredFrom,
 } from './capabilities/concepts/delivered.js';
 
@@ -150,7 +151,7 @@ export function runtimeConfigPath(): string | null {
   }
 }
 
-/** The contexts the installation reached delivers, by origin then context; none
+/** The contexts the installation reached delivers, by origin then position; none
  *  where there is no installation to read them from, or it delivers none. */
 export function deliveredContexts(): DeliveredContext[] {
   let root: string;
@@ -162,19 +163,22 @@ export function deliveredContexts(): DeliveredContext[] {
   }
   const dir = join(root, DELIVERED_DIR);
   if (!existsSync(dir)) return [];
+  const installation = { root, scope: installationScope(root) };
   return readdirSync(dir, { withFileTypes: true })
     .filter((origin) => origin.isDirectory())
-    .map((origin) => origin.name)
-    .sort()
     .flatMap((origin) =>
-      readdirSync(join(dir, origin))
+      readdirSync(join(dir, origin.name))
         .filter((name) => name.endsWith('.json'))
-        .sort()
         .map((name) => {
-          const file = join(dir, origin, name);
-          return deliveredFrom(JSON.parse(readFileSync(file, 'utf8')), file);
+          const file = join(dir, origin.name, name);
+          return deliveredFrom(
+            JSON.parse(readFileSync(file, 'utf8')),
+            file,
+            installation,
+          );
         }),
-    );
+    )
+    .sort(byDelivery);
 }
 
 /**
