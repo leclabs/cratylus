@@ -29,22 +29,15 @@ import {
 //
 // This layer discovers the dimension dirs across MANY plugins and lifts each discovered value to a
 // **fragment NODE** (`resolve/Fragment`) whose OBJECT IDENTITY is the address
-// (a reference names a NODE, resolved LATE — never a string id, so a reference reads
-// the node's post-patch value rather than an import-time snapshot). Two
-// plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
-// is a resolution event, not a collision (per-plugin σ* invariant).
-//
-// FEEDS THE RESOLVER: the per-plugin `FragmentEntry[]` is what projection
-// (`discoverFragments`, `project/index.ts`) turns into the resolver's `LoadedPlugin.contributions`
-// (target = the node; value = the body); the resolver then keys
-// `ResolvedAgentSet.fragments` by that same node object.
+// (a reference names a NODE, never a string id). Two plugins may both name a concept
+// `parsimony`; each yields a DISTINCT node, so that is no collision (per-plugin σ*
+// invariant). Projection's `discoverFragments` (`project/index.ts`) calls it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * A plugin's fragment ROOT: where to scan, and under what namespace. The plugin
  * contract's `AgentPlugin.name` (the namespace segment) paired with the RESOLVED
- * absolute path of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs —
- * the per-plugin analogue of `enumerateCatalog`'s `corpusDimensionsDir`).
+ * absolute path of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs).
  *
  * An INPUT, built BEFORE the scan: nothing here is a finding, so nothing here may be
  * named for the scan that consumes it. `Root` is the dir the walk starts from; it is
@@ -77,11 +70,10 @@ export interface PluginFragmentRoot {
  * Two or more fragment roots declaring ONE namespace segment. Loud, before any scan.
  *
  * WHY THIS IS FATAL AND NOT A WARNING. The namespace is the whole of a fragment's
- * address hygiene: it prefixes every minted node id (`<plugin>:<dim>/<export>`), it is
- * the `name` a `ContributionSource{kind:'plugin'}` attributes a fold contribution to,
- * and it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
- * plugins sharing it collapses all three at once — indistinguishable ids, provenance
- * that names the wrong plugin, and the per-plugin σ* invariant — each plugin names each
+ * address hygiene: it prefixes every minted node id (`<plugin>:<dim>/<export>`), and
+ * it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
+ * plugins sharing it collapses both at once — indistinguishable ids, and the
+ * per-plugin σ* invariant — each plugin names each
  * concept its LOCAL σ*, the anchor with the smallest residue in its context, unique within
  * its OWN catalog and nowhere wider —
  * holding only by accident. There is no degraded-but-useful reading of the result to warn about.
@@ -97,20 +89,17 @@ export class DuplicateNamespaceError extends Error {
     readonly fragmentsDirs: readonly string[],
   ) {
     super(
-      `duplicate plugin namespace '${namespace}': ${fragmentsDirs.length} fragment roots declare it (${fragmentsDirs.join(', ')}) — a namespace addresses exactly one plugin, so sharing one makes their fragments indistinguishable in every minted id, every provenance record and every patch target`,
+      `duplicate plugin namespace '${namespace}': ${fragmentsDirs.length} fragment roots declare it (${fragmentsDirs.join(', ')}) — a namespace addresses exactly one plugin, so sharing one makes their fragments indistinguishable in every minted id`,
     );
     this.name = 'DuplicateNamespaceError';
   }
 }
 
 /**
- * ONE FRAGMENT as authored — identity, dimension, body. `node` is the resolver `Fragment`
- * (OBJECT IDENTITY = the imported binding — what the config loader targets in a
- * `PatchEntry`, and what the resolver keys the resolved map by). `dimension` is the
- * dimension it files under.
- * `body` is its authored base value: the branded-string body for a string fragment;
- * for a node-form fragment (the reference-bearing form) the node object itself —
- * the config loader decides how a node-form fragment originates its base contribution.
+ * ONE FRAGMENT as authored — identity, dimension, body. `node` is the `Fragment`
+ * (OBJECT IDENTITY = the imported binding). `dimension` is the dimension it files
+ * under. `body` is its authored value: the branded-string body for a string fragment;
+ * for a node-form fragment (the reference-bearing form) the node object itself.
  *
  * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
  * output, so naming one for its provenance distinguishes it from nothing.
@@ -138,8 +127,7 @@ export interface FragmentEntry {
  * and `Record<string, …>` invites `catalogs[ns]` on a value that may be absent.
  *
  * ORDER SURVIVES THE CHANGE: a `Map` iterates in insertion order, so `extends` position
- * — which the resolver's ordered fold depends on — is preserved exactly as the pair
- * array preserved it. What does not survive is the caller's ability to read the i-th
+ * is preserved exactly as the pair array preserved it. What does not survive is the caller's ability to read the i-th
  * result and assume it belongs to the i-th root; that correspondence was asserted in a
  * comment and is now asked for by name.
  *
@@ -158,7 +146,7 @@ const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
   'structured',
 ]);
 
-/** Is `v` a resolver `Fragment` NODE (the reference-bearing export form)? */
+/** Is `v` a `Fragment` NODE (the reference-bearing export form)? */
 function isFragmentNode(v: unknown): v is Fragment {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
   const o = v as { id?: unknown; valueShape?: unknown };
@@ -200,8 +188,8 @@ async function scanDimensionModules(
 /**
  * MANY ROOTS → MANY CATALOGS. Enumerate the fragments of each plugin as NODES
  * addressed by object identity, namespaced by the plugin `name`, then enforce
- * ACYCLICITY of the cross-plugin reference graph by reusing the
- * resolver's `validateReferenceGraph` — a reference cycle throws
+ * ACYCLICITY of the cross-plugin reference graph with `validateReferenceGraph` — a
+ * reference cycle throws
  * `ReferenceCycleError`, a dangling edge `DanglingReferenceError`.
  *
  * NAMESPACE UNIQUENESS IS CHECKED FIRST, before a single dir is read: a duplicate is a
@@ -209,8 +197,7 @@ async function scanDimensionModules(
  * would only make the report slower and the partial state harder to describe.
  * `DuplicateNamespaceError` — never last-write-wins.
  *
- * THE LONG SIGN IS DELIBERATE. This sits beside `enumerateCatalog`, and a sibling pair
- * is exactly where a misread costs most. `enumeratePluginCatalogs` would still admit
+ * THE LONG SIGN IS DELIBERATE. `enumeratePluginCatalogs` would still admit
  * "catalogs *of* plugins", disambiguated only by the signature; carrying the noun's own
  * `Fragment` infix fixes it in the name rather than in the reader's second look.
  *
@@ -269,7 +256,7 @@ export async function enumeratePluginFragmentCatalogs(
     plugins.set(src.name, fragments);
   }
 
-  // Acyclicity of the resolved reference graph — reuse the resolver's law.
+  // Closure and acyclicity of the reference graph.
   validateReferenceGraph(allNodes);
 
   return plugins;

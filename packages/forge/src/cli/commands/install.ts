@@ -74,6 +74,7 @@ import {
   INSTALLATION_RECORD_FILE,
   type InstallScope,
 } from '@cratylus/runtime/runtime-config';
+import type { AgentPlugin } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
@@ -106,10 +107,8 @@ import {
   type ProjectedTree,
   discoverFragments,
   projectPluginSet,
-  resolveFragmentBodies,
 } from '../../project/index.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
-import type { AgentPlugin } from '../../resolve/index.js';
 import { fail as failLine, say, warn as warnLine } from '../style.js';
 import {
   type InstallPrompts,
@@ -414,10 +413,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // What the corpus renders depends on which practices are chosen, and which practices
   // the corpus declares is only known from a render: so render the whole corpus once
   // to learn them, and again with the ones chosen.
-  const resolvedBodies = resolveFragmentBodies(
-    await discoverFragments(plugins),
-    [],
-  );
+  // Discovery refuses a corpus whose fragments share a namespace or whose
+  // reference graph dangles or cycles, before anything is rendered.
+  await discoverFragments(plugins);
   const render = async (
     practices: readonly string[] | undefined,
     rules: readonly string[],
@@ -426,7 +424,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     const report = await projectPluginSet({
       plugins,
       adapter,
-      resolvedBodies,
       log: () => {},
       warn: (line) => warnings.push(line),
       // The hooks print each skill's directory, so what fits the harness's output cap

@@ -21,10 +21,6 @@
       "types": "./dist/catalog/index.d.ts",
       "import": "./dist/catalog/index.js"
     },
-    "./resolve": {
-      "types": "./dist/resolve/index.d.ts",
-      "import": "./dist/resolve/index.js"
-    },
     "./adapters/*": {
       "types": "./dist/adapters/*/index.d.ts",
       "import": "./dist/adapters/*/index.js"

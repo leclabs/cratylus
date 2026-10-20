@@ -181,7 +181,6 @@ the loop.
 The command is a thin shell over exported functions. The subpaths that back the pipeline:
 
 ```ts
-import { resolve } from '@cratylus/forge/resolve';
 import { projectPluginSet } from '@cratylus/forge/project';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectorCommands } from '@cratylus/forge/cli';
@@ -191,8 +190,7 @@ import { projectorCommands } from '@cratylus/forge/cli';
 consumers depend on the adapter port and selector rather than on concrete rendering functions.
 The cell types and `defineAgentPlugin` are [`@cratylus/schema`](../schema/README.md)'s. They are
 no longer forge's, and importing them from the projector was the
-inversion `schema` exists to end; `@cratylus/forge/resolve` re-exports `AgentPlugin` and
-`defineAgentPlugin` only so the resolver stays addressable through one place.
+inversion `schema` exists to end.
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
 fragment catalogs of a plugin set), `./module-scan` and `./adapters/omp` (the OMP adapter).

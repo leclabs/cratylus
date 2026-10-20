@@ -1,26 +1,22 @@
 # @cratylus/schema
 
-The shapes a corpus authors against, for [cratylus](../../README.md) — the dimension
-meta-model as a TypeScript type system.
+The shapes [cratylus](../../README.md)'s corpus is written in — the dimension meta-model as a
+TypeScript type system.
 
-It sits at the **bottom of the dependency graph**. `canon` authors against it, `forge` validates and
-projects against it, and it holds no opinion about either. This README is for the author of a
-corpus.
+It sits at the **bottom of the dependency graph**. `canon` is written against it, `forge` validates
+and projects against it, and it holds no opinion about either. Installing and using cratylus is
+[the `cratylus` README](../cli/README.md)'s; this README is for whoever works on the corpus or on
+the projector.
 
 This module is the contract and **only** the contract. It states that a dimension _has_ a group, a
 repertoire, an arity, a default enforcement level and a projection, and derives an entire dimension
 type-system from any manifest obeying that shape. It does **not** state which dimensions exist —
 that is the corpus's, and it rides the plugin as `manifest`.
 
-## Install
+## Deriving the corpus's type system
 
-```bash
-npm install @cratylus/schema
-```
-
-## Deriving a corpus's type system
-
-A corpus declares its manifest once and reads its whole dimension type-system out of it:
+The corpus declares its manifest once (`packages/canon/src/manifest.ts`) and reads its whole
+dimension type-system out of it. In outline:
 
 ```ts
 import type { AgentOf, DimensionMeta } from '@cratylus/schema';
@@ -74,34 +70,16 @@ attribute of other values (`'attribute'`). The level is the `EnforcementLevel` (
 whether the dimension is rendered as `'text'` or compiled to harness settings (`'binding'`).
 `required` forbids holding the dimension empty.
 
-## Declaring a plugin
+## The corpus as a plugin
 
-A package offers its corpus as an agent-plugin: the default export of `defineAgentPlugin`, an
-identity factory, so a consumer addresses the plugin by the imported binding and never by a string
-id.
+[`@cratylus/canon`](../canon/README.md)'s default export is the corpus as an `AgentPlugin`, made with
+`defineAgentPlugin`, an identity factory: the `cratylus` command is built with that one plugin, and
+the projector reads it by the imported binding, never by a string id.
 
-```ts
-import { fileURLToPath } from 'node:url';
-import { defineAgentPlugin } from '@cratylus/schema';
-
-const dir = (rel: string) => fileURLToPath(new URL(rel, import.meta.url));
-
-export default defineAgentPlugin({
-  name: 'acme',
-  manifest: MANIFEST,
-  events: ['session.start', 'turn.end'],
-  fragments: dir('./dimensions'),
-  agents: dir('./agents'),
-  skills: dir('./skills'),
-  hooks: dir('./hooks'),
-});
-```
-
-`AgentPlugin` is a `Layout` (the four directories a projector scans: `fragments`, `agents`,
-`skills` and `hooks`) plus what the plugin contributes: the `manifest`, the `events` vocabulary,
+`AgentPlugin` is a `Layout` (the four directories the projector scans: `fragments`, `agents`,
+`skills` and `hooks`) plus what the corpus contributes: the `manifest`, the `events` vocabulary,
 the `practices` it offers, the `plumbing` every practice is installed with, and the `rulesets` it
-offers. A plugin gives its directories as absolute paths; [`@cratylus/canon`](../canon/README.md)
-shows one locating its own.
+offers. Canon gives its directories as absolute paths, located against its own module.
 
 ## What is here
 
@@ -111,11 +89,11 @@ shows one locating its own.
 | `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`          | how values are sourced, how many a field holds, and one held value       |
 | `DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `AgentOf`    | generic derivations over any manifest                                    |
 | `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `anchorOf` | a dimension value, bare or self-enforcing, and its α/residue split       |
-| `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                         |
+| `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes the corpus is written in                                 |
 | `JsonValue`                                                             | the data a skill's runtime face may carry as `configuration`             |
 | `HookCell` · `hookIrOf` · `resolveWorker`                               | the doctrine-free source-cell kernel, and a worker's template resolution |
 | `ProjectionFact` · `ProjectionFacts`                                    | the names of the facts a projector binds into a hook worker's template   |
-| `AgentPlugin` · `Layout` · `defineAgentPlugin`                          | a package's plugin declaration                                           |
+| `AgentPlugin` · `Layout` · `defineAgentPlugin`                          | the corpus's plugin declaration                                          |
 | `Practice` · `Plumbing` · `Agent.dispatches`                            | a way of working, its shared plumbing, and an agent's dispatch           |
 | `Rule` · `Ruleset`                                                      | a working convention and why it holds, and one convention's rules        |
 
@@ -143,6 +121,6 @@ second copy spelled inside the runtime.
 ## No edge out
 
 This package imports nothing. A capability's name is a plain `CapabilityName` string here; the closed
-set is declared where a corpus declares its own vocabulary (`RUNTIME_CAPABILITIES` in
+set is declared where the corpus declares its own vocabulary (`RUNTIME_CAPABILITIES` in
 `packages/canon/src/manifest.ts`), and `SkillDeploy.runtime` is parameterized over it. The shape
 belongs here, and the vocabulary belongs to the corpus that declares the members.

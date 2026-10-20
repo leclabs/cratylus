@@ -310,7 +310,7 @@ export const bodyOf = <O extends string>(v: Value<O>): Fragment<O> =>
  *
  * A body is `⟨α, residue⟩`, rendered `α ≜ residue`, or bare `α` when the residue
  * is ∅ (the ideal σ*). This is the one home for that split: keying anything on a
- * body means keying on text that a fold may rewrite, whereas α is what the value
+ * body means keying on its residue's text too, whereas α is what the value
  * IS. A bare anchor returns itself — absence of ` ≜ ` means residue ∅, never that
  * the anchor is missing.
  */
@@ -319,19 +319,6 @@ export const anchorOf = <O extends string>(v: Value<O>): string => {
   const i = body.indexOf(' ≜ ');
   return i < 0 ? body : body.slice(0, i);
 };
-
-/**
- * Replace a value's declaration face, PRESERVING any enforcement binding.
- *
- * The resolver's fold substitutes authored bodies for composed ones. A body is a
- * declaration; `substrate`/`events` are not, and must survive the substitution
- * untouched — folding a value must never silently unbind it. This is the whole
- * reason the fold cannot simply treat a value as a string any more.
- */
-export const withBody = <O extends string>(
-  v: Value<O>,
-  body: Fragment<O>,
-): Value<O> => (enforcing(v) ? { ...v, body } : body);
 
 // ── The runtime dimension descriptor ────────────────────────────────────────
 // A consumer that needs a dimension's metadata at runtime
@@ -767,7 +754,7 @@ export type { EventName } from './hook/index.js';
  *
  * This is the half of a plugin declaration that is pure DISCOVERY MECHANICS: it
  * answers "where do I look", which is mapping, and mapping is the projector's to
- * own. It is named rather than left as loose fields so the resolver can take
+ * own. It is named rather than left as loose fields so the projector can take
  * a `Layout` without taking a whole plugin.
  *
  * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
