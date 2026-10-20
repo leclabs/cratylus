@@ -3,17 +3,17 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
 //
-// This cell used to declare `composition: () => [exemplify, signify, conceptualize]` and import those
+// This skill used to declare `composition: () => [exemplify, signify, conceptualize]` and import those
 // modules to do it. The thunk's only consumer is the trailing `Composed from …`
-// line of the projected SKILL.md (`forge/src/core/exemplify/skill-cell.ts`), so each
+// line of the projected SKILL.md (`forge/src/core/exemplify/skill-body.ts`), so each
 // import bought one sentence of provenance and cost a module-level cycle: the four
-// signification cells each claimed to be composed from the other three, and no one of
+// signification skills each claimed to be composed from the other three, and no one of
 // them could be read, taken or deployed alone.
 //
-// The relation those edges named is CITATION, not dependency: these cells RESTATE each
+// The relation those edges named is CITATION, not dependency: these skills RESTATE each
 // other's terms in different registers (prose here, signature there). A citation
-// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
-// no import and cannot cycle. Composition is the caller's: an agent pipes these cells
+// belongs inside the block, at the term that borrows it (`@ <skill>`), where it needs
+// no import and cannot cycle. Composition is the caller's: an agent pipes these skills
 // in whatever order the work wants.
 
 export const materialize: Skill = {
@@ -23,30 +23,30 @@ export const materialize: Skill = {
 prim : C → 𝔹
 fac : C → ℘(℘(C))
 ≺ ≜ shortlex order over factorizations
-anchor : C → term ∪ {⊥}
-gloss : C → text
+term : C → Names ∪ {⊥}
+meaning : C → text
 kind : C → Kinds
 Kinds ≜ the closed kind set
 
-concept-record   ≜ record(gloss, anchor, factorization)
+concept-record   ≜ ⟨meaning, term, factorization⟩
 correction @ signify
-cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content
-CSF ≜ bipartite-normal-form: primitive↦⟨anchor,correction⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
+cite-by-ref ≜ composite stores factor-terms ∧ ¬restate factor-content
+CSF ≜ bipartite-normal-form: primitive↦⟨term,correction⟩ by value ; composite↦⟨term,factor-terms⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
 F(m) ≜ min_≺ fac(m)
-CSF(c) ≜ ( anchor(c) , correction(c) )             ,  prim(c) ∧ correction(c) ≠ ∅
-CSF(c) ≜ anchor(c)                                ,  prim(c) ∧ correction(c) = ∅
-CSF(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F(c) } ) ,  ¬prim(c)
-realize(k) fills factorization(k) ≜ CSF(k) ; gloss(k), anchor(k) preserved
-anchor(k) = ⊥ ⇒ realize(k) = ⊥
+CSF(c) ≜ ( term(c) , correction(c) )             ,  prim(c) ∧ correction(c) ≠ ∅
+CSF(c) ≜ term(c)                                ,  prim(c) ∧ correction(c) = ∅
+CSF(c) ≜ ( term(c) , { term(p) | p ∈ F(c) } ) ,  ¬prim(c)
+realize(k) fills factorization(k) ≜ CSF(k) ; meaning(k), term(k) preserved
+term(k) = ⊥ ⇒ realize(k) = ⊥
 
-CSF(c) never restates what anchor(c) carries ⟨minimal @ signify⟩
+CSF(c) never restates what term(c) carries ⟨minimal @ signify⟩
 prose(c) ≜ render(CSF(c))
 CSF(c) ≽ prose(c)
 
-Φ ≜ { (anchor(c), kind(c), CSF(c)) | c ∈ C }
+Φ ≜ { (term(c), kind(c), CSF(c)) | c ∈ C }
 S ≜ { file, document, … }
 σ : Φ × S → artifacts
 ρ_s : Kinds → form_s
@@ -54,7 +54,7 @@ S ≜ { file, document, … }
 s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 
-σ(Φ, file) ≜ { \${OUTPUT_DIR}/anchor(c).md | (anchor(c), k, x) ∈ Φ }
+σ(Φ, file) ≜ { \${OUTPUT_DIR}/term(c).md | (term(c), k, x) ∈ Φ }
 ρ_file(k) ≜ front-matter (kind: k, description) + body
 ∀ f ∈ σ(Φ, file) : ∃! (a, k, x) ∈ Φ : content(f) = x
 
