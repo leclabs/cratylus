@@ -556,17 +556,22 @@ export class Folded {
         : (this.concepts.get(context)?.values() ?? [])) {
         const standing = settle(versions) as Standing;
         if (standing.is === 'retired') continue;
-        const name = nameIn(versions) as string;
         for (const v of standing.is === 'live'
           ? [standing.current]
           : standing.current)
           drafts.push(
             v.kind === 'retire'
-              ? { kind: 'retire', context, name, reason: v.reason, ...opened }
+              ? {
+                  kind: 'retire',
+                  context,
+                  name: v.name,
+                  reason: v.reason,
+                  ...opened,
+                }
               : {
                   kind: 'define',
                   context,
-                  name,
+                  name: v.name,
                   wording: v.wording,
                   builtFrom: v.builtFrom.map((ref) =>
                     this.current(context, ref),
@@ -946,14 +951,17 @@ function settle(versions: readonly VersionEntry[]): Standing | undefined {
     : { is: 'live', current: one };
 }
 
-/** The name of a concept with `versions`, in append order: its current
- *  version's, or, while competing, that of the latest version every current
- *  one supersedes, directly or through others, else of its earliest version;
- *  `undefined` for none. */
+/** The name of a concept with `versions`, in append order: the one name its
+ *  current versions give it, or, while competing versions name it
+ *  differently, that of the latest version every current one supersedes,
+ *  directly or through others, else of its earliest version; `undefined` for
+ *  none. */
 function nameIn(versions: readonly VersionEntry[]): string | undefined {
   const standing = settle(versions);
   if (standing === undefined) return undefined;
   if (standing.is !== 'competing') return standing.current.name;
+  const given = new Set(standing.current.map((v) => v.name));
+  if (given.size === 1) return [...given][0];
   const byId = new Map(versions.map((v) => [v.id, v]));
   const ancestry = standing.current.map((v) => {
     const reached = new Set<string>();

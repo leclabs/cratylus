@@ -975,15 +975,13 @@ describe('renaming a concept (0322)', () => {
       expect(design.contexts[0]?.concepts.map((c) => c.name)).toEqual([
         'reservation',
       ]);
-      expect(design.contexts[0]?.competing).toEqual([
-        expect.objectContaining({
-          name: 'hold',
-          versions: [
-            expect.objectContaining({ name: 'claim' }),
-            expect.objectContaining({ name: 'claim' }),
-          ],
-        }),
-      ]);
+      // Every current version gives it one name, so it is listed under that.
+      const [competing] = design.contexts[0]?.competing ?? [];
+      expect(competing?.name).toBe('claim');
+      expect(competing?.versions).toHaveLength(2);
+      for (const v of competing?.versions ?? [])
+        expect(v).not.toHaveProperty('name');
+      expect(design.contexts[0]?.competing).toHaveLength(1);
       const history = concepts('history', 'claim', '--context', 'booking') as {
         versions: { kind: string }[];
       };

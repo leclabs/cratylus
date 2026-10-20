@@ -856,6 +856,53 @@ describe('closing the books', () => {
     ]);
   });
 
+  it('opens competing versions that each rename the concept alike under the new name, references rewritten (0322)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    const hold = worded('define', 'hold', 'booking', 'A hold.');
+    concepts(
+      'define',
+      'reservation',
+      '--context',
+      'booking',
+      '--wording',
+      'A seat taken.',
+      '--reason',
+      'Because.',
+      '--built-from',
+      'hold',
+    );
+    for (const [wording, reason] of [
+      ['Left line.', 'Left.'],
+      ['Right line.', 'Right.'],
+    ])
+      recorded({
+        kind: 'rename',
+        context: 'booking',
+        name: 'claim',
+        was: 'hold',
+        wording,
+        builtFrom: [],
+        reason,
+        supersedes: [hold],
+      });
+    const head = commit();
+    concepts('close');
+    expect(entryFiles().filter((e) => e.kind !== 'context')).toMatchObject([
+      { kind: 'define', name: 'claim', wording: 'Left line.', supersedes: [] },
+      { kind: 'define', name: 'claim', wording: 'Right line.', supersedes: [] },
+      {
+        kind: 'define',
+        name: 'reservation',
+        builtFrom: ['claim'],
+        broughtForward: head,
+      },
+    ]);
+    // The two still compete, under the new name.
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ competing: [{ name: 'claim' }] }],
+    });
+  });
+
   it('compares a version only with versions it replaces: an opening replaces none', () => {
     concepts('context', 'booking', '--subject', 'Booking.');
     worded('define', 'hold', 'booking', 'A hold.');
