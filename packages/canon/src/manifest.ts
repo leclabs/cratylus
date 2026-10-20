@@ -117,7 +117,7 @@ export const MANIFEST = {
       {
         name: 'meaning',
         gloss:
-          'concepts, user stories and examples, and accepting a story done',
+          "which concepts a project needs and each one's correction, never what an established name means, which is the universe of discourse's; user stories and examples; and accepting a story done",
       },
       { name: 'constraint', gloss: 'decisions on realization' },
       {
