@@ -7,18 +7,18 @@ which is this package's. `runtime` is the generic platform beneath that second f
 record (the concept journal) an agent reconstitutes from.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
-no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
+no canon. It ships with the agent and runs on the host; anything canon-specific reaches it as
 configuration the projection emitted.
 
 The commands a consumer
 types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for whoever
-works on the corpus whose skills route here, and for a library user of the package.
+works on the canon whose skills route here, and for a library user of the package.
 
 ## Capabilities
 
 The runtime ships exactly two capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
+names them: `concepts` and `versionSkew`. A canon's skill names one of them as
 `runtime: { capability: … }`.
 
 | capability    | verbs                                                                                                                                                 |
@@ -152,7 +152,7 @@ verb does not take.
 
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
-corpus's skills declared it. The installation (`installationRoot`) is the one
+canon's skills declared it. The installation (`installationRoot`) is the one
 `$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
 walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
 holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one

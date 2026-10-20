@@ -1,4 +1,4 @@
-// ⚠ PROVISIONAL PATH — see `src/ports/provisional-mailbox.ts`: the mailbox's anchor is
+// ⚠ PROVISIONAL PATH — see `src/ports/provisional-mailbox.ts`: the mailbox's term is
 // undiscovered and is /signify's to derive, so nothing here coins one.
 //
 // The one law this file holds the store to: a claim is atomic under concurrent producers.

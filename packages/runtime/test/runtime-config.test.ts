@@ -37,7 +37,7 @@ describe('the host runtime config', () => {
   });
 
   it('a configuration block is a real config, each capability’s entry intact', () => {
-    // Corpus meaning a capability acts on arrives as its configuration entry.
+    // Canon meaning a capability acts on arrives as its configuration entry.
     const root = tmp();
     const cfg = join(root, 'runtime.json');
     const entry = { lifecycle: { states: ['a', 'b'], final: 'b' } };
