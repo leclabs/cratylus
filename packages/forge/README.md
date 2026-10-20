@@ -52,8 +52,14 @@ that every skill an agent is given, with what that composes, is carried by the p
 that is not is refused by one error naming the practice, the agent and the skill that is missing.
 Whom an agent dispatches is never closed over (decision 0142). A name that is no declared practice
 is refused, naming the declared ones. The tree
-reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected)
-for an install to offer, whatever was rendered.
+reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected,
+former names) for an install to offer, whatever was rendered.
+
+A practice renamed declares the names it was offered under before (`Practice.formerNames`,
+decision 0332). An install over an earlier one whose record (its installation record, or an earlier
+deploy record) names a former name keeps the practice, records its new name only, and reports the
+carry-over, old name and new. A former name is no declared practice: render and `--practices`
+refuse it as any unknown name.
 
 ### An agent is given its skills' closure
 

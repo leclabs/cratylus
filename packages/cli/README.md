@@ -129,7 +129,8 @@ an answer to one. An empty choice is refused as well (`--practices ''`, or every
 since none is not every; to take it all out, run `cratylus uninstall --harness <h>`.
 
 Installing again is how you change the choice. A practice installed before and not chosen now is
-removed, with what no chosen practice still carries.
+removed, with what no chosen practice still carries. A practice renamed since an earlier install
+counts as installed and is carried over under its new name, which the report names beside the old.
 
 ### Which rules
 
