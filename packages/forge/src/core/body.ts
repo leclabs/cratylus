@@ -43,7 +43,7 @@ export function entriesOf(a: Agent, field: string): readonly Entry[] {
 /**
  * One entry line: `- ` + (`<slot>: ` or `<slot> (<slot correction>): `) + `**<term>**` +
  * (` (<note>)`) + ` — <correction>` + (` (fixed)` when the level is fixed). A value
- * whose semantic gap is ∅ is its term alone, so it carries no ` — <correction>`.
+ * whose correction is empty is its term alone, so it carries no ` — <correction>`.
  */
 function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
   const body = bodyOf(entry.value);

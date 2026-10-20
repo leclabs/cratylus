@@ -104,7 +104,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['concepts'`);
   });
 
-  it('carries the OMP session-hook module and its byte-exact worker', async () => {
+  it('carries the OMP session-hook module and its byte-identity-pinned worker', async () => {
     const t = await tree();
     const sessionHooks = t.files.find(
       (f) => f.path === `enforcing/_session/${CLI_BIN}-session.ts`,

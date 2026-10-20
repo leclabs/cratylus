@@ -1,4 +1,4 @@
 ---
 ---
 
-Canon's README names nico's expertise as corpus linguistics and latent lexicography, the established field.
+Canon's README names nico's expertise as the canon and latent lexicography, as nico's own description does.

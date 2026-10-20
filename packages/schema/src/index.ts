@@ -337,7 +337,7 @@ export interface FactorMeta {
    * How the value-catalog is sourced (the `Repertoire`).
    *
    * This field read `kind` until 2026-08-05, which put a second concept on a term
-   * forge's `ValueKind` (a value's structural shape) already carried. A blind
+   * forge's `FragmentKind` (a value's structural shape) already carried. A blind
    * reverse decode read `kind` here as "the closure policy of the factor's value
    * space" and ranked this site's claim on the term weakest — `kind` fires "variant
    * tag answering what is this?", and this is a property ABOUT the factor, not

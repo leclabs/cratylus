@@ -102,7 +102,7 @@ export interface HookDeclaration<E extends EventName = EventName> {
   readonly entry: string;
   /** Timeout in seconds; adapter default when omitted. */
   readonly timeout?: number;
-  /** The worker payload templates (byte-anchors, once resolved). */
+  /** The worker payload templates (byte-identity pins, once resolved). */
   readonly workers: readonly HookWorker[];
   /**
    * What this hook SPEAKS to an agent, addressed as `{{speech:<id>}}` from a
@@ -116,7 +116,7 @@ export interface HookDeclaration<E extends EventName = EventName> {
 /**
  * One source-of-truth entry per harness hook: the `Hook` config-IR + its verbatim
  * workers. A projector serializes `hook` into settings.json and writes each worker's
- * `content` under `hooks/<hook.id>/` (byte-anchor — no on-disk copy).
+ * `content` under `hooks/<hook.id>/` (byte-identity pin — no on-disk copy).
  */
 export interface HookSource {
   readonly hook: Hook;
@@ -134,7 +134,7 @@ const PLACEHOLDER = /\{\{([^{}]*)\}\}/g;
  * Resolve one worker TEMPLATE into the bytes that deploy.
  *
  * PURE: a function of the worker, the projector's fact table, and the hook's
- * speech — no clock, no host, no file. That is what keeps the byte-anchor an anchor
+ * speech — no clock, no host, no file. That is what keeps the byte-identity pin a pin
  * when its subject moved from the declaration's literal to the resolved bytes.
  *
  * IT THROWS ON AN UNKNOWN PLACEHOLDER, and that is the load-bearing half. A silent

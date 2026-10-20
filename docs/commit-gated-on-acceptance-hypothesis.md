@@ -93,7 +93,7 @@ pre-commit hook rejects unformatted or broken staged files, and concurrent lanes
 index. A commit rule that defines a boundary as "leaves the suite green" does not counter this.
 It ratifies it, because a cutover is green only at its end.
 
-- **H3 is confirmed, and it is the canon's lever.** On 2026-09-25 the only part of the canon that
+- **H3 is confirmed, and it is the canon's lever.** On 2026-09-25 the only canon cell that
   mentioned committing was `rules/repo-preamble.ts` (`scope: ''`, `targetPath: 'AGENTS.md'`),
   which reaches cratylus's own workspace and nowhere else. No projected agent under
   `~/.claude/agents/` or `~/.omp/agent/agents/` mentioned a commit. Arms E–G show what that
@@ -126,7 +126,7 @@ It ratifies it, because a cutover is green only at its end.
   `planner` and `implementer` all projected it, and `nico` stopped declaring it separately. The
   `assayer` writes nothing and held it not. Cratylus's `AGENTS.md` convention stayed as it was,
   because it binds every session in this repository, including agents the canon did not project,
-  so it cannot cite a factor's value.
+  so it cannot cite a dimension value.
 - **R3 (no omp change) stood.**
 
 ## Acceptance for the fix (measured 2026-09-25)
@@ -144,9 +144,9 @@ It ratifies it, because a cutover is green only at its end.
 ## Where it stands now
 
 The rule survives and has two homes, one per reader. Writers read it in `file-ops`
-(`packages/canon/src/factors/actions/file-ops.ts`), which the `planner`, `implementer` and
+(`packages/canon/src/dimensions/actions/file-ops.ts`), which the `planner`, `implementer` and
 `integrator` roles hold. The dispatcher reads it in `delegation`
-(`packages/canon/src/factors/actions/delegation.ts`), which the `architect` role holds and so
+(`packages/canon/src/dimensions/actions/delegation.ts`), which the `architect` role holds and so
 do `kino`, `mav` and `nico` through it, together with who commits what: a writer commits its own
 unit's work, the integrator commits the merge and the records, and the dispatcher commits nothing
 of what it writes. The `assayer` holds neither. The architect role holds `delegation` where it held

@@ -1,4 +1,4 @@
-// A minimal harness-substrate hook declaration + one byte-exact worker, so the fixture
+// A minimal harness-substrate hook declaration + one byte-identity-pinned worker, so the fixture
 // covers OMP's session module + shared `hooks/<id>/<worker>` artifact legs.
 
 import type { HookDeclaration } from '@cratylus/schema';

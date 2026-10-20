@@ -149,7 +149,7 @@ export interface HarnessMechanism {
   readonly matcher?: string;
   /** Run order within an event — SEMANTIC: a blocking gate precedes a nudge. */
   readonly order?: number;
-  /** Verbatim worker payloads — the byte-anchors of the deployed mechanism. */
+  /** Verbatim worker payloads — the byte-identity pins of the deployed mechanism. */
   readonly workers: readonly HarnessWorker[];
 }
 

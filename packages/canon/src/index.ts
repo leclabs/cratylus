@@ -3,7 +3,7 @@
 //
 // This makes canon the FIRST agent-plugin: the baseline catalog + golden
 // example + zero-config default, distributed as a peer plugin (not special-cased
-// as "the canon"). A consumer `npm i @cratylus/canon` then `extends` this
+// by the projector). A consumer `npm i @cratylus/canon` then `extends` this
 // exported object — addressing by IMPORTED BINDING, never a string id.
 //
 // The dir fields point at the live source dirs this canon already carries: the

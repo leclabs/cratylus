@@ -56,7 +56,7 @@ s unnamed ∨ s ∉ S ⇒ ⊥
 
 σ(Φ, file) ≜ { \${OUTPUT_DIR}/term(c).md | (term(c), k, x) ∈ Φ }
 ρ_file(k) ≜ front-matter (kind: k, description) + body
-∀ f ∈ σ(Φ, file) : ∃! (a, k, x) ∈ Φ : content(f) = x
+∀ f ∈ σ(Φ, file) : ∃! (term(c), k, x) ∈ Φ : content(f) = x
 
 σ(Φ, document) ≜ one recomposed document
 ρ_document(k) ≜ rhetorical role:

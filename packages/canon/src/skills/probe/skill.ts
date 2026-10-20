@@ -33,7 +33,7 @@ frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licence
 parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
 Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩
 head(w) · mod(w) ≜ w's head ∧ its modifier ⟨compound w⟩
-free(h)  ⇔ h alone is unbound in the reader's language
+free(h)  ⇔ h alone is unbound in the canon
 fired(w,κ) ≜ priors(w,κ)
 fired(a, κ) = dec(a, κ) , ⟨a, κ⟩ ∈ dom(dec)
 concept(w,κ) ≜ cl(fired(w,κ))
