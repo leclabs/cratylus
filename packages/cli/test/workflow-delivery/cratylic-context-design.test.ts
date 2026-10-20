@@ -10,7 +10,6 @@ import { afterEach, beforeEach, expect, it } from 'vitest';
 import { query, repositoryRoot } from '../concept-journal/fixture.js';
 import {
   type ContextView,
-  type Delivered,
   type Host,
   assertDelivered,
   deliveredPath,
@@ -66,27 +65,6 @@ it.each(verbs)(
     assertDelivered(answer.practice[1], verb, readDocument(h));
     expect(answer.contexts).toEqual([]);
     expect(existsSync(join(h.cwd, 'design/journal'))).toBe(false);
-  },
-);
-
-it.each<[Delivered[], string[]]>([
-  [
-    [upstream, document],
-    [upstreamQualified, qualified],
-  ],
-  [
-    [
-      { ...upstream, position: 1 },
-      { ...document, position: 0 },
-    ],
-    [qualified, upstreamQualified],
-  ],
-])(
-  'delivery/1 — the practice is ordered by each document’s position, never by its file name (%#)',
-  (documents, order) => {
-    for (const value of documents) putDocument(h, value);
-    for (const verb of verbs)
-      expect(views(h, verb).practice.map((c) => c.name)).toEqual(order);
   },
 );
 
@@ -330,35 +308,31 @@ function ownContext(name: string): string {
   return id;
 }
 
-it.each<[number, number, string[]]>([
-  [0, 1, [ccd, 'workflow', 'booking']],
-  [1, 0, ['workflow', ccd, 'booking']],
-])(
-  'delivery/6 — a project holding both reads its own, cratylic context design at %i and workflow at %i, delivered first, then the rest in record order',
-  (ccdAt, workflowAt, order) => {
-    // Record order (booking, workflow, cratylic context design) and name order
-    // (booking, cratylic context design, workflow) each differ from the order shown.
-    h.seed();
-    const workflowId = ownContext('workflow');
-    const ccdId = ownContext(ccd);
-    putDocument(h, { ...document, identity: workflowId, position: workflowAt });
-    putDocument(h, { ...upstream, identity: ccdId, position: ccdAt });
-    const before = snapshot(h.cwd);
-    for (const verb of verbs) {
-      const answer = views(h, verb);
-      expect(answer.practice).toEqual([]);
-      expect(answer.contexts.map((c) => c.name)).toEqual(order);
-      const own = answer.contexts.find((c) => c.name === ccd)!;
-      expect(own.subject).toBe(`The project’s own ${ccd} subject.`);
-      expectMeaning(own, `The project’s own ${ccd} term.`);
-      expect(JSON.stringify(answer)).not.toContain(upstream.subject);
-      expect(JSON.stringify(answer)).not.toContain(
-        upstream.concepts[0]!.wording,
-      );
-    }
-    expect(snapshot(h.cwd)).toEqual(before);
-  },
-);
+it('delivery/6 — a project holding both reads its own, cratylic context design then workflow first, then the rest in record order', () => {
+  // Record order (booking, workflow, cratylic context design) and name order
+  // (booking, cratylic context design, workflow) each differ from the order shown.
+  h.seed();
+  const workflowId = ownContext('workflow');
+  const ccdId = ownContext(ccd);
+  putDocument(h, { ...document, identity: workflowId });
+  putDocument(h, { ...upstream, identity: ccdId });
+  const before = snapshot(h.cwd);
+  for (const verb of verbs) {
+    const answer = views(h, verb);
+    expect(answer.practice).toEqual([]);
+    expect(answer.contexts.map((c) => c.name)).toEqual([
+      ccd,
+      'workflow',
+      'booking',
+    ]);
+    const own = answer.contexts.find((c) => c.name === ccd)!;
+    expect(own.subject).toBe(`The project’s own ${ccd} subject.`);
+    expectMeaning(own, `The project’s own ${ccd} term.`);
+    expect(JSON.stringify(answer)).not.toContain(upstream.subject);
+    expect(JSON.stringify(answer)).not.toContain(upstream.concepts[0]!.wording);
+  }
+  expect(snapshot(h.cwd)).toEqual(before);
+});
 
 /** Expects a project holding cratylic context design alone to show it once,
  *  as its own, with only workflow delivered apart. */

@@ -106,7 +106,8 @@ export function readDocument(h: Host, context = 'workflow'): Delivered {
 }
 /** Expects the installation `h` reaches to hold the release's projection of
  *  the repository's own `context`, at `position`, read-only: its current design,
- *  with the identity of the earliest entry recording it; returns it. */
+ *  with its identity, the one its earliest entry carrying one carries, else its
+ *  earliest entry's id; returns it. */
 export function expectReleased(
   h: Host,
   context: string,
@@ -120,10 +121,13 @@ export function expectReleased(
   const actual = readDocument(h, context);
   const source = query<Design>(repositoryRoot, 'design', '--context', context)
     .contexts[0]!;
-  const first = Object.values(snapshot(repositoryRoot))
+  const recorded = Object.values(snapshot(repositoryRoot))
     .map((bytes) => JSON.parse(Buffer.from(bytes, 'base64').toString()))
     .filter((entry) => entry.kind === 'context' && entry.name === context)
-    .sort((a, b) => a.id.localeCompare(b.id))[0];
+    .sort((a, b) => a.id.localeCompare(b.id));
+  const identity =
+    recorded.find((entry) => entry.identity !== undefined)?.identity ??
+    recorded[0]?.id;
   const version = success(h.command(['--version'])).trim();
   expect({
     ...actual,
@@ -132,7 +136,7 @@ export function expectReleased(
     origin: 'cratylus',
     version,
     context,
-    identity: first.id,
+    identity,
     position,
     subject: source.subject,
     relation: source.relation,
