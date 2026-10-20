@@ -28,7 +28,7 @@ w      ≜ a term under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
 probe : Names × bounded-context → ℘(D) × C
-K ⟨the knowledge a reader holds · ∅ in the cold read⟩ @ cratylic context design
+K ≜ the knowledge a reader holds ⟨∅ in a cold read⟩
 frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licenced-to-refuse⟩
 parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
 Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩

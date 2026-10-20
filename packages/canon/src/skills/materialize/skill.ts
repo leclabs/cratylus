@@ -29,18 +29,20 @@ kind : C → Kinds
 Kinds ≜ the closed kind set
 
 concept-record   ≜ record(gloss, anchor, factorization)
-dfp(g) ≜ densest-faithful-point(g)
+correction @ signify
 cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content
-CSF ≜ bipartite-normal-form: primitive↦⟨anchor,gloss⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
+CSF ≜ bipartite-normal-form: primitive↦⟨anchor,correction⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
 F(m) ≜ min_≺ fac(m)
-CSF(c) ≜ ( anchor(c) , dfp(gloss(c)) )              ,  prim(c)
+CSF(c) ≜ ( anchor(c) , correction(c) )             ,  prim(c) ∧ correction(c) ≠ ∅
+CSF(c) ≜ anchor(c)                                ,  prim(c) ∧ correction(c) = ∅
 CSF(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F(c) } ) ,  ¬prim(c)
 realize(k) fills factorization(k) ≜ CSF(k) ; gloss(k), anchor(k) preserved
 anchor(k) = ⊥ ⇒ realize(k) = ⊥
 
+CSF(c) never restates what anchor(c) carries ⟨minimal @ signify⟩
 prose(c) ≜ render(CSF(c))
 CSF(c) ≽ prose(c)
 

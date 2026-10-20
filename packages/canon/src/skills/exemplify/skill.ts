@@ -20,15 +20,13 @@ const FORMAL_BLOCK = `concept-record     ≜ ⟨ gloss , anchor? , factorization
 sources            ≜ input material @ conceptualize ⟨the corpus D is drawn OVER, ¬ D itself⟩
 C                  ≜ concept lattice @ conceptualize
 produce            : sources → concept-record @ conceptualize
-name               : concept-record → concept-record @ signify ⟨a core name or value takes its σ* anchor · any other term keeps the industry's own⟩
+name               : concept-record → concept-record @ signify ⟨each concept takes its σ* term, the established one where its domain already names it⟩
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
-R_cold(f)          ≜ the isolated cold read of fragment f (a naive reader, zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
+R_cold(f)          ≜ the cold read @ cratylic context design of fragment f (a naive reader, zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
 body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
 K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds
-core               ≜ the corpus's core agent dimension names and values ⟨every other cell answers to no cold read⟩
-R_cold, decode_warm, coldpass, K ⟨the cold read⟩ @ cratylic context design
 minimal            @ signify
 conform            @ signify
 Cells              ≜ the authored cells of the corpus exemplified, self included
@@ -37,7 +35,7 @@ manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_d
 
 realized(k) ⇔ factorization(k) ≠ ⊥
 coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
-valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ (k ∈ core ⇒ coldpass(k))
+valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
 produce ↦ gloss ; name ↦ anchor ; realize ↦ factorization
 ∀ k ∈ Cells : accept(k) defined
 disposition ∈ { reuse, mint }

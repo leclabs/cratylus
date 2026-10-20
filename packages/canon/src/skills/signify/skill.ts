@@ -36,7 +36,7 @@ gap(n,c)    ≜ the semantic gap of n for c ⟨missing meaning ∪ spurious mean
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ circ(∘ M, c)
 Art         ≜ the corpus's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
-α           : C ↣ Names ⟨injective within each κ, ¬ across · dom(α) ≜ the concepts the corpus's core agent dimension names and values name · every other term is the industry's own, and no consumer surface is held to α⟩
+α           : C ↣ Names ⟨injective within each κ, ¬ across · dom(α) ≜ every concept the text carries, less those excluded below⟩
 register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 
@@ -44,6 +44,7 @@ verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at pro
 Anchors ≜ { ⟨α(c), κ(c)⟩ | c ∈ dom(α) } ⟨the assigned-anchor set, each anchor with its context⟩
 dom(dec) = { ⟨α(p), κ(p)⟩ | prim(p) } ;  dec(α(p), κ(p)) = fired(α(p), κ(p))
 { n : circ(n,c) } = ∅ ⇒ σ*(c) = mint(c)
+n established in κ(c) ∧ circ(n, c) ⇒ σ*(c) = n ⟨a concept its domain already names takes that term · found ¬coined · its cold read confirming it⟩
 
 name(k)  fills  anchor(k) ≜ α(gloss(k)) ;  gloss(k) preserved ;  factorization(k) untouched
 
@@ -54,7 +55,6 @@ cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ) ∨ (α(cᵢ) = α(cⱼ) ∧ κ(cᵢ
 ≺ ≜ shortlex over (C, <_N)
 
 c ∉ dom(α) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Anchors assigned c :
-    c is no core agent dimension name or value ⇒ c is the industry's own term, used as the industry understands it ⇒ exclude, logged
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the partition was wrong ↦ conceptualize
         ⟨α(cᵢ), α(cⱼ) taken at DIFFERENT altitudes is still this collision⟩

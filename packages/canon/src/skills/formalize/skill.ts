@@ -10,7 +10,7 @@ export const formalize: Skill = {
 E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
 T ≜ the declared notation table @ src/operator-lexicon.ts
-η : E ∪ O ⇀ symbols ⟨core agent dimension names and values @ signify · every other term the industry's own⟩
+η : E ∪ O ⇀ symbols ⟨each entity and operation by its term @ signify⟩
 β ≜ { s | s imported, its anchor cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }
 
