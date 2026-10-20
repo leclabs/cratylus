@@ -163,6 +163,7 @@ export function deliveredContexts(): DeliveredContext[] {
   }
   const dir = join(root, DELIVERED_DIR);
   if (!existsSync(dir)) return [];
+  const installation = { root, scope: installationScope(root) };
   return readdirSync(dir, { withFileTypes: true })
     .filter((origin) => origin.isDirectory())
     .flatMap((origin) =>
@@ -170,7 +171,11 @@ export function deliveredContexts(): DeliveredContext[] {
         .filter((name) => name.endsWith('.json'))
         .map((name) => {
           const file = join(dir, origin.name, name);
-          return deliveredFrom(JSON.parse(readFileSync(file, 'utf8')), file);
+          return deliveredFrom(
+            JSON.parse(readFileSync(file, 'utf8')),
+            file,
+            installation,
+          );
         }),
     )
     .sort(byDelivery);

@@ -26,6 +26,7 @@
 // project's journal for a delivered context.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { InstallScope } from '../../runtime-config.js';
 import { journalAt } from './journal.js';
 import { Folded, type Meaning, designState } from './views.js';
 
@@ -162,20 +163,26 @@ export function practiceOf<C>(contexts: readonly C[]): {
     : { practice: { about: PRACTICE, contexts } };
 }
 
-/** Whether `value`, read from `file`, is a delivered context; refuses one that
- *  is not, naming the file. */
-export function deliveredFrom(value: unknown, file: string): DeliveredContext {
+/** Whether `value`, read from `file` in the installation `installation`, is a
+ *  delivered context; refuses one that is not, naming the file, and one an
+ *  earlier cratylus projected, without its position, naming the remedy. */
+export function deliveredFrom(
+  value: unknown,
+  file: string,
+  installation: { readonly root: string; readonly scope: InstallScope },
+): DeliveredContext {
   const text = (v: unknown): v is string => typeof v === 'string';
   const record = value as Record<string, unknown> | null;
   const concepts = record?.concepts;
+  const malformed = new Error(
+    `${file} is not a delivered context: it needs origin, version, context, identity, a position (a whole number from 0), subject, relation and concepts each with name, wording and builtFrom`,
+  );
   if (
     typeof record !== 'object' ||
     record === null ||
     !['origin', 'version', 'context', 'identity', 'subject', 'relation'].every(
       (field) => text(record[field]),
     ) ||
-    !Number.isInteger(record.position) ||
-    (record.position as number) < 0 ||
     !Array.isArray(concepts) ||
     !concepts.every(
       (c) =>
@@ -187,8 +194,12 @@ export function deliveredFrom(value: unknown, file: string): DeliveredContext {
         c.builtFrom.every(text),
     )
   )
+    throw malformed;
+  if (record.position === undefined)
     throw new Error(
-      `${file} is not a delivered context: it needs origin, version, context, identity, a position (a whole number from 0), subject, relation and concepts each with name, wording and builtFrom`,
+      `${file} carries no position: the ${installation.scope} installation at ${installation.root} was projected by an earlier cratylus; install again with the cratylus in use, at its ${installation.scope} scope`,
     );
+  if (!Number.isInteger(record.position) || (record.position as number) < 0)
+    throw malformed;
   return record as unknown as DeliveredContext;
 }

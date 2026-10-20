@@ -180,13 +180,17 @@ it('a journal holding the delivered context itself reads its own, among its cont
     expect(answer.contexts.map((c) => c.name)).toEqual(['workflow', 'booking']);
     expect(answer).not.toHaveProperty('practice');
   }
-  // Without delivery the same contexts are read, each unchanged: only their
-  // order differs, the delivered one first.
-  const [heldDesign, undelivered] = [held, []].map((d) =>
-    [...(command(['design'], d) as Answer).contexts].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    ),
-  );
+  // Without delivery the design answers the same, each context unchanged: only
+  // the order of its contexts differs, the delivered one first.
+  const [heldDesign, undelivered] = [held, []].map((d) => {
+    const answer = command(['design'], d) as Answer;
+    return {
+      ...answer,
+      contexts: [...answer.contexts].sort((a, b) =>
+        a.name.localeCompare(b.name),
+      ),
+    };
+  });
   expect(heldDesign).toEqual(undelivered);
 });
 
