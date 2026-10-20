@@ -1,9 +1,9 @@
 // RUNTIME-SHIM gate — the BUILD→RUNTIME seam of OMP projection.
 //
-// When a skill cell declares `runtime: {capability}`, projection emits a thin
+// When a skill declares `runtime: {capability}`, projection emits a thin
 // `scripts/<capability>.mjs` shim forwarding to `cratylus <capability>`. This gate
 // pins the shim's shape and executable mode, read from a real projection of canon
-// with the shim-carrier fixture, whose cell declares `versionSkew`.
+// with the shim-carrier fixture, whose skill declares `versionSkew`.
 
 import {
   existsSync,
@@ -22,9 +22,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import canon from '../src/index.js';
 import carrier from './fixtures/shim-carrier/plugin.js';
 
-/** A cell that declares a `runtime` capability — a shim carrier, and the witness
- *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
-const CELL = 'carrier';
+/** A skill that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon skill declares one, so the shim-carrier fixture's. */
+const SKILL = 'carrier';
 const CAPABILITY = 'versionSkew';
 
 const scratch: string[] = [];
@@ -53,7 +53,7 @@ beforeAll(async () => {
   });
   ompShim =
     tree.files.find(
-      (f) => f.path === `skills/${CELL}/scripts/${CAPABILITY}.mjs`,
+      (f) => f.path === `skills/${SKILL}/scripts/${CAPABILITY}.mjs`,
     )?.content ?? '';
 }, 120_000);
 
@@ -97,13 +97,13 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
   });
 
   it('capability name flows from the manifest `Skill.runtime` field', () => {
-    // The declaration site: a cell selects a runtime capability (S1-aligned name).
-    const cell = { runtime: { capability: CAPABILITY } } as Pick<
+    // The declaration site: a skill selects a runtime capability (S1-aligned name).
+    const skill = { runtime: { capability: CAPABILITY } } as Pick<
       Skill,
       'runtime'
     >;
-    expect(cell.runtime?.capability).toBe(CAPABILITY);
-    expect(emitted(cell.runtime?.capability ?? '')).toContain(
+    expect(skill.runtime?.capability).toBe(CAPABILITY);
+    expect(emitted(skill.runtime?.capability ?? '')).toContain(
       `['${CAPABILITY}',`,
     );
   });

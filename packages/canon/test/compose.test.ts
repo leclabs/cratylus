@@ -5,7 +5,7 @@
 // (0142(1)); an optional slot may be left unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
-import { type JsonSchema, anchorOf, enforcing } from '@cratylus/schema';
+import { type JsonSchema, enforcing, termOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { architect } from '../src/agents/architect.js';
 import { builder } from '../src/agents/builder.js';
@@ -17,9 +17,9 @@ import { mav } from '../src/agents/mav.js';
 import { nico } from '../src/agents/nico.js';
 import { reviewer } from '../src/agents/reviewer.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
-import { none } from '../src/dimensions/action-scope/none.js';
-import { bottomLineUpFront } from '../src/dimensions/communication-style/bottom-line-up-front.js';
-import { honesty } from '../src/dimensions/guardrails/honesty.js';
+import { none } from '../src/factors/action-scope/none.js';
+import { bottomLineUpFront } from '../src/factors/communication-style/bottom-line-up-front.js';
+import { honesty } from '../src/factors/guardrails/honesty.js';
 import { builderRole } from '../src/roles/builder.js';
 import { reviewerRole } from '../src/roles/reviewer.js';
 
@@ -46,7 +46,7 @@ describe('composition over action-scope', () => {
       removes: { actionScope: [none] },
       values: { guardrails: [{ value: honesty, level: 'advisory' }] },
     });
-    expect(widened.actionScope.map((e) => anchorOf(e.value))).toEqual([]);
+    expect(widened.actionScope.map((e) => termOf(e.value))).toEqual([]);
     // Node emits a warning on a later tick.
     await setImmediate();
     process.off('warning', listen);
@@ -149,19 +149,19 @@ describe('the architect', () => {
       (e) => e.slot === 'ordering',
     );
     expect(ordering?.level).toBe('firm');
-    expect(ordering && anchorOf(ordering.value)).toBe(
-      anchorOf(bottomLineUpFront),
+    expect(ordering && termOf(ordering.value)).toBe(
+      termOf(bottomLineUpFront),
     );
     const decisive = architect.stance.find(
-      (e) => anchorOf(e.value) === 'decisive',
+      (e) => termOf(e.value) === 'decisive',
     );
     expect(decisive?.level).toBe('firm');
     const elevation = architect.stance.find(
-      (e) => anchorOf(e.value) === 'conceptual-elevation',
+      (e) => termOf(e.value) === 'conceptual-elevation',
     );
     expect(elevation?.level).toBe('firm');
     const [deliverable] = architect.deliverable;
-    expect(deliverable && anchorOf(deliverable.value)).toBe('read-back');
+    expect(deliverable && termOf(deliverable.value)).toBe('read-back');
   });
 });
 
@@ -174,14 +174,14 @@ describe('every agent', () => {
             if (e !== null && typeof e === 'object' && 'value' in e)
               expect(
                 enforcing(e.value as never),
-                `${name} ${field} ${anchorOf(e.value as never)}`,
+                `${name} ${field} ${termOf(e.value as never)}`,
               ).toBe(false);
   });
 
   it('is evaluated in real use, and by nothing else (0142(1))', () => {
     for (const [name, agent] of Object.entries(agents))
       expect(
-        agent.evaluation.map((e) => anchorOf(e.value)),
+        agent.evaluation.map((e) => termOf(e.value)),
         name,
       ).toEqual(['in-use']);
   });

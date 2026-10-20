@@ -1,25 +1,25 @@
 # @cratylus/canon
 
-The **meaning** concern of [cratylus](../../README.md) — the canonical corpus of discovered
-optimal-signifiers, each read in its concept's bounded context, authored as typed TypeScript.
+The **meaning** concern of [cratylus](../../README.md) — the canon of discovered Cratylic
+names, each read in its concept's bounded context, authored as typed TypeScript.
 
 The discipline is latent lexicography: describing the vocabulary a foundation model
-already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is
+already holds, rather than authoring prose and hoping it lands. An agent or skill in the canon is
 therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
 markdown an agent harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
-_means_, never how either is carried. Installing the corpus on a machine, and choosing among
+_means_, never how either is carried. Installing the canon on a machine, and choosing among
 its practices, is [the `cratylus` README](../cli/README.md)'s. This README is for whoever works on
-the corpus.
+the canon.
 
 ## What it is to the command
 
-The package's default export is canon as an agent-plugin: the corpus the `cratylus` command is
+The package's default export is canon as an agent-plugin: the canon the `cratylus` command is
 built with, which `cratylus install` projects and places.
 
-Addressing is by **imported binding**, never a string id. That holds one level down too: a role or
-persona cell imports each value it states, so composition is checked by the compiler rather than
+Addressing is by **imported binding**, never a string id. That holds one level down too: a role
+profile or a persona imports each value it states, so composition is checked by the compiler rather than
 resolved by a registry, and every part of a composite is traceable to its one home.
 
 ## What the plugin carries
@@ -27,15 +27,15 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 | field       | what it is                                                                                           |
 | ----------- | ---------------------------------------------------------------------------------------------------- |
 | `manifest`  | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value        |
-| `events`    | **which lifecycle events exist** — the corpus's harness-agnostic event vocabulary                    |
-| `fragments` | the factor value modules, filed one per factor directory                                             |
+| `events`    | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary                     |
+| `factors`   | the factors' values, filed one directory per factor                                                  |
 | `agents`    | the composed agents: six generic holders of their roles, and three personas                          |
-| `skills`    | the skill cells — each a self-sufficient formal block plus the siblings it composes                  |
+| `skills`    | the skills — each a self-sufficient formal block plus the siblings it composes                       |
 | `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
 
-Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of that
-corpus's agent design. The manifest rides the plugin rather than living in the projector, so the
-design — and a factor added to it — changes without editing the tool that renders it. The shapes those cells are authored against, and `defineAgentPlugin` that declares the plugin,
+Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
+canon's agent design. The manifest rides the plugin rather than living in the projector, so the
+design — and a factor added to it — changes without editing the tool that renders it. The shapes the canon's units are authored against, and `defineAgentPlugin` that declares the plugin,
 are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents
@@ -65,15 +65,15 @@ warrants them. Each role is defined by what it receives and what it hands off, n
   build.
 
 The reviewer, the illustrator and the check-writer run on another model family than the builders
-where one is available. A role cell (`src/roles/<role>.ts`) states a value for every factor, an
+where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an
 explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
-named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a cell missing
+named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a profile missing
 a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
-production and generative video, nico the corpus and latent lexicography, mav software
+production and generative video, nico corpus linguistics and latent lexicography, mav software
 engineering). The architect role owns the conceptual model of every context it is given, the
-corpus included; a persona brings its expertise and owns nothing its role does not.
+canon included; a persona brings its expertise and owns nothing its role does not.
 Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
@@ -88,14 +88,14 @@ harm from one is on record (decision 0142(2)).
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
 effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
 dispatch: every agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic
-agents and is empty. `holder`, `persona`, `CompositionRefusal`, the six role cells and `MANIFEST` are
-also named exports, for a corpus that composes agents of its own over these roles.
+agents and is empty. `holder`, `persona`, `CompositionRefusal`, the six role profiles and `MANIFEST` are
+also named exports, for a plugin that composes agents of its own over these roles.
 
 ## Typed handoffs
 
 An assignment and a deliverable are values of their factors, and each carries its contract as JSON
 Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVERABLE_CONTRACTS` by
-the value's anchor). Composition copies the pair onto the agent as `contract`. Each handoff states
+the value's term). Composition copies the pair onto the agent as `contract`. Each handoff states
 what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
 | Role         | Assignment                                                                                                                                                     | Deliverable                                                        |
@@ -126,17 +126,17 @@ use; no agent carries countermeasure text against it.
 ## The first principle
 
 The first principle, the dense `cratylism` axiom, has its one literal home in
-`genus/prime-principle.ts` and is not stamped on every cell. It rides only the cells whose laws apply
+`genus/prime-principle.ts` and is not stamped on every unit of the canon. It rides only the units whose laws apply
 it: the skills that give a concept its term, judge a term by its semantic gap or confirm it by a cold
 read set it as their `preamble`, and an agent carries it once, in plain words, as the `cratylism`
-stance of the role it holds, where that role states it. A cell that does not use it never holds a
-host's own authored surfaces to this corpus's naming axiom. The axiom states cratylism as cratylic
+stance of the role it holds, where that role states it. A unit that does not use it never holds a
+host's own authored surfaces to the canon's naming axiom. The axiom states cratylism as cratylic
 context design holds it: names are natural to the model, whose semantic space is the universe of
 discourse, so each concept takes its Cratylic name, the term leaving the smallest semantic gap read in
 its bounded context; intuition proposes and a cold read confirms; the name is found, never coined, a
 coined name only where no established term covers the concept; its correction is stated beside it,
 each side of the gap once; and a kept name short of it is recorded as such. It is intrinsic to those
-cells' projected bytes, so it survives deployment into a foreign repository rather than depending on
+units' projected bytes, so it survives deployment into a foreign repository rather than depending on
 ambient context.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the
@@ -144,12 +144,12 @@ directory fields are resolved against `import.meta.url` at definition time and c
 
 ## Dependencies, stated plainly
 
-`@cratylus/schema` for the cell shapes and for `defineAgentPlugin`, which declares the plugin at its
-entry. Canon reaches the projector as **data** — the corpus is passed to it as a plugin — and no
-cell imports it.
+`@cratylus/schema` for the shapes of the canon's units and for `defineAgentPlugin`, which declares the plugin at its
+entry. Canon reaches the projector as **data** — the canon is passed to it as a plugin — and no
+unit imports it.
 
-No cell imports the runtime either. A skill names the capability it routes to — `concepts` or
+No unit imports the runtime either. A skill names the capability it routes to — `concepts` or
 `versionSkew`, the two built into the runtime — as `runtime: { capability: … }`,
-never its implementation, and a cell that emits shell invoking the binary carries it as a fact the
+never its implementation, and a hook declaration that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
 and mechanism never referencing each other.
