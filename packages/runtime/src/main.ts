@@ -77,7 +77,7 @@ import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
  * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `concepts` cell yields
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `concepts` skill yields
  * `spawnSync(CLI_BIN, ['concepts', …])`).
  */
 const SURFACES: {

@@ -34,7 +34,7 @@ export function configure(
     `${JSON.stringify({ modelRoles: { default: 'fixture/base', ...modelRoles }, statusLine }, null, 2)}\n`,
   );
 }
-export function choiceCorpus(h: Host, four = false) {
+export function choiceCanon(h: Host, four = false) {
   const agents = join(h.root, 'choice-agents');
   const tiers = [
     'frontier',
@@ -124,7 +124,7 @@ export async function guided(
       harness: 'omp',
       home: h.home,
       cwd: h.cwd,
-      corpus: choiceCorpus(h, answers.four) as never,
+      canon: choiceCanon(h, answers.four) as never,
       version: '2.4.0',
       all: true,
       scope: 'user',

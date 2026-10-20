@@ -454,7 +454,7 @@ describe('the README reference names exactly what the help lists, each once', ()
   it('convicts an entry lacking a flag its help lists, and one naming a flag its help does not', () => {
     const help = [
       'Usage: cratylus install [options]',
-      'Install the bundled corpus',
+      'Install the canon cratylus ships, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
       'Options:',
       '  --harness <name>            The harness to install into',
       '  --model-roles <roles>       The model each role routes to',

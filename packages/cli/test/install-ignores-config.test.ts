@@ -1,6 +1,6 @@
 // INSTALL IGNORES A CONFIGURATION FILE IN ITS WORKING DIRECTORY (decision 0331).
 //
-// `cratylus install` always installs the corpus the command is built with. A
+// `cratylus install` always installs the canon the command is built with. A
 // `cratylus.config.ts` where it runs, naming another plugin, is read by nothing: the
 // run succeeds and places the same agents and skills a run from an empty directory
 // does. The file writes a marker when it is loaded, so reading it is seen too.
@@ -64,7 +64,7 @@ function installFrom(cwd: string, name: string) {
   return { code: r.status, output: r.stdout + r.stderr, agents, skills };
 }
 
-it('installs the bundled corpus from a directory whose cratylus.config.ts names another plugin, without reading it', () => {
+it('installs the canon cratylus ships from a directory whose cratylus.config.ts names another plugin, without reading it', () => {
   const plain = join(scratch, 'plain');
   const configured = join(scratch, 'configured');
   mkdirSync(plain);

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚠ PROVISIONAL PATH — `provisional-mailbox` is a PLACEHOLDER, not a name.
-// See `ports/provisional-mailbox.ts` for the full notice: the anchor for this
+// See `ports/provisional-mailbox.ts` for the full notice: the term for this
 // mechanism is undiscovered and is /signify's to derive.
 //
 // THE INBOUND STORE — the afferent side, drained by whoever claims it.

@@ -219,7 +219,7 @@ describe('concepts --explain', () => {
   }
 
   /** The verbs of `explanation` whose concept is no live concept of `live`. */
-  const unanchored = (explanation: Explanation, live: readonly string[]) =>
+  const ungrounded = (explanation: Explanation, live: readonly string[]) =>
     explanation.verbs
       .filter((v) => !live.includes(v.concept))
       .map((v) => v.name);
@@ -245,12 +245,12 @@ describe('concepts --explain', () => {
       close: 'closing the books',
     });
     const live = designAt(repositoryRoot).live;
-    expect(unanchored(explain(JOURNAL), live)).toEqual([]);
-    expect(unanchored(explain(VERSION_SKEW), live)).toEqual([]);
+    expect(ungrounded(explain(JOURNAL), live)).toEqual([]);
+    expect(ungrounded(explain(VERSION_SKEW), live)).toEqual([]);
   });
 
   it('convicts a verb whose concept the design has retired', () => {
-    const repo = mkdtempSync(join(tmpdir(), 'explain-anchor-'));
+    const repo = mkdtempSync(join(tmpdir(), 'explain-concept-'));
     try {
       execFileSync('git', ['init', '-q'], { cwd: repo });
       const concepts = (...argv: string[]) =>
@@ -268,7 +268,7 @@ describe('concepts --explain', () => {
             '--reason',
             'Fixture.',
           );
-      expect(unanchored(explain(JOURNAL), designAt(repo).live)).toEqual([]);
+      expect(ungrounded(explain(JOURNAL), designAt(repo).live)).toEqual([]);
       concepts(
         'retire',
         'supersession',
@@ -281,7 +281,7 @@ describe('concepts --explain', () => {
       const after = designAt(repo);
       expect(after.retired).toContain('supersession');
       expect(after.live).not.toContain('supersession');
-      expect(unanchored(explain(JOURNAL), after.live)).toEqual(['supersede']);
+      expect(ungrounded(explain(JOURNAL), after.live)).toEqual(['supersede']);
     } finally {
       rmSync(repo, { recursive: true, force: true });
     }

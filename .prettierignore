@@ -15,7 +15,7 @@ packages/canon/GLOSSARY.md
 # The repo-root AGENTS.md is hand-authored by the operator and kept verbatim.
 /AGENTS.md
 
-# γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
+# γ2-B: lexicon files are verbatim value-block STORAGE (byte-identity contract),
 # not free-form markdown — exempt like the generated render/glossary above.
 packages/canon/lexicon/
 packages/canon/test/fixtures/
