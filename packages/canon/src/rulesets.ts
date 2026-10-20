@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The corpus's rulesets: standard working conventions an install offers, each
+// The canon's rulesets: standard working conventions an install offers, each
 // whole, rule by rule, or not at all.
 // ─────────────────────────────────────────────────────────────────────────────
 

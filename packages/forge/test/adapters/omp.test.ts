@@ -251,7 +251,7 @@ afterEach(() => {
 const AGENT = {
   name: 'mav',
   // A colon-space, because that is the character sequence a plain YAML scalar
-  // may not carry and a real corpus description does ("…and canon: dimension
+  // may not carry and a real canon description does ("…and canon: factor
   // catalogs"). Unquoted, the emitted document is a scanner error and omp falls
   // back to a naive line parser, warning once per discovery pass.
   description: 'the builder: ships things',
@@ -416,8 +416,8 @@ describe('omp agent definition', () => {
   });
 
   it('survives a description carrying the characters YAML reserves', () => {
-    // A plain scalar may not contain `: `, and a real corpus description does
-    // ("…and canon: dimension catalogs") — unquoted, the document is a scanner
+    // A plain scalar may not contain `: `, and a real canon description does
+    // ("…and canon: factor catalogs") — unquoted, the document is a scanner
     // error that omp survives only by falling back to a naive `key: value` line
     // parser, invisible until a description grows something the fallback loses
     // too. The round trip is the claim: whatever goes in comes back out.
@@ -1433,7 +1433,7 @@ describe('omp tool definitions', () => {
       );
       expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
       expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
-      // Each flag wins its own dimension only.
+      // Each flag wins its own setting only.
       omp.args = { thinking: 'low' };
       const effort = await started('cartographer');
       await effort.fire('session_start');

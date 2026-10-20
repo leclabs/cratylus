@@ -1,4 +1,4 @@
-// Rules at install: each ruleset the corpus offers is taken whole, rule by rule, or not
+// Rules at install: each ruleset the canon offers is taken whole, rule by rule, or not
 // at all, none by default. A flag tells install the choice, a terminal is asked it, and
 // the choice is recorded by rule name, kept by every later install not told otherwise;
 // a rule no longer offered is dropped from it and named. Uninstall takes the rules out
@@ -87,7 +87,7 @@ const install = (
     harness: 'omp',
     home,
     cwd,
-    corpus: plugin(rulesets) as never,
+    canon: plugin(rulesets) as never,
     practices: FIXTURE_PRACTICE,
     interactive: false,
     ...extra,
@@ -150,7 +150,7 @@ describe('install — rules', () => {
   it('refuses a name that is no ruleset or rule, and an empty list, writing nothing', async () => {
     expect(await install({ rules: 'branching,nope' })).toBe(1);
     expect(out).toContain(
-      "--rules: 'nope' is no ruleset or rule of this corpus (branching: branching-trunk, branching-short; commits: commits-small)",
+      "--rules: 'nope' is no ruleset or rule of this canon (branching: branching-trunk, branching-short; commits: commits-small)",
     );
     expect(await install({ rules: ' , ' })).toBe(1);
     expect(out).toContain('--rules: no rule was named');

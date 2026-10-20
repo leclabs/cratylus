@@ -1,5 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// MODULE SCANNING — the one home for "which cell modules live in this directory".
+// MODULE SCANNING — the one home for "which declaration modules live in this directory"
+// (a plugin's agents, skills and hooks).
 //
 // A plugin package is scanned in TWO shapes: as SOURCE inside the workspace
 // (`.ts`, loaded through tsx) and as an INSTALLED, BUILT package (`.js`). Every
@@ -8,24 +9,24 @@
 // consumer would have gotten an empty catalog with no diagnostic at all.
 //
 // Scanning both extensions is therefore a correctness requirement of shipping the
-// corpus as a build-time plugin, not a convenience. Declaration files are excluded
-// (`.d.ts` is not a cell), and a name present in both shapes is yielded once.
+// canon as a build-time plugin, not a convenience. Declaration files are excluded
+// (`.d.ts` declares no agent, skill or hook), and a name present in both shapes is yielded once.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { glob } from 'node:fs/promises';
 import { join } from 'node:path';
 
-/** Module extensions a cell may be authored or built as, in resolution order —
+/** Module extensions a declaration may be authored or built as, in resolution order —
  *  source first so an in-workspace scan prefers the authored module. */
 export const MODULE_EXTENSIONS = ['.ts', '.js', '.mjs'] as const;
 
-/** Whether a scanned filename is a cell module (not a declaration file). */
+/** Whether a scanned filename is a declaration module (not a `.d.ts` declaration file). */
 function isModuleFile(p: string): boolean {
   if (p.endsWith('.d.ts')) return false;
   return MODULE_EXTENSIONS.some((e) => p.endsWith(e));
 }
 
-/** Strip a known module extension, leaving the cell name. */
+/** Strip a known module extension, leaving the declared name. */
 export function stripModuleExtension(p: string): string {
   for (const e of MODULE_EXTENSIONS) {
     if (p.endsWith(e)) return p.slice(0, -e.length);
@@ -34,9 +35,9 @@ export function stripModuleExtension(p: string): string {
 }
 
 /**
- * The cell-module names directly under `dir`, extension-stripped, sorted, unique.
+ * The declaration-module names directly under `dir`, extension-stripped, sorted, unique.
  * `exclude` names (already extension-free) are dropped — e.g. a `base` module that
- * is shared scaffolding rather than a cell.
+ * is shared scaffolding rather than a declaration.
  */
 export async function scanModuleNames(
   dir: string,
@@ -52,11 +53,11 @@ export async function scanModuleNames(
 }
 
 /**
- * The names of self-contained cell DIRECTORIES under `dir` — a directory holding
+ * The names of self-contained declaration DIRECTORIES under `dir` — a directory holding
  * `<base>.<ext>` (e.g. `wake/skill.ts` or, installed, `wake/skill.js`). The
- * directory name is the cell name.
+ * directory name is the declared name.
  */
-export async function scanCellDirNames(
+export async function scanDeclarationDirNames(
   dir: string,
   base: string,
 ): Promise<string[]> {
@@ -70,7 +71,7 @@ export async function scanCellDirNames(
 }
 
 /**
- * Resolve a cell module to its on-disk path, trying each extension in order.
+ * Resolve a declaration module to its on-disk path, trying each extension in order.
  * Returns null when absent — the caller decides whether that is a hard failure,
  * so a missing module never degrades into a silent skip.
  */

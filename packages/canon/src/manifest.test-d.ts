@@ -1,4 +1,4 @@
-// Type-level acceptance for THIS CORPUS'S manifest — the types `src/manifest.ts`
+// Type-level acceptance for THIS CANON'S manifest — the types `src/manifest.ts`
 // derives from `MANIFEST`. It lives here, not in the projector, because every
 // property below is a property of a catalog: which factors exist and which of
 // them an agent carries as a field. A projector that could assert them would be
@@ -9,8 +9,8 @@
 // that the marked construction is a COMPILE ERROR — if the error ever disappears,
 // `tsc` fails on the now-unused directive, so these are live negative tests.
 //
-// A factor value is a per-factor NOMINAL-BRANDED STRING (`'<anchor> ≜ <gloss>'`);
-// the phantom `__dimension` brand keys each string to its factor so a
+// A factor value is a per-factor NOMINAL-BRANDED STRING (`'<term> ≜ <correction>'`);
+// the phantom `__factor` brand keys each string to its factor so a
 // cross-factor assignment of a TYPED value is a compile error. An agent holds
 // every non-attribute factor as a list of entries, each a value with its
 // enforcement level. Arity, slots and `required` are catalog DATA that
@@ -163,7 +163,7 @@ const keyHeld: Agent = { ...baseFixture, key: 'kino' };
 // ── NEGATIVE 6: Skill composition is a LAZY THUNK of sibling skills ─────────
 // The graph is cyclic (conceptualize↔exemplify↔…); composition is a thunk
 // `() => readonly Skill[]` so sibling refs resolve lazily (no ESM temporal-dead-
-// zone at load). The payload is `formalBlock` (σ*); there is no stored `body`.
+// zone at load). The payload is `formalBlock`; there is no stored `body`.
 
 const leaf: Skill = {
   name: 'leaf',
@@ -185,14 +185,14 @@ const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 
 // ── The catalog's OWN guarantee: a misspelled factor does not exist ─────────
 //
-// This is the property forge gave up when `Fragment<O>` relaxed to
+// This is the property forge gave up when `BareValue<O>` relaxed to
 // `O extends string`, and the reason it could be given up: it lands HERE, on the
-// side that owns the catalog. `Dimension` is a literal union derived from
+// side that owns the catalog. `Factor` is a literal union derived from
 // `MANIFEST` — if the `as const satisfies` on that const is ever weakened to a
-// plain annotation, `Dimension` silently becomes `string`, this directive stops
+// plain annotation, `Factor` silently becomes `string`, this directive stops
 // firing, and tsc fails on it. That is the tripwire.
 
-// @ts-expect-error — `guardrials` is not a factor of this corpus.
+// @ts-expect-error — `guardrials` is not a factor of this canon.
 type Misspelled = Value<'guardrials'>;
 type _Misspelled = Misspelled;
 

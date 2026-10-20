@@ -3,41 +3,41 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 // COMPOSES NOTHING, and that is the repair.
 //
-// This cell used to declare `composition: () => [conceptualize, signify, materialize]` and import those
+// This skill used to declare `composition: () => [conceptualize, signify, materialize]` and import those
 // modules to do it. The thunk's only consumer is the trailing `Composed from …`
-// line of the projected SKILL.md (`forge/src/core/exemplify/skill-cell.ts`), so each
+// line of the projected SKILL.md (`forge/src/core/exemplify/skill-body.ts`), so each
 // import bought one sentence of provenance and cost a module-level cycle: the four
-// signification cells each claimed to be composed from the other three, and no one of
+// signification skills each claimed to be composed from the other three, and no one of
 // them could be read, taken or deployed alone.
 //
-// The relation those edges named is CITATION, not dependency: these cells RESTATE each
+// The relation those edges named is CITATION, not dependency: these skills RESTATE each
 // other's terms in different registers (prose here, signature there). A citation
-// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
-// no import and cannot cycle. Composition is the caller's: an agent pipes these cells
+// belongs inside the block, at the term that borrows it (`@ <skill>`), where it needs
+// no import and cannot cycle. Composition is the caller's: an agent pipes these skills
 // in whatever order the work wants.
 
-const FORMAL_BLOCK = `concept-record     ≜ ⟨ gloss , anchor? , factorization? ⟩
-sources            ≜ input material @ conceptualize ⟨the corpus D is drawn OVER, ¬ D itself⟩
+const FORMAL_BLOCK = `concept-record     ≜ ⟨ meaning , term? , factorization? ⟩
+sources            ≜ input material @ conceptualize ⟨the material D is drawn OVER, ¬ D itself⟩
 C                  ≜ concept lattice @ conceptualize
 produce            : sources → concept-record @ conceptualize
-name               : concept-record → concept-record @ signify ⟨each concept takes its σ* term, the established one where its domain already names it⟩
+name               : concept-record → concept-record @ signify ⟨each concept takes its Cratylic name, the established term where its domain already names it⟩
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
 R_cold(f)          ≜ the cold read @ cratylic context design of fragment f (a naive reader, zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
-body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
+body(k)            ≜ piece k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
-K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds
+K                  ≜ project-K, the warm knowledge (the project's own texts) a reader already holds
 minimal            @ signify
 conform            @ signify
-Cells              ≜ the authored cells of the corpus exemplified, self included
+Pieces             ≜ the authored pieces of the source exemplified, self included
 fragment_digest(f) ≜ digest( trim( collapse-whitespace( NFC(f) ) ) )
-manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_gloss, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_gloss⟩] }
+manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_meaning, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_meaning⟩] }
 
 realized(k) ⇔ factorization(k) ≠ ⊥
-coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
+coldpass(k) ⇔ R_cold(body(k)) ≅ meaning(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
 valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
-produce ↦ gloss ; name ↦ anchor ; realize ↦ factorization
-∀ k ∈ Cells : accept(k) defined
+produce ↦ meaning ; name ↦ term ; realize ↦ factorization
+∀ k ∈ Pieces : accept(k) defined
 disposition ∈ { reuse, mint }
 ∀ c ∈ C : c ∈ routes ⊻ c ∈ delta
 accept(F(sources)) = F(sources) ⇒ manifest @ .manifests/<source>.json

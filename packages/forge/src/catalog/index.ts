@@ -1,14 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The fragment catalog enumerator.
+// The value catalog enumerator.
 //
-// It walks each plugin's `<dimension>/*.ts` value modules and lifts each discovered
-// value to a fragment node. forge owns the MECHANISM; the corpus owns the DATA (the
+// It walks each plugin's `<factor>/*.ts` value modules and lifts each discovered
+// value to a value node. forge owns the MECHANISM; the canon owns the DATA (the
 // value modules). This stays doctrine-agnostic: it consumes a directory of
-// dimension-module dirs, not `packages/canon`.
+// factor dirs, not `packages/canon`.
 //
-// VALUES are DISCOVERED, not listed: drop a new module under `<dimension>/` and it
-// appears with zero other edits. RUNTIME TS IMPORT: each module is a typed
-// `Fragment` whose only `import` is a type-only `import type { … }`, which
+// VALUES are DISCOVERED, not listed: drop a new module under `<factor>/` and it
+// appears with zero other edits. RUNTIME TS IMPORT: each module exports a typed
+// `BareValue` whose only `import` is a type-only `import type { … }`, which
 // erases at compile time — so node (v24+, type-stripping) imports the modules
 // directly, no tsx/loader/parser needed.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -16,41 +16,41 @@
 import { glob } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { DimensionManifest } from '@cratylus/schema';
+import type { FactorManifest } from '@cratylus/schema';
 import {
-  type Fragment,
+  type ValueNode,
   type ValueShape,
   validateReferenceGraph,
 } from '../resolve/resolve.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Multi-plugin fragment discovery — enumerate the fragment dirs of EACH extended
+// Multi-plugin value discovery — enumerate the factor dirs of EACH extended
 // plugin, addressed by object identity (the imported binding), namespaced per plugin.
 //
-// This layer discovers the dimension dirs across MANY plugins and lifts each discovered value to a
-// **fragment NODE** (`resolve/Fragment`) whose OBJECT IDENTITY is the address
+// This layer discovers the factor dirs across MANY plugins and lifts each discovered value to a
+// **value NODE** (`resolve/ValueNode`) whose OBJECT IDENTITY is the address
 // (a reference names a NODE, never a string id). Two plugins may both name a concept
-// `parsimony`; each yields a DISTINCT node, so that is no collision (per-plugin σ*
-// invariant). Projection's `discoverFragments` (`project/index.ts`) calls it.
+// `parsimony`; each yields a DISTINCT node, so that is no collision (per-plugin
+// Cratylic-name invariant). Projection's `discoverValues` (`project/index.ts`) calls it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A plugin's fragment ROOT: where to scan, and under what namespace. The plugin
+ * A plugin's value ROOT: where to scan, and under what namespace. The plugin
  * contract's `AgentPlugin.name` (the namespace segment) paired with the RESOLVED
- * absolute path of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs).
+ * absolute path of its `AgentPlugin.factors` dir (the parent of the per-factor value dirs).
  *
  * An INPUT, built BEFORE the scan: nothing here is a finding, so nothing here may be
  * named for the scan that consumes it. `Root` is the dir the walk starts from; it is
  * not `Source`, because in a module whose subject is authored text "source" reads as
- * source code — and a fragment's BODY is the actual source.
+ * source code — and a value's BODY is the actual source.
  *
- * `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
+ * `AgentPlugin.factors` is package-relative; mapping it to this absolute path
  * is module-resolution (which node_modules package root) — the plugin's own
  * concern, as canon self-locates its dirs. Discovery consumes the already-resolved dir, so it stays
  * doctrine- and resolution-agnostic.
  *
  * A PAIR ARRAY ON THE WAY IN, A KEYED MAP ON THE WAY OUT — and the asymmetry is the
- * point, not an oversight left over from the map. `readonly PluginFragmentRoot[]` is
+ * point, not an oversight left over from the map. `readonly PluginValueRoot[]` is
  * the only input shape that can DELIVER a duplicate namespace to the guard below.
  * Typing the input as `ReadonlyMap<string, string>` or `Record<string, string>` would
  * make the duplicate unrepresentable at the boundary — which sounds like the stronger
@@ -59,67 +59,67 @@ import {
  * nothing and is no longer this module's to police. A shape that cannot express the
  * defect cannot reject it; it can only lose it.
  */
-export interface PluginFragmentRoot {
+export interface PluginValueRoot {
   /** The plugin namespace segment (`AgentPlugin.name`). Namespaces the reporting id. */
   readonly name: string;
-  /** Absolute path to the plugin's `fragments` dir (parent of `<dimension>/*.ts`). */
-  readonly fragmentsDir: string;
+  /** Absolute path to the plugin's `factors` dir (parent of `<factor>/*.ts`). */
+  readonly factorsDir: string;
 }
 
 /**
- * Two or more fragment roots declaring ONE namespace segment. Loud, before any scan.
+ * Two or more value roots declaring ONE namespace segment. Loud, before any scan.
  *
- * WHY THIS IS FATAL AND NOT A WARNING. The namespace is the whole of a fragment's
- * address hygiene: it prefixes every minted node id (`<plugin>:<dim>/<export>`), and
+ * WHY THIS IS FATAL AND NOT A WARNING. The namespace is the whole of a value's
+ * address hygiene: it prefixes every minted node id (`<plugin>:<factor>/<export>`), and
  * it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
  * plugins sharing it collapses both at once — indistinguishable ids, and the
- * per-plugin σ* invariant — each plugin names each
- * concept its LOCAL σ*, the anchor with the smallest residue in its context, unique within
+ * per-plugin Cratylic-name invariant — each plugin names each
+ * concept its LOCAL Cratylic name, the term with the smallest semantic gap in its context, unique within
  * its OWN catalog and nowhere wider —
  * holding only by accident. There is no degraded-but-useful reading of the result to warn about.
  *
  * NOT `NamespaceCollisionError`. "Collision" is already spoken for in this module, with
- * the opposite verdict: two plugins sharing a fragment ANCHOR is explicitly a resolution
- * event and explicitly not an error. Reusing the sign for the case that IS an error
- * would put one sign on two glosses in one file.
+ * the opposite verdict: two plugins sharing a value's TERM is explicitly a resolution
+ * event and explicitly not an error. Reusing the word for the case that IS an error
+ * would put one term on two meanings in one file.
  */
 export class DuplicateNamespaceError extends Error {
   constructor(
     readonly namespace: string,
-    readonly fragmentsDirs: readonly string[],
+    readonly factorsDirs: readonly string[],
   ) {
     super(
-      `duplicate plugin namespace '${namespace}': ${fragmentsDirs.length} fragment roots declare it (${fragmentsDirs.join(', ')}) — a namespace addresses exactly one plugin, so sharing one makes their fragments indistinguishable in every minted id`,
+      `duplicate plugin namespace '${namespace}': ${factorsDirs.length} value roots declare it (${factorsDirs.join(', ')}) — a namespace addresses exactly one plugin, so sharing one makes their values indistinguishable in every minted id`,
     );
     this.name = 'DuplicateNamespaceError';
   }
 }
 
 /**
- * ONE FRAGMENT as authored — identity, dimension, body. `node` is the `Fragment`
- * (OBJECT IDENTITY = the imported binding). `dimension` is the dimension it files
- * under. `body` is its authored value: the branded-string body for a string fragment;
- * for a node-form fragment (the reference-bearing form) the node object itself.
+ * ONE VALUE as authored — identity, factor, body. `node` is the `ValueNode`
+ * (OBJECT IDENTITY = the imported binding). `factor` is the factor it files
+ * under. `body` is its authored value: the branded-string body for a string value;
+ * for a node-form value (the reference-bearing form) the node object itself.
  *
  * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
  * output, so naming one for its provenance distinguishes it from nothing.
  *
  * NO `namespace` FIELD, deliberately. It would be the same string repeated once per
- * fragment, and it is already reachable twice over: the catalog map keys by it, and
+ * value, and it is already reachable twice over: the catalog map keys by it, and
  * `node.id` is minted already namespaced. Late reference resolution addresses by object
  * identity and never parses an id, so it has nothing to gain from a third copy.
  */
-export interface FragmentEntry {
-  readonly node: Fragment;
-  readonly dimension: string;
+export interface ValueEntry {
+  readonly node: ValueNode;
+  readonly factor: string;
   readonly body: unknown;
 }
 
 /**
- * WHAT EVERY PLUGIN YIELDED: each namespace ⟼ its fragment entries, in root order.
+ * WHAT EVERY PLUGIN YIELDED: each namespace ⟼ its value entries, in root order.
  *
- * One plugin's catalog of fragments is now the map's VALUE — a bare
- * `readonly FragmentEntry[]` — and its namespace is the KEY. The `{name, fragments}`
+ * One plugin's catalog of values is now the map's VALUE — a bare
+ * `readonly ValueEntry[]` — and its namespace is the KEY. The `{name, values}`
  * pair that used to carry both was a single entry of this map written out by hand, and
  * an array of those pairs is a map whose defining property is unenforced: it can hold a
  * namespace twice. Post-guard it cannot, so the type says so. `ReadonlyMap` and not
@@ -131,13 +131,10 @@ export interface FragmentEntry {
  * result and assume it belongs to the i-th root; that correspondence was asserted in a
  * comment and is now asked for by name.
  *
- * The `Fragment` infix is load-bearing: `PluginCatalogs` would read as a catalog OF
- * plugins, which this is not. It is each plugin's catalog of fragments.
+ * The `Value` infix is load-bearing: `PluginCatalogs` would read as a catalog OF
+ * plugins, which this is not. It is each plugin's catalog of values.
  */
-export type PluginFragmentCatalogs = ReadonlyMap<
-  string,
-  readonly FragmentEntry[]
->;
+export type PluginValueCatalogs = ReadonlyMap<string, readonly ValueEntry[]>;
 
 /** The legal `resolve/ValueShape` values — gates whether an object export is a node. */
 const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
@@ -146,8 +143,8 @@ const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
   'structured',
 ]);
 
-/** Is `v` a `Fragment` NODE (the reference-bearing export form)? */
-function isFragmentNode(v: unknown): v is Fragment {
+/** Is `v` a `ValueNode` (the reference-bearing export form)? */
+function isValueNode(v: unknown): v is ValueNode {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
   const o = v as { id?: unknown; valueShape?: unknown };
   return typeof o.id === 'string' && VALUE_SHAPES.has(o.valueShape as string);
@@ -155,10 +152,10 @@ function isFragmentNode(v: unknown): v is Fragment {
 
 /**
  * Import every `*.ts` module under `dir` and yield each `⟨exportName, value⟩`. It
- * preserves the export NAME (the σ* anchor, for the namespaced node id) and every export shape
- * (a string body OR a node-form `Fragment`). A missing dir contributes nothing.
+ * preserves the export NAME (the term, for the namespaced node id) and every export shape
+ * (a string body OR a node-form `ValueNode`). A missing dir contributes nothing.
  */
-async function scanDimensionModules(
+async function scanFactorModules(
   dir: string,
 ): Promise<Array<{ exportName: string; value: unknown }>> {
   const out: Array<{ exportName: string; value: unknown }> = [];
@@ -186,7 +183,7 @@ async function scanDimensionModules(
 }
 
 /**
- * MANY ROOTS → MANY CATALOGS. Enumerate the fragments of each plugin as NODES
+ * MANY ROOTS → MANY CATALOGS. Enumerate the values of each plugin as NODES
  * addressed by object identity, namespaced by the plugin `name`, then enforce
  * ACYCLICITY of the cross-plugin reference graph with `validateReferenceGraph` — a
  * reference cycle throws
@@ -197,40 +194,39 @@ async function scanDimensionModules(
  * would only make the report slower and the partial state harder to describe.
  * `DuplicateNamespaceError` — never last-write-wins.
  *
- * THE LONG SIGN IS DELIBERATE. `enumeratePluginCatalogs` would still admit
+ * THE LONG NAME IS DELIBERATE. `enumeratePluginCatalogs` would still admit
  * "catalogs *of* plugins", disambiguated only by the signature; carrying the noun's own
- * `Fragment` infix fixes it in the name rather than in the reader's second look.
+ * `Value` infix fixes it in the name rather than in the reader's second look.
  *
- * For each root, walks `<fragmentsDir>/<dimension>/*.ts` per the catalog's dimensions:
+ * For each root, walks `<factorsDir>/<factor>/*.ts` per the catalog's factors:
  * - a STRING export → a freshly minted, reference-free node with a namespaced id
- *   `"<plugin>:<dimension>/<exportName>"` and value shape from the dimension's arity;
- * - a node-form `Fragment` export → used AS-IS (its object identity is the imported
- *   binding), so cross-fragment references thread by identity.
+ *   `"<plugin>:<factor>/<exportName>"` and value shape from the factor's arity;
+ * - a node-form `ValueNode` export → used AS-IS (its object identity is the imported
+ *   binding), so cross-value references thread by identity.
  * Other export shapes are ignored (as the legacy scan ignores non-strings).
  */
-export async function enumeratePluginFragmentCatalogs(
-  roots: readonly PluginFragmentRoot[],
-  manifest: DimensionManifest,
-): Promise<PluginFragmentCatalogs> {
+export async function enumeratePluginValueCatalogs(
+  roots: readonly PluginValueRoot[],
+  manifest: FactorManifest,
+): Promise<PluginValueCatalogs> {
   const dirsByNamespace = new Map<string, string[]>();
   for (const src of roots) {
     const dirs = dirsByNamespace.get(src.name);
-    if (dirs) dirs.push(src.fragmentsDir);
-    else dirsByNamespace.set(src.name, [src.fragmentsDir]);
+    if (dirs) dirs.push(src.factorsDir);
+    else dirsByNamespace.set(src.name, [src.factorsDir]);
   }
   for (const [namespace, dirs] of dirsByNamespace) {
     if (dirs.length > 1) throw new DuplicateNamespaceError(namespace, dirs);
   }
 
-  const plugins = new Map<string, readonly FragmentEntry[]>();
-  const allNodes = new Set<Fragment>();
+  const plugins = new Map<string, readonly ValueEntry[]>();
+  const allNodes = new Set<ValueNode>();
 
   for (const src of roots) {
-    const fragments: FragmentEntry[] = [];
-    for (const [name, meta] of Object.entries(manifest)) {
-      const dimension = name;
-      // An ARITY → VALUE SHAPE map, and a narrow one. Every module under a dimension
-      // dir is ONE value, so its node is an atom (`scalar`) unless the dimension holds
+    const values: ValueEntry[] = [];
+    for (const [factor, meta] of Object.entries(manifest)) {
+      // An ARITY → VALUE SHAPE map, and a narrow one. Every module under a factor
+      // dir is ONE value, so its node is an atom (`scalar`) unless the factor holds
       // many, where a consumer may append to it (`set`). A `slots` value fills one
       // slot and an `attribute` value is one attribute: both atoms.
       //
@@ -238,22 +234,22 @@ export async function enumeratePluginFragmentCatalogs(
       // `Arity` lives in the schema and `ValueShape` in the projector, so the derivation
       // would make the shapes depend on projection.
       const valueShape: ValueShape = meta.arity === 'set' ? 'set' : 'scalar';
-      const dir = join(src.fragmentsDir, dimension);
-      for (const { exportName, value } of await scanDimensionModules(dir)) {
-        if (isFragmentNode(value)) {
-          fragments.push({ node: value, dimension, body: value });
+      const dir = join(src.factorsDir, factor);
+      for (const { exportName, value } of await scanFactorModules(dir)) {
+        if (isValueNode(value)) {
+          values.push({ node: value, factor, body: value });
           allNodes.add(value);
         } else if (typeof value === 'string') {
-          const node: Fragment = {
-            id: `${src.name}:${dimension}/${exportName}`,
+          const node: ValueNode = {
+            id: `${src.name}:${factor}/${exportName}`,
             valueShape,
           };
-          fragments.push({ node, dimension, body: value });
+          values.push({ node, factor, body: value });
           allNodes.add(node);
         }
       }
     }
-    plugins.set(src.name, fragments);
+    plugins.set(src.name, values);
   }
 
   // Closure and acyclicity of the reference graph.

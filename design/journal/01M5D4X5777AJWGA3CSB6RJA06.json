@@ -1,0 +1,15 @@
+{
+  "id": "01M5D4X5777AJWGA3CSB6RJA06",
+  "at": "2026-10-20T17:14:21.799Z",
+  "by": "lead",
+  "kind": "decide",
+  "decisionId": "0335",
+  "context": "canon",
+  "title": "Cratylus's source, docs and tests speak the design's terms, with one map of identifiers across packages",
+  "situation": "The design retired corpus and residue and names the canon's units factor, value, term, correction, role or profile and skill, yet the source, its docs, its tests and what install places still say corpus, residue, dimension, dimension value, fragment, cell, anchor, sign, σ* and gloss. Decision 0334 aligned the practice's skills with the pattern's terms and left the canon's unit words for later; renaming exported identifiers of the published packages is a breaking change, released as a minor bump while in 0.x (0191).",
+  "decision": "Every live occurrence takes the design's term by what it means: the collection cratylus ships is the canon; a judged name's residue is its semantic gap, the text beside a term its correction (a concept's whole stated meaning before it has a term is its meaning); an agent's lever is a factor and what it holds a value, never a dimension value, fragment, module or cell; the name a value, skill or concept is addressed by is its term, the minimal-gap one its Cratylic name, never anchor, sign, signifier or σ*, which the skills' notation writes term(c) and cratylic(c); a role's full set of values is its role profile and a skill a skill. Identifiers, files and directories follow: the schema's Dimension* types become Factor*, anchorOf termOf, isDimensionValue isFactorValue, Slot.gloss Slot.correction, HookCell HookDeclaration, a plugin's fragments its factors; canon's src/dimensions becomes src/factors, Dimension Factor, RoleCell RoleProfile; forge's fragment catalog becomes a value catalog and install's corpus option canon. History keeps its wording: changelogs, existing changesets, the journal's entries, fixtures of earlier installations or journals, and checks pinning a retired word's absence. Words naming other concepts stay: YAML and SVG anchors, ES modules, a fragment of text, corpus linguistics.",
+  "consequences": "Breaking for @cratylus/schema, @cratylus/forge and @cratylus/canon, released as minor bumps. The installed agents, skills and command help read in the design's terms. Seven builders on disjoint paths, joined on one feature branch and checked once; one code review, Ask.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

@@ -8,15 +8,15 @@
 // and an uninstall removes it whole, and a change the host makes inside it is not kept.
 // For omp the root is an extension package, laid out as omp reads one:
 //
-//   agents/<name>.md        the corpus's agent declarations
-//   skills/<name>/…         the corpus's skills
+//   agents/<name>.md        the canon's agent declarations
+//   skills/<name>/…         the canon's skills
 //   rules/<name>.md         the rules chosen at install, each applied in every session
 //   extensions/<module>.ts  the harness's adapters (the capability tools, the session
 //                           hooks, the dispatch isolation)
 //   hooks/<id>/<worker>     the workers the session hooks run
 //   package.json            the package: its name, the VERSION of cratylus that
 //                           projected it, and the modules omp loads (`omp.extensions`)
-//   runtime.json            each capability's configuration, where the corpus has any
+//   runtime.json            each capability's configuration, where the canon has any
 //   delivered/<origin>/<context>.json
 //                           each context the release delivers, read-only: handed in
 //                           by the command that holds the release and placed as given
@@ -128,11 +128,11 @@ export interface InstallationRecord {
   /** Where the installation is: for the user, or inside one project. Absent in a
    *  record written before scopes, which is a user installation. */
   readonly scope?: InstallScope;
-  /** The practices installed, in the corpus's order; absent where the corpus
+  /** The practices installed, in the canon's order; absent where the canon
    *  declares none. */
   readonly practices?: readonly string[];
-  /** The rules chosen, by name, in the corpus's order, possibly none: the choice an
-   *  upgrade keeps. Absent where the corpus offered no rulesets, or the choice was
+  /** The rules chosen, by name, in the canon's order, possibly none: the choice an
+   *  upgrade keeps. Absent where the canon offered no rulesets, or the choice was
    *  never made. */
   readonly rules?: readonly string[];
   readonly references: readonly OwnedReference[];

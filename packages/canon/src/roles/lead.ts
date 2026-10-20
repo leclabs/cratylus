@@ -4,50 +4,50 @@
 // outcome (workflow: lead; agents 0272; workflow 0267, 0268). Its values hold by scope
 // (0250-0257): decisive on the realization it owns, waiting at the operator's hold points.
 
-import type { RoleCell } from '../compose.js';
-import { appendJournal } from '../dimensions/action-scope/append-journal.js';
-import { commitOwnPaths } from '../dimensions/action-scope/commit-own-paths.js';
-import { integrate } from '../dimensions/action-scope/integrate.js';
-import { runChecks } from '../dimensions/action-scope/run-checks.js';
-import { userStory } from '../dimensions/assignment/user-story.js';
-import { handoff } from '../dimensions/autonomy/handoff.js';
-import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
-import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
-import { managementByException } from '../dimensions/autonomy/management-by-exception.js';
-import { missionCommand } from '../dimensions/autonomy/mission-command.js';
-import { principal } from '../dimensions/autonomy/principal.js';
-import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
-import { maintenance } from '../dimensions/communication-style/maintenance.js';
-import { plain } from '../dimensions/communication-style/plain.js';
-import { decides } from '../dimensions/decision-rights/decides.js';
-import { input } from '../dimensions/decision-rights/input.js';
-import { recommends } from '../dimensions/decision-rights/recommends.js';
-import { outcome } from '../dimensions/deliverable/outcome.js';
-import { inUse } from '../dimensions/evaluation/in-use.js';
-import { softwareDelivery } from '../dimensions/expertise/software-delivery.js';
-import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
-import { fixedAcceptanceCriteria } from '../dimensions/guardrails/fixed-acceptance-criteria.js';
-import { honesty } from '../dimensions/guardrails/honesty.js';
-import { scopeOfAuthority } from '../dimensions/guardrails/scope-of-authority.js';
-import { sourceOfTruth } from '../dimensions/memory/source-of-truth.js';
-import { working } from '../dimensions/memory/working.js';
-import { frontier } from '../dimensions/model/frontier.js';
-import { high } from '../dimensions/model/high.js';
-import { delivery } from '../dimensions/objective/delivery.js';
-import { satisfice } from '../dimensions/objective/satisfice.js';
-import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
-import { examples } from '../dimensions/perception-scope/examples.js';
-import { reports } from '../dimensions/perception-scope/reports.js';
-import { workProduct } from '../dimensions/perception-scope/work-product.js';
-import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
-import { shipShowAsk } from '../dimensions/procedure/ship-show-ask.js';
-import { lead } from '../dimensions/role/lead.js';
-import { decisive } from '../dimensions/stance/decisive.js';
-import { separationOfConcerns } from '../dimensions/stance/separation-of-concerns.js';
-import { simplicity } from '../dimensions/stance/simplicity.js';
-import { tailoring } from '../dimensions/stance/tailoring.js';
+import type { RoleProfile } from '../compose.js';
+import { appendJournal } from '../factors/action-scope/append-journal.js';
+import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';
+import { integrate } from '../factors/action-scope/integrate.js';
+import { runChecks } from '../factors/action-scope/run-checks.js';
+import { userStory } from '../factors/assignment/user-story.js';
+import { handoff } from '../factors/autonomy/handoff.js';
+import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
+import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
+import { managementByException } from '../factors/autonomy/management-by-exception.js';
+import { missionCommand } from '../factors/autonomy/mission-command.js';
+import { principal } from '../factors/autonomy/principal.js';
+import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
+import { maintenance } from '../factors/communication-style/maintenance.js';
+import { plain } from '../factors/communication-style/plain.js';
+import { decides } from '../factors/decision-rights/decides.js';
+import { input } from '../factors/decision-rights/input.js';
+import { recommends } from '../factors/decision-rights/recommends.js';
+import { outcome } from '../factors/deliverable/outcome.js';
+import { inUse } from '../factors/evaluation/in-use.js';
+import { softwareDelivery } from '../factors/expertise/software-delivery.js';
+import { softwareEngineering } from '../factors/expertise/software-engineering.js';
+import { fixedAcceptanceCriteria } from '../factors/guardrails/fixed-acceptance-criteria.js';
+import { honesty } from '../factors/guardrails/honesty.js';
+import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
+import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
+import { working } from '../factors/memory/working.js';
+import { frontier } from '../factors/model/frontier.js';
+import { high } from '../factors/model/high.js';
+import { delivery } from '../factors/objective/delivery.js';
+import { satisfice } from '../factors/objective/satisfice.js';
+import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
+import { examples } from '../factors/perception-scope/examples.js';
+import { reports } from '../factors/perception-scope/reports.js';
+import { workProduct } from '../factors/perception-scope/work-product.js';
+import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
+import { shipShowAsk } from '../factors/procedure/ship-show-ask.js';
+import { lead } from '../factors/role/lead.js';
+import { decisive } from '../factors/stance/decisive.js';
+import { separationOfConcerns } from '../factors/stance/separation-of-concerns.js';
+import { simplicity } from '../factors/stance/simplicity.js';
+import { tailoring } from '../factors/stance/tailoring.js';
 
-export const leadRole: RoleCell = {
+export const leadRole: RoleProfile = {
   name: 'lead',
   description:
     "Owns a user story's realization, or a task with no story: orchestrates its tasks to builders and their changes to code review as the story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands off the story's outcome.",

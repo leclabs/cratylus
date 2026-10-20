@@ -43,7 +43,7 @@ const install = (practice: readonly string[], dryRun = false) =>
     harness: 'omp',
     home,
     cwd: join(home, '..', 'cwd'),
-    corpus: {
+    canon: {
       name: 'start-fixture',
       manifest: FIXTURE_MANIFEST,
       agents,

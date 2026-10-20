@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // COMPOSITION — how an agent is made from the catalog.
 //
-// A role is a full default vector: one stated list per factor, every factor
-// present (`roles/<role>.ts`), and its mark. Its generic holder is that vector
+// A role is a default profile: one stated list per factor, every factor
+// present (`roles/<role>.ts`), and its mark. Its generic holder is that profile
 // made an agent, carrying the role's mark: each stated value becomes an `Entry`
 // carrying its enforcement level (the factor's default unless stated). A persona
 // states its overrides and extensions of a role: its own mark, single values that
@@ -18,27 +18,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
-  type DimensionManifest,
-  type DimensionMeta,
   type EnforcementLevel,
   type Entry,
+  type FactorManifest,
+  type FactorMeta,
   type KebabToCamel,
   type Mark,
   type Value,
-  anchorOf,
   kebabToCamel,
+  termOf,
 } from '@cratylus/schema';
 import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-import { type Agent, type Dimension, MANIFEST } from './manifest.js';
+import { type Agent, type Factor, MANIFEST } from './manifest.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
-  [D in Dimension]: (typeof MANIFEST)[D]['arity'] extends 'attribute'
-    ? never
-    : D;
-}[Dimension];
+  [D in Factor]: (typeof MANIFEST)[D]['arity'] extends 'attribute' ? never : D;
+}[Factor];
 
-/** The field a held factor occupies on a role cell and a composed agent. */
+/** The field a held factor occupies on a role profile and a composed agent. */
 export type FactorField = KebabToCamel<HeldFactor>;
 
 /** A value as a role or persona states it: bare, or with its level, slot or note. */
@@ -51,9 +49,9 @@ export type Stated<D extends string = string> =
       readonly note?: string;
     };
 
-/** A role: its full default vector, every non-attribute factor stated. */
-export interface RoleCell {
-  /** The role's anchor; the generic holder's name. */
+/** A role: its default profile, every non-attribute factor stated. */
+export interface RoleProfile {
+  /** The role's term; the generic holder's name. */
   readonly name: string;
   readonly description: string;
   /** The role's mark, which its generic holder carries. */
@@ -80,11 +78,11 @@ export class CompositionRefusal extends Error {
 interface Held {
   readonly factor: string;
   readonly field: string;
-  readonly meta: DimensionMeta;
+  readonly meta: FactorMeta;
 }
 
 const HELD: readonly Held[] = Object.entries(
-  MANIFEST as unknown as DimensionManifest,
+  MANIFEST as unknown as FactorManifest,
 )
   .filter(([, meta]) => meta.arity !== 'attribute')
   .map(([factor, meta]) => ({ factor, field: kebabToCamel(factor), meta }));
@@ -148,7 +146,7 @@ function checked(role: string, held: Held, entries: Entry[]): Entry[] {
   for (const entry of entries)
     if (!slots.some((slot) => slot.name === entry.slot))
       refuse(
-        `role ${role} states ${factor} ${anchorOf(entry.value)} in no slot of ${factor}`,
+        `role ${role} states ${factor} ${termOf(entry.value)} in no slot of ${factor}`,
       );
   return slots.flatMap((slot) => {
     const filling = entries.filter((entry) => entry.slot === slot.name);
@@ -171,14 +169,14 @@ function agentOf(
   },
   vector: Readonly<Record<string, readonly Entry[]>>,
 ): Agent {
-  const anchors = (field: string) =>
-    (vector[field] ?? []).map((entry) => anchorOf(entry.value));
-  const slotAnchor = (field: string, slot: string) => {
+  const terms = (field: string) =>
+    (vector[field] ?? []).map((entry) => termOf(entry.value));
+  const slotTerm = (field: string, slot: string) => {
     const entry = (vector[field] ?? []).find((e) => e.slot === slot);
-    return entry ? anchorOf(entry.value) : '';
+    return entry ? termOf(entry.value) : '';
   };
-  const [assignment] = anchors('assignment');
-  const [deliverable] = anchors('deliverable');
+  const [assignment] = terms('assignment');
+  const [deliverable] = terms('deliverable');
   const contract = {
     ...(assignment && ASSIGNMENT_CONTRACTS[assignment]
       ? { assignment: ASSIGNMENT_CONTRACTS[assignment] }
@@ -194,27 +192,27 @@ function agentOf(
     key: null,
     holds: identity.holds,
     routing: {
-      tier: slotAnchor('model', 'tier'),
-      effort: slotAnchor('model', 'effort'),
+      tier: slotTerm('model', 'tier'),
+      effort: slotTerm('model', 'effort'),
     },
     ...(Object.keys(contract).length > 0 ? { contract } : {}),
     ...vector,
   } as unknown as Agent;
 }
 
-function vectorOfCell(cell: RoleCell): Record<string, Entry[]> {
-  const values = cell.values as unknown as Readonly<
+function vectorOfProfile(profile: RoleProfile): Record<string, Entry[]> {
+  const values = profile.values as unknown as Readonly<
     Record<string, readonly Stated[] | undefined>
   >;
   for (const field of Object.keys(values))
-    heldFactor(field, `role ${cell.name}`);
+    heldFactor(field, `role ${profile.name}`);
   const vector: Record<string, Entry[]> = {};
   for (const held of HELD) {
     const stated = values[held.field];
     if (!Array.isArray(stated))
-      refuse(`role ${cell.name} states no ${held.factor}`);
+      refuse(`role ${profile.name} states no ${held.factor}`);
     vector[held.field] = checked(
-      cell.name,
+      profile.name,
       held,
       stated.map((s) => entryOf(s, held)),
     );
@@ -222,21 +220,21 @@ function vectorOfCell(cell: RoleCell): Record<string, Entry[]> {
   return vector;
 }
 
-/** The generic holder of a role: the role's vector, named for the role. */
-export function holder(cell: RoleCell): Agent {
+/** The generic holder of a role: the role's profile, named for the role. */
+export function holder(profile: RoleProfile): Agent {
   return agentOf(
     {
-      name: cell.name,
-      description: cell.description,
-      mark: cell.mark,
-      holds: cell.name,
+      name: profile.name,
+      description: profile.description,
+      mark: profile.mark,
+      holds: profile.name,
     },
-    vectorOfCell(cell),
+    vectorOfProfile(profile),
   );
 }
 
-/** A persona over a role: the role's vector, then the persona's overrides and extensions. */
-export function persona(over: RoleCell, overrides: Overrides): Agent {
+/** A persona over a role: the role's profile, then the persona's overrides and extensions. */
+export function persona(over: RoleProfile, overrides: Overrides): Agent {
   const who = `persona ${overrides.name}`;
   if (!overrides.mark) refuse(`${who} carries no mark`);
   if (
@@ -244,7 +242,7 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
     over.mark.hue === overrides.mark.hue
   )
     refuse(`${who} carries its role ${over.name}'s own mark`);
-  const vector = vectorOfCell(over);
+  const vector = vectorOfProfile(over);
 
   for (const [field, stated] of Object.entries(overrides.values ?? {})) {
     const held = heldFactor(field, who);
@@ -266,11 +264,11 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
         const entry = entryOf(s, held);
         if (entry.slot === undefined)
           refuse(
-            `${who} states ${factor} ${anchorOf(entry.value)} without a slot`,
+            `${who} states ${factor} ${termOf(entry.value)} without a slot`,
           );
         if (!order.includes(entry.slot))
           refuse(
-            `${who} states ${factor} ${anchorOf(entry.value)} in ${entry.slot}, which is no slot of ${factor}`,
+            `${who} states ${factor} ${termOf(entry.value)} in ${entry.slot}, which is no slot of ${factor}`,
           );
         const at = entries.findIndex((e) => e.slot === entry.slot);
         if (at >= 0) entries[at] = entry;
@@ -287,8 +285,8 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
     }
     for (const s of stated) {
       const { value, level, note } = statedObject(s);
-      const anchor = anchorOf(value);
-      const at = entries.findIndex((e) => anchorOf(e.value) === anchor);
+      const term = termOf(value);
+      const at = entries.findIndex((e) => termOf(e.value) === term);
       if (at < 0) {
         entries.push(entryOf(s, held));
         continue;
@@ -304,7 +302,7 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
         STRENGTH.indexOf(next.level) < STRENGTH.indexOf(prev.level)
       )
         warn(
-          `${who} weakens the guardrail ${anchor} from ${prev.level} to ${next.level}`,
+          `${who} weakens the guardrail ${term} from ${prev.level} to ${next.level}`,
         );
       entries[at] = next;
     }
@@ -314,17 +312,16 @@ export function persona(over: RoleCell, overrides: Overrides): Agent {
     const { factor, meta } = heldFactor(field, who);
     const entries = vector[field] as Entry[];
     for (const value of removed) {
-      const anchor = anchorOf(value);
-      if (factor === 'guardrails')
-        warn(`${who} removes the guardrail ${anchor}`);
+      const term = termOf(value);
+      if (factor === 'guardrails') warn(`${who} removes the guardrail ${term}`);
       else if (meta.group !== 'Reach')
         warn(
-          `${who} removes ${anchor} from ${factor}; a persona usually extends sets rather than taking from them`,
+          `${who} removes ${term} from ${factor}; a persona usually extends sets rather than taking from them`,
         );
-      const at = entries.findIndex((e) => anchorOf(e.value) === anchor);
+      const at = entries.findIndex((e) => termOf(e.value) === term);
       if (at < 0)
         refuse(
-          `${who} removes ${anchor} from ${factor}, which its role ${over.name} does not hold`,
+          `${who} removes ${term} from ${factor}, which its role ${over.name} does not hold`,
         );
       entries.splice(at, 1);
     }

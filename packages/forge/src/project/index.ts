@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // PROJECTION over a RESOLVED PLUGIN SET — the render tree `install` places.
 //
-// The corpus's projection is one call over the plugin set's dirs: the plugins in the
-// set are the whole of what differs between one corpus and another.
+// The canon's projection is one call over the plugin set's dirs: the plugins in the
+// set are all that tells one projection from another.
 //
 // RENDERING IS NOT WRITING. Projection returns the artifact tree; `install` places
 // it. This module opens no file descriptor — that is a LOAD-BEARING property, not
@@ -17,27 +17,27 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import {
   type Agent,
   type Binding,
-  type DimensionManifest,
   type Enforcing,
-  type HookCell,
+  type FactorManifest,
+  type HookDeclaration,
   type Plumbing,
   type Practice,
   type ProjectionFacts,
   type Rule,
   type Ruleset,
   type Skill,
-  anchorOf,
   hookIrOf,
   mergeManifest,
   resolveWorker,
+  termOf,
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import {
-  type PluginFragmentCatalogs,
-  enumeratePluginFragmentCatalogs,
+  type PluginValueCatalogs,
+  enumeratePluginValueCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
-import { enforcingValuesOf } from '../core/exemplify/dimension-fields.js';
+import { enforcingValuesOf } from '../core/exemplify/factor-fields.js';
 import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
@@ -51,11 +51,11 @@ import { runtimeShimContent } from './runtime-shim.js';
 /**
  * THE PROJECTOR'S FACT TABLE — every value a worker template may ask for by name.
  *
- * This is the seam that removed a canon cell's import of the runtime. A canon cell
+ * This is the seam that removed a canon hook's import of the runtime. A canon hook
  * needed the runtime bin's name and could only get it by importing
  * `@cratylus/runtime` — meaning reaching into mechanism. FORGE already depends on
  * runtime (a permitted edge: projection
- * knows both sides), so the value belongs here and the cell asks for it by NAME.
+ * knows both sides), so the value belongs here and the hook asks for it by NAME.
  *
  * The schema declares WHICH facts exist (`ProjectionFact`) and never a value; a value
  * in the shapes package would restore the `schema → runtime` edge that was repaired
@@ -69,7 +69,7 @@ import { runtimeShimContent } from './runtime-shim.js';
  * nowhere else, so a shell-side copy of the adapter table was the only alternative:
  * a second, uncompilable home for the harness registry. Projection is the one stage
  * that knows which adapter it is rendering for, so it is the one place the answer
- * can be bound — and binding it here makes the same cell resolve to per-harness
+ * can be bound — and binding it here makes the same hook declaration resolve to per-harness
  * bytes with no per-harness authoring.
  */
 export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
@@ -80,17 +80,17 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
   };
 }
 
-/** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
+/** The plugin fields projection consumes — the dirs a plugin contributes its agents, skills, values and hooks from. */
 export interface ProjectablePlugin {
   readonly name: string;
   readonly agents?: string;
   readonly skills?: string;
-  /** Fragment (dimension-value) dir — scanned `<dir>/<dimension>/*.ts` by `discoverFragments`. */
-  readonly fragments?: string;
-  /** Dir of hook cell modules this plugin contributes. */
+  /** Factors dir, holding each factor's values — scanned `<dir>/<factor>/*.ts` by `discoverValues`. */
+  readonly factors?: string;
+  /** Dir of hook declaration modules this plugin contributes. */
   readonly hooks?: string;
-  /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
-  readonly manifest?: DimensionManifest;
+  /** WHICH factors this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
+  readonly manifest?: FactorManifest;
   /** WHICH practices this plugin offers (`AgentPlugin.practices`). */
   readonly practices?: readonly Practice[];
   /** What every practice is installed with and none is offered as (`AgentPlugin.plumbing`). */
@@ -102,14 +102,14 @@ export interface ProjectablePlugin {
 export interface ProjectOpts {
   /** The resolved plugin set, in `extends` order. */
   readonly plugins: readonly ProjectablePlugin[];
-  /** The harness adapter that renders each cell. */
+  /** The harness adapter that renders each agent, skill and hook. */
   readonly adapter: HarnessAdapter;
   /**
-   * `anchor → HarnessMechanism` — the realization payloads for this corpus's
+   * `term → HarnessMechanism` — the realization payloads for this canon's
    * enforcing values, INJECTED.
    *
-   * deploy emits `mechanism` per (fragment, adapter), so it cannot live on the
-   * source cell. It is supplied here by the corpus — the
+   * deploy emits `mechanism` per (value, adapter), so it cannot live on the
+   * authored value. It is supplied here by the canon — the
    * DATA lives in canon, the ALGORITHM stays doctrine-free.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
@@ -134,11 +134,11 @@ export interface ProjectOpts {
    */
   readonly hostHome?: string;
   /**
-   * The practices to render, by name. ABSENT ⇒ every cell is rendered, as a plugin
-   * set declaring no practices renders: this is what keeps every whole-corpus
+   * The practices to render, by name. ABSENT ⇒ every agent, skill and hook is rendered, as a plugin
+   * set declaring no practices renders: this is what keeps every whole-canon
    * render byte-for-byte what it was. EMPTY ⇒ refused, before anything is
    * rendered: no practice chosen is not every practice, and a caller
-   * that means the whole corpus leaves this absent.
+   * that means the whole canon leaves this absent.
    *
    * Given names, exactly the union of those practices' agents and skills is
    * rendered, with the skills those compose and the plumbing. A set that is not
@@ -171,8 +171,8 @@ export interface ProjectReport {
 
 /**
  * ONE projected artifact: its path RELATIVE to the render-tree root, plus its bytes.
- * `HarnessAdapter` already hands back `{ filename, content }` per cell; this is that
- * pair once the projection has decided which subtree the cell belongs under.
+ * `HarnessAdapter` already hands back `{ filename, content }` per agent, skill or hook; this is that
+ * pair once the projection has decided which subtree it belongs under.
  */
 export interface ProjectedFile {
   /** Path relative to the render-tree root, e.g. `skills/praxis/SKILL.md`. */
@@ -188,7 +188,7 @@ export interface ProjectedFile {
  * DELIBERATELY a local structural type, and deliberately unnamed beyond that. This
  * is NOT an agent's `IR`, which is AGENT-scoped and is already realized by the
  * `Agent` interface. A whole-plugin-set aggregate is a different thing, and
- * minting a canonical anchor for it is a cratylism act
+ * minting a Cratylic name for it is a naming act
  * this seam is not entitled to perform.
  */
 export interface ProjectedTree extends ProjectReport {
@@ -309,17 +309,17 @@ async function declaredAgents(
   return byName;
 }
 
-/** The `HookCell` export of a hook module (the object carrying `substrate`). */
-async function hookOf(modPath: string): Promise<HookCell | null> {
+/** The `HookDeclaration` export of a hook module (the object carrying `substrate`). */
+async function hookOf(modPath: string): Promise<HookDeclaration | null> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const cell = Object.values(mod).find(
-    (v): v is HookCell =>
+  const declaration = Object.values(mod).find(
+    (v): v is HookDeclaration =>
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
-  return cell ?? null;
+  return declaration ?? null;
 }
 
 /** The runtime capabilities a harness is offered, those that explain themselves. */
@@ -409,70 +409,70 @@ export function capabilityProse(capability: string, e: Explanation): string {
  * byte-stable — an unsorted set would churn the deploy diff and hide real changes
  * among reorderings.
  *
- * `manifest` is what the vector is READ against — REQUIRED. A dimension the
+ * `manifest` is what the vector is READ against — REQUIRED. A factor the
  * set declares and the reader does not know is invisible here, so its enforcing
  * values would bind nothing while its Target section still printed.
  */
 export function bindingsOf(
   agents: readonly { readonly name: string; readonly agent: Agent }[],
-  manifest: DimensionManifest,
+  manifest: FactorManifest,
 ): Binding[] {
-  const byAnchor = new Map<
+  const byTerm = new Map<
     string,
-    { fragment: Enforcing<string>; agents: Set<string> }
+    { value: Enforcing<string>; agents: Set<string> }
   >();
   for (const { name, agent } of agents) {
-    for (const fragment of enforcingValuesOf(agent, manifest)) {
-      const anchor = anchorOf(fragment);
-      const seen = byAnchor.get(anchor);
+    for (const value of enforcingValuesOf(agent, manifest)) {
+      const term = termOf(value);
+      const seen = byTerm.get(term);
       if (seen) seen.agents.add(name);
-      else byAnchor.set(anchor, { fragment, agents: new Set([name]) });
+      else byTerm.set(term, { value, agents: new Set([name]) });
     }
   }
-  return [...byAnchor]
+  return [...byTerm]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([anchor, { fragment, agents: names }]) => ({
-      anchor,
-      fragment,
+    .map(([term, { value, agents: names }]) => ({
+      term,
+      value,
       agents: [...names].sort(),
     }));
 }
 
 /**
- * DISCOVER the plugin set's fragment nodes (`catalog/enumeratePluginFragmentCatalogs`).
+ * DISCOVER the plugin set's value nodes (`catalog/enumeratePluginValueCatalogs`).
  * Discovery refuses a namespace two plugins share and a reference graph that dangles
  * or cycles, each with its named error.
  */
-export async function discoverFragments(
+export async function discoverValues(
   plugins: readonly ProjectablePlugin[],
-): Promise<PluginFragmentCatalogs> {
+): Promise<PluginValueCatalogs> {
   const roots = plugins
-    .filter((p): p is ProjectablePlugin & { fragments: string } =>
-      Boolean(p.fragments),
+    .filter((p): p is ProjectablePlugin & { factors: string } =>
+      Boolean(p.factors),
     )
-    .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
+    .map((p) => ({ name: p.name, factorsDir: p.factors }));
   return roots.length === 0
     ? new Map()
-    : enumeratePluginFragmentCatalogs(roots, mergeManifest(plugins));
+    : enumeratePluginValueCatalogs(roots, mergeManifest(plugins));
 }
 
-/** A skill cell as the adapters render it. */
-function resolvedSkillOf(cell: Skill): ResolvedSkill {
+/** A skill as the adapters render it. */
+function resolvedSkillOf(skill: Skill): ResolvedSkill {
   return {
-    name: cell.name,
-    trigger: `/${cell.name}`,
-    description: cell.description,
-    formalBlock: cell.formalBlock,
-    composedFrom: cell.composition().map((c) => `/${c.name}`),
-    ...(cell.preamble ? { preamble: cell.preamble } : {}),
-    runtime: cell.runtime,
+    name: skill.name,
+    trigger: `/${skill.name}`,
+    description: skill.description,
+    formalBlock: skill.formalBlock,
+    composedFrom: skill.composition().map((c) => `/${c.name}`),
+    ...(skill.preamble ? { preamble: skill.preamble } : {}),
+    runtime: skill.runtime,
   };
 }
 
 /**
  * The practices a plugin set declares, in declaration order. A later plugin's practice
  * of the same name REPLACES an earlier one's (and is logged), exactly as a later
- * plugin's same-name cell does: the winner is the one that is offered.
+ * plugin's same-name agent or skill does: the winner is the one that is offered.
  */
 function declaredPractices(
   plugins: readonly ProjectablePlugin[],
@@ -633,25 +633,26 @@ function selectRules(
 }
 
 /**
- * Project every cell contributed by the plugin set into an artifact tree. Writes
- * nothing.
+ * Project every agent, skill and hook contributed by the plugin set into an artifact
+ * tree. Writes nothing.
  *
  * Later plugins in `extends` order win on a name collision, so a consumer can
- * override a canon CELL by shipping one of the same name. The winner is reported,
- * never silently applied.
+ * override a canon AGENT or SKILL by shipping one of the same name. The winner is
+ * reported, never silently applied.
  *
- * Cells and fragments override ASYMMETRICALLY, deliberately:
+ * Agents and skills on one side and values on the other override ASYMMETRICALLY,
+ * deliberately:
  *
- *   cell     — collides BY NAME, later plugin wins (here)
- *   fragment — does NOT collide. `enumeratePluginFragmentCatalogs` mints a distinct node
- *              per plugin (`catalog/index.ts`, id `<plugin>:<dim>/<export>`),
- *              so two plugins naming `parsimony` yield two nodes, not a contest.
+ *   agent, skill — collides BY NAME, later plugin wins (here)
+ *   value        — does NOT collide. `enumeratePluginValueCatalogs` mints a distinct node
+ *                  per plugin (`catalog/index.ts`, id `<plugin>:<factor>/<export>`),
+ *                  so two plugins naming `parsimony` yield two nodes, not a contest.
  *
- * The asymmetry is right and worth keeping. A cell is a COMPOSITION — a local
- * assembly choice, and overriding one changes only that cell. A fragment is
+ * The asymmetry is right and worth keeping. An agent or skill is a COMPOSITION — a
+ * local assembly choice, and overriding one changes only it. A value is
  * canonical VOCABULARY: overriding it by name would silently redefine a concept
  * everywhere any agent selects it, across the whole plugin set, with no site
- * naming the change. Per-plugin fragment identity makes that impossible by
+ * naming the change. Per-plugin value identity makes that impossible by
  * construction rather than by discipline.
  *
  * So a later plugin can override canon's `nico`, and cannot override canon's
@@ -661,10 +662,10 @@ export async function projectPluginSet(
   opts: ProjectOpts,
 ): Promise<ProjectedTree> {
   // NO PRACTICE IS NOT EVERY PRACTICE. An empty choice is refused before a byte is
-  // rendered; only an ABSENT one renders the whole corpus.
+  // rendered; only an ABSENT one renders the whole canon.
   if (opts.practices?.length === 0) {
     throw new Error(
-      'no practice was chosen: name at least one, or leave practices absent to render every cell',
+      'no practice was chosen: name at least one, or leave practices absent to render every agent, skill and hook',
     );
   }
   const log = opts.log ?? (() => {});
@@ -672,20 +673,20 @@ export async function projectPluginSet(
     opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
   const files: ProjectedFile[] = [];
 
-  // WHICH dimensions exist is settled before any vector is read: it decides the
+  // WHICH factors exist is settled before any vector is read: it decides the
   // fields an agent carries, its section order, and what counts as an enforcing
   // value — so every reader below is told, none left to guess at forge's own.
   const manifest = mergeManifest(opts.plugins, log);
 
   // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
-  // any cell is rendered and can be logged rather than discovered as a clobbered file.
+  // any agent or skill is rendered and can be logged rather than discovered as a clobbered file.
   const agentSrc = await declaredAgents(opts.plugins, log);
   const allSkills = await resolveSkills(opts.plugins, log);
-  // The roster an agent's skill closure is read against: the cells that DEPLOY,
+  // The roster an agent's skill closure is read against: the skills that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
   const roster = new Map(allSkills.map((s) => [s.name, s.skill]));
 
-  // PRACTICES. Naming none renders every cell. Naming some places exactly what they
+  // PRACTICES. Naming none renders everything. Naming some places exactly what they
   // place (agents, the skills those are given and compose, the plumbing), after the
   // chosen set is proven closed — before an agent is composed or a byte rendered.
   const offered = declaredPractices(opts.plugins, log);
@@ -769,11 +770,11 @@ export async function projectPluginSet(
   const mainSessionHook = opts.adapter.mainSessionSkillHook;
   if (mainSessionHook) {
     const given = new Set(composed.flatMap((c) => c.agent.skills ?? []));
-    for (const { name, skill: cell } of contributedSkills) {
+    for (const { name, skill } of contributedSkills) {
       if (!given.has(name)) continue;
       const size = mainSessionHook.size(
         name,
-        opts.adapter.skillDef(resolvedSkillOf(cell)).content,
+        opts.adapter.skillDef(resolvedSkillOf(skill)).content,
         opts.hostHome,
       );
       if (size <= mainSessionHook.cap) continue;
@@ -823,22 +824,22 @@ export async function projectPluginSet(
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
       {
-        anchor: b.anchor,
-        substrate: b.fragment.substrate,
-        events: b.fragment.events,
+        term: b.term,
+        substrate: b.value.substrate,
+        events: b.value.events,
         agents: b.agents,
       },
       opts.adapter,
     );
     if (mode !== 'steer') continue;
-    degraded.add(b.fragment.realizedBy ?? b.anchor);
+    degraded.add(b.value.realizedBy ?? b.term);
     for (const loss of losses) warn(loss.warning);
   }
-  // The mechanisms this harness will actually carry. A degraded anchor is absent,
-  // so every emission path that asks `mechanisms.get(anchor)` withholds it —
+  // The mechanisms this harness will actually carry. A degraded term is absent,
+  // so every emission path that asks `mechanisms.get(term)` withholds it —
   // adapters need no knowledge of the decision, only of their own capability.
   const mechanisms = opts.mechanisms
-    ? new Map([...opts.mechanisms].filter(([anchor]) => !degraded.has(anchor)))
+    ? new Map([...opts.mechanisms].filter(([term]) => !degraded.has(term)))
     : opts.mechanisms;
 
   for (const name of pending) {
@@ -858,38 +859,38 @@ export async function projectPluginSet(
     agents++;
   }
 
-  // ENFORCING FRAGMENTS. The MECHANISM is emitted by the adapter into each
+  // ENFORCING VALUES. The MECHANISM is emitted by the adapter into each
   // agent's OWN front-matter (`agentHooksFrontMatter`), because Claude Code fires
   // a subagent's front-matter hooks only while that subagent runs. Attachment IS
   // the scope, so there is no separate scope artifact that could drift from the
   // agents it claims to govern.
   //
   // What projection still owes: the WORKER BYTES the emitted commands invoke.
-  // Mode was decided above; a degraded anchor emits no workers, because worker
+  // Mode was decided above; a degraded term emits no workers, because worker
   // bytes with no mechanism to invoke them are dead files that read as coverage.
   for (const b of bindings) {
-    const realizedBy = b.fragment.realizedBy ?? b.anchor;
+    const realizedBy = b.value.realizedBy ?? b.term;
     if (degraded.has(realizedBy)) {
       log(
-        `STEER enforcing ${b.anchor} → ${b.agents.join(' ')} (declaration only)`,
+        `STEER enforcing ${b.term} → ${b.agents.join(' ')} (declaration only)`,
       );
       continue;
     }
     const mech = mechanisms?.get(realizedBy);
     for (const worker of mech?.workers ?? []) {
-      // RESOLVED, exactly as at the hook-cell emission site below. An enforcing
+      // RESOLVED, exactly as at the hook declaration's emission site below. An enforcing
       // mechanism ships the same worker-template shape, so a fact added to one of
       // its workers and resolved at only ONE of the two sites would leak a literal
       // `{{fact:…}}` into a deployed artifact — the failure mode that fails on a
       // host, not at build. Both sites, or neither.
       const resolved = resolveWorker(worker, projectionFacts(opts.adapter));
       files.push({
-        path: join('hooks', b.anchor, resolved.filename),
+        path: join('hooks', b.term, resolved.filename),
         content: resolved.content,
         executable: resolved.executable,
       });
     }
-    log(`EMIT enforcing ${b.anchor} → ${b.agents.join(' ')}`);
+    log(`EMIT enforcing ${b.term} → ${b.agents.join(' ')}`);
   }
 
   // A harness that cannot attach a hook to one agent gets its global surface here,
@@ -897,7 +898,7 @@ export async function projectPluginSet(
   // attached them to each agent's own front-matter already. Degraded bindings are
   // withheld: this surface is exactly where an unscopable hook would WIDEN.
   const boundBindings = bindings.filter(
-    (b) => !degraded.has(b.fragment.realizedBy ?? b.anchor),
+    (b) => !degraded.has(b.value.realizedBy ?? b.term),
   );
   if (boundBindings.length > 0 && opts.adapter.enforcingSurface) {
     // `mechanisms` THREADED. Passing only the bindings left every implementation
@@ -972,19 +973,19 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  for (const { name, skill: cell } of contributedSkills) {
-    const resolved = resolvedSkillOf(cell);
-    const cellOut = join('skills', name);
+  for (const { name, skill } of contributedSkills) {
+    const resolved = resolvedSkillOf(skill);
+    const skillOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
-    files.push({ path: join(cellOut, filename), content });
-    if (cell.runtime) {
+    files.push({ path: join(skillOut, filename), content });
+    if (skill.runtime) {
       files.push({
-        path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
-        content: runtimeShimContent(cell.runtime.capability),
+        path: join(skillOut, 'scripts', `${skill.runtime.capability}.mjs`),
+        content: runtimeShimContent(skill.runtime.capability),
         executable: true,
       });
       log(
-        `EMIT skill ${name} (+runtime shim scripts/${cell.runtime.capability}.mjs)`,
+        `EMIT skill ${name} (+runtime shim scripts/${skill.runtime.capability}.mjs)`,
       );
       shims++;
     } else {
@@ -993,17 +994,18 @@ export async function projectPluginSet(
     skills++;
   }
 
-  // Hooks. Only `harness`-substrate cells register in settings.json; a
-  // `git`-substrate cell fires in git's own process and must never be serialized
+  // Hooks. Only `harness`-substrate hooks register in settings.json; a
+  // `git`-substrate hook fires in git's own process and must never be serialized
   // here, so it is filtered BEFORE the lift (which refuses it loudly anyway).
-  const discoveredHooks: HookCell[] = [];
+  const discoveredHooks: HookDeclaration[] = [];
   for (const p of opts.plugins) {
     if (!p.hooks) continue;
     for (const n of await scanModuleNames(p.hooks)) {
       const modPath = await resolveModulePath(p.hooks, n);
       if (!modPath) continue;
-      const cell = await hookOf(modPath);
-      if (cell && cell.substrate === 'harness') discoveredHooks.push(cell);
+      const declaration = await hookOf(modPath);
+      if (declaration && declaration.substrate === 'harness')
+        discoveredHooks.push(declaration);
     }
   }
 
@@ -1014,36 +1016,36 @@ export async function projectPluginSet(
   );
 
   // A CHOSEN SET REGISTERS ITS PLUMBING, and no other hook. A plumbing hook naming
-  // no cell is refused: it would read as installed while registering nothing.
+  // no hook declaration is refused: it would read as installed while registering nothing.
   if (selection) {
     for (const id of selection.hooks) {
-      if (!discoveredHooks.some((cell) => cell.id === id)) {
+      if (!discoveredHooks.some((hook) => hook.id === id)) {
         throw new Error(
-          `the plumbing or a chosen practice names the hook '${id}', which is no harness hook cell of the plugin set (hooks: ${discoveredHooks.map((c) => c.id).join(', ')})`,
+          `the plumbing or a chosen practice names the hook '${id}', which is no harness hook declaration of the plugin set (hooks: ${discoveredHooks.map((h) => h.id).join(', ')})`,
         );
       }
     }
   }
-  const hookCells = selection
-    ? discoveredHooks.filter((cell) => selection.hooks.has(cell.id))
+  const hookDeclarations = selection
+    ? discoveredHooks.filter((hook) => selection.hooks.has(hook.id))
     : discoveredHooks;
 
-  // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A cell bound
+  // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A hook bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
   // since bytes beside no registration read as coverage and deliver none, and the
-  // operator is told once per moment. A cell with a moment the harness does fire keeps
+  // operator is told once per moment. A hook with a moment the harness does fire keeps
   // the registrations it can make and is told of the ones it cannot.
   const unfired = new Set<string>();
-  for (const cell of hookCells) {
-    const lost = cell.events.filter((event) => !opts.adapter.realizes(event));
-    if (lost.length === cell.events.length) unfired.add(cell.id);
+  for (const hook of hookDeclarations) {
+    const lost = hook.events.filter((event) => !opts.adapter.realizes(event));
+    if (lost.length === hook.events.length) unfired.add(hook.id);
     for (const event of lost) {
       warn(
-        `hook '${cell.id}' is bound to '${event}', a moment the '${opts.adapter.name}' harness does not fire. ${lost.length === cell.events.length ? 'The hook is not deployed here' : 'It is not registered for that moment'}.`,
+        `hook '${hook.id}' is bound to '${event}', a moment the '${opts.adapter.name}' harness does not fire. ${lost.length === hook.events.length ? 'The hook is not deployed here' : 'It is not registered for that moment'}.`,
       );
     }
   }
-  const carried = hookCells.filter((cell) => !unfired.has(cell.id));
+  const carried = hookDeclarations.filter((hook) => !unfired.has(hook.id));
 
   let hooks = 0;
   if (carried.length > 0) {
@@ -1053,28 +1055,28 @@ export async function projectPluginSet(
     // `scopeActivatedSurface` returns modules placed per scope (omp, whose loader
     // scans a dir and whose config root is profile-scoped). Reading the absence of
     // the FORMER as "no surface at all" is what dropped all five of canon's
-    // session-scoped cells on omp while that adapter could realize and narrow every
+    // session-scoped hooks on omp while that adapter could realize and narrow every
     // event they name.
     const renderScopeActivated = opts.adapter.scopeActivatedSurface;
     if (!renderHooks && !renderScopeActivated) {
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
-      // surface loses these cells' MECHANISM, not the build — and the operator is
+      // surface loses these hooks' MECHANISM, not the build — and the operator is
       // told, because an absent guardrail that announced nothing is the failure this
       // whole design removes. Refusing here would delete canon's hooks dir from a
       // plugin set, so agents ran ungoverned and silent.
-      for (const cell of carried) {
+      for (const hook of carried) {
         warn(
-          `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The cell is not deployed here.`,
+          `scope-activated hook '${hook.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The hook is not deployed here.`,
         );
       }
     } else {
-      // RESOLVE HERE, at the emission boundary. `cell.workers` are TEMPLATES; the
-      // deployed bytes are `resolveWorker(w, facts, cell.speech)`, and an unknown
+      // RESOLVE HERE, at the emission boundary. `declaration.workers` are TEMPLATES; the
+      // deployed bytes are `resolveWorker(w, facts, declaration.speech)`, and an unknown
       // placeholder throws rather than shipping `{{…}}` to a host.
-      const sources = carried.map((cell) => ({
-        hook: hookIrOf(cell, opts.adapter.hookCommand),
-        workers: cell.workers.map((w) =>
-          resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
+      const sources = carried.map((declaration) => ({
+        hook: hookIrOf(declaration, opts.adapter.hookCommand),
+        workers: declaration.workers.map((w) =>
+          resolveWorker(w, projectionFacts(opts.adapter), declaration.speech),
         ),
       }));
       let registered = true;
@@ -1101,7 +1103,7 @@ export async function projectPluginSet(
           agentNames,
         );
         // EMPTY IS A DEGRADE, not a quiet success: an adapter that realized none of
-        // these cells' events registers nothing, and worker bytes beside no
+        // these hooks' events registers nothing, and worker bytes beside no
         // registration are dead files that read as coverage.
         registered = surface.length > 0;
         for (const s of surface) {
@@ -1114,9 +1116,9 @@ export async function projectPluginSet(
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {
-          for (const cell of carried) {
+          for (const hook of carried) {
             warn(
-              `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': none of its events are realizable here. The cell is not deployed here.`,
+              `scope-activated hook '${hook.id}' has no mechanism on '${opts.adapter.name}': none of its events are realizable here. The hook is not deployed here.`,
             );
           }
         }

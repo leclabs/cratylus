@@ -7,25 +7,25 @@
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
-import { readBack } from '../src/dimensions/deliverable/read-back.js';
-import { sourceOfTruth } from '../src/dimensions/memory/source-of-truth.js';
-import { reconstitution } from '../src/dimensions/procedure/reconstitution.js';
-import { rectify } from '../src/dimensions/procedure/rectify.js';
-import { cratylism } from '../src/dimensions/stance/cratylism.js';
+import { readBack } from '../src/factors/deliverable/read-back.js';
+import { sourceOfTruth } from '../src/factors/memory/source-of-truth.js';
+import { reconstitution } from '../src/factors/procedure/reconstitution.js';
+import { rectify } from '../src/factors/procedure/rectify.js';
+import { cratylism } from '../src/factors/stance/cratylism.js';
 import canon from '../src/index.js';
-import { type Dimension, MANIFEST, type Value } from '../src/manifest.js';
+import { type Factor, MANIFEST, type Value } from '../src/manifest.js';
 import { architectRole } from '../src/roles/architect.js';
 
 /** A value `name ≜ body`, which renders as `- **name** … — body`. */
-function parts(value: Value<Dimension>): { name: string; body: string } {
+function parts(value: Value<Factor>): { name: string; body: string } {
   const text: string = typeof value === 'string' ? value : value.body;
   const [name = '', body = ''] = text.split(' ≜ ');
   return { name, body };
 }
 
-const meaningGloss = MANIFEST['decision-rights'].slots.find(
+const meaningCorrection = MANIFEST['decision-rights'].slots.find(
   (s) => s.name === 'meaning',
-)?.gloss;
+)?.correction;
 
 const rectifyEntry = architectRole.values.procedure?.find(
   (p) => typeof p === 'object' && 'value' in p && p.value === rectify,
@@ -35,7 +35,7 @@ const rectifyNote =
 
 /** Each decided value, as a predicate on a rendered line. */
 const decided: Record<string, (line: string) => boolean> = {
-  meaning: (l) => l.startsWith(`- meaning (${meaningGloss}): **D**`),
+  meaning: (l) => l.startsWith(`- meaning (${meaningCorrection}): **D**`),
   rectify: (l) =>
     l.startsWith(`- **${parts(rectify).name}** (${rectifyNote}) — `),
   ...Object.fromEntries(
@@ -64,7 +64,7 @@ describe('the architect conforms to the pattern', async () => {
   const architect = lines('architect');
 
   it("the architect's definition carries each decided value", () => {
-    expect(meaningGloss).toBeDefined();
+    expect(meaningCorrection).toBeDefined();
     expect(rectifyNote).toBeDefined();
     for (const [key, holds] of Object.entries(decided)) {
       expect(architect.filter(holds), key).toHaveLength(1);

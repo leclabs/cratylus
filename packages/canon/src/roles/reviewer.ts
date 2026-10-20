@@ -5,40 +5,40 @@
 // runs on another model family than the builders where one is available (0225, 0244),
 // and takes held-out examples directly from where the architect keeps them (0254).
 
-import type { RoleCell } from '../compose.js';
-import { none } from '../dimensions/action-scope/none.js';
-import { reviewRequest } from '../dimensions/assignment/review-request.js';
-import { handoff } from '../dimensions/autonomy/handoff.js';
-import { principal } from '../dimensions/autonomy/principal.js';
-import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
-import { maintenance } from '../dimensions/communication-style/maintenance.js';
-import { plain } from '../dimensions/communication-style/plain.js';
-import { decides } from '../dimensions/decision-rights/decides.js';
-import { input } from '../dimensions/decision-rights/input.js';
-import { codeReview as deliverableCodeReview } from '../dimensions/deliverable/code-review.js';
-import { inUse } from '../dimensions/evaluation/in-use.js';
-import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
-import { testDesign } from '../dimensions/expertise/test-design.js';
-import { honesty } from '../dimensions/guardrails/honesty.js';
-import { neverRepairs } from '../dimensions/guardrails/never-repairs.js';
-import { noImplementation } from '../dimensions/guardrails/no-implementation.js';
-import { sourceOfTruth } from '../dimensions/memory/source-of-truth.js';
-import { working } from '../dimensions/memory/working.js';
-import { frontierOtherFamily } from '../dimensions/model/frontier-other-family.js';
-import { xhigh } from '../dimensions/model/xhigh.js';
-import { optimize } from '../dimensions/objective/optimize.js';
-import { reviewAccuracy } from '../dimensions/objective/review-accuracy.js';
-import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
-import { examples } from '../dimensions/perception-scope/examples.js';
-import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
-import { workProduct } from '../dimensions/perception-scope/work-product.js';
-import { codeReview } from '../dimensions/procedure/code-review.js';
-import { reviewer } from '../dimensions/role/reviewer.js';
-import { adversarial } from '../dimensions/stance/adversarial.js';
-import { impartial } from '../dimensions/stance/impartial.js';
-import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
+import type { RoleProfile } from '../compose.js';
+import { none } from '../factors/action-scope/none.js';
+import { reviewRequest } from '../factors/assignment/review-request.js';
+import { handoff } from '../factors/autonomy/handoff.js';
+import { principal } from '../factors/autonomy/principal.js';
+import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
+import { maintenance } from '../factors/communication-style/maintenance.js';
+import { plain } from '../factors/communication-style/plain.js';
+import { decides } from '../factors/decision-rights/decides.js';
+import { input } from '../factors/decision-rights/input.js';
+import { codeReview as deliverableCodeReview } from '../factors/deliverable/code-review.js';
+import { inUse } from '../factors/evaluation/in-use.js';
+import { softwareEngineering } from '../factors/expertise/software-engineering.js';
+import { testDesign } from '../factors/expertise/test-design.js';
+import { honesty } from '../factors/guardrails/honesty.js';
+import { neverRepairs } from '../factors/guardrails/never-repairs.js';
+import { noImplementation } from '../factors/guardrails/no-implementation.js';
+import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
+import { working } from '../factors/memory/working.js';
+import { frontierOtherFamily } from '../factors/model/frontier-other-family.js';
+import { xhigh } from '../factors/model/xhigh.js';
+import { optimize } from '../factors/objective/optimize.js';
+import { reviewAccuracy } from '../factors/objective/review-accuracy.js';
+import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
+import { examples } from '../factors/perception-scope/examples.js';
+import { heldOutExamples } from '../factors/perception-scope/held-out-examples.js';
+import { workProduct } from '../factors/perception-scope/work-product.js';
+import { codeReview } from '../factors/procedure/code-review.js';
+import { reviewer } from '../factors/role/reviewer.js';
+import { adversarial } from '../factors/stance/adversarial.js';
+import { impartial } from '../factors/stance/impartial.js';
+import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 
-export const reviewerRole: RoleCell = {
+export const reviewerRole: RoleProfile = {
   name: 'reviewer',
   description:
     "Reviews one change it did not write, before or after it joins, and hands off one code review naming each finding; a change the operator has asked to review is the operator's to review.",

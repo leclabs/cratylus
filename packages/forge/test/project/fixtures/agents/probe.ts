@@ -1,8 +1,8 @@
-// A minimal agent vector for the projection fixture plugin. Every dimension is
+// A minimal agent vector for the projection fixture plugin. Every factor is
 // explicitly empty (`[]`) EXCEPT `guardrails` — the fixture exercises the
 // PROJECTION SEAM, not the manifest.
 //
-// `guardrails` is the one dimension the manifest marks `required`: it is the
+// `guardrails` is the one factor the manifest marks `required`: it is the
 // catch-all against attachment failing open. A fixture is exactly the agent such a
 // hole would escape through, so it carries a real value rather than an exemption.
 

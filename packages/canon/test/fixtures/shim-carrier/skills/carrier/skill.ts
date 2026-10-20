@@ -1,5 +1,5 @@
-// A fixture skill cell declaring a runtime capability: the projected thin shim's
-// carrier for the gates that read one out of a real render tree. No canon cell
+// A fixture skill declaring a runtime capability: the projected thin shim's
+// carrier for the gates that read one out of a real render tree. No canon skill
 // declares a capability, so the witness is this fixture's.
 
 import type { Skill } from '@cratylus/schema';

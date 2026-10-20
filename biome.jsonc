@@ -6,9 +6,9 @@
       "dist",
       "node_modules",
       // canon now has TS source under src/ (lint it) + test/ alongside the Python
-      // toolkit and the markdown corpus. Narrowed from a blanket packages/canon/**
-      // ignore when the corpus inverted to TS modules (T1.1/T1.3); the non-TS
-      // trees (Python toolkit, markdown cells, pipeline manifests) stay ignored.
+      // toolkit and the markdown canon. Narrowed from a blanket packages/canon/**
+      // ignore when the canon inverted to TS modules (T1.1/T1.3); the non-TS
+      // trees (Python toolkit, markdown values, pipeline manifests) stay ignored.
       "packages/canon/toolkit/**",
       "packages/canon/references/**",
       "packages/canon/docs/**",
@@ -48,12 +48,12 @@
       "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
     },
     {
-      // Generated canon fragment / skill modules: their definiens / verbatim body
+      // Generated canon value / skill modules: their definiens / verbatim body
       // are emitted as backtick template literals UNIFORMLY (codegen policy —
       // handles multi-line + any embedded quote without per-string analysis), so
       // the "unused template literal" style rule does not apply to them.
       "include": [
-        "packages/canon/src/dimensions/**",
+        "packages/canon/src/factors/**",
         "packages/canon/src/skills/**"
       ],
       "linter": { "rules": { "style": { "noUnusedTemplateLiteral": "off" } } }

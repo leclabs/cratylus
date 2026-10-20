@@ -24,7 +24,7 @@ const fixtures = join(here, 'fixtures');
 
 const plugin: ProjectablePlugin = {
   name: 'fixture',
-  // The fixture corpus declares its own dimensions — nothing else can.
+  // The fixture canon declares its own factors — nothing else can.
   manifest: FIXTURE_MANIFEST,
   agents: join(fixtures, 'agents'),
   skills: join(fixtures, 'skills'),
@@ -104,7 +104,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['concepts'`);
   });
 
-  it('carries the OMP session-hook module and worker byte-anchor', async () => {
+  it('carries the OMP session-hook module and its byte-identity-pinned worker', async () => {
     const t = await tree();
     const sessionHooks = t.files.find(
       (f) => f.path === `enforcing/_session/${CLI_BIN}-session.ts`,

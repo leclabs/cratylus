@@ -3,7 +3,7 @@
 // held entry one line in held order. A binding factor and an attribute factor are
 // never text; a group with no text factor is omitted; an empty factor is `- (none)`.
 
-import type { Agent, DimensionManifest } from '@cratylus/schema';
+import type { Agent, FactorManifest } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { agentBody } from '../../src/core/body.js';
 
@@ -24,7 +24,7 @@ const CATALOG = {
     level: 'fixed',
     projection: 'text',
     slots: [
-      { name: 'intent', gloss: 'what is wanted and why' },
+      { name: 'intent', correction: 'what is wanted and why' },
       { name: 'verdict' },
     ],
   },
@@ -56,7 +56,7 @@ const CATALOG = {
     level: null,
     projection: 'text',
   },
-} as const satisfies DimensionManifest;
+} as const satisfies FactorManifest;
 
 const agent = {
   name: 'reviewer',

@@ -4,7 +4,7 @@
 // An agent hands work over and gets it back as JSON, never as prose a reader must
 // trust: the assignment arrives as one fenced `assignment` block in the dispatch
 // text, and the deliverable is the harness's own output schema. The schemas are the
-// corpus's (its assignment and deliverable values carry them); this module states
+// canon's (its assignment and deliverable values carry them); this module states
 // only their shape.
 // ─────────────────────────────────────────────────────────────────────────────
 

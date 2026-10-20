@@ -1,11 +1,11 @@
-// THE PROJECTION FACT TABLE — the seam a cell uses to ASK for what only projection
+// THE PROJECTION FACT TABLE — the seam a hook declaration uses to ASK for what only projection
 // knows, held to three claims it did not have to make before:
 //
 //   (1) THE BIN NAME IS DERIVED. `CLI_BIN` is not a constant that agrees with
 //       `package.json`'s `bin` key; it is READ from it. That is a stronger claim
 //       than the runtime bin's (which is a constant plus a gate holding it against
 //       its manifest), and it is worth a fixture because a derivation over the live
-//       corpus is green whether it derives or remembers. `binNameOf` is fed
+//       canon is green whether it derives or remembers. `binNameOf` is fed
 //       synthetic manifests here, so remembering would be red.
 //
 //   (2) THE TABLE IS ADAPTER-RELATIVE. OMP is the sole deployment target, so
@@ -14,8 +14,8 @@
 //   (3) OMP REACHES THE BYTES. A correct table wired to nothing is the failure
 //       this suite would otherwise miss: hook workers are rendered with OMP's facts.
 //
-// A FIXTURE PLUGIN, NOT THE CORPUS. The property is the projector's; rendering the
-// canon to prove it would make this suite pay for the corpus's size and would fail
+// A FIXTURE PLUGIN, NOT THE CANON. The property is the projector's; rendering the
+// canon to prove it would make this suite pay for the canon's size and would fail
 // for reasons that have nothing to do with the seam.
 
 import { readFileSync } from 'node:fs';
@@ -134,7 +134,7 @@ const declared = (sh: string, key: string): string | undefined =>
   sh.match(new RegExp(`^${key}=(\\S+)$`, 'm'))?.[1];
 
 describe('the OMP projector hands facts to worker templates', () => {
-  it('resolves a hook cell’s workers against OMP', async () => {
+  it('resolves a hook declaration’s workers against OMP', async () => {
     const { probe } = await projectFixture();
     expect(probe, 'no probe worker was emitted').not.toBe('');
     expect(declared(probe, 'HARNESS')).toBe('omp');

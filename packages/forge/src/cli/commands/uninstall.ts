@@ -537,7 +537,7 @@ function removePlacedFiles(
 
 /** What cratylus put in the runtime config in `home`'s file (or, where
  *  `$AGENT_RUNTIME_CONFIG` is set, that path): this harness's stanza, and — when no other
- *  installed harness has one — the corpus's parts too, the event vocabulary and the
+ *  installed harness has one — the canon's parts too, the event vocabulary and the
  *  configuration of the capabilities the deploy recorded writing. A part is taken out
  *  while it is what the deploy recorded; one the host has changed since stands, as does
  *  every key the host placed, each named. The file goes only when nothing is left in it. */
