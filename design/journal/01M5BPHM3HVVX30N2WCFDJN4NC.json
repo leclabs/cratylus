@@ -1,0 +1,14 @@
+{
+  "id": "01M5BPHM3HVVX30N2WCFDJN4NC",
+  "at": "2026-10-20T03:44:09.329Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "cratylic context design",
+  "name": "term",
+  "wording": "an address into the universe of discourse, read with its domain; within one context one term per concept and no term for two; across contexts one term may address different concepts",
+  "builtFrom": [
+    "universe of discourse"
+  ],
+  "reason": "INTRODUCTION's word for what a concept is expressed by; read cold it lands exactly, where the word the record used before, sign, reads as a cue or signal.",
+  "supersedes": []
+}

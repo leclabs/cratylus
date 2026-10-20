@@ -1,0 +1,13 @@
+{
+  "id": "01M5BPJZ62M5YB3RW1Q19JZ5X9",
+  "at": "2026-10-20T03:44:53.442Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "agents",
+  "subject": "what an AI agent is and how one is composed",
+  "relation": "upstream of workflow, whose roles it composes, of canon, which writes its values, and of delivery, which binds its agents; conforms to cratylic context design",
+  "reason": "The corpus context's concepts moved to canon, and every context conforms to cratylic context design.",
+  "supersedes": [
+    "01M53H2S4E1M73Q6C4YXXTJVA4"
+  ]
+}

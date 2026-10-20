@@ -1,0 +1,13 @@
+{
+  "id": "01M5BPKF9HA4QR6PG03EMEXMQ6",
+  "at": "2026-10-20T03:45:09.937Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "workflow",
+  "subject": "the practice cratylus ships for handing work to agents by intent and taking back results that realize a conceptual model, the semantic gap between the two closed by construction, never by a proxy (a green suite, an agent's own account) nor by agents remembering",
+  "relation": "practised on a user's own bounded contexts, never modelling them; its roles are agents composed in the agents context",
+  "reason": "Restated whole rather than extended; and that every context conforms to cratylic context design is stated once, by that context, not repeated by each.",
+  "supersedes": [
+    "01M5BPJYW78HCY3GRMCNFARK2A"
+  ]
+}

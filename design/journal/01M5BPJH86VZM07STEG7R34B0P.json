@@ -1,0 +1,12 @@
+{
+  "id": "01M5BPJH86VZM07STEG7R34B0P",
+  "at": "2026-10-20T03:44:39.174Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "workflow",
+  "name": "residue",
+  "reason": "A coined name for what the established terms already carry: a concept's semantic gap, closed by its correction, both owned by cratylic context design; read cold, residue lands on leftover cruft from earlier drafts.",
+  "supersedes": [
+    "01M53P4B3XK1W1Y6VSB9ZX0HDP"
+  ]
+}

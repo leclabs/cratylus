@@ -1,0 +1,14 @@
+{
+  "id": "01M5BPJYYZ54QTX6CBJPV542XH",
+  "at": "2026-10-20T03:44:53.215Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "concept",
+  "wording": "a meaning that must hold in one bounded context, addressed by its Cratylic name with its correction; a product word used for two things is a flaw in the product, never a name to copy",
+  "builtFrom": [],
+  "reason": "How a concept is named is cratylic context design's, stated there once as Cratylic name; the workflow refers to it instead of restating it.",
+  "supersedes": [
+    "01M53MATWBPVAE6BAH7RMF5GRA"
+  ]
+}

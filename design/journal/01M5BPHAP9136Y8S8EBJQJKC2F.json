@@ -1,0 +1,9 @@
+{
+  "id": "01M5BPHAP9136Y8S8EBJQJKC2F",
+  "at": "2026-10-20T03:43:59.689Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "cratylic context design",
+  "subject": "expressing intent to a model in the terms it already understands: each concept by the name the model already gives it in its domain, plus only the correction its reading needs",
+  "relation": "upstream of every other context, a published language each conforms to: their concepts are each a Cratylic name with its correction, confirmed by a cold read"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "01M5BPJ8TSSEA8SNEZ9YXV546R",
+  "at": "2026-10-20T03:44:30.553Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "corpus",
+  "name": "cold-decode oracle",
+  "reason": "Moved to cratylic context design as cold read, the established name a small model knows, where the coined one it does not.",
+  "supersedes": [
+    "01M53XAEZCE8C77EGASYC2EYD7"
+  ]
+}

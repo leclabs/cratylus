@@ -1,0 +1,12 @@
+{
+  "id": "01M5BPJ8ZXMHPE6F0AVMVBMPBN",
+  "at": "2026-10-20T03:44:30.717Z",
+  "by": "architect",
+  "kind": "retire",
+  "context": "corpus",
+  "name": "rule",
+  "reason": "Moved to canon: corpus named neither the shipped collection's units nor its subject precisely, and canon is the collection's own name.",
+  "supersedes": [
+    "01M56EBNJWPW6MFTKTDM2HD3MX"
+  ]
+}
