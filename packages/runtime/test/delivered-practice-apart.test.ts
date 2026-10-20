@@ -23,6 +23,7 @@ const delivered = {
   version: '3.2.1',
   context: 'workflow',
   identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
+  position: 1,
   subject: 'How the work is done.',
   relation: 'Upstream of every other context of its origin.',
   concepts: [
