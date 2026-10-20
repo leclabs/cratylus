@@ -1,7 +1,7 @@
 {
   "name": "cratylus",
   "version": "0.20.0",
-  "description": "The cratylus command line: install a corpus of agent semantics on omp and work through the capabilities it installs, or write and project a corpus of your own.",
+  "description": "cratylus lets you settle what you mean once and have AI agents build exactly that, across sessions, without the meaning drifting.",
   "license": "MIT",
   "engines": {
     "node": ">=22"

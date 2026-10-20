@@ -17,7 +17,7 @@ export const PURPOSE = `${CLI_BIN} lets you settle what you mean once and have A
 export const START = `To start, launch the architect with \`omp --agent architect\` and say what you want: it holds the meaning and hands the work to the other agents ${CLI_BIN} installed, so you write none of your own.`;
 
 /** Where its theory is, for when someone asks why it works. */
-export const THEORY = `Why it works, when asked: cratylic context design, delivered with ${CLI_BIN} and read with the concept journal's design verb (\`${CLI_BIN} concepts design\`).`;
+export const THEORY = `Why it works, when asked: cratylic context design, delivered with ${CLI_BIN} and read inside any git repository with the concept journal's design verb (\`${CLI_BIN} concepts design\`).`;
 
 /** What a newcomer needs first: the purpose, the start and the theory, a line each. */
 export const ORIENTATION = [PURPOSE, START, THEORY].join('\n');

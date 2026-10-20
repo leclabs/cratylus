@@ -19,8 +19,12 @@ import { commandLine, main } from '../src/cratylus.js';
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(
   readFileSync(join(packageRoot, 'package.json'), 'utf8'),
-) as { version: string };
+) as { version: string; description: string };
 const readme = readFileSync(join(packageRoot, 'README.md'), 'utf8');
+const rootReadme = readFileSync(
+  join(packageRoot, '..', '..', 'README.md'),
+  'utf8',
+);
 
 /** The consumer's commands, which the help lists first. */
 const CONSUMER_COMMANDS = ['install', 'uninstall'] as const;
@@ -152,6 +156,28 @@ describe('the command describes itself', () => {
       purpose: PURPOSE,
       orientation: ORIENTATION,
     });
+  });
+
+  it.each([
+    [['--explain', 'install']],
+    [['--explain', '--version']],
+    [['--version', '--explain']],
+  ])(
+    'refuses --explain with any other word, running nothing: %j',
+    async (words) => {
+      const { code, out, err } = await run(...words);
+      expect(code).toBe(1);
+      expect(out).toBe('');
+      const lines = err.trimEnd().split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^cratylus/);
+      expect(lines[0]).toContain('--explain');
+      expect(lines[0]).toContain('cratylus --help');
+    },
+  );
+
+  it('describes the package as what the command is for', () => {
+    expect(manifest.description).toBe(PURPOSE);
   });
 });
 
@@ -308,6 +334,19 @@ describe('a deploy flag that would take no effect is refused, never accepted and
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatch(/^cratylus deploy: /);
     for (const name of names) expect(lines[0], name).toContain(name);
+  });
+});
+
+describe('neither README restates the orientation the command prints', () => {
+  it('holds no line of it verbatim', () => {
+    for (const [name, text] of [
+      ['README.md', rootReadme],
+      ['packages/cli/README.md', readme],
+    ] as const)
+      expect(
+        ORIENTATION.split('\n').filter((line) => text.includes(line)),
+        name,
+      ).toEqual([]);
   });
 });
 
