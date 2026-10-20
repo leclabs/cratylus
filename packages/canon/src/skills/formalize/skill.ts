@@ -11,7 +11,7 @@ E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
 T ≜ the declared notation table @ src/operator-lexicon.ts
 η : E ∪ O ⇀ symbols ⟨each entity and operation by its term @ signify⟩
-β ≜ { s | s imported, its anchor cited once in adjacent notation }
+β ≜ { s | s imported, its term cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }
 
 B ≜ formalize(prose) such that :
@@ -23,7 +23,7 @@ closed(B)   ⇔ symbols(B) ⊆ T ∪ Dfn ∪ β ∪ ι
 complete(B) ⇔ ∀ b ∈ behavior(prose) : ∃ line ∈ B : line ⊨ b
 ordered(B)  ⇔ ∀ s ∈ Dfn : definition(s) precedes use(s)
 self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
-gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
+commentary(B) ≜ prose of B beyond β ∪ ι ; commentary(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
 s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation answers to no cold read⟩
