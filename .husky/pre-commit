@@ -3,8 +3,8 @@ pnpm exec biome check --staged --no-errors-on-unmatched
 # Markdown is biome-ignored; Prettier owns it (proseWrap:preserve +
 # embeddedLanguageFormatting:off — see .prettierrc). Gate staged markdown at
 # Prettier's fixpoint so format-on-save never produces a spurious diff. --check
-# fails loud if a file drifts; Prettier honours .prettierignore (the generated
-# GLOSSARY.md is excluded). No staged markdown -> the guard is a no-op.
+# fails loud if a file drifts; Prettier honours .prettierignore. No staged
+# markdown -> the guard is a no-op.
 #
 # Skip symlinks: Prettier refuses to format symbolic links, and a link's content
 # is its target, which is checked in its own right. -f keeps only regular files.

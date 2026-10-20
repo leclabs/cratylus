@@ -3,11 +3,9 @@ dist/
 .turbo/
 .forge/local/
 .claude/worktrees/
-packages/canon/.render/
 pnpm-lock.yaml
 
 # Generated artifacts — must match their generator's output, never Prettier's:
-packages/canon/GLOSSARY.md
 **/*.generated.*
 **/generated.*
 **/test/ir-bridge/canon.forge.json
@@ -15,7 +13,4 @@ packages/canon/GLOSSARY.md
 # The repo-root AGENTS.md is hand-authored by the operator and kept verbatim.
 /AGENTS.md
 
-# γ2-B: lexicon files are verbatim value-block STORAGE (byte-identity contract),
-# not free-form markdown — exempt like the generated render/glossary above.
-packages/canon/lexicon/
 packages/canon/test/fixtures/
