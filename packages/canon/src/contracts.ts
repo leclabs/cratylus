@@ -15,17 +15,17 @@
 // JSON, so neither carries a contract.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { type JsonSchema, anchorOf } from '@cratylus/schema';
-import { concepts } from './dimensions/assignment/concepts.js';
-import { examples } from './dimensions/assignment/examples.js';
-import { reviewRequest } from './dimensions/assignment/review-request.js';
-import { task } from './dimensions/assignment/task.js';
-import { userStory } from './dimensions/assignment/user-story.js';
-import { change } from './dimensions/deliverable/change.js';
-import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
-import { codeReview } from './dimensions/deliverable/code-review.js';
-import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
-import { outcome } from './dimensions/deliverable/outcome.js';
+import { type JsonSchema, termOf } from '@cratylus/schema';
+import { concepts } from './factors/assignment/concepts.js';
+import { examples } from './factors/assignment/examples.js';
+import { reviewRequest } from './factors/assignment/review-request.js';
+import { task } from './factors/assignment/task.js';
+import { userStory } from './factors/assignment/user-story.js';
+import { change } from './factors/deliverable/change.js';
+import { checksSeenRed } from './factors/deliverable/checks-seen-red.js';
+import { codeReview } from './factors/deliverable/code-review.js';
+import { examplesWithFlaggedTerms } from './factors/deliverable/examples-with-flagged-terms.js';
+import { outcome } from './factors/deliverable/outcome.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
 const text: JsonSchema = { type: 'string' };
@@ -265,14 +265,14 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
   [examplesWithFlaggedTerms, record({ examples: texts, flaggedTerms: texts })],
 ];
 
-/** Each assignment value's contract, by the value's anchor. */
+/** Each assignment value's contract, by the value's term. */
 export const ASSIGNMENT_CONTRACTS: Readonly<Record<string, JsonSchema>> =
   Object.fromEntries(
-    assignments.map(([value, schema]) => [anchorOf(value), schema]),
+    assignments.map(([value, schema]) => [termOf(value), schema]),
   );
 
-/** Each deliverable value's contract, by the value's anchor. */
+/** Each deliverable value's contract, by the value's term. */
 export const DELIVERABLE_CONTRACTS: Readonly<Record<string, JsonSchema>> =
   Object.fromEntries(
-    deliverables.map(([value, schema]) => [anchorOf(value), schema]),
+    deliverables.map(([value, schema]) => [termOf(value), schema]),
   );
