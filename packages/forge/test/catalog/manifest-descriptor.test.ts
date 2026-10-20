@@ -157,12 +157,12 @@ describe('a factor catalog', () => {
       extra: ['telepathy'],
     });
     // EXONERATES: the clean canon is genuinely clean, not merely unexamined.
-    expect(
-      canonDrift([...FIXTURE_FACTOR_NAMES], FIXTURE_FACTOR_NAMES),
-    ).toEqual({
-      missing: [],
-      extra: [],
-    });
+    expect(canonDrift([...FIXTURE_FACTOR_NAMES], FIXTURE_FACTOR_NAMES)).toEqual(
+      {
+        missing: [],
+        extra: [],
+      },
+    );
 
     // A descriptor entry outside the closed vocabularies.
     const legal = {

@@ -12,7 +12,10 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { Skill } from '@cratylus/schema';
-import { resolveModulePath, scanValueDirNames } from '../core/module-scan.js';
+import {
+  resolveModulePath,
+  scanDeclarationDirNames,
+} from '../core/module-scan.js';
 import type { ProjectablePlugin } from './index.js';
 
 /** One skill of the set: the winning plugin's skill under its directory name. */
@@ -35,7 +38,7 @@ export async function resolveSkills(
   const src = new Map<string, { dir: string; plugin: string }>();
   for (const p of plugins) {
     if (!p.skills) continue;
-    for (const n of await scanValueDirNames(p.skills, 'skill')) {
+    for (const n of await scanDeclarationDirNames(p.skills, 'skill')) {
       const prev = src.get(n);
       if (prev) log(`  override skill ${n}: ${prev.plugin} → ${p.name}`);
       src.set(n, { dir: p.skills, plugin: p.name });

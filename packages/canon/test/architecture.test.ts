@@ -288,8 +288,7 @@ function pkgOf(spec: string): Pkg | null {
 }
 
 function roleOf(rel: string): Role {
-  if (/^(factors|skills|agents|hooks|rules|genus)\//.test(rel))
-    return 'unit';
+  if (/^(factors|skills|agents|hooks|rules|genus)\//.test(rel)) return 'unit';
   // BUILD SCRIPTS ARE NAMED BY THEIR DIRECTORY: `tooling/`, a sibling of `src/`, which
   // the build excludes.
   if (rel.startsWith('tooling/')) return 'build-script';

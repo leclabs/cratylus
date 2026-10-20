@@ -402,9 +402,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   if (opts.canon === undefined) {
     // The refusal a LIBRARY owes: no canon was handed in, and inventing one is the
     // one thing this package may never do.
-    throw new Refusal(
-      'no canon; mount this CLI from a package that names one',
-    );
+    throw new Refusal('no canon; mount this CLI from a package that names one');
   }
   const plugins: readonly AgentPlugin[] = [opts.canon];
   const source = 'the canon this command was built with';

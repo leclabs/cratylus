@@ -33,9 +33,7 @@ import { type Agent, type Factor, MANIFEST } from './manifest.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
-  [D in Factor]: (typeof MANIFEST)[D]['arity'] extends 'attribute'
-    ? never
-    : D;
+  [D in Factor]: (typeof MANIFEST)[D]['arity'] extends 'attribute' ? never : D;
 }[Factor];
 
 /** The field a held factor occupies on a role profile and a composed agent. */
@@ -315,8 +313,7 @@ export function persona(over: RoleProfile, overrides: Overrides): Agent {
     const entries = vector[field] as Entry[];
     for (const value of removed) {
       const term = termOf(value);
-      if (factor === 'guardrails')
-        warn(`${who} removes the guardrail ${term}`);
+      if (factor === 'guardrails') warn(`${who} removes the guardrail ${term}`);
       else if (meta.group !== 'Reach')
         warn(
           `${who} removes ${term} from ${factor}; a persona usually extends sets rather than taking from them`,

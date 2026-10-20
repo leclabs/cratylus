@@ -57,7 +57,7 @@ export async function scanModuleNames(
  * `<base>.<ext>` (e.g. `wake/skill.ts` or, installed, `wake/skill.js`). The
  * directory name is the declared name.
  */
-export async function scanValueDirNames(
+export async function scanDeclarationDirNames(
   dir: string,
   base: string,
 ): Promise<string[]> {

@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  type Value,
-  bodyOf,
-  enforcing,
-  isFactorValue,
-} from '../src/index.js';
+import { type Value, bodyOf, enforcing, isFactorValue } from '../src/index.js';
 
 type Guardrails = Value<'guardrails'>;
 
@@ -51,7 +46,9 @@ describe('isFactorValue — the guard against a SILENT catalog drop', () => {
   it('rejects a non-value export, which is what the old string test was doing', () => {
     // The catalog scans whole modules, so "not a string" was double-duty for
     // "not a value". Replacing it with a truthy object check would admit these.
-    expect(isFactorValue({ id: 'a-hook-declaration', workers: [] })).toBe(false);
+    expect(isFactorValue({ id: 'a-hook-declaration', workers: [] })).toBe(
+      false,
+    );
     expect(isFactorValue({})).toBe(false);
     expect(isFactorValue(null)).toBe(false);
     expect(isFactorValue(undefined)).toBe(false);

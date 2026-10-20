@@ -134,10 +134,7 @@ export interface ValueEntry {
  * The `Value` infix is load-bearing: `PluginCatalogs` would read as a catalog OF
  * plugins, which this is not. It is each plugin's catalog of values.
  */
-export type PluginValueCatalogs = ReadonlyMap<
-  string,
-  readonly ValueEntry[]
->;
+export type PluginValueCatalogs = ReadonlyMap<string, readonly ValueEntry[]>;
 
 /** The legal `resolve/ValueShape` values — gates whether an object export is a node. */
 const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([

@@ -135,13 +135,7 @@ describe('enumeratePluginValueCatalogs — namespace uniqueness', () => {
     const firstDir = join(root, 'first');
     const secondDir = join(root, 'second');
     writeStringValue(firstDir, 'objective', 'first', 'first', 'the first');
-    writeStringValue(
-      secondDir,
-      'objective',
-      'second',
-      'second',
-      'the second',
-    );
+    writeStringValue(secondDir, 'objective', 'second', 'second', 'the second');
 
     const roots = [
       { name: 'dup', factorsDir: firstDir },

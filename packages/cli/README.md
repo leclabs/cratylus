@@ -341,7 +341,7 @@ Every command and every capability verb answers `--help`; this reference is that
 
 ### `cratylus install`
 
-Install the canon cratylus ships, its agents, skills and rules, into an agent harness on this machine, asking what you have not said.
+Install the bundled canon, its agents, skills and rules, into an agent harness on this machine, asking what you have not said.
 
 ```sh
 cratylus install [options]

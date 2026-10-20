@@ -149,9 +149,7 @@ describe('the architect', () => {
       (e) => e.slot === 'ordering',
     );
     expect(ordering?.level).toBe('firm');
-    expect(ordering && termOf(ordering.value)).toBe(
-      termOf(bottomLineUpFront),
-    );
+    expect(ordering && termOf(ordering.value)).toBe(termOf(bottomLineUpFront));
     const decisive = architect.stance.find(
       (e) => termOf(e.value) === 'decisive',
     );

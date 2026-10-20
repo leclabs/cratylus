@@ -124,8 +124,14 @@ export const MANIFEST = {
         name: 'realization',
         correction: 'how the work product, or the checks, are built and joined',
       },
-      { name: 'verdict', correction: "whether a change's code review approves it" },
-      { name: 'release', correction: 'making merged work available to its users' },
+      {
+        name: 'verdict',
+        correction: "whether a change's code review approves it",
+      },
+      {
+        name: 'release',
+        correction: 'making merged work available to its users',
+      },
       {
         name: 'sign-off',
         correction:

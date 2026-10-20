@@ -62,7 +62,7 @@ const harnessOption = (description: string): Option =>
 export function projectorCommands(options: ProjectorOptions = {}): Command[] {
   const install = new Command('install')
     .description(
-      'Install the canon cratylus ships, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
+      'Install the bundled canon, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
     )
     .addOption(
       harnessOption(

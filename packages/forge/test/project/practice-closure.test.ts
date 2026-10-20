@@ -12,10 +12,7 @@ import {
   type ProjectablePlugin,
   projectPluginSet,
 } from '../../src/project/index.js';
-import {
-  FIXTURE_FACTOR_NAMES,
-  FIXTURE_MANIFEST,
-} from '../fixture-manifest.js';
+import { FIXTURE_FACTOR_NAMES, FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 const roots: string[] = [];
 afterAll(() => {
