@@ -1,0 +1,14 @@
+{
+  "id": "01M5BQBVYKFGXT5EJZEY6EFC5Y",
+  "at": "2026-10-20T03:58:29.331Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "bounded context",
+  "wording": "every concept belongs to exactly one, whose subject is the domain its terms are read in; one architect may hold several, never merging their models",
+  "builtFrom": [],
+  "reason": "Cratylic context design reads each term with its domain; the illustrator, writing cold, found nothing tying that domain to a bounded context.",
+  "supersedes": [
+    "01M53P5H8RTM7RVHGEYG8A43GR"
+  ]
+}
