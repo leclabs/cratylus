@@ -80,7 +80,14 @@ const PARAMETERS: Record<string, string[]> = {
   purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
-  supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
+  supersede: [
+    'concept',
+    'context',
+    'wording',
+    'reason',
+    'built-from',
+    'rename',
+  ],
   retire: ['concept', 'context', 'reason'],
   decide: [
     'id',
@@ -175,6 +182,25 @@ describe('concepts --explain', () => {
     expect(positional('accept')).toEqual(['id']);
     for (const verb of ['state', 'design', 'decisions', 'leakage'])
       expect(positional(verb), verb).toEqual([]);
+  });
+
+  it('speaks of a concept’s text as its correction, never its residue', () => {
+    const explanation = explain(JOURNAL);
+    expect(JSON.stringify(explanation)).not.toMatch(/residue/i);
+    expect(explanation.purpose).toContain('term ≜ correction');
+    const verb = (name: string) =>
+      explanation.verbs.find((v) => v.name === name);
+    expect(verb('state')?.purpose).toContain('“term ≜ correction”');
+    expect(verb('leakage')?.purpose).toContain(
+      'each live concept’s correction',
+    );
+    for (const name of ['define', 'supersede'])
+      expect(
+        verb(name)?.parameters.find((p) => p.name === 'wording')?.description,
+        name,
+      ).toMatch(
+        /^The concept’s correction( now, restated whole)?: beside its term, .*the missing meaning supplied and the spurious meaning excluded, each stated once, .*never restating what the term already carries/,
+      );
   });
 
   /** The live concepts of the journal of the repository at `from`, and the

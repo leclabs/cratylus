@@ -475,6 +475,85 @@ describe('closing the books', () => {
     ]);
   });
 
+  it('carries nothing of a retired context', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    decide('d1', 'accepted');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    const head = commit();
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      { kind: 'context', name: 'fleet', broughtForward: head },
+    ]);
+    expect(entryFiles()).toHaveLength(1);
+  });
+
+  it('carries nothing of a context retired on two joined lines of work', () => {
+    const first = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    decide('d1', 'accepted');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    recorded({
+      kind: 'retire-context',
+      context: 'booking',
+      reason: 'Dropped elsewhere.',
+      supersedes: [first],
+    });
+    const head = commit();
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      { kind: 'context', name: 'fleet', broughtForward: head },
+    ]);
+    expect(entryFiles()).toHaveLength(1);
+  });
+
+  it('opens a retirement competing with a description beside it, so they still compete', () => {
+    const first = idOf(concepts('context', 'booking', '--subject', 'Booking.'));
+    worded('define', 'hold', 'booking', 'A hold lasts ten minutes.');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    // Another line of work changed the description the retirement superseded.
+    recorded({
+      kind: 'context',
+      name: 'booking',
+      subject: 'Booking elsewhere.',
+      relation: '',
+      reason: 'Elsewhere.',
+      supersedes: [first],
+    });
+    const head = commit();
+    const before = concepts('state');
+    concepts('close');
+    expect(entryFiles()).toMatchObject([
+      {
+        kind: 'retire-context',
+        context: 'booking',
+        reason: 'Dropped.',
+        supersedes: [],
+        broughtForward: head,
+      },
+      {
+        kind: 'context',
+        name: 'booking',
+        identity: first,
+        broughtForward: head,
+      },
+      { kind: 'define', name: 'hold', broughtForward: head },
+    ]);
+    expect(concepts('state')).toEqual(before);
+    expect(before).toMatchObject({
+      contexts: [
+        {
+          competingDescriptions: [
+            { retired: true, reason: 'Dropped.' },
+            { subject: 'Booking elsewhere.' },
+          ],
+        },
+      ],
+    });
+  });
+
   describe('refuses, changing nothing', () => {
     const refused = (words: RegExp) => {
       const before = snapshot();
@@ -704,6 +783,146 @@ describe('closing the books', () => {
     ).toContainEqual({ name: 'gone', wording: 'Back again.', builtFrom: [] });
   });
 
+  it('opens a renamed concept as a define under its current name, every built-from by current names (0322)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    worded('define', 'hold', 'booking', 'A hold.');
+    concepts(
+      'define',
+      'reservation',
+      '--context',
+      'booking',
+      '--wording',
+      'A seat taken.',
+      '--reason',
+      'Because.',
+      '--built-from',
+      'hold',
+    );
+    concepts(
+      'supersede',
+      'hold',
+      '--context',
+      'booking',
+      '--rename',
+      'claim',
+      '--wording',
+      'Kept until paid.',
+      '--reason',
+      'Nearer term.',
+    );
+    const head = commit();
+    concepts('close');
+    const opened = entryFiles().filter((e) => e.kind !== 'context');
+    expect(opened).toMatchObject([
+      {
+        kind: 'define',
+        name: 'claim',
+        wording: 'Kept until paid.',
+        builtFrom: [],
+        reason: 'Nearer term.',
+        supersedes: [],
+        broughtForward: head,
+      },
+      {
+        kind: 'define',
+        name: 'reservation',
+        builtFrom: ['claim'],
+        broughtForward: head,
+      },
+    ]);
+    expect(opened[0]).not.toHaveProperty('was');
+    // Its earlier names stay in the closed period.
+    expect(() => concepts('history', 'hold', '--context', 'booking')).toThrow(
+      /has no concept 'hold'/,
+    );
+    expect(concepts('history', 'claim', '--context', 'booking')).toMatchObject({
+      versions: [{ kind: 'define', name: 'claim' }],
+    });
+  });
+
+  it('refuses to close while a concept’s competing versions name it differently, changing nothing, until supersede settles them (0322)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    const hold = worded('define', 'hold', 'booking', 'A hold.');
+    recorded({
+      kind: 'rename',
+      context: 'booking',
+      name: 'claim',
+      was: 'hold',
+      wording: 'Left line.',
+      builtFrom: [],
+      reason: 'Left.',
+      supersedes: [hold],
+    });
+    recorded({
+      kind: 'supersede',
+      context: 'booking',
+      name: 'hold',
+      wording: 'Right line.',
+      builtFrom: [],
+      reason: 'Right.',
+      supersedes: [hold],
+    });
+    commit();
+    const before = snapshot();
+    expect(() => concepts('close')).toThrow(
+      /^concepts close: the concept 'hold' in 'booking' has competing versions that name it differently.*settle them with concepts supersede first$/,
+    );
+    expect(snapshot()).toEqual(before);
+    worded('supersede', 'claim', 'booking', 'Settled.');
+    commit();
+    concepts('close');
+    expect(entryFiles().filter((e) => e.kind !== 'context')).toMatchObject([
+      { kind: 'define', name: 'hold', wording: 'Settled.' },
+    ]);
+  });
+
+  it('opens competing versions that each rename the concept alike under the new name, references rewritten (0322)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    const hold = worded('define', 'hold', 'booking', 'A hold.');
+    concepts(
+      'define',
+      'reservation',
+      '--context',
+      'booking',
+      '--wording',
+      'A seat taken.',
+      '--reason',
+      'Because.',
+      '--built-from',
+      'hold',
+    );
+    for (const [wording, reason] of [
+      ['Left line.', 'Left.'],
+      ['Right line.', 'Right.'],
+    ])
+      recorded({
+        kind: 'rename',
+        context: 'booking',
+        name: 'claim',
+        was: 'hold',
+        wording,
+        builtFrom: [],
+        reason,
+        supersedes: [hold],
+      });
+    const head = commit();
+    concepts('close');
+    expect(entryFiles().filter((e) => e.kind !== 'context')).toMatchObject([
+      { kind: 'define', name: 'claim', wording: 'Left line.', supersedes: [] },
+      { kind: 'define', name: 'claim', wording: 'Right line.', supersedes: [] },
+      {
+        kind: 'define',
+        name: 'reservation',
+        builtFrom: ['claim'],
+        broughtForward: head,
+      },
+    ]);
+    // The two still compete, under the new name.
+    expect(concepts('design')).toMatchObject({
+      contexts: [{ competing: [{ name: 'claim' }] }],
+    });
+  });
+
   it('compares a version only with versions it replaces: an opening replaces none', () => {
     concepts('context', 'booking', '--subject', 'Booking.');
     worded('define', 'hold', 'booking', 'A hold.');
@@ -757,13 +976,15 @@ describe('closing the books', () => {
     concepts('close');
     expect(deliver().identity).toBe(first);
     expect(entryFiles()[0]).toMatchObject({ kind: 'context', identity: first });
-    // The journal still holds the context it delivers: shown among its own.
+    // The journal still holds the context it delivers: its own copy in its place.
     const state = dispatchConcepts(['state'], {
       from: repo,
       delivered: [delivered],
     }) as Record<string, unknown>;
-    expect(state).not.toHaveProperty('practice');
-    expect(state.contexts).toMatchObject([{ name: 'workflow' }]);
+    expect(state).toMatchObject({
+      practice: { contexts: [{ name: 'workflow' }] },
+      contexts: [],
+    });
   });
 });
 
@@ -874,15 +1095,20 @@ describe('a close joined with a line of work that branched before it', () => {
       from: repo,
       delivered: [delivered],
     });
-    expect(state).not.toHaveProperty('practice');
     expect(state).toMatchObject({
-      contexts: [
-        {
-          name: 'workflow',
-          subject: null,
-          competingDescriptions: [{ subject: 'Theirs.' }, { subject: 'Ours.' }],
-        },
-      ],
+      practice: {
+        contexts: [
+          {
+            name: 'workflow',
+            subject: null,
+            competingDescriptions: [
+              { subject: 'Theirs.' },
+              { subject: 'Ours.' },
+            ],
+          },
+        ],
+      },
+      contexts: [],
     });
     concepts(
       'context',

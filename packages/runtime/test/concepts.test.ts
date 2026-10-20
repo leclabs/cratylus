@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
+import { deliverContext } from '../src/capabilities/concepts/delivered.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 
 let sandbox: string;
@@ -156,6 +157,14 @@ describe('the concept journal as a library', () => {
     expect(concepts('design')).toMatchObject({
       contexts: [{ competing: [], concepts: [{ name: 'hold' }] }],
     });
+  });
+
+  it('refuses a version with no wording, asking for its correction', () => {
+    for (const verb of ['define', 'supersede'])
+      refused(
+        [verb, 'hold', '--context', 'booking', '--reason', 'R.'],
+        new RegExp(`^concepts ${verb}: give the correction with --wording`),
+      );
   });
 
   it('refuses a flag given twice, retiring twice, and accepting a decision that is not open', () => {
@@ -739,6 +748,289 @@ describe('the concept journal as a library', () => {
   });
 });
 
+describe('renaming a concept (0322)', () => {
+  const recordAs = (verb: string, name: string, ...more: string[]) =>
+    concepts(verb, name, '--context', 'booking', ...more) as Record<
+      string,
+      unknown
+    >;
+  const rename = (name: string, to: string, wording: string) =>
+    recordAs(
+      'supersede',
+      name,
+      '--rename',
+      to,
+      '--wording',
+      wording,
+      '--reason',
+      `${to} is the nearer term.`,
+    );
+  const state = () =>
+    (concepts('state') as { contexts: { concepts: string[] }[] }).contexts[0]
+      ?.concepts;
+
+  beforeEach(() => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    version('define', 'Lasts ten minutes.', 'First.');
+    recordAs(
+      'define',
+      'reservation',
+      '--wording',
+      'Taken on a seat.',
+      '--reason',
+      'Seats are reserved.',
+      '--built-from',
+      'hold',
+    );
+  });
+
+  it('reads the concept under its new name only, its history under either name, and its parts by the new name', () => {
+    expect(rename('hold', 'claim', 'Lasts until paid.')).toMatchObject({
+      kind: 'rename',
+      name: 'claim',
+      was: 'hold',
+      wording: 'Lasts until paid.',
+    });
+    expect(state()).toEqual([
+      'claim ≜ Lasts until paid.',
+      'reservation ≜ Taken on a seat.',
+    ]);
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        {
+          concepts: [
+            { name: 'claim', wording: 'Lasts until paid.', builtFrom: [] },
+            { name: 'reservation', builtFrom: ['claim'] },
+          ],
+        },
+      ],
+    });
+    expect(JSON.stringify(concepts('design', '--history'))).not.toContain(
+      '"hold"',
+    );
+    const history = concepts('history', 'claim', '--context', 'booking');
+    expect(concepts('history', 'hold', '--context', 'booking')).toEqual(
+      history,
+    );
+    expect(history).toMatchObject({
+      name: 'claim',
+      versions: [
+        {
+          kind: 'define',
+          name: 'hold',
+          wording: 'Lasts ten minutes.',
+          reason: 'First.',
+        },
+        {
+          kind: 'rename',
+          name: 'claim',
+          was: 'hold',
+          wording: 'Lasts until paid.',
+          reason: 'claim is the nearer term.',
+        },
+      ],
+    });
+    // A reference is kept as written in the history.
+    expect(
+      concepts('history', 'reservation', '--context', 'booking'),
+    ).toMatchObject({ versions: [{ builtFrom: ['hold'] }] });
+    // A verb naming the concept by an earlier name acts on it, under its name.
+    expect(version('supersede', 'Lasts an hour.', 'Longer.')).toMatchObject({
+      kind: 'supersede',
+      name: 'claim',
+    });
+    expect(recordAs('retire', 'hold', '--reason', 'Dropped.')).toMatchObject({
+      name: 'claim',
+    });
+  });
+
+  it('keeps a name its concept’s: refusing it to a define and to another concept’s rename, and a rename to the current name', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    rename('reservation', 'booking slot', 'Taken on a seat.');
+    const define = (name: string) => [
+      'define',
+      name,
+      '--context',
+      'booking',
+      '--wording',
+      'New.',
+      '--reason',
+      'New.',
+    ];
+    const renaming = (name: string, to: string) => [
+      'supersede',
+      name,
+      '--context',
+      'booking',
+      '--rename',
+      to,
+      '--wording',
+      'New.',
+      '--reason',
+      'New.',
+    ];
+    refused(define('hold'), /name 'hold' is one the concept 'claim'/);
+    refused(define('claim'), /already has the concept 'claim'/);
+    refused(
+      renaming('claim', 'booking slot'),
+      /name 'booking slot' is one the concept 'booking slot'/,
+    );
+    refused(
+      renaming('claim', 'reservation'),
+      /name 'reservation' is one the concept 'booking slot'/,
+    );
+    refused(renaming('hold', 'claim'), /'claim' .* is already named 'claim'/);
+    // Its own earlier name may be taken back.
+    rename('claim', 'hold', 'Lasts ten minutes again.');
+    expect(state()).toEqual([
+      'hold ≜ Lasts ten minutes again.',
+      'booking slot ≜ Taken on a seat.',
+    ]);
+  });
+
+  /** Write a version recorded on another line of work, superseding the first
+   *  version of `hold` unless it says otherwise. */
+  const sibling = (id: string, body: object) =>
+    writeFileSync(
+      join(repo, 'design/journal', `${id}.json`),
+      JSON.stringify({
+        id,
+        at: '2026-01-01T00:00:00.000Z',
+        context: 'booking',
+        wording: `${id.slice(-1)} wording.`,
+        builtFrom: [],
+        reason: 'Branch.',
+        supersedes: [(journal()[1] as string).replace(/\.json$/, '')],
+        ...body,
+      }),
+    );
+
+  it('lists versions naming the concept differently as competing, under the name it had before them', () => {
+    sibling('01Z00000000000000000000001', {
+      kind: 'rename',
+      name: 'claim',
+      was: 'hold',
+    });
+    sibling('01Z00000000000000000000002', { kind: 'supersede', name: 'hold' });
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        {
+          concepts: [{ name: 'reservation', builtFrom: ['hold'] }],
+          competing: [
+            {
+              name: 'hold',
+              versions: [
+                { name: 'claim', wording: '1 wording.' },
+                { wording: '2 wording.' },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(
+      (concepts('state') as { contexts: { competing: unknown[] }[] })
+        .contexts[0]?.competing,
+    ).toEqual([
+      { name: 'hold', versions: ['claim ≜ 1 wording.', 'hold ≜ 2 wording.'] },
+    ]);
+    expect(rename('claim', 'claim', 'Settled.')).toMatchObject({
+      was: 'hold',
+      supersedes: ['01Z00000000000000000000001', '01Z00000000000000000000002'],
+    });
+    expect(state()).toEqual([
+      'claim ≜ Settled.',
+      'reservation ≜ Taken on a seat.',
+    ]);
+  });
+
+  it.each([
+    [
+      'the rename first',
+      ['01Z00000000000000000000001', '01Z00000000000000000000002'],
+    ],
+    [
+      'the define first',
+      ['01Z00000000000000000000002', '01Z00000000000000000000001'],
+    ],
+  ])(
+    'joins a rename to a name and a define of it on another line into one concept, competing, %s',
+    (_, [renameId, defineId]) => {
+      sibling(renameId as string, {
+        kind: 'rename',
+        name: 'claim',
+        was: 'hold',
+      });
+      sibling(defineId as string, {
+        kind: 'define',
+        name: 'claim',
+        supersedes: [],
+      });
+      const design = concepts('design') as {
+        contexts: {
+          concepts: { name: string }[];
+          competing: { name: string; versions: { name?: string }[] }[];
+        }[];
+      };
+      expect(design.contexts[0]?.concepts.map((c) => c.name)).toEqual([
+        'reservation',
+      ]);
+      // Every current version gives it one name, so it is listed under that.
+      const [competing] = design.contexts[0]?.competing ?? [];
+      expect(competing?.name).toBe('claim');
+      expect(competing?.versions).toHaveLength(2);
+      for (const v of competing?.versions ?? [])
+        expect(v).not.toHaveProperty('name');
+      expect(design.contexts[0]?.competing).toHaveLength(1);
+      const history = concepts('history', 'claim', '--context', 'booking') as {
+        versions: { kind: string }[];
+      };
+      expect(history.versions.map((v) => v.kind).sort()).toEqual([
+        'define',
+        'define',
+        'rename',
+      ]);
+      expect(concepts('history', 'hold', '--context', 'booking')).toEqual(
+        history,
+      );
+    },
+  );
+
+  it('lists competing versions at different depths under the latest version they all supersede', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    version('supersede', 'Lasts an hour.', 'Longer.');
+    sibling('01Z00000000000000000000001', { kind: 'supersede', name: 'hold' });
+    expect(
+      (concepts('state') as { contexts: { competing: unknown[] }[] })
+        .contexts[0]?.competing,
+    ).toEqual([
+      {
+        name: 'hold',
+        versions: ['claim ≜ Lasts an hour.', 'hold ≜ 1 wording.'],
+      },
+    ]);
+  });
+
+  it('delivers a context holding a renamed concept under its current name, its references rewritten', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    const delivered = deliverContext({
+      from: repo,
+      context: 'booking',
+      origin: 'cratylus',
+      version: '1.0.0',
+      position: 0,
+    });
+    expect(delivered.concepts).toEqual([
+      { name: 'claim', wording: 'Lasts until paid.', builtFrom: [] },
+      {
+        name: 'reservation',
+        wording: 'Taken on a seat.',
+        builtFrom: ['claim'],
+      },
+    ]);
+  });
+});
+
 it('refuses a working directory outside any git repository', () => {
   const outside = mkdtempSync(join(tmpdir(), 'concepts-outside-'));
   try {
@@ -748,4 +1040,293 @@ it('refuses a working directory outside any git repository', () => {
   } finally {
     rmSync(outside, { recursive: true, force: true });
   }
+});
+
+describe('retiring a bounded context', () => {
+  const retire = () =>
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.') as {
+      id: string;
+      kind: string;
+      supersedes: string[];
+    };
+  let described: string;
+  beforeEach(() => {
+    described = (
+      concepts(
+        'context',
+        'booking',
+        '--subject',
+        'Booking.',
+        '--relation',
+        'Upstream.',
+      ) as { id: string }
+    ).id;
+    concepts('context', 'fleet', '--subject', 'Fleet.');
+    version('define', 'A hold lasts ten minutes.', 'First.');
+    concepts(
+      'decide',
+      'd1',
+      '--context',
+      'booking',
+      '--title',
+      'Holds expire',
+      '--situation',
+      'S',
+      '--decision',
+      'D',
+      '--consequences',
+      'C',
+      '--status',
+      'accepted',
+    );
+    mkdirSync(join(repo, 'design/examples/booking'), { recursive: true });
+    writeFileSync(
+      join(repo, 'design/examples/booking/holds.md'),
+      '1. (hold) Given one, when held, then `expire()` runs.\n',
+    );
+  });
+  const names = (answer: unknown) =>
+    (answer as { contexts: { name: string }[] }).contexts.map((c) => c.name);
+  const decisions = (...argv: string[]) =>
+    (concepts('decisions', ...argv) as { decisions: { id: string }[] })
+      .decisions;
+
+  it('records a retire-context entry superseding the current description', () => {
+    expect(retire()).toMatchObject({
+      kind: 'retire-context',
+      context: 'booking',
+      reason: 'Dropped.',
+      supersedes: [described],
+    });
+  });
+
+  it('leaves it out of every reading of the design, its history kept', () => {
+    const retirement = retire();
+    for (const reading of [['state'], ['design'], ['design', '--history']])
+      expect(names(concepts(...reading)), reading.join(' ')).toEqual(['fleet']);
+    expect(names(concepts('state', '--context', 'booking'))).toEqual([]);
+    const leakage = concepts('leakage') as { warnings: unknown[] };
+    expect(JSON.stringify(leakage.warnings)).not.toContain('booking');
+    expect(decisions()).toEqual([]);
+    expect(decisions('--history').map((d) => d.id)).toEqual(['d1']);
+    expect(concepts('history', '--context', 'booking')).toMatchObject({
+      versions: [
+        { id: described, subject: 'Booking.' },
+        {
+          id: retirement.id,
+          retired: true,
+          reason: 'Dropped.',
+          supersedes: [described],
+        },
+      ],
+    });
+    expect(concepts('history', 'hold', '--context', 'booking')).toMatchObject({
+      versions: [{ kind: 'define' }],
+    });
+  });
+
+  it('refuses recording into it, naming the remedy', () => {
+    retire();
+    const into =
+      /^concepts \w+: .*'booking' is retired; bring it back with concepts context and a --reason/;
+    refused(
+      [
+        'define',
+        'slot',
+        '--context',
+        'booking',
+        '--wording',
+        'W',
+        '--reason',
+        'R',
+      ],
+      into,
+    );
+    refused(
+      [
+        'supersede',
+        'hold',
+        '--context',
+        'booking',
+        '--wording',
+        'W',
+        '--reason',
+        'R',
+      ],
+      into,
+    );
+    refused(['retire', 'hold', '--context', 'booking', '--reason', 'R'], into);
+    refused(
+      [
+        'decide',
+        'd2',
+        '--context',
+        'booking',
+        '--title',
+        'T',
+        '--situation',
+        'S',
+        '--decision',
+        'D',
+        '--consequences',
+        'C',
+        '--status',
+        'open',
+      ],
+      into,
+    );
+  });
+
+  it('a context change with a reason brings it back as it stood', () => {
+    const retirement = retire();
+    expect(
+      concepts('context', 'booking', '--reason', 'Needed again.'),
+    ).toMatchObject({
+      subject: 'Booking.',
+      relation: 'Upstream.',
+      supersedes: [retirement.id, described],
+    });
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [
+        { name: 'booking', concepts: ['hold ≜ A hold lasts ten minutes.'] },
+      ],
+    });
+    expect(decisions().map((d) => d.id)).toEqual(['d1']);
+    expect(retire()).toMatchObject({ kind: 'retire-context' });
+  });
+
+  it('a retirement and a description both current compete until settled', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Booking elsewhere.',
+        relation: 'Upstream.',
+        reason: 'Another line of work.',
+        supersedes: [described],
+      }),
+    );
+    expect(names(concepts('state'))).toEqual(['booking', 'fleet']);
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [
+        {
+          subject: null,
+          relation: null,
+          competingDescriptions: [
+            { retired: true, reason: 'Dropped.' },
+            { subject: 'Booking elsewhere.', relation: 'Upstream.' },
+          ],
+          concepts: ['hold ≜ A hold lasts ten minutes.'],
+        },
+      ],
+    });
+    expect(decisions().map((d) => d.id)).toEqual(['d1']);
+    // Retiring it again settles both: it is then retired.
+    expect(retire().supersedes).toEqual([elsewhere, retirement.id]);
+    expect(names(concepts('state'))).toEqual(['fleet']);
+  });
+
+  it('a context retired on two joined lines of work is retired', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'retire-context',
+        context: 'booking',
+        reason: 'Dropped elsewhere.',
+        supersedes: [described],
+      }),
+    );
+    for (const reading of [['state'], ['design'], ['design', '--history']])
+      expect(names(concepts(...reading)), reading.join(' ')).toEqual(['fleet']);
+    expect(decisions()).toEqual([]);
+    expect(decisions('--history').map((d) => d.id)).toEqual(['d1']);
+    refused(
+      ['retire', '--context', 'booking', '--reason', 'R'],
+      /'booking' is already retired/,
+    );
+    refused(
+      ['retire', 'hold', '--context', 'booking', '--reason', 'R'],
+      /'booking' is retired; bring it back/,
+    );
+    // Bringing it back supersedes both retirements and what they superseded.
+    expect(
+      concepts('context', 'booking', '--reason', 'Needed again.'),
+    ).toMatchObject({
+      subject: 'Booking.',
+      supersedes: [retirement.id, described, elsewhere],
+    });
+  });
+
+  it('a description with a reason settles a competing retirement', () => {
+    const retirement = retire();
+    const elsewhere = '01Z00000000000000000000001';
+    writeFileSync(
+      join(repo, 'design/journal', `${elsewhere}.json`),
+      JSON.stringify({
+        id: elsewhere,
+        at: '2026-01-01T00:00:00.000Z',
+        kind: 'context',
+        name: 'booking',
+        subject: 'Booking elsewhere.',
+        relation: 'Upstream.',
+        reason: 'Another line of work.',
+        supersedes: [described],
+      }),
+    );
+    expect(
+      concepts(
+        'context',
+        'booking',
+        '--subject',
+        'Booking.',
+        '--reason',
+        'Settled.',
+      ),
+    ).toMatchObject({ supersedes: [elsewhere, retirement.id] });
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [{ subject: 'Booking.', relation: 'Upstream.' }],
+    });
+    expect(concepts('state', '--context', 'booking')).not.toMatchObject({
+      contexts: [{ competingDescriptions: expect.anything() }],
+    });
+  });
+
+  it('refuses an unknown, an already retired or a delivered context', () => {
+    refused(
+      ['retire', '--context', 'nowhere', '--reason', 'R'],
+      /no bounded context 'nowhere'/,
+    );
+    retire();
+    refused(
+      ['retire', '--context', 'booking', '--reason', 'R'],
+      /'booking' is already retired/,
+    );
+    const delivered = {
+      origin: 'cratylus',
+      version: '3.2.1',
+      context: 'workflow',
+      identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
+      position: 1,
+      subject: 'How the work is done.',
+      relation: '',
+      concepts: [],
+    };
+    const before = journal();
+    expect(() =>
+      dispatchConcepts(
+        ['retire', '--context', 'cratylus:workflow', '--reason', 'R'],
+        { from: repo, delivered: [delivered] },
+      ),
+    ).toThrow(/^concepts retire: .*is delivered by cratylus .*read-only/);
+    expect(journal()).toEqual(before);
+  });
 });

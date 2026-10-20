@@ -2,11 +2,12 @@
 // The concepts capability's VERB SURFACE — `concepts <verb> [args]`.
 //
 //   state      the design state, for a model to read: the project's purpose,
-//              the delivered practice apart, then each of its own contexts'
-//              subject, relation, live concepts each as `name ≜ residue`, and
+//              the practice place (each delivered context, or its own copy in
+//              its place, in the delivered order), then each of its other contexts'
+//              subject, relation, live concepts each as `term ≜ correction`, and
 //              competing versions; what a session reads first to reconstitute
-//   design     the delivered practice apart, then the current design of each of
-//              the project's own contexts, each concept with its parts
+//   design     the practice place, then the current design of each of the
+//              project's other contexts, each concept with its parts
 //   history    every version of one concept, or of a context's description
 //              with the effort recorded for its past work
 //   decisions  the decisions with their status, each by its title first
@@ -14,10 +15,13 @@
 //              examples, and where a wording tells what is not its current
 //              meaning: a reading of the concept journal
 //   purpose    record the project's purpose, or, with a reason, change it
-//   context    record a bounded context, or, with a reason, change one
+//   context    record a bounded context, or, with a reason, change one or
+//              bring a retired one back
 //   define     record a concept's first version
-//   supersede  record a version superseding every current one
-//   retire     record a concept's retirement
+//   supersede  record a version superseding every current one, optionally
+//              renaming the concept
+//   retire     record a concept's retirement, or, without a concept, a bounded
+//              context's
 //   decide     record a decision of realization, open or accepted
 //   deprecate  record that a standing decision no longer applies, with why
 //   close      close the journal's books: open a new period with an entry per
@@ -86,7 +90,12 @@ import {
   practiceOf,
   qualifiedName,
 } from './delivered.js';
-import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
+import type {
+  ContextEntry,
+  DecideEntry,
+  Draft,
+  WordedEntry,
+} from './entries.js';
 import { JOURNAL_DIR, type Journal, journalAt } from './journal.js';
 import {
   type Leak,
@@ -144,8 +153,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by, delivered with the installation and apart from the project’s design; then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts each as one line “name ≜ residue”, and the competing versions none has settled, each such a line or “name retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
-    when: 'For the project’s purpose and a short summary of the design, at the start of a session or after it was compacted, beside the design that recovers it; the delivered practice, each context named by its origin and context, marked delivered and read-only, is shown apart from the project’s contexts and outside its context map, unless this journal holds that context itself, when it is one of the project’s own contexts',
+      'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by: each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts each as one line “term ≜ correction”, and the competing versions none has settled, each such a line or “term retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
+    when: 'For the project’s purpose and a short summary of the design, at the start of a session or after it was compacted, beside the design that recovers it; a delivered context, named by its origin and context, marked delivered and read-only, is not part of the project’s design nor in its context map; where this journal holds that context itself, its own copy stands in the delivered context’s place, under its own name, unmarked, part of the project’s design and recorded into as any of its contexts',
     positional: null,
     flags: {
       context: valueFlag(
@@ -157,8 +166,8 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design as it stands, the read that recovers it at a session’s start: the delivered practice the project’s agents work by in a place of its own (practice), then each of the project’s own bounded contexts: its subject, its place in the context map, its live concepts, each by its current meaning with the concepts it is built from, and competing versions; with history, also retired concepts and why each live concept’s version was written',
-    when: 'First, at the start of a session or after it was compacted, for the delivered practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, the delivered practice shown apart from them, marked delivered and read-only',
+      'Read the design as it stands, the read that recovers it at a session’s start: in a place of its own (practice), the practice the project’s agents work by, each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts, each by its current term and meaning with the concepts it is built from, each named by its current term, and competing versions, each carrying the name it gives where that differs from the one its concept is listed under; with history, also retired concepts and why each live concept’s version was written',
+    when: 'First, at the start of a session or after it was compacted, for the practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, its own copy of a delivered context, read in that context’s place, among them; a delivered context it does not hold is marked delivered and read-only, apart from its design',
     positional: null,
     flags: {
       context: valueFlag(
@@ -173,11 +182,11 @@ export const VERBS = {
     concept: 'concept',
     effect: 'reads',
     purpose:
-      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and each retirement of the context with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
-        'The concept whose versions to show, by its name in the bounded context; leave it out to show the bounded context’s own history',
+        'The concept whose versions to show, by its term in the bounded context, the current one or any it had; leave it out to show the bounded context’s own history',
       ),
       optional: true,
     },
@@ -192,7 +201,7 @@ export const VERBS = {
     concept: 'decision',
     effect: 'reads',
     purpose:
-      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it, since the journal’s latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier decisions. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason',
+      'List the standing decisions, the choices of realization that bind the work, read apart from the design state, in the order recorded, each by what it says first, its title, then open or accepted, its governing kind and its text, its id and entry last as references; asked for history, every decision, each open, accepted, superseded or deprecated, with what it superseded, what superseded it and every kind recorded for it, since the journal’s latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier decisions. A decision stands until a later decision supersedes it or a later entry deprecates it with a reason; a retired bounded context’s decisions are listed only with history',
     when: 'Once the design state is read, for the standing decisions the work needs, before acting on a choice or after recording or accepting a decision; with history, to see how a choice was reached or why one no longer applies',
     positional: null,
     flags: {
@@ -209,7 +218,7 @@ export const VERBS = {
     concept: 'event-sourced conceptual model',
     effect: 'reads',
     purpose:
-      'Show where realization shows through text that should state meaning: each live concept’s residue and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s residue and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends a version it replaces that the journal holds, keeping its wording whole and adding to it (an opening a closing of the books wrote replaces none), as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
+      'Show where realization shows through text that should state meaning: each live concept’s correction and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s correction and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends a version it replaces that the journal holds, keeping its wording whole and adding to it (an opening a closing of the books wrote replaces none), as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
     when: 'Before a design or its examples are confirmed, or after recording one, to see what may leak implementation and judge each warning; a warning never refuses anything, since a word list cannot tell every legitimate use from a leak',
     positional: null,
     flags: {
@@ -239,8 +248,8 @@ export const VERBS = {
     concept: 'bounded context',
     effect: 'appends',
     purpose:
-      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history',
-    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, or to settle descriptions recorded differently in separate lines of work that were later joined',
+      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history; or, given a reason, bring a retired context back by a new description superseding its retirement, its subject and place carried from before it was retired where left out, its concepts and decisions then read as they stood',
+    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, to settle descriptions recorded differently in separate lines of work that were later joined, or when a retired context returns to the design',
     positional: {
       name: 'context',
       description:
@@ -263,14 +272,14 @@ export const VERBS = {
     effect: 'appends',
     purpose:
       'Record a new concept in one bounded context: its first version, in the context’s own words, with the reason it is written',
-    when: 'When the design gains a concept it does not have yet, a concept retired before the journal’s latest closing of the books included, since a close does not carry it; a concept already in the design changes by supersession instead',
+    when: 'When the design gains a concept it does not have yet, a concept retired before the journal’s latest closing of the books included, since a close does not carry it; a concept already in the design changes by supersession instead; a name a concept of the context has had since that close stays that concept’s, and is refused',
     positional: concept(
-      'The new concept’s name, the word its bounded context uses for it',
+      'The new concept’s term, the name its bounded context uses for it; never one a concept of the context has had',
     ),
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'The concept’s residue: what it means that its name, as read in its bounded context, does not invoke, and what its name invokes that it does not have, each stated once, in the context’s own words, naming no implementation, decision or history',
+        'The concept’s correction: beside its term, as read in its bounded context, the missing meaning supplied and the spurious meaning excluded, each stated once, in the context’s own words, never restating what the term already carries, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why the concept is defined', { required: true }),
@@ -281,35 +290,45 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
-    when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; given a new name, the version also renames the concept, which stays one concept: the design reads it under the new name only, its history lists every version with the name it was recorded under, and every concept built from it follows it to the new name',
+    when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; with a new name, when the concept’s name evokes a meaning the concept does not have, or misses one it does, and another term evokes it more nearly; never to take a concept out of the design, which is retirement',
     positional: concept(
-      'The concept whose meaning changes, by its name in the bounded context',
+      'The concept whose meaning changes, by its term in the bounded context, the current one or any it had',
     ),
     flags: {
       ...inContext('concept'),
       wording: valueFlag(
-        'The concept’s residue now, restated whole: what it means that its name, as read in its bounded context, does not invoke, and what its name invokes that it does not have, each stated once, in the context’s own words, naming no implementation, decision or history',
+        'The concept’s correction now, restated whole: beside its term, as read in its bounded context, the missing meaning supplied and the spurious meaning excluded, each stated once, in the context’s own words, never restating what the term already carries, naming no implementation, decision or history',
         { required: true },
       ),
       reason: valueFlag('Why its meaning changes', { required: true }),
       ...BUILT_FROM,
+      rename: valueFlag(
+        'The concept’s new name, its term from this version on, when its current one evokes the wrong meaning; the correction is then stated against the new name. Never a name another concept of the context has or has had, nor the concept’s current name; a name the concept itself had before may be taken back',
+      ),
     },
   },
   retire: {
     concept: 'retirement',
     effect: 'appends',
     purpose:
-      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept',
-    when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead',
-    positional: concept(
-      'The concept that leaves the design, by its name in the bounded context',
-    ),
+      'Record that a concept leaves the current design, with the reason and who records it: it is no longer live, and its history is kept; given no concept, retire the bounded context itself with the reason: no reading of the design shows it or its concepts any more, its decisions are read only with history, its own history lists the retirement and its reason, nothing is recorded into it until the context verb with a reason brings it back as it stood, and a closing of the books carries nothing of it',
+    when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead; without a concept, when the design drops a whole bounded context of the project’s own, never a delivered one',
+    positional: {
+      ...concept(
+        'The concept that leaves the design, by its term in the bounded context, the current one or any it had; leave it out to retire the bounded context itself',
+      ),
+      optional: true,
+    },
     flags: {
-      ...inContext('concept'),
-      reason: valueFlag('Why the concept leaves the design', {
-        required: true,
-      }),
+      context: valueFlag(
+        'The bounded context the concept belongs to, or, without a concept, the one that leaves the design; one already recorded with the context verb',
+        { required: true },
+      ),
+      reason: valueFlag(
+        'Why the concept, or without one the bounded context, leaves the design',
+        { required: true },
+      ),
     },
   },
   decide: {
@@ -383,8 +402,8 @@ export const VERBS = {
     concept: 'closing the books',
     effect: 'closes',
     purpose:
-      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity; each live concept’s current version; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired concept, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
-    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
+      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity, and a retirement of it competing with that description, so the two still compete; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired bounded context with its concepts and decisions, a retired concept, a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close, or while a concept’s competing versions give it different terms, until a supersede settles them',
     positional: null,
     flags: {},
   },
@@ -394,7 +413,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show the contexts the installation delivers apart from them, in a place of their own (practice), as the practice the project’s agents work by, named by origin and context, marked delivered and read-only, and still offered first. A project whose journal holds such a context itself reads its own, as part of its design. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show first, in a place of their own (practice), the practice the project’s agents work by, every context the installation delivers in the delivered order, upstream first, each named by origin and context and marked delivered and read-only, apart from the project’s design; where the project’s journal holds such a context itself, its own copy stands in that place, under its own name, unmarked, part of its design and recorded into as any of its contexts, and the project’s other contexts follow. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 
@@ -432,6 +451,19 @@ export function dispatchConcepts(
     : { ...(answer as object), uninterpreted: report };
 }
 
+/** A context in the practice place: a delivered one, or this journal's own
+ *  copy of it, by its own name. */
+type Placed =
+  | { readonly delivered: DeliveredContext }
+  | { readonly own: string };
+
+/** The contexts a reading covers: those in the practice place, then this
+ *  journal's others. */
+interface Covered {
+  readonly practice: readonly Placed[];
+  readonly contexts: readonly string[];
+}
+
 /** What `verb`, given `args`, answers from `journal` and the contexts
  *  `delivered` holds. */
 function answerOf(
@@ -445,28 +477,33 @@ function answerOf(
   const read = reader(args, refuse);
   /** The delivered contexts in the delivered order (origin, position). */
   const ordered = [...delivered].sort(byDelivery);
-  /** This journal's contexts by identity. */
+  /** This journal's contexts by identity; a retired one holds no place. */
   const byIdentity = new Map(
-    [...folded.contexts.keys()].map((name) => [folded.identity(name), name]),
+    [...folded.contexts.keys()]
+      .filter((name) => !folded.retired(name))
+      .map((name) => [folded.identity(name), name]),
   );
-  /** This journal's contexts that are delivered ones, in the delivered order. */
-  const ownDelivered = ordered.flatMap((d) => {
+  /** The practice place, in the delivered order: each delivered context, or
+   *  this journal's own copy of it where it holds one, in its place. */
+  const practice: Placed[] = ordered.map((d) => {
     const name = byIdentity.get(d.identity);
-    return name === undefined ? [] : [name];
+    return name === undefined ? { delivered: d } : { own: name };
   });
-  /** This journal's contexts as read: the delivered ones it holds first, in
-   *  the delivered order, then the rest in record order. */
-  const contextsRead = [
-    ...ownDelivered,
-    ...[...folded.contexts.keys()].filter((n) => !ownDelivered.includes(n)),
-  ];
-  /** The delivered contexts shown: each whose identity is none of this
-   *  journal's contexts'. */
-  const shown = ordered.filter((d) => !byIdentity.has(d.identity));
-  /** The shown delivered context `--context` names, if it names one. */
+  /** This journal's own copies of delivered contexts, in the delivered order. */
+  const ownCopies = practice.flatMap((p) => ('own' in p ? [p.own] : []));
+  /** This journal's other contexts, none retired, in record order. */
+  const others = [...folded.contexts.keys()].filter(
+    (n) => !ownCopies.includes(n) && !folded.retired(n),
+  );
+  /** The delivered context `--context` names, if it names one this journal
+   *  holds no live copy of. */
   const deliveredNamed = (): DeliveredContext | undefined => {
     const name = args.flags.get('context')?.[0];
-    return shown.find((d) => qualifiedName(d) === name);
+    return practice.flatMap((p) =>
+      'delivered' in p && qualifiedName(p.delivered) === name
+        ? [p.delivered]
+        : [],
+    )[0];
   };
 
   /** The recorded context `--context` names, given once. */
@@ -478,19 +515,33 @@ function answerOf(
       );
     return name;
   };
-  /** The contexts a query covers: the one `--context` names, else all; the
-   *  journal's own, and the delivered ones shown. */
-  const covering = (): {
-    own: string[];
-    delivered: readonly DeliveredContext[];
-  } => {
-    if (!args.flags.has('context'))
-      return { own: contextsRead, delivered: shown };
-    const named = deliveredNamed();
-    return named === undefined
-      ? { own: [context()], delivered: [] }
-      : { own: [], delivered: [named] };
+  /** The recorded context `--context` names, refused while it is retired. */
+  const recordable = (): string => {
+    const name = context();
+    if (folded.retired(name))
+      throw refuse(
+        `the bounded context '${name}' is retired; bring it back with concepts context and a --reason first`,
+      );
+    return name;
   };
+  /** The contexts a query covers: the one `--context` names, else all; those
+   *  in the practice place, and this journal's others; a retired one none. */
+  const covering = (): Covered => {
+    if (!args.flags.has('context')) return { practice, contexts: others };
+    const named = deliveredNamed();
+    if (named !== undefined)
+      return { practice: [{ delivered: named }], contexts: [] };
+    const where = context();
+    if (folded.retired(where)) return { practice: [], contexts: [] };
+    return ownCopies.includes(where)
+      ? { practice: [{ own: where }], contexts: [] }
+      : { practice: [], contexts: [where] };
+  };
+  /** The journal's own contexts `covered` covers, as they are read. */
+  const ownCovered = (covered: Covered): string[] => [
+    ...covered.practice.flatMap((p) => ('own' in p ? [p.own] : [])),
+    ...covered.contexts,
+  ];
   /** The current versions a new version of `name` in `where` supersedes;
    *  refuses a concept the context does not have, or, unless `revive`, a
    *  retired one. */
@@ -605,13 +656,21 @@ function answerOf(
       const covered = covering();
       return {
         ...folded.purpose(),
-        ...practiceOf(covered.delivered.map(deliveredState)),
-        contexts: covered.own.map((where) => designState(folded.design(where))),
+        ...practiceOf(
+          covered.practice.map((p) =>
+            'own' in p
+              ? designState(folded.design(p.own))
+              : deliveredState(p.delivered),
+          ),
+        ),
+        contexts: covered.contexts.map((where) =>
+          designState(folded.design(where)),
+        ),
       };
     }
     case 'leakage': {
       // Only the journal's own contexts: a delivered one is read, never recorded here.
-      const covered = covering().own;
+      const covered = ownCovered(covering());
       const recorded = covered.flatMap((where) => {
         const words = own(where);
         return [
@@ -641,8 +700,10 @@ function answerOf(
         ];
       });
       const examples = visibleExamples(journal.root)
-        .filter(
-          (e) => !args.flags.has('context') || covered.includes(e.context),
+        .filter((e) =>
+          args.flags.has('context')
+            ? covered.includes(e.context)
+            : !folded.retired(e.context),
         )
         .flatMap((e) =>
           warnings(
@@ -696,9 +757,15 @@ function answerOf(
       const covered = covering();
       return {
         ...practiceOf(
-          covered.delivered.map((d) => shownDesign(deliveredDesign(d))),
+          covered.practice.map((p) =>
+            'own' in p
+              ? shownDesign(folded.design(p.own))
+              : shownDesign(deliveredDesign(p.delivered)),
+          ),
         ),
-        contexts: covered.own.map((where) => shownDesign(folded.design(where))),
+        contexts: covered.contexts.map((where) =>
+          shownDesign(folded.design(where)),
+        ),
         ...(history ? folded.booksClosed() : {}),
       };
     }
@@ -714,7 +781,7 @@ function answerOf(
             (d) =>
               (only === undefined || d.context === only) &&
               (!open || d.status === 'open') &&
-              (history || stands(d)),
+              (history || (stands(d) && !folded.retired(d.context))),
           )
           .map((d) => (history ? d : standingDecision(d))),
         ...(history ? folded.booksClosed() : {}),
@@ -771,13 +838,24 @@ function answerOf(
         );
       if (reason.trim() === '')
         throw refuse('the reason is empty; give why the context changes');
-      if (subject === undefined && relation === undefined)
+      const retired = folded.retired(name);
+      if (subject === undefined && relation === undefined && !retired)
         throw refuse('give the --subject or --relation that changes, or both');
       if (subject !== undefined && subject.trim() === '')
         throw refuse(
           'the subject is empty; give one, or leave --subject out to keep it',
         );
-      const descriptions = folded.descriptions(name);
+      /** The descriptions a field left out is carried from: the current ones,
+       *  or, while retired, those the retirement superseded. */
+      const descriptions = retired
+        ? (folded.contexts.get(name) ?? [])
+            .filter((c) =>
+              folded
+                .currentRetirements(name)
+                .some((r) => r.supersedes.includes(c.id)),
+            )
+            .map(({ subject, relation }) => ({ subject, relation }))
+        : folded.descriptions(name);
       /** The current `field`, carried over; refused while competing
        *  descriptions differ on it, or where none is current. */
       const carried = (field: 'subject' | 'relation'): string => {
@@ -798,7 +876,16 @@ function answerOf(
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
-        supersedes: folded.currentDescriptions(name).map((c) => c.id),
+        // Bringing it back supersedes the retirements' descriptions too, so a
+        // runtime that reads past retirements sees one current description.
+        supersedes: [
+          ...new Set([
+            ...folded.currentDescriptions(name).map((c) => c.id),
+            ...folded
+              .currentRetirements(name)
+              .flatMap((r) => (retired ? [r.id, ...r.supersedes] : [r.id])),
+          ]),
+        ],
       };
       const found = described(name, draft, [
         ...(subject === undefined ? [] : (['subject'] as const)),
@@ -809,19 +896,39 @@ function answerOf(
     }
     case 'define':
     case 'supersede': {
-      const name = read.named('concept');
-      const where = context();
-      const wording = read.required('wording', 'the residue');
+      const given = read.named('concept');
+      const where = recordable();
+      const wording = read.required('wording', 'the correction');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
-      if (verb === 'define' && folded.versions(where, name).length > 0)
+      const had = folded.nameOf(where, given);
+      if (verb === 'define' && had !== undefined)
         throw refuse(
-          `the bounded context '${where}' already has the concept '${name}'; supersede it instead`,
+          had === given
+            ? `the bounded context '${where}' already has the concept '${given}'; supersede it instead`
+            : `the name '${given}' is one the concept '${had}' in '${where}' has had, and a name stays its concept's; name the new concept otherwise, or supersede '${had}'`,
         );
       const supersedes =
-        verb === 'define' ? [] : superseding(where, name, true);
-      const draft: Omit<WordedEntry, 'id' | 'at'> = {
-        kind: verb,
+        verb === 'define' ? [] : superseding(where, given, true);
+      const was = had ?? given;
+      const rename = read.optional('rename');
+      if (rename !== undefined) {
+        if (rename.trim() === '')
+          throw refuse(
+            'the new name is empty; give one, or leave --rename out',
+          );
+        if (rename === was)
+          throw refuse(
+            `the concept '${was}' in '${where}' is already named '${rename}'`,
+          );
+        const other = folded.nameOf(where, rename);
+        if (other !== undefined && !folded.same(where, rename, was))
+          throw refuse(
+            `the name '${rename}' is one the concept '${other}' in '${where}' has or has had, and a name stays its concept's; give another`,
+          );
+      }
+      const name = rename ?? was;
+      const stated = {
         context: where,
         name,
         wording,
@@ -829,34 +936,53 @@ function answerOf(
         reason,
         supersedes,
       };
+      const draft: Draft<WordedEntry> =
+        rename === undefined
+          ? { kind: verb, ...stated }
+          : { kind: 'rename', was, ...stated };
       const passage: Passage = { kind: 'concept', context: where, name };
       const found = [
         ...warnings(passage, [wording], own(where, name)),
         ...restating(
           passage,
           wording,
-          replacedWordings(where, name, supersedes),
+          replacedWordings(where, was, supersedes),
         ),
       ];
       const entry = journal.append(draft);
       return found.length === 0 ? entry : { ...entry, warnings: found };
     }
     case 'retire': {
-      const name = read.named('concept');
-      const where = context();
+      if (args.positionals.length === 0) {
+        const where = context();
+        const reason = read.required('reason', 'the reason');
+        if (folded.retired(where))
+          throw refuse(`the bounded context '${where}' is already retired`);
+        return journal.append({
+          kind: 'retire-context',
+          context: where,
+          reason,
+          supersedes: [
+            ...folded.currentDescriptions(where),
+            ...folded.currentRetirements(where),
+          ].map((c) => c.id),
+        });
+      }
+      const given = read.named('concept');
+      const where = recordable();
       const reason = read.required('reason', 'the reason');
-      const supersedes = superseding(where, name, false);
+      const supersedes = superseding(where, given, false);
       return journal.append({
         kind: 'retire',
         context: where,
-        name,
+        name: folded.nameOf(where, given) ?? given,
         reason,
         supersedes,
       });
     }
     case 'decide': {
       const decisionId = read.named('decision id');
-      const where = context();
+      const where = recordable();
       const [title, situation, decision, consequences] = (
         ['title', 'situation', 'decision', 'consequences'] as const
       ).map((flag) => read.required(flag, `the ${flag}`)) as [
@@ -954,6 +1080,11 @@ function answerOf(
       if (journal.entries().every((entry) => 'broughtForward' in entry))
         throw refuse(
           'nothing is recorded since the journal’s latest close; there is nothing to close',
+        );
+      const [apart] = folded.namesCompeting();
+      if (apart !== undefined)
+        throw refuse(
+          `the concept '${apart.name}' in '${apart.context}' has competing versions that name it differently, and a close carries no earlier name into the new period; settle them with concepts supersede first`,
         );
       const { openings, removed } = journal.close(folded.openings(commit));
       const [first] = openings;

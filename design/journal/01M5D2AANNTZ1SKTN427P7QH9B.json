@@ -1,0 +1,11 @@
+{
+  "id": "01M5D2AANNTZ1SKTN427P7QH9B",
+  "at": "2026-10-20T16:29:07.637Z",
+  "by": "lead",
+  "kind": "retire-context",
+  "context": "corpus",
+  "reason": "Its concepts moved to cratylic context design and canon; the design no longer has the subject it was named for, and it holds no concept of its own.",
+  "supersedes": [
+    "01M5BPJH5XNCTB98H3FJ47QA14"
+  ]
+}

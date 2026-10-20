@@ -308,7 +308,7 @@ function ownContext(name: string): string {
   return id;
 }
 
-it('delivery/6 — a project holding both reads its own, cratylic context design then workflow first, then the rest in record order', () => {
+it('delivery/6 — a project holding both reads its own copies in the practice place, cratylic context design then workflow, then the rest in record order', () => {
   // Record order (booking, workflow, cratylic context design) and name order
   // (booking, cratylic context design, workflow) each differ from the order shown.
   h.seed();
@@ -319,13 +319,10 @@ it('delivery/6 — a project holding both reads its own, cratylic context design
   const before = snapshot(h.cwd);
   for (const verb of verbs) {
     const answer = views(h, verb);
-    expect(answer.practice).toEqual([]);
-    expect(answer.contexts.map((c) => c.name)).toEqual([
-      ccd,
-      'workflow',
-      'booking',
-    ]);
-    const own = answer.contexts.find((c) => c.name === ccd)!;
+    expect(answer.practice.map((c) => c.name)).toEqual([ccd, 'workflow']);
+    expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
+    const own = answer.practice.find((c) => c.name === ccd)!;
+    expect(own).not.toHaveProperty('delivered');
     expect(own.subject).toBe(`The project’s own ${ccd} subject.`);
     expectMeaning(own, `The project’s own ${ccd} term.`);
     expect(JSON.stringify(answer)).not.toContain(upstream.subject);
@@ -334,22 +331,21 @@ it('delivery/6 — a project holding both reads its own, cratylic context design
   expect(snapshot(h.cwd)).toEqual(before);
 });
 
-/** Expects a project holding cratylic context design alone to show it once,
- *  as its own, with only workflow delivered apart. */
+/** Expects a project holding cratylic context design alone to read its own
+ *  copy in the delivered one's place, before the delivered workflow, then its
+ *  other contexts. */
 function expectHeldAlone(answer: {
   contexts: ContextView[];
   practice: ContextView[];
 }): void {
-  expect(answer.practice.map((c) => c.name)).toEqual([qualified]);
-  expect(answer.contexts.map((c) => c.name).sort()).toEqual(
-    ['booking', ccd].sort(),
-  );
-  const own = answer.contexts.find((c) => c.name === ccd)!;
+  expect(answer.practice.map((c) => c.name)).toEqual([ccd, qualified]);
+  expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
+  const own = answer.practice[0]!;
   expect(own).not.toHaveProperty('delivered');
   expectMeaning(own, `The project’s own ${ccd} term.`);
 }
 
-it('delivery/6 — a project holding cratylic context design alone shows it once, its own, with workflow still delivered', () => {
+it('delivery/6 — a project holding cratylic context design alone reads its own copy first, then the delivered workflow, then its other contexts', () => {
   h.seed();
   const ccdId = ownContext(ccd);
   putDocument(h, { ...upstream, identity: ccdId });
@@ -358,14 +354,17 @@ it('delivery/6 — a project holding cratylic context design alone shows it once
     expectHeldAlone(answer);
     // The reader already suppresses by identity, so this holds on today's work:
     // convict each plausible negative with the same assertions.
-    const delivered = { ...answer.contexts[0]!, name: upstreamQualified };
+    const delivered = { ...answer.practice[0]!, name: upstreamQualified };
     expect(() =>
       expectHeldAlone({ ...answer, practice: [delivered, ...answer.practice] }),
     ).toThrow();
     expect(() =>
+      expectHeldAlone({ ...answer, practice: [...answer.practice].reverse() }),
+    ).toThrow();
+    expect(() =>
       expectHeldAlone({
         ...answer,
-        contexts: answer.contexts.map((c) =>
+        practice: answer.practice.map((c) =>
           c.name === ccd ? { ...c, concepts: upstream.concepts } : c,
         ),
       }),
@@ -373,7 +372,7 @@ it('delivery/6 — a project holding cratylic context design alone shows it once
     expect(() =>
       expectHeldAlone({
         ...answer,
-        contexts: answer.contexts.map((c) =>
+        practice: answer.practice.map((c) =>
           c.name === ccd ? { ...c, delivered: upstream } : c,
         ),
       }),
@@ -381,7 +380,7 @@ it('delivery/6 — a project holding cratylic context design alone shows it once
   }
 });
 
-it('delivery/6 — cratylus’s own repository reads its cratylic context design first, then workflow, with no practice apart', () => {
+it('delivery/6 — cratylus’s own repository reads its cratylic context design, then workflow, in the practice place, then its other contexts', () => {
   // Read with no installation, the repository's contexts in record order.
   const recorded = query(repositoryRoot, 'design').contexts.map((c) => c.name);
   expect(recorded).toContain(ccd);
@@ -391,10 +390,10 @@ it('delivery/6 — cratylus’s own repository reads its cratylic context design
   const result = h.command(['concepts', 'design'], repositoryRoot);
   expect(result.code, result.stderr).toBe(0);
   const answer = JSON.parse(result.stdout);
-  expect(answer).not.toHaveProperty('practice');
-  expect(answer.contexts.map((c: { name: string }) => c.name)).toEqual([
-    ccd,
-    'workflow',
-    ...recorded.filter((name) => name !== ccd && name !== 'workflow'),
-  ]);
+  expect(answer.practice.contexts.map((c: { name: string }) => c.name)).toEqual(
+    [ccd, 'workflow'],
+  );
+  expect(answer.contexts.map((c: { name: string }) => c.name)).toEqual(
+    recorded.filter((name) => name !== ccd && name !== 'workflow'),
+  );
 });

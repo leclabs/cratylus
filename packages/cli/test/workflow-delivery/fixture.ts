@@ -150,9 +150,10 @@ export function expectReleased(
   ).toBe(0);
   return actual;
 }
-/** A view's answer: the project's own `contexts`, its design and context map,
- *  and apart from them the delivered `practice` (none where it shows none),
- *  which, where shown, is labelled and comes before the project's contexts. */
+/** A view's answer: the project's other `contexts`, and apart from them the
+ *  `practice` place (none where it shows none), each delivered context or the
+ *  project's own copy in its place, which, where shown, is labelled and comes
+ *  before the project's other contexts. */
 export function views(
   h: Host,
   verb: string,
