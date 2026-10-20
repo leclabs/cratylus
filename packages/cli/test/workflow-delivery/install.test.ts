@@ -2,15 +2,11 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import {
-  type Design,
-  query,
-  repositoryRoot,
-} from '../concept-journal/fixture.js';
-import {
   type Host,
   assertDelivered,
   deliveredPath,
   document,
+  expectReleased,
   installed,
   owned,
   putDocument,
@@ -28,46 +24,14 @@ beforeEach(() => {
 afterEach(() => h.dispose());
 
 it('delivery/1, delivery/2 — the built release installs its complete source design read-only with provenance', () => {
-  const path = deliveredPath(h);
-  expect(
-    existsSync(path),
-    'the release ships delivered/cratylus/workflow.json under its owned root',
-  ).toBe(true);
-  const actual = readDocument(h);
-  const source = query<Design>(
-    repositoryRoot,
-    'design',
-    '--context',
-    'workflow',
-  ).contexts[0]!;
-  const entries = Object.values(snapshot(repositoryRoot)).map((bytes) =>
-    JSON.parse(Buffer.from(bytes, 'base64').toString()),
-  );
-  const first = entries
-    .filter((entry) => entry.kind === 'context' && entry.name === 'workflow')
-    .sort((a, b) => a.id.localeCompare(b.id))[0];
-  const version = success(h.command(['--version'])).trim();
-  expect({
-    ...actual,
-    concepts: [...actual.concepts].sort((a, b) => a.name.localeCompare(b.name)),
-  }).toEqual({
-    origin: 'cratylus',
-    version,
-    context: 'workflow',
-    identity: first.id,
-    subject: source.subject,
-    relation: source.relation,
-    concepts: source.concepts
-      .map(({ name, wording, builtFrom }) => ({ name, wording, builtFrom }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-  });
-  expect(
-    statSync(path).mode & 0o222,
-    'no owner, group or other write bit',
-  ).toBe(0);
+  const actual = expectReleased(h, 'workflow', 1);
   expect(existsSync(join(owned(h), 'agents/architect.md'))).toBe(true);
   expect(snapshot(h.cwd)).toEqual({});
-  assertDelivered(views(h, 'design').practice[0], 'design', actual);
+  assertDelivered(
+    views(h, 'design').practice.find((c) => c.name === qualified),
+    'design',
+    actual,
+  );
 });
 
 it('delivery/3 — upgrading replaces an earlier release completely without touching booking', () => {
@@ -160,7 +124,7 @@ it('delivery/5 — uninstall removes delivered material with the root and leaves
   ): void {
     expect(rootRemains, 'the owned root leaves').toBe(false);
     expect(documentRemains, 'the delivered document leaves').toBe(false);
-    expect(journal, 'the project journal has no delivered residue').toEqual(
+    expect(journal, 'the project journal keeps nothing delivered').toEqual(
       before,
     );
   }

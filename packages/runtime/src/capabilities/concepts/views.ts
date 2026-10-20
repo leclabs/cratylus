@@ -23,6 +23,16 @@
 // superseded the same one), reported in append order, none chosen, until a
 // later version supersedes them all.
 //
+// A concept is ONE THROUGH ITS NAMES: the versions of a context joined by
+// supersession or by a shared name, whatever order they were recorded in, so
+// a rename to a name and a define of it on joined lines are one concept,
+// competing. A rename gives it a new name from then on, and every name it has
+// had in the period names it. Its name is its current version's; while
+// competing versions name it differently it is the name of the latest version
+// they all supersede, else of its earliest version. A built-from reference
+// names a concept by the name it had when written: the design shows it by the
+// concept's current name, the history exactly as recorded.
+//
 // The project's PURPOSE is folded the same way: its current statements are the
 // purpose entries no later one supersedes; alike they are one purpose,
 // different they are COMPETING, none chosen, until a later one supersedes
@@ -32,7 +42,14 @@
 // no later one supersedes; recorded alike on two branches they are one
 // description, recorded differently they are COMPETING, none chosen, until a
 // later entry of the name supersedes them all. The design shows only the
-// current description; every earlier one stays in the context's history.
+// current description; every earlier one stays in the context's history. A
+// context is RETIRED while every current entry of it is a retirement, one or
+// several: no reading of the design shows it or its concepts, its decisions
+// are history, and a close carries nothing of it; a later description with
+// its reason, superseding the retirements, brings it back as it stood. A
+// retirement current beside a current description COMPETES with it as a
+// description does, marked retired with its reason, until a later
+// description or retirement supersedes them all.
 //
 // A decision is its ENTRY; its id is the name the caller gave, which two
 // branches may each give, so a reference by id holds only while one decision
@@ -50,7 +67,7 @@
 // entry of its context holding its figures; read with the context's history.
 //
 // The DESIGN STATE of a context is its description and its live and competing
-// concepts, each a line `name ≜ residue`; nothing else. WHAT STANDS of a
+// concepts, each a line `term ≜ correction`; nothing else. WHAT STANDS of a
 // design or a decision is what a view shows unless history is asked for: a
 // design without its retired concepts or the reason each live concept's
 // current version was written, a decision without the decisions it replaced
@@ -66,6 +83,7 @@ import type {
   EfficiencyEntry,
   Entry,
   PurposeEntry,
+  RetireContextEntry,
   RetireEntry,
   VersionEntry,
   WordedEntry,
@@ -84,9 +102,10 @@ export interface ConceptView {
 export type Meaning = Pick<ConceptView, 'name' | 'wording' | 'builtFrom'>;
 
 /** One of a concept's competing versions; a retirement among them carries
- *  `retired` and no wording. */
+ *  `retired` and no wording, and a version naming the concept otherwise than
+ *  the name it is listed under carries the name it gives. */
 export type CompetingVersion =
-  | Omit<ConceptView, 'name'>
+  | (Omit<ConceptView, 'name'> & { readonly name?: string })
   | { readonly retired: true; readonly reason: string };
 
 /** The project's purpose, what it is for: `null` while none is recorded, and
@@ -102,13 +121,19 @@ export interface Description {
   readonly relation: string;
 }
 
+/** One of a context's competing descriptions; a retirement among them carries
+ *  `retired` and its reason. */
+export type CompetingDescription =
+  | Description
+  | { readonly retired: true; readonly reason: string };
+
 /** A context's design; `subject` and `relation` are `null` while its
  *  description is competing, each competing one listed in append order. */
 export interface ContextView {
   readonly name: string;
   readonly subject: string | null;
   readonly relation: string | null;
-  readonly competingDescriptions: readonly Description[];
+  readonly competingDescriptions: readonly CompetingDescription[];
   readonly concepts: readonly ConceptView[];
   readonly competing: readonly {
     readonly name: string;
@@ -215,8 +240,8 @@ export function standingDesign<
 
 /** The design state of `design`'s context, for a model to read: its subject
  *  and relation, its competing descriptions only when any, its live concepts
- *  each as one line `name ≜ residue`, and each concept's competing versions
- *  as such lines, a retirement among them as `name retired`; nothing else. */
+ *  each as one line `term ≜ correction`, and each concept's competing versions
+ *  as such lines, a retirement among them as `term retired`; nothing else. */
 export function designState({
   name,
   subject,
@@ -237,7 +262,9 @@ export function designState({
     competing: competing.map((c) => ({
       name: c.name,
       versions: c.versions.map((v) =>
-        'wording' in v ? `${c.name} ≜ ${v.wording}` : `${c.name} retired`,
+        'wording' in v
+          ? `${v.name ?? c.name} ≜ ${v.wording}`
+          : `${c.name} retired`,
       ),
     })),
   };
@@ -250,6 +277,8 @@ export interface HistoryView {
     readonly id: string;
     readonly at: string;
     readonly kind: VersionEntry['kind'];
+    readonly name: string;
+    readonly was?: string;
     readonly wording?: string;
     readonly builtFrom?: readonly string[];
     readonly reason: string;
@@ -258,18 +287,29 @@ export interface HistoryView {
   }[];
 }
 
-/** Every description of a context, in append order, exactly as recorded. */
+/** Every description of a context and every retirement of it, in append
+ *  order, exactly as recorded; a retirement carries `retired` and its reason. */
 export interface ContextHistoryView {
   readonly context: string;
-  readonly versions: readonly {
-    readonly id: string;
-    readonly at: string;
-    readonly subject: string;
-    readonly relation: string;
-    readonly reason?: string;
-    readonly supersedes: readonly string[];
-    readonly broughtForward?: string;
-  }[];
+  readonly versions: readonly (
+    | {
+        readonly id: string;
+        readonly at: string;
+        readonly subject: string;
+        readonly relation: string;
+        readonly reason?: string;
+        readonly supersedes: readonly string[];
+        readonly broughtForward?: string;
+      }
+    | {
+        readonly id: string;
+        readonly at: string;
+        readonly retired: true;
+        readonly reason: string;
+        readonly supersedes: readonly string[];
+        readonly broughtForward?: string;
+      }
+  )[];
 }
 
 /** A cut's figures as last recorded, and when. */
@@ -288,8 +328,14 @@ export class Folded {
   readonly purposes: PurposeEntry[] = [];
   /** Each context's entries by name, in append order. */
   readonly contexts = new Map<string, ContextEntry[]>();
-  /** Each context's concepts by name, each with its versions in append order. */
+  /** Each context's retirements by name, in append order. */
+  readonly retirements = new Map<string, RetireContextEntry[]>();
+  /** Each context's concepts, each by the name of its earliest version, with
+   *  its versions in append order. */
   readonly concepts = new Map<string, Map<string, VersionEntry[]>>();
+  /** Each context's names, each with the concept it names: every name a
+   *  concept has had in the period, by the name of its earliest version. */
+  private readonly names = new Map<string, Map<string, string>>();
   /** Each decision by its entry's id, in append order. */
   readonly decisions = new Map<string, DecideEntry>();
   /** The entries of the decisions each id names, in append order. */
@@ -327,6 +373,8 @@ export class Folded {
       const named = held.get(name) ?? [];
       return named.length === 1 ? named[0] : undefined;
     };
+    /** Each context's concept versions, in append order. */
+    const recorded = new Map<string, VersionEntry[]>();
     for (const entry of entries) {
       if (broughtForward(entry) !== undefined) this.opening = entry;
       switch (entry.kind) {
@@ -339,15 +387,18 @@ export class Folded {
             entry,
           ]);
           break;
+        case 'retire-context':
+          this.retirements.set(entry.context, [
+            ...(this.retirements.get(entry.context) ?? []),
+            entry,
+          ]);
+          break;
         case 'define':
         case 'supersede':
+        case 'rename':
         case 'retire': {
-          const inContext =
-            this.concepts.get(entry.context) ??
-            new Map<string, VersionEntry[]>();
-          this.concepts.set(entry.context, inContext);
-          inContext.set(entry.name, [
-            ...(inContext.get(entry.name) ?? []),
+          recorded.set(entry.context, [
+            ...(recorded.get(entry.context) ?? []),
             entry,
           ]);
           break;
@@ -404,6 +455,19 @@ export class Folded {
           break;
       }
     }
+    for (const [context, versions] of recorded) {
+      const inContext = new Map<string, VersionEntry[]>();
+      const names = new Map<string, string>();
+      for (const concept of joined(versions)) {
+        const key = (concept[0] as VersionEntry).name;
+        inContext.set(key, concept);
+        for (const v of concept)
+          for (const name of v.kind === 'rename' ? [v.name, v.was] : [v.name])
+            names.set(name, key);
+      }
+      this.concepts.set(context, inContext);
+      this.names.set(context, names);
+    }
   }
 
   /** The identity of `context`: the one its earliest entry carrying one
@@ -442,12 +506,16 @@ export class Folded {
   }
 
   /** The opening entries of a close at `commit`, in the order the readings
-   *  list what they open: the purpose; each context; each live concept,
-   *  context by context; each standing decision. One per current version, so
-   *  competing versions still compete, each superseding nothing and brought
-   *  forward from `commit`; a retired concept, a superseded or deprecated
-   *  decision, an acceptance, a classification and a cut's figures stay in
-   *  the closed period. */
+   *  list what they open: the purpose; each context, a retirement competing
+   *  with its description opening beside it; each live concept, context by
+   *  context, under its current name, each built-from reference by its
+   *  concept's current name; each standing decision. One per current
+   *  version, so competing versions still compete, each superseding nothing
+   *  and brought forward from `commit`; a retired context with its concepts
+   *  and decisions, a retired concept, a superseded or deprecated decision,
+   *  an acceptance, a classification and a cut's figures stay in the closed
+   *  period. A close is refused before while any concept's current versions
+   *  name it differently (`namesCompeting`). */
   openings(commit: string): Draft[] {
     const opened = { supersedes: [], broughtForward: commit } as const;
     const drafts: Draft[] = this.currentPurposes().map((p) => ({
@@ -457,43 +525,65 @@ export class Folded {
       ...opened,
     }));
     for (const name of this.contexts.keys()) {
+      if (this.retired(name)) continue;
       const identity = this.identity(name) as string;
-      for (const c of this.currentDescriptions(name))
-        drafts.push({
-          kind: 'context',
-          name,
-          subject: c.subject,
-          relation: c.relation,
-          ...(c.reason === undefined ? {} : { reason: c.reason }),
-          identity,
-          ...opened,
-        });
+      for (const c of this.currentEntries(name))
+        drafts.push(
+          c.kind === 'retire-context'
+            ? {
+                kind: 'retire-context',
+                context: name,
+                reason: c.reason,
+                ...opened,
+              }
+            : {
+                kind: 'context',
+                name,
+                subject: c.subject,
+                relation: c.relation,
+                ...(c.reason === undefined ? {} : { reason: c.reason }),
+                identity,
+                ...opened,
+              },
+        );
     }
     for (const context of new Set([
       ...this.contexts.keys(),
       ...this.concepts.keys(),
     ]))
-      for (const name of this.concepts.get(context)?.keys() ?? []) {
-        const standing = this.standing(context, name) as Standing;
+      for (const versions of this.retired(context)
+        ? []
+        : (this.concepts.get(context)?.values() ?? [])) {
+        const standing = settle(versions) as Standing;
         if (standing.is === 'retired') continue;
         for (const v of standing.is === 'live'
           ? [standing.current]
           : standing.current)
           drafts.push(
             v.kind === 'retire'
-              ? { kind: 'retire', context, name, reason: v.reason, ...opened }
+              ? {
+                  kind: 'retire',
+                  context,
+                  name: v.name,
+                  reason: v.reason,
+                  ...opened,
+                }
               : {
                   kind: 'define',
                   context,
-                  name,
+                  name: v.name,
                   wording: v.wording,
-                  builtFrom: [...v.builtFrom],
+                  builtFrom: v.builtFrom.map((ref) =>
+                    this.current(context, ref),
+                  ),
                   reason: v.reason,
                   ...opened,
                 },
           );
       }
-    for (const view of this.decisionViews().filter(stands))
+    for (const view of this.decisionViews().filter(
+      (d) => stands(d) && !this.retired(d.context),
+    ))
       drafts.push({
         kind: 'decide',
         decisionId: view.id,
@@ -508,6 +598,22 @@ export class Folded {
         broughtForward: commit,
       });
     return drafts;
+  }
+
+  /** Each concept of a context not retired, by its context and the name it is
+   *  listed under, whose current versions name it differently. */
+  namesCompeting(): { readonly context: string; readonly name: string }[] {
+    return [...this.concepts].flatMap(([context, concepts]) =>
+      this.retired(context)
+        ? []
+        : [...concepts.values()].flatMap((versions) => {
+            const standing = settle(versions) as Standing;
+            return standing.is === 'competing' &&
+              new Set(standing.current.map((v) => v.name)).size > 1
+              ? [{ context, name: nameIn(versions) as string }]
+              : [];
+          }),
+    );
   }
 
   /** The entry of the one decision `id` names among those folded so far;
@@ -557,11 +663,47 @@ export class Folded {
   }
 
   /** The current entries of `context`, a context the journal has: those no
-   *  later entry of its name supersedes. */
+   *  later entry of its name, nor a retirement of it, supersedes. */
   currentDescriptions(context: string): readonly ContextEntry[] {
     const recorded = this.contexts.get(context) ?? [];
-    const superseded = new Set(recorded.flatMap((c) => c.supersedes ?? []));
+    const superseded = new Set(
+      [...recorded, ...(this.retirements.get(context) ?? [])].flatMap(
+        (c) => c.supersedes ?? [],
+      ),
+    );
     return recorded.filter((c) => !superseded.has(c.id));
+  }
+
+  /** The retirements of `context` no later description or retirement of it
+   *  supersedes. */
+  currentRetirements(context: string): readonly RetireContextEntry[] {
+    const retirements = this.retirements.get(context) ?? [];
+    const superseded = new Set(
+      [...(this.contexts.get(context) ?? []), ...retirements].flatMap(
+        (c) => c.supersedes ?? [],
+      ),
+    );
+    return retirements.filter((r) => !superseded.has(r.id));
+  }
+
+  /** Whether `context` is retired: every current entry of it, one or
+   *  several, is a retirement. */
+  retired(context: string): boolean {
+    return (
+      this.currentDescriptions(context).length === 0 &&
+      this.currentRetirements(context).length > 0
+    );
+  }
+
+  /** The current descriptions and retirements of `context`, in append
+   *  order. */
+  currentEntries(
+    context: string,
+  ): readonly (ContextEntry | RetireContextEntry)[] {
+    return [
+      ...this.currentDescriptions(context),
+      ...this.currentRetirements(context),
+    ].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   }
 
   /** The distinct descriptions of `context`'s current entries, in append
@@ -576,44 +718,90 @@ export class Folded {
     return distinct;
   }
 
-  /** The versions of `name` in `context`, in append order; none when the
-   *  context does not have it. */
+  /** The versions of the concept `name`, its current name or one it had, names
+   *  in `context`, in append order; none when the context has no such name. */
   versions(context: string, name: string): readonly VersionEntry[] {
-    return this.concepts.get(context)?.get(name) ?? [];
+    const first = this.names.get(context)?.get(name);
+    return first === undefined
+      ? []
+      : (this.concepts.get(context)?.get(first) ?? []);
   }
 
-  /** Where `name` in `context` stands; `undefined` when the context does not
-   *  have it. */
+  /** Where the concept `name` names in `context` stands; `undefined` when the
+   *  context has no such name. */
   standing(context: string, name: string): Standing | undefined {
-    const versions = this.versions(context, name);
-    if (versions.length === 0) return undefined;
-    const superseded = new Set(versions.flatMap((v) => v.supersedes));
-    const current = versions.filter((v) => !superseded.has(v.id));
-    if (current.length > 1) return { is: 'competing', current };
-    const one = current[0] ?? (versions.at(-1) as VersionEntry);
-    return one.kind === 'retire'
-      ? { is: 'retired', current: one }
-      : { is: 'live', current: one };
+    return settle(this.versions(context, name));
+  }
+
+  /** The name of the concept `name`, its current name or one it had, names in
+   *  `context`; `undefined` when the context has no such name. */
+  nameOf(context: string, name: string): string | undefined {
+    return nameIn(this.versions(context, name));
+  }
+
+  /** Whether `a` and `b` name one concept in `context`. */
+  same(context: string, a: string, b: string): boolean {
+    const names = this.names.get(context);
+    return names?.get(a) !== undefined && names.get(a) === names.get(b);
+  }
+
+  /** The concept `ref` names in `context` by its current name; `ref` as
+   *  written where the context has no such name. */
+  private current(context: string, ref: string): string {
+    return this.nameOf(context, ref) ?? ref;
+  }
+
+  /** What `version` of a concept in `context` says, each concept it is built
+   *  from by its current name. */
+  private stated(context: string, version: WordedEntry) {
+    return {
+      wording: version.wording,
+      builtFrom: version.builtFrom.map((ref) => this.current(context, ref)),
+      reason: version.reason,
+    };
   }
 
   /** The current design of `context`, a context the journal has. */
   design(context: string): ContextView {
     const descriptions = this.descriptions(context);
-    const settled = descriptions.length === 1 ? descriptions[0] : undefined;
+    const retirements = this.currentRetirements(context);
+    const settled =
+      descriptions.length === 1 && retirements.length === 0
+        ? descriptions[0]
+        : undefined;
+    /** The competing descriptions, alike ones once, and retirements, in
+     *  append order. */
+    const competing: CompetingDescription[] = [];
+    for (const c of this.currentEntries(context))
+      if (c.kind === 'retire-context')
+        competing.push({ retired: true, reason: c.reason });
+      else if (
+        !competing.some(
+          (d) =>
+            'subject' in d &&
+            d.subject === c.subject &&
+            d.relation === c.relation,
+        )
+      )
+        competing.push({ subject: c.subject, relation: c.relation });
     const view = {
       name: context,
       subject: settled?.subject ?? null,
       relation: settled?.relation ?? null,
-      competingDescriptions: settled === undefined ? descriptions : [],
+      competingDescriptions: settled === undefined ? competing : [],
       concepts: [] as ConceptView[],
       competing: [] as ContextView['competing'][number][],
       retired: [] as ContextView['retired'][number][],
     };
-    for (const name of this.concepts.get(context)?.keys() ?? []) {
-      const standing = this.standing(context, name) as Standing;
+    for (const versions of this.concepts.get(context)?.values() ?? []) {
+      const standing = settle(versions) as Standing;
+      const name = nameIn(versions) as string;
       switch (standing.is) {
         case 'live':
-          view.concepts.push({ name, ...stated(standing.current) });
+          view.concepts.push({
+            name,
+            ...this.stated(context, standing.current),
+          });
           break;
         case 'retired':
           view.retired.push({ name, reason: standing.current.reason });
@@ -624,7 +812,10 @@ export class Folded {
             versions: standing.current.map((v) =>
               v.kind === 'retire'
                 ? { retired: true, reason: v.reason }
-                : stated(v),
+                : {
+                    ...(v.name === name ? {} : { name: v.name }),
+                    ...this.stated(context, v),
+                  },
             ),
           });
           break;
@@ -633,15 +824,20 @@ export class Folded {
     return view;
   }
 
-  /** Every version of `name` in `context`, each exactly as recorded. */
+  /** Every version of the concept `name`, its current name or one it had,
+   *  names in `context`, each exactly as recorded with the name it was
+   *  recorded under, under the concept's name now. */
   history(context: string, name: string): HistoryView {
+    const versions = this.versions(context, name);
     return {
       context,
-      name,
-      versions: this.versions(context, name).map((v) => ({
+      name: nameIn(versions) ?? name,
+      versions: versions.map((v) => ({
         id: v.id,
         at: v.at,
         kind: v.kind,
+        name: v.name,
+        ...(v.kind === 'rename' ? { was: v.was } : {}),
         ...(v.kind === 'retire'
           ? {}
           : { wording: v.wording, builtFrom: [...v.builtFrom] }),
@@ -652,20 +848,36 @@ export class Folded {
     };
   }
 
-  /** Every description of `context`, a context the journal has, each exactly
-   *  as recorded; `supersedes` is empty where an entry names none. */
+  /** Every description and retirement of `context`, a context the journal
+   *  has, in append order, each exactly as recorded; `supersedes` is empty
+   *  where a description names none. */
   contextHistory(context: string): ContextHistoryView {
+    const entries = [
+      ...(this.contexts.get(context) ?? []),
+      ...(this.retirements.get(context) ?? []),
+    ].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     return {
       context,
-      versions: (this.contexts.get(context) ?? []).map((c) => ({
-        id: c.id,
-        at: c.at,
-        subject: c.subject,
-        relation: c.relation,
-        ...(c.reason === undefined ? {} : { reason: c.reason }),
-        supersedes: [...(c.supersedes ?? [])],
-        ...marked(c),
-      })),
+      versions: entries.map((c) =>
+        c.kind === 'retire-context'
+          ? {
+              id: c.id,
+              at: c.at,
+              retired: true as const,
+              reason: c.reason,
+              supersedes: [...c.supersedes],
+              ...marked(c),
+            }
+          : {
+              id: c.id,
+              at: c.at,
+              subject: c.subject,
+              relation: c.relation,
+              ...(c.reason === undefined ? {} : { reason: c.reason }),
+              supersedes: [...(c.supersedes ?? [])],
+              ...marked(c),
+            },
+      ),
     };
   }
 
@@ -727,11 +939,78 @@ function marked(entry: Entry): { readonly broughtForward?: string } {
   return commit === undefined ? {} : { broughtForward: commit };
 }
 
-/** What a version that states its concept says. */
-function stated(version: WordedEntry): Omit<ConceptView, 'name'> {
-  return {
-    wording: version.wording,
-    builtFrom: [...version.builtFrom],
-    reason: version.reason,
+/** Where a concept with `versions`, in append order, stands; `undefined` for
+ *  none. */
+function settle(versions: readonly VersionEntry[]): Standing | undefined {
+  if (versions.length === 0) return undefined;
+  const superseded = new Set(versions.flatMap((v) => v.supersedes));
+  const current = versions.filter((v) => !superseded.has(v.id));
+  if (current.length > 1) return { is: 'competing', current };
+  const one = current[0] ?? (versions.at(-1) as VersionEntry);
+  return one.kind === 'retire'
+    ? { is: 'retired', current: one }
+    : { is: 'live', current: one };
+}
+
+/** The name of a concept with `versions`, in append order: the one name its
+ *  current versions give it, or, while competing versions name it
+ *  differently, that of the latest version every current one supersedes,
+ *  directly or through others, else of its earliest version; `undefined` for
+ *  none. */
+function nameIn(versions: readonly VersionEntry[]): string | undefined {
+  const standing = settle(versions);
+  if (standing === undefined) return undefined;
+  if (standing.is !== 'competing') return standing.current.name;
+  const given = new Set(standing.current.map((v) => v.name));
+  if (given.size === 1) return [...given][0];
+  const byId = new Map(versions.map((v) => [v.id, v]));
+  const ancestry = standing.current.map((v) => {
+    const reached = new Set<string>();
+    const pending = [...v.supersedes];
+    for (let id = pending.pop(); id !== undefined; id = pending.pop()) {
+      const version = byId.get(id);
+      if (version === undefined || reached.has(id)) continue;
+      reached.add(id);
+      pending.push(...version.supersedes);
+    }
+    return reached;
+  });
+  const common = versions.filter((v) => ancestry.every((a) => a.has(v.id)));
+  return (common.at(-1) ?? (versions[0] as VersionEntry)).name;
+}
+
+/** The concepts `versions`, a context's in append order, make: the versions
+ *  joined by supersession or by a name they share (a rename's earlier name
+ *  included), whatever the order they were recorded in, each concept's in
+ *  append order and the concepts in the order of their earliest versions. */
+function joined(versions: readonly VersionEntry[]): VersionEntry[][] {
+  const parent = versions.map((_, i) => i);
+  const root = (i: number): number => {
+    let r = i;
+    while (parent[r] !== r) r = parent[r] as number;
+    parent[i] = r;
+    return r;
   };
+  const join = (a: number, b: number) => {
+    const [x, y] = [root(a), root(b)];
+    parent[Math.max(x, y)] = Math.min(x, y);
+  };
+  const byName = new Map<string, number>();
+  const byId = new Map(versions.map((v, i) => [v.id, i]));
+  versions.forEach((v, i) => {
+    for (const name of v.kind === 'rename' ? [v.name, v.was] : [v.name]) {
+      const other = byName.get(name);
+      if (other === undefined) byName.set(name, i);
+      else join(i, other);
+    }
+    for (const id of v.supersedes) {
+      const other = byId.get(id);
+      if (other !== undefined) join(i, other);
+    }
+  });
+  const concepts = new Map<number, VersionEntry[]>();
+  versions.forEach((v, i) =>
+    concepts.set(root(i), [...(concepts.get(root(i)) ?? []), v]),
+  );
+  return [...concepts.values()];
 }

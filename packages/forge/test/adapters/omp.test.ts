@@ -18,6 +18,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { ORIENTATION } from '@cratylus/runtime';
 import { kebabToCamel } from '@cratylus/schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -250,7 +251,7 @@ afterEach(() => {
 const AGENT = {
   name: 'mav',
   // A colon-space, because that is the character sequence a plain YAML scalar
-  // may not carry and a real corpus description does ("…and canon: dimension
+  // may not carry and a real canon description does ("…and canon: factor
   // catalogs"). Unquoted, the emitted document is a scanner error and omp falls
   // back to a naive line parser, warning once per discovery pass.
   description: 'the builder: ships things',
@@ -415,8 +416,8 @@ describe('omp agent definition', () => {
   });
 
   it('survives a description carrying the characters YAML reserves', () => {
-    // A plain scalar may not contain `: `, and a real corpus description does
-    // ("…and canon: dimension catalogs") — unquoted, the document is a scanner
+    // A plain scalar may not contain `: `, and a real canon description does
+    // ("…and canon: factor catalogs") — unquoted, the document is a scanner
     // error that omp survives only by falling back to a naive `key: value` line
     // parser, invisible until a description grows something the fallback loses
     // too. The round trip is the claim: whatever goes in comes back out.
@@ -1313,13 +1314,19 @@ describe('omp tool definitions', () => {
     });
 
     /** The emitted module loaded into a stand-in omp started with `--agent
-     *  <flag>` (or without it), recording every session action it takes. */
-    async function started(flag?: string, cwd = '/the/session/cwd') {
+     *  <flag>` (or without it), recording every session action it takes; the
+     *  stand-in command explains itself with `orientation`, where one is given. */
+    async function started(
+      flag?: string,
+      cwd = '/the/session/cwd',
+      orientation?: string,
+    ) {
       const factory = await emitted({
         name: 'stand in',
         purpose: 'p',
         when: 'w',
         verbs: [],
+        ...(orientation === undefined ? {} : { orientation }),
       });
       const handlers = new Map<string, Handler>();
       const did = {
@@ -1426,7 +1433,7 @@ describe('omp tool definitions', () => {
       );
       expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
       expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
-      // Each flag wins its own dimension only.
+      // Each flag wins its own setting only.
       omp.args = { thinking: 'low' };
       const effort = await started('cartographer');
       await effort.fire('session_start');
@@ -1600,6 +1607,34 @@ describe('omp tool definitions', () => {
         )) as { systemPrompt: string[] };
         expect(systemPrompt, `${flag ?? 'plain'} ${kind}`).toContain(forms);
       }
+    });
+
+    it("carries the reached command's orientation right after omp's prompt in every session, launched or not, main or dispatched", async () => {
+      omp.agents = [declare({ name: 'pilot', description: 'd' }, 'Fly.')];
+      const orientation = 'What it is for.\nHow it starts.\nWhy it works.';
+      for (const [flag, kind] of [
+        [undefined, 'main'],
+        ['pilot', 'main'],
+        [undefined, 'sub'],
+      ] as const) {
+        const session = await started(flag, undefined, orientation);
+        await session.fire('session_start', kind);
+        const { systemPrompt } = (await session.fire(
+          'before_agent_start',
+          kind,
+        )) as { systemPrompt: string[] };
+        expect(
+          systemPrompt.slice(0, BASE.length + 1),
+          `${flag ?? 'plain'} ${kind}`,
+        ).toEqual([...BASE, orientation]);
+      }
+    });
+
+    it('carries the orientation without restating a word of it', () => {
+      const content = ompCapabilityExtensions()[0]?.content ?? '';
+      expect(content).toContain('run(["--explain"])');
+      for (const line of ORIENTATION.split('\n'))
+        expect(content).not.toContain(line);
     });
 
     it('gives a launch no note beyond its declaration, its skills and the assignment forms, on any turn', async () => {

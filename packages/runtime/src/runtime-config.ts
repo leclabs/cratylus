@@ -2,9 +2,9 @@
 // The INSTALLATION and its RUNTIME CONFIG — what the projection told this host.
 //
 // Everything cratylus places for a user on a harness lives under one root it owns,
-// `~/.cratylus/<harness>/` (the owned root): the corpus's agents and skills, the
+// `~/.cratylus/<harness>/` (the owned root): the canon's agents and skills, the
 // harness's adapters, the version of cratylus that projected them (`package.json`'s
-// `version`), where the corpus declares any, each capability's configuration
+// `version`), where the canon declares any, each capability's configuration
 // (`runtime.json`), and the contexts the release delivers (`delivered/<origin>/
 // <context>.json`, read-only). The runtime reads them from there.
 //
@@ -32,6 +32,7 @@ import { dirname, join, resolve } from 'node:path';
 import { CLI_BIN } from './bin-name.js';
 import {
   type DeliveredContext,
+  byDelivery,
   deliveredFrom,
 } from './capabilities/concepts/delivered.js';
 
@@ -57,15 +58,15 @@ export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
 // itself, named after the bin: nothing reads it now, and an upgrade removes it.
 export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 
-/** The host's config: the corpus's capability configuration. */
+/** The host's config: the canon's capability configuration. */
 export interface RuntimeConfig {
   /**
-   * Each capability's configuration, keyed by capability, as the corpus's skills
-   * declared it and install emitted it. Corpus meaning a capability acts on (states,
+   * Each capability's configuration, keyed by capability, as the canon's skills
+   * declared it and install emitted it. Canon meaning a capability acts on (states,
    * roles, names) arrives here and is spelled nowhere in this package. Opaque to
    * this reader: the capability that consumes its entry validates it. A capability
    * whose entry is absent must REFUSE and say so, never fall back to a set of its
-   * own — a bundled fallback is how a second copy of corpus meaning gets in.
+   * own — a bundled fallback is how a second copy of canon meaning gets in.
    */
   readonly configuration?: Readonly<Record<string, unknown>>;
 }
@@ -150,7 +151,7 @@ export function runtimeConfigPath(): string | null {
   }
 }
 
-/** The contexts the installation reached delivers, by origin then context; none
+/** The contexts the installation reached delivers, by origin then position; none
  *  where there is no installation to read them from, or it delivers none. */
 export function deliveredContexts(): DeliveredContext[] {
   let root: string;
@@ -162,19 +163,22 @@ export function deliveredContexts(): DeliveredContext[] {
   }
   const dir = join(root, DELIVERED_DIR);
   if (!existsSync(dir)) return [];
+  const installation = { root, scope: installationScope(root) };
   return readdirSync(dir, { withFileTypes: true })
     .filter((origin) => origin.isDirectory())
-    .map((origin) => origin.name)
-    .sort()
     .flatMap((origin) =>
-      readdirSync(join(dir, origin))
+      readdirSync(join(dir, origin.name))
         .filter((name) => name.endsWith('.json'))
-        .sort()
         .map((name) => {
-          const file = join(dir, origin, name);
-          return deliveredFrom(JSON.parse(readFileSync(file, 'utf8')), file);
+          const file = join(dir, origin.name, name);
+          return deliveredFrom(
+            JSON.parse(readFileSync(file, 'utf8')),
+            file,
+            installation,
+          );
         }),
-    );
+    )
+    .sort(byDelivery);
 }
 
 /**

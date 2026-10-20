@@ -7,10 +7,14 @@
 // acting agent, else git's user. The project's purpose (`purpose`), what the
 // project is for, and a context's description (`context`) change like a
 // concept does: a later one with its reason supersedes the current ones, the
-// earlier kept in the journal until its books close. A concept
-// version (`define`, `supersede`, `retire`) belongs to one bounded context and
-// names the versions it supersedes; a decision (`decide`) is named by its own
-// id and records realization, and its acceptance (`accept`) and its
+// earlier kept in the journal until its books close. A context's retirement
+// (`retire-context`) supersedes its current descriptions, and a later
+// description with its reason brings it back. A concept
+// version (`define`, `supersede`, `rename`, `retire`) belongs to one bounded
+// context and names the versions it supersedes; a `rename` is a supersession
+// that gives its concept a new name, carrying the name it renames (`was`), the
+// concept staying one through its names; a decision (`decide`) is named by its
+// own id and records realization, and its acceptance (`accept`) and its
 // deprecation (`deprecate`) are entries of their own, so the decision's record
 // never changes. No verb writes the kinds `classify` or `efficiency` any more:
 // a classification of a decision's kind and a cut's effort figures are read as
@@ -69,9 +73,12 @@ export interface PurposeEntry extends Stamped {
   readonly broughtForward?: string;
 }
 
-/** A version of a concept that states it: its first (`define`) or one that
- *  supersedes every current version (`supersede`). */
-export interface WordedEntry extends Stamped {
+/** A version of a concept that states it: its first (`define`), one that
+ *  supersedes every current version (`supersede`), or a `rename`. */
+export type WordedEntry = StatingEntry | RenameEntry;
+
+/** A first version of a concept, or one superseding every current version. */
+interface StatingEntry extends Stamped {
   readonly kind: 'define' | 'supersede';
   readonly context: string;
   readonly name: string;
@@ -82,12 +89,30 @@ export interface WordedEntry extends Stamped {
   readonly broughtForward?: string;
 }
 
+/** A version superseding every current one that gives the concept a new name
+ *  from then on, `name`; `was` is the name it renames. */
+export interface RenameEntry extends Omit<StatingEntry, 'kind'> {
+  readonly kind: 'rename';
+  readonly was: string;
+}
+
 /** The retirement of a concept, superseding every current version; an opening
  *  only where it competes with another current version. */
 export interface RetireEntry extends Stamped {
   readonly kind: 'retire';
   readonly context: string;
   readonly name: string;
+  readonly reason: string;
+  readonly supersedes: readonly string[];
+  readonly broughtForward?: string;
+}
+
+/** The retirement of a bounded context, with the `reason` it leaves the
+ *  design, superseding its current descriptions and retirements; an opening
+ *  only where it competes with a current description. */
+export interface RetireContextEntry extends Stamped {
+  readonly kind: 'retire-context';
+  readonly context: string;
   readonly reason: string;
   readonly supersedes: readonly string[];
   readonly broughtForward?: string;
@@ -177,6 +202,7 @@ export interface EfficiencyEntry extends Stamped {
 export type Entry =
   | PurposeEntry
   | ContextEntry
+  | RetireContextEntry
   | VersionEntry
   | DecideEntry
   | AcceptEntry
@@ -237,10 +263,18 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
   },
   define: worded,
   supersede: worded,
+  rename: { ...worded, was: text },
   retire: {
     at: text,
     context: text,
     name: text,
+    reason: text,
+    supersedes: texts,
+    broughtForward: optional(text),
+  },
+  'retire-context': {
+    at: text,
+    context: text,
     reason: text,
     supersedes: texts,
     broughtForward: optional(text),

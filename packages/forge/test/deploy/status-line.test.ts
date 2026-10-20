@@ -561,7 +561,7 @@ describe('ensureStatusSegment', () => {
 // ── install ──────────────────────────────────────────────────────────────────
 
 /** Two agents, written at run time. */
-function corpus(): ProjectablePlugin {
+function canon(): ProjectablePlugin {
   const agents = join(tmpRoot(), 'agents');
   mkdirSync(agents, { recursive: true });
   for (const name of ['alpha', 'beta']) {
@@ -588,7 +588,7 @@ describe('install — the status line', () => {
       harness,
       home,
       cwd,
-      corpus: plugin as never,
+      canon: plugin as never,
       practices: FIXTURE_PRACTICE,
       verbose: true,
       ...extra,
@@ -600,7 +600,7 @@ describe('install — the status line', () => {
     home = join(root, 'home');
     cwd = join(root, 'cwd');
     mkdirSync(cwd, { recursive: true });
-    plugin = corpus();
+    plugin = canon();
     out = '';
     vi.spyOn(process.stdout, 'write').mockImplementation((s) => {
       out += String(s);
@@ -635,9 +635,9 @@ describe('install — the status line', () => {
       expect(read()).toBe(host);
     });
 
-    it('lists status for a corpus that delivers no agent, since any session may start as one', async () => {
+    it('lists status for a canon that delivers no agent, since any session may start as one', async () => {
       // The cratylus extension shows the name and mark of any declaration omp
-      // discovers, so the place it renders is made whatever the corpus delivers.
+      // discovers, so the place it renders is made whatever the canon delivers.
       const agents = join(tmpRoot(), 'none');
       mkdirSync(agents, { recursive: true });
       plugin = { ...plugin, agents, practices: undefined };

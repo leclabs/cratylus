@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/schema",
   "version": "0.12.0",
-  "description": "The shapes a corpus authors against: the dimension meta-model as a TypeScript type system. Makes a optimal-signifier compiler-checkable.",
+  "description": "The shapes the canon is written against: its factors, their values, terms and corrections, hook declarations and plugin, as a TypeScript type system, so a value given to the wrong factor fails to compile.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -38,13 +38,13 @@
     "access": "public"
   },
   "keywords": [
-    "latent-lexicography",
+    "cratylic-context-design",
     "cratylus",
     "schema",
     "types",
     "meta-model",
     "agent",
-    "dimension"
+    "factor"
   ],
   "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
   "repository": {

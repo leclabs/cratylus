@@ -1,9 +1,0 @@
-{
-  "id": "01M50D1726XQ35AS8YFE9XFK1P",
-  "at": "2026-10-15T18:26:15.750Z",
-  "by": "architect",
-  "kind": "deprecate",
-  "decisionId": "0010",
-  "entry": "01M4J5R8Y17C9J0PFBCXHACRXF",
-  "reason": "Work packages and their dependency graph no longer exist under intent-based delegation (operator, 2026-10-15); the ledger states what bookkeeping remains."
-}

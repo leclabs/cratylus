@@ -38,7 +38,7 @@ export interface InstallPrompts {
    *  inside `project` only, which then loads it in place of the user's. */
   scope(project: string): Promise<InstallScope | undefined>;
   /** Which practices to install, each offered with its description; `initial` are
-   *  preselected: those already installed here, or on a fresh host the corpus's own.
+   *  preselected: those already installed here, or on a fresh host the canon's own.
    *  At least one is required. */
   practices(
     offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
@@ -133,8 +133,8 @@ export const terminalPrompts: InstallPrompts = {
       await clack.select({
         message:
           found.length > 0
-            ? 'Which harness should the corpus be installed into?'
-            : 'No harness found on this host. Which one should the corpus be installed into?',
+            ? 'Which harness should the canon be installed into?'
+            : 'No harness found on this host. Which one should the canon be installed into?',
         options: options.map((value) => ({ value, label: value })),
       }),
     );

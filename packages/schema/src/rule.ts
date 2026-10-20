@@ -3,7 +3,7 @@
 // the convention's own name and as the convention itself states them: a project that
 // wants a variant states it in its own files.
 //
-// Both are harness-agnostic data. A corpus offers its rulesets on its plugin; an
+// Both are harness-agnostic data. The canon offers its rulesets on its plugin; an
 // install chooses rules from them, and a harness adapter renders each chosen rule to
 // the file its harness loads in every session.
 

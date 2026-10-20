@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG0V",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "workflow",
+  "name": "conceptual model",
+  "wording": "its current state only: the purpose, the bounded contexts with their context map, each live concept as its Cratylic name and correction; what work is accepted against; the project's source of truth for its concepts, never for what an established name means: a recorded name that redefines an established term is a defect, corrected by a new version, never followed",
+  "builtFrom": [],
+  "reason": "Residue gave way to the pattern's correction. And the record had redefined semantic gap, which its architect then took as law: the record is the source of truth for which concepts the project holds, while the name each is recorded under answers to cratylism.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

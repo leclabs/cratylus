@@ -21,7 +21,7 @@
 // not spelled with a dash, or a lone `-`, is a positional.
 //
 // A verb takes a flag only as `--name`; one spelled with a single dash (`-x`,
-// `-gloss`) is an attempted flag no verb takes, and a switch given a value
+// `-correction`) is an attempted flag no verb takes, and a switch given a value
 // (`--repin=x`) is one its verb does not take. A flag the verb does not take,
 // given without `=value`, takes the next token as its value unless that token
 // is flag-shaped: `--` anything, or a single dash, a letter, then letters,

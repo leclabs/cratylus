@@ -5,61 +5,61 @@
 // and its behaviour is evaluated in real use (0142). Its values hold by scope
 // (0250-0257): decisive on the meaning it owns, waiting at the operator's hold points.
 
-import type { RoleCell } from '../compose.js';
-import { appendJournal } from '../dimensions/action-scope/append-journal.js';
-import { writeExamples } from '../dimensions/action-scope/write-examples.js';
-import { intent } from '../dimensions/assignment/intent.js';
-import { humanInTheLoop } from '../dimensions/autonomy/human-in-the-loop.js';
-import { humanOnTheLoop } from '../dimensions/autonomy/human-on-the-loop.js';
-import { missionCommand } from '../dimensions/autonomy/mission-command.js';
-import { principal } from '../dimensions/autonomy/principal.js';
-import { bottomLineUpFront } from '../dimensions/communication-style/bottom-line-up-front.js';
-import { convergence } from '../dimensions/communication-style/convergence.js';
-import { decisionRationale } from '../dimensions/communication-style/decision-rationale.js';
-import { layman } from '../dimensions/communication-style/layman.js';
-import { decides } from '../dimensions/decision-rights/decides.js';
-import { input } from '../dimensions/decision-rights/input.js';
-import { none } from '../dimensions/decision-rights/none.js';
-import { recommends } from '../dimensions/decision-rights/recommends.js';
-import { readBack } from '../dimensions/deliverable/read-back.js';
-import { inUse } from '../dimensions/evaluation/in-use.js';
-import { domainModeling } from '../dimensions/expertise/domain-modeling.js';
-import { researchInvestigation } from '../dimensions/expertise/research-investigation.js';
-import { specificationByExample } from '../dimensions/expertise/specification-by-example.js';
-import { systemDesign } from '../dimensions/expertise/system-design.js';
-import { appendOnly } from '../dimensions/guardrails/append-only.js';
-import { honesty } from '../dimensions/guardrails/honesty.js';
-import { noImplementation } from '../dimensions/guardrails/no-implementation.js';
-import { scopeOfAuthority } from '../dimensions/guardrails/scope-of-authority.js';
-import { reconstitution as memoryReconstitution } from '../dimensions/memory/reconstitution.js';
-import { sourceOfTruth } from '../dimensions/memory/source-of-truth.js';
-import { working } from '../dimensions/memory/working.js';
-import { frontier } from '../dimensions/model/frontier.js';
-import { high } from '../dimensions/model/high.js';
-import { conceptualIntegrity } from '../dimensions/objective/conceptual-integrity.js';
-import { optimize } from '../dimensions/objective/optimize.js';
-import { conceptJournal } from '../dimensions/perception-scope/concept-journal.js';
-import { examples } from '../dimensions/perception-scope/examples.js';
-import { heldOutExamples } from '../dimensions/perception-scope/held-out-examples.js';
-import { outsideResearch } from '../dimensions/perception-scope/outside-research.js';
-import { reports } from '../dimensions/perception-scope/reports.js';
-import { illustration } from '../dimensions/procedure/illustration.js';
-import { orchestratorWorkers } from '../dimensions/procedure/orchestrator-workers.js';
-import { reconstitution } from '../dimensions/procedure/reconstitution.js';
-import { rectify } from '../dimensions/procedure/rectify.js';
-import { architect } from '../dimensions/role/architect.js';
-import { conceptualElevation } from '../dimensions/stance/conceptual-elevation.js';
-import { cratylism } from '../dimensions/stance/cratylism.js';
-import { decisive } from '../dimensions/stance/decisive.js';
-import { firstPrinciples } from '../dimensions/stance/first-principles.js';
-import { greenField } from '../dimensions/stance/green-field.js';
-import { mece } from '../dimensions/stance/mece.js';
-import { simplicity } from '../dimensions/stance/simplicity.js';
-import { systemsThinking } from '../dimensions/stance/systems-thinking.js';
-import { tailoring } from '../dimensions/stance/tailoring.js';
-import { trustButVerify } from '../dimensions/stance/trust-but-verify.js';
+import type { RoleProfile } from '../compose.js';
+import { appendJournal } from '../factors/action-scope/append-journal.js';
+import { writeExamples } from '../factors/action-scope/write-examples.js';
+import { intent } from '../factors/assignment/intent.js';
+import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
+import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
+import { missionCommand } from '../factors/autonomy/mission-command.js';
+import { principal } from '../factors/autonomy/principal.js';
+import { bottomLineUpFront } from '../factors/communication-style/bottom-line-up-front.js';
+import { convergence } from '../factors/communication-style/convergence.js';
+import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
+import { layman } from '../factors/communication-style/layman.js';
+import { decides } from '../factors/decision-rights/decides.js';
+import { input } from '../factors/decision-rights/input.js';
+import { none } from '../factors/decision-rights/none.js';
+import { recommends } from '../factors/decision-rights/recommends.js';
+import { readBack } from '../factors/deliverable/read-back.js';
+import { inUse } from '../factors/evaluation/in-use.js';
+import { domainModeling } from '../factors/expertise/domain-modeling.js';
+import { researchInvestigation } from '../factors/expertise/research-investigation.js';
+import { specificationByExample } from '../factors/expertise/specification-by-example.js';
+import { systemDesign } from '../factors/expertise/system-design.js';
+import { appendOnly } from '../factors/guardrails/append-only.js';
+import { honesty } from '../factors/guardrails/honesty.js';
+import { noImplementation } from '../factors/guardrails/no-implementation.js';
+import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
+import { reconstitution as memoryReconstitution } from '../factors/memory/reconstitution.js';
+import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
+import { working } from '../factors/memory/working.js';
+import { frontier } from '../factors/model/frontier.js';
+import { high } from '../factors/model/high.js';
+import { conceptualIntegrity } from '../factors/objective/conceptual-integrity.js';
+import { optimize } from '../factors/objective/optimize.js';
+import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
+import { examples } from '../factors/perception-scope/examples.js';
+import { heldOutExamples } from '../factors/perception-scope/held-out-examples.js';
+import { outsideResearch } from '../factors/perception-scope/outside-research.js';
+import { reports } from '../factors/perception-scope/reports.js';
+import { illustration } from '../factors/procedure/illustration.js';
+import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
+import { reconstitution } from '../factors/procedure/reconstitution.js';
+import { rectify } from '../factors/procedure/rectify.js';
+import { architect } from '../factors/role/architect.js';
+import { conceptualElevation } from '../factors/stance/conceptual-elevation.js';
+import { cratylism } from '../factors/stance/cratylism.js';
+import { decisive } from '../factors/stance/decisive.js';
+import { firstPrinciples } from '../factors/stance/first-principles.js';
+import { greenField } from '../factors/stance/green-field.js';
+import { mece } from '../factors/stance/mece.js';
+import { simplicity } from '../factors/stance/simplicity.js';
+import { systemsThinking } from '../factors/stance/systems-thinking.js';
+import { tailoring } from '../factors/stance/tailoring.js';
+import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 
-export const architectRole: RoleCell = {
+export const architectRole: RoleProfile = {
   name: 'architect',
   description:
     "The operator's principal architect, owning the conceptual model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
@@ -83,7 +83,7 @@ export const architectRole: RoleCell = {
     procedure: [
       {
         value: rectify,
-        note: "maps the operator's wording of a concept to its most precise established name, and asks the operator when a request's scope is unclear",
+        note: "maps every wording of a concept, the operator's and the record's own alike, to its most precise established name: a recorded name that redefines an established term is a defect it flags and corrects by recording a new version before any work leans on it, never a meaning it follows; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear",
       },
       illustration,
       orchestratorWorkers,

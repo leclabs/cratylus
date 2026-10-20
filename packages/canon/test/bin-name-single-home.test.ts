@@ -29,32 +29,30 @@
 //
 // The forge CLI's name is DERIVED. `packages/forge/src/bin-name.ts` reads the `bin`
 // key npm itself obeys, so there is exactly ONE authored spelling in that package and
-// nothing to hold in agreement — the asymmetry this corpus had not noticed, since
+// nothing to hold in agreement — the asymmetry this repository had not noticed, since
 // "npm reads the manifest, so it cannot be computed" is true of writing the manifest
 // and false of reading it.
 //
-// This gate does NOT decide the name. The brand anchor is cratylism-gated and has
+// This gate does NOT decide the name. The brand's Cratylic name is cratylism-gated and has
 // not converged; `CLI_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
-import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
+import { projectPluginSet } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A cell that declares a `runtime` capability — a shim carrier, and the witness
- *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
-const CELL = 'carrier';
+/** A skill that declares a `runtime` capability — a shim carrier, and the witness
+ *  this gate reads. No canon skill declares one, so the shim-carrier fixture's. */
+const SKILL = 'carrier';
 const CAPABILITY = 'versionSkew';
 const carrierPlugin = {
   name: 'shim-carrier',
@@ -64,7 +62,7 @@ const carrierPlugin = {
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
  *
- * `canon/src/hooks/memory-consolidation-nudge.ts` — the one canon cell that ever
+ * `canon/src/hooks/memory-consolidation-nudge.ts` — the one canon hook declaration that ever
  * imported `CLI_BIN` — is deleted along with the memory skill triad it served
  * (property 1 forbids the edge; there is now nothing here to hold against it).
  */
@@ -101,28 +99,19 @@ const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
 };
 
 // A REAL render tree, not a hand-rolled emitter call: the shim under test is the
-// one that actually lands. V7 made the projector RETURN the artifact tree, so the
-// caller is the one writer — project THEN write.
+// one the projector puts in the tree install places.
 let projectedShim = '';
 
-let scratch: string | undefined;
 beforeAll(async () => {
-  scratch = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
-  const out = scratch;
   const report = await projectPluginSet({
     plugins: [canonPlugin, carrierPlugin],
     adapter: adapterByName('omp'),
   });
-  writeRenderTree(out, report.files);
-  projectedShim = readFileSync(
-    join(out, 'skills', CELL, 'scripts', `${CAPABILITY}.mjs`),
-    'utf-8',
-  );
+  projectedShim =
+    report.files.find(
+      (f) => f.path === `skills/${SKILL}/scripts/${CAPABILITY}.mjs`,
+    )?.content ?? '';
 }, 120_000);
-afterAll(async () => {
-  if (scratch !== undefined)
-    await rm(scratch, { recursive: true, force: true });
-});
 
 // Every hand-authored shell/`.mjs` source under each package's `src`: the ones a human
 // wrote and no compiler
@@ -144,9 +133,9 @@ function shellSources(): string[] {
     // `src/` AND `tooling/`. Canon's build scripts left `src/` for `tooling/` — a
     // sibling, not a child — because the build excludes them and `src/` asserts the
     // opposite. A sweep that still said `src` alone would have dropped every shell and
-    // `.mjs` under `tooling/` out of this law's reach and reported the corpus cleaner
-    // for it. The subject did not move out of the corpus; only this sweep's idea of
-    // where the corpus lives would have gone stale.
+    // `.mjs` under `tooling/` out of this law's reach and reported the repository cleaner
+    // for it. The subject did not move out of the repository; only this sweep's idea of
+    // where its sources live would have gone stale.
     for (const root of ['src', 'tooling', 'targets']) {
       const dir = join(repoRoot, 'packages', pkg.name, root);
       if (pkg.isDirectory() && existsSync(dir)) walk(dir);
@@ -237,14 +226,14 @@ describe('the bin name has exactly one home', () => {
 
 // ── THE CONVICTING FIXTURES ─────────────────────────────────────────────────────
 //
-// A gate over a clean corpus is green whether it works or is DARK. Each assertion
-// above is capture-and-compare; these feed the SAME comparison a corpus in which
+// A gate over a clean repository is green whether it works or is DARK. Each assertion
+// above is capture-and-compare; these feed the SAME comparison a repository in which
 // exactly one site was edited and the other was not — the half-landed rename — and
 // assert it is rejected. Without them, "the bin name has one home" is a claim of the
 // same kind the retired shard above already made — asserted, unmeasured, and wrong.
 
 /** The two capture-and-compare predicates, isolated from their live inputs so a
- *  synthetic BAD corpus can be fed to the very same code the gate above runs. */
+ *  synthetic BAD repository can be fed to the very same code the gate above runs. */
 const spawnedBin = (shim: string): string | undefined =>
   shim.match(/spawnSync\('([^']+)',/)?.[1];
 const manifestBins = (json: string): string[] =>
@@ -252,7 +241,7 @@ const manifestBins = (json: string): string[] =>
 
 // ── the LANGUAGE BOUNDARY — the property that cost this session a dead `/wake` ──
 //
-// Every leg above reads TypeScript or an artifact reached by a name the corpus hands
+// Every leg above reads TypeScript or an artifact reached by a name the canon hands
 // it. But the bin's operative sites are shell and `.mjs`: text no compiler reads, and
 // exactly where a missed rename fails ON A HOST rather than at build. On 2026-08-05
 // that is precisely what happened — a stale
@@ -266,7 +255,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   const sources = shellSources();
   expect(
     sources.length,
-    'no shell/.mjs source found under packages/*/{src,tooling,targets} — the scan is DARK, not the corpus clean',
+    'no shell/.mjs source found under packages/*/{src,tooling,targets} — the scan is DARK, not the repository clean',
   ).toBeGreaterThan(0);
 
   const drifted: string[] = [];
@@ -279,7 +268,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
       // SCOPED BY WHOSE BIN IT IS, not by the variable's shape. The first version of
       // this leg matched any `*_BIN` and convicted `${STANCE_JUDGE_BIN:-claude}` — a
       // THIRD-PARTY program, not ours. A detector that fires on the shape of a name
-      // rather than on its referent is the same error this corpus keeps finding in prose.
+      // rather than on its referent is the same error this repository keeps finding in prose.
       if (!OURS.test(dflt)) continue;
       if (dflt !== CLI_BIN)
         drifted.push(`${rel}: defaults to \`${dflt}\`, not \`${CLI_BIN}\``);
@@ -310,7 +299,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
 // operator types what they were told to type. So the census is a gate at ZERO rather
 // than a ratchet: the derivation exists now, so a spelling is never the cheaper option.
 //
-// COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus deploy` is
+// COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus install` is
 // describing the command, not invoking it, and a gate that convicted prose would be
 // satisfied by deleting the prose. What is scanned is code position.
 
@@ -326,13 +315,7 @@ function codePositionOf(ts: string): string {
 /** Occurrences of the forge bin as a bare word: not the `@cratylus/` npm scope, not
  *  `cratylus` (the runtime's bin, held by the legs above), not a URL segment. */
 function spellsForgeBin(ts: string): number {
-  // A CONFIG FILENAME IS NOT THE BIN. `cratylus.config.ts` shares a word with the
-  // command and is a different concept — the name of a file a consumer writes, not
-  // the program they invoke. Deriving it from `CLI_BIN` was over-engineering that
-  // this very census provoked: vite does not compute `vite.config.ts` from its bin
-  // key either. Excluded by shape (`.config` follows) rather than by a file
-  // exemption, so the rule stays about CONCEPTS and no roster can go stale.
-  const re = new RegExp(`(?<![@./\\w-])${CLI_BIN}(?![-\\w/]|\\.config)`, 'g');
+  const re = new RegExp(`(?<![@./\\w-])${CLI_BIN}(?![-\\w/])`, 'g');
   return (codePositionOf(ts).match(re) ?? []).length;
 }
 
@@ -372,22 +355,20 @@ describe('the forge bin has exactly one authored home', () => {
 
   it('the census DETECTOR is not simply always-empty', () => {
     // The failure this whole file was written against, one bin over: a scan whose
-    // predicate quietly stopped matching is green over any corpus. Feed it the
+    // predicate quietly stopped matching is green over any repository. Feed it the
     // defect it exists to catch, and the two shapes it must NOT catch.
-    expect(spellsForgeBin(`const x = '${CLI_BIN} deploy';`)).toBe(1);
+    expect(spellsForgeBin(`const x = '${CLI_BIN} install';`)).toBe(1);
     expect(spellsForgeBin(`import x from '@${CLI_BIN}/forge';`)).toBe(0);
     // A BARE SPELLING IS THE DEFECT NOW. This expected 0 because the string was the
     // OTHER command's name — `cratylus-run` was not the build bin, so spelling it
     // here was somebody else's business. There is one command; every spelling of it
     // in code position is this gate's business.
     expect(spellsForgeBin(`const x = '${CLI_BIN}';`)).toBe(1);
-    // the filename shares a word with the command and is not it
-    expect(spellsForgeBin(`const f = '${CLI_BIN}.config.ts';`)).toBe(0);
     // and prose is out of scope, in both comment shapes
     expect(
-      spellsForgeBin(`// run \`${CLI_BIN} deploy\` first\nconst x = 1;`),
+      spellsForgeBin(`// run \`${CLI_BIN} install\` first\nconst x = 1;`),
     ).toBe(0);
-    expect(spellsForgeBin(`/* ${CLI_BIN} deploy */\nconst x = 1;`)).toBe(0);
+    expect(spellsForgeBin(`/* ${CLI_BIN} install */\nconst x = 1;`)).toBe(0);
   });
 
   it('the CLI brands its help with the name it is installed under', () => {

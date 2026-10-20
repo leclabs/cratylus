@@ -7,18 +7,18 @@ which is this package's. `runtime` is the generic platform beneath that second f
 record (the concept journal) an agent reconstitutes from.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
-no corpus. It ships with the agent and runs on the host; anything corpus-specific reaches it as
+no canon. It ships with the agent and runs on the host; anything canon-specific reaches it as
 configuration the projection emitted.
 
 The commands a consumer
-types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for the
-author of a corpus whose skills route here, and for a library user of the package.
+types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for whoever
+works on the canon whose skills route here, and for a library user of the package.
 
 ## Capabilities
 
 The runtime ships exactly two capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `concepts` and `versionSkew`. A corpus's skill names one of them as
+names them: `concepts` and `versionSkew`. A canon's skill names one of them as
 `runtime: { capability: … }`.
 
 | capability    | verbs                                                                                                                                                 |
@@ -38,9 +38,10 @@ latest close; the closed period is read from git at that commit.
 `concepts` keeps the concept journal, the one account of the design; it explains itself (see
 [Explaining itself](#explaining-itself)), and its verbs are documented in
 [the `cratylus` README](../cli/README.md). A session's start reads the design: `design` recovers each
-context's subject, relation and live concepts with the concepts each is built from, the delivered
-practice apart, and `state` is its short summary: the project's purpose, then each context's live
-concepts, each one line `name ≜ residue`, with any competing versions. The journal's record runs
+context's subject, relation and live concepts with the concepts each is built from, the practice
+place first (each delivered context in the delivered order, upstream first, or the project's own copy
+of it in its place), and `state` is its short summary: the project's purpose, then each context's live
+concepts, each one line `term ≜ correction`, with any competing versions. The journal's record runs
 from its latest closing of the books: every reading reads the openings as it reads any entries,
 so the design and each standing decision's meaning and status read the same after a close as
 before it; each decision's `entry` is renewed as its opening's id, and the cut or example files
@@ -49,12 +50,12 @@ before it; each decision's `entry` is renewed as its opening's id, and the cut o
 they list `broughtForward`. The
 standing decisions, each a choice of realization, are read apart with `decisions`; `decide`
 records every new one as realization and takes no kind. Its `leakage` query, and the answer of
-each `context`, `define` and `supersede`, warn of implementation leakage: a concept's residue or
+each `context`, `define` and `supersede`, warn of implementation leakage: a concept's correction or
 an example naming code, files, commands, flags, identifiers, tools or libraries instead of what
 must hold. Detection is lexical and only ever warns, and never inspects a decision; a context's
 own words, its concept names and each plain word its current subject names, are never leakage,
 though a command, code span or flag holding a subject's word still is. The same warnings also
-name a concept's residue or a context's subject or relation that cites a decision by its number,
+name a concept's correction or a context's subject or relation that cites a decision by its number,
 recounts its history (what changed, what something used to be or no longer is), or only extends
 the version it replaces, keeping its wording whole and adding to it. Its views read only the
 journal and the example files, and show what stands: a decision stands until it is superseded or
@@ -63,7 +64,24 @@ version was written, decision a decision superseded or kind recorded before the 
 shows until `design` or `decisions` is asked with `--history`, and a context's history carries
 the effort recorded for its past work. It also holds the project's purpose, what the project is
 for: `purpose` records it and, with a reason, changes it, and `state` shows it first, before any
-context.
+context. `retire` without a concept retires a bounded context of the project's own with its
+reason: no reading of the design shows it or its concepts, its decisions show only with
+`--history`, its own history lists the retirement, nothing is recorded into it until `context`
+with a reason brings it back as it stood, and a delivered context it held the place of shows
+again. A retirement recorded on one line of work beside a description on another competes with
+it, listed among the context's competing descriptions as retired with its reason, until a later
+description or retirement settles them; closing the books carries nothing of a retired context,
+and opens a competing retirement beside the description it competes with.
+
+A concept is renamed by a version of its own kind (decision 0322): `supersede --rename` appends a
+`rename` entry, a supersession whose `name` is the new one and whose `was` is the name it renames.
+A concept is the versions of one context joined by supersession or a shared name, whatever order
+they were recorded in, so it stays one through its names: `state` and `design` show it under its
+current name only, `design` shows each built-from reference by the current name of the concept it
+names, and `history` by its current name or any earlier one lists every version with the name it
+was recorded under. A name stays its concept's for the journal's period, and a close opens a
+renamed concept as a `define` under its current name, built-from references written by current
+names; a close is refused while a concept's competing versions name it differently.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read, which append and which close as code.
@@ -134,11 +152,11 @@ verb does not take.
 
 `loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
 install writes into the owned root: each capability's configuration (`configuration`), as the
-corpus's skills declared it. The installation (`installationRoot`) is the one
+canon's skills declared it. The installation (`installationRoot`) is the one
 `$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
 walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
 holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one
-root under `~/.cratylus/`. A tree without `installation.json`, an author's render, is no
+root under `~/.cratylus/`. A tree without `installation.json`, an earlier render tree, is no
 installation. A config without configuration says nothing. A capability that needs its
 configuration and finds none refuses and names the command that writes it.
 

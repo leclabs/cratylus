@@ -1,0 +1,14 @@
+{
+  "id": "01M5DVZ1TV96W63X060M280C1K",
+  "at": "2026-10-20T23:57:21.115Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "agent harness",
+  "wording": "the tool the operator works in, running agents' sessions and offering them tools",
+  "builtFrom": [],
+  "reason": "The correction named the one harness cratylus supports, a choice of realization the decision Omp only already records; meaning states what an agent harness is, never which one is supported.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG1Q"
+  ]
+}

@@ -1,9 +1,0 @@
-{
-  "id": "01M50D1749FCZXXQ0GVN9RWEB6",
-  "at": "2026-10-15T18:26:15.817Z",
-  "by": "architect",
-  "kind": "deprecate",
-  "decisionId": "0125",
-  "entry": "01M4PV7AA7GB4MJTW3DZFRX7YJ",
-  "reason": "The freeze no longer exists under intent-based delegation (operator, 2026-10-15)."
-}

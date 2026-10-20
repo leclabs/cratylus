@@ -15,7 +15,7 @@
 import type { Flag, Verb, VerbFlags } from './verb-flags.js';
 
 /** A verb that explains itself: beyond its purpose, positional and flags, the
- *  anchor of the concept it acts on, when to reach for it, and whether it only
+ *  term of the concept it acts on, when to reach for it, and whether it only
  *  reads, appends, or closes what it holds. */
 export interface ExplainedVerb extends Verb {
   readonly concept: string;

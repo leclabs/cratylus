@@ -1,8 +1,0 @@
-{
-  "id": "01M4QBV2PMXW0VAN7N0BFRTGD8",
-  "at": "2026-10-12T06:12:16.212Z",
-  "kind": "accept",
-  "decisionId": "0134",
-  "entry": "01M4Q6WKKC9TNC9ZMK05PAC4YM",
-  "reason": "The architect agrees: the ledger is cratylus's own append-only record, read where cratylus keeps it; examples, checks and what they use are read from the branch's recorded tip, or from the working copy where the branch has recorded nothing yet. No frozen check changes."
-}

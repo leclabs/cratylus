@@ -68,7 +68,7 @@ describe('the retired persona launch surface', () => {
       harness: 'omp',
       home,
       cwd,
-      corpus: plugin as never,
+      canon: plugin as never,
       practices: FIXTURE_PRACTICE,
     });
 

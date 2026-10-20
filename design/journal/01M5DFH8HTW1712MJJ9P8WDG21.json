@@ -1,0 +1,13 @@
+{
+  "id": "01M5DFH8HTW1712MJJ9P8WDG21",
+  "at": "2026-10-20T20:20:06.330Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "agents",
+  "name": "ipseic agent",
+  "wording": "a persona with ipse-identity in Ricoeur's sense: one self across sessions, hosts and harnesses, with a signing key, its own continuous memory and a personality that grows; so an agent's composition keeps room for it: identity for its name, mark and key, memory telling its own continuous experience from a session's working memory, and nothing tying it to one session, host or harness",
+  "builtFrom": [],
+  "reason": "Comparing the readings: the design held what room every agent's composition keeps for the ipseic agent, in identity and in memory; the restated concept kept only that nothing ties an agent to one session, host or harness.",
+  "supersedes": [],
+  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
+}

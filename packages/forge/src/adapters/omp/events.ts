@@ -25,7 +25,7 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  *    was the replacement.
  *
  *    `agent_end` is documented _"notification-only"_ and takes no result, so a
- *    turn-end cell could not REFUSE there — the best it could do was queue a
+ *    turn-end hook could not REFUSE there — the best it could do was queue a
  *    continuation with `sendUserMessage`, which is a steer wearing a bound's name.
  *    `session_stop` is omp's actual analogue of Claude's `Stop`, and it is not an
  *    analogy: its result type is `{decision?: "block"; reason?: string}`, whose own
@@ -46,7 +46,7 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * 2. **`prompt.submit` is `before_agent_start`, NOT `turn_start`.** `TurnStartEvent`
  *    is `{type, turnIndex, timestamp}` — it realizes the MOMENT and carries no
  *    prompt text at all. `BeforeAgentStartEvent` carries `prompt: string`
- *    (`extensions/types.ts:655-660`), which is what a cell binding this event
+ *    (`extensions/types.ts:655-660`), which is what a hook binding this event
  *    actually needs. The bootstrap's DELTA mapped this to `turn_start` and graded
  *    it `provide`; that was right about `turn_start` and had not yet weighed
  *    `before_agent_start`, which makes it `proxy`.
@@ -58,7 +58,7 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * ABSENT ON PURPOSE: `worktree.create`. omp makes no worktree for a single
  * agent and fires no event when one is made — its task isolation is a session-wide
  * setting that applies a task's changes back to the parent checkout — so the moment
- * has no omp peer and a cell bound to it is projected with the loss declared.
+ * has no omp peer and a hook bound to it is projected with the loss declared.
  */
 export const canonicalToOmp: Readonly<Record<EventName, string>> = {
   'session.start': 'session_start',
@@ -135,7 +135,7 @@ export function ompBindingOf(event: EventName): NativeBinding | undefined {
  * execution."_ and `session_stop` is _"awaited before settle"_, taking an explicit
  * `{decision: "block", reason}` that "remains blocking until the hook allows
  * completion or the operator interrupts". Those are the two, and the second was
- * missing: `turn.end` sat on the notification-only `agent_end`, so the corpus's
+ * missing: `turn.end` sat on the notification-only `agent_end`, so the canon's
  * one turn-end BOUND was realized as a steer on this harness.
  *
  * ONE TABLE, because membership and shape have the same keys. A separate

@@ -1,7 +1,7 @@
-// `enumeratePluginFragmentCatalogs` — the multi-plugin fragment discovery. Proves:
-// (1) it enumerates fragments across ≥2 plugins as NODES with namespaced ids;
-// (2) two distinct plugins sharing an anchor do NOT collide (distinct node objects);
-// (3) node identity is the ADDRESS the resolver keys by (object-import addressing);
+// `enumeratePluginValueCatalogs` — the multi-plugin value discovery. Proves:
+// (1) it enumerates values across ≥2 plugins as NODES with namespaced ids;
+// (2) two distinct plugins sharing a term do NOT collide (distinct node objects);
+// (3) node identity is the ADDRESS (object-import addressing);
 // (4) a cross-plugin reference cycle throws the named ReferenceCycleError — the
 //     resolved reference graph is required to be ACYCLIC, and the failure is a
 //     named error rather than a stack overflow;
@@ -15,8 +15,8 @@ import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   DuplicateNamespaceError,
-  type PluginFragmentCatalogs,
-  enumeratePluginFragmentCatalogs,
+  type PluginValueCatalogs,
+  enumeratePluginValueCatalogs,
 } from '../../src/catalog/index.js';
 import {
   DanglingReferenceError,
@@ -24,15 +24,15 @@ import {
 } from '../../src/resolve/resolve.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
-/** Write a branded-string fragment module `export const <name> = '<body>'`. */
-function writeStringFragment(
+/** Write a branded-string value module `export const <name> = '<body>'`. */
+function writeStringValue(
   dir: string,
-  dimension: string,
+  factor: string,
   file: string,
   exportName: string,
   body: string,
 ): void {
-  const d = join(dir, dimension);
+  const d = join(dir, factor);
   mkdirSync(d, { recursive: true });
   writeFileSync(
     join(d, `${file}.ts`),
@@ -40,38 +40,38 @@ function writeStringFragment(
   );
 }
 
-describe('enumeratePluginFragmentCatalogs — namespaced multi-plugin discovery', () => {
+describe('enumeratePluginValueCatalogs — namespaced multi-plugin discovery', () => {
   let root: string;
-  let plugins: PluginFragmentCatalogs;
+  let plugins: PluginValueCatalogs;
 
   beforeAll(async () => {
     root = mkdtempSync(join(tmpdir(), 'forge-discover-'));
     const alphaDir = join(root, 'alpha');
     const betaDir = join(root, 'beta');
 
-    // Both plugins name a concept `parsimony` under `objective` — a shared ANCHOR.
-    writeStringFragment(
+    // Both plugins name a concept `parsimony` under `objective` — a shared TERM.
+    writeStringValue(
       alphaDir,
       'objective',
       'parsimony',
       'parsimony',
       'parsimony',
     );
-    writeStringFragment(
+    writeStringValue(
       betaDir,
       'objective',
       'parsimony',
       'parsimony',
       'parsimony',
     );
-    // Each also carries a distinct fragment so enumeration is non-trivial.
-    writeStringFragment(alphaDir, 'objective', 'insight', 'insight', 'insight');
-    writeStringFragment(betaDir, 'role', 'builder', 'builder', 'the builder');
+    // Each also carries a distinct value so enumeration is non-trivial.
+    writeStringValue(alphaDir, 'objective', 'insight', 'insight', 'insight');
+    writeStringValue(betaDir, 'role', 'builder', 'builder', 'the builder');
 
-    plugins = await enumeratePluginFragmentCatalogs(
+    plugins = await enumeratePluginValueCatalogs(
       [
-        { name: 'alpha', fragmentsDir: alphaDir },
-        { name: 'beta', fragmentsDir: betaDir },
+        { name: 'alpha', factorsDir: alphaDir },
+        { name: 'beta', factorsDir: betaDir },
       ],
       FIXTURE_MANIFEST,
     );
@@ -79,7 +79,7 @@ describe('enumeratePluginFragmentCatalogs — namespaced multi-plugin discovery'
 
   afterAll(() => rmSync(root, { recursive: true, force: true }));
 
-  it('enumerates fragments across BOTH plugins, keyed by namespace in root order', () => {
+  it('enumerates values across BOTH plugins, keyed by namespace in root order', () => {
     expect([...plugins.keys()]).toEqual(['alpha', 'beta']);
     expect(
       plugins
@@ -95,30 +95,30 @@ describe('enumeratePluginFragmentCatalogs — namespaced multi-plugin discovery'
     ).toEqual(['beta:objective/parsimony', 'beta:role/builder']);
   });
 
-  it('namespaces ids by plugin — a shared anchor does NOT collide', () => {
+  it('namespaces ids by plugin — a shared term does NOT collide', () => {
     const aPars = plugins.get('alpha')?.find((f) => f.body === 'parsimony');
     const bPars = plugins.get('beta')?.find((f) => f.body === 'parsimony');
 
-    // Same anchor, same body — but DISTINCT namespaced ids AND distinct node objects.
+    // Same term, same body — but DISTINCT namespaced ids AND distinct node objects.
     expect(aPars?.node.id).toBe('alpha:objective/parsimony');
     expect(bPars?.node.id).toBe('beta:objective/parsimony');
     expect(aPars?.node).not.toBe(bPars?.node); // object identity = the address
   });
 
-  it('files each fragment under its dimension with value shape from arity', () => {
+  it('files each value under its factor with value shape from arity', () => {
     const builder = plugins
       .get('beta')
       ?.find((f) => f.node.id.endsWith('/builder'));
-    expect(builder?.dimension).toBe('role'); // role is scalar arity → scalar value shape
+    expect(builder?.factor).toBe('role'); // role is scalar arity → scalar value shape
     expect(builder?.node.valueShape).toBe('scalar');
     const insight = plugins
       .get('alpha')
       ?.find((f) => f.node.id.endsWith('/insight'));
-    expect(insight?.dimension).toBe('objective');
+    expect(insight?.factor).toBe('objective');
   });
 });
 
-describe('enumeratePluginFragmentCatalogs — namespace uniqueness', () => {
+describe('enumeratePluginValueCatalogs — namespace uniqueness', () => {
   let root: string;
 
   beforeAll(() => {
@@ -126,7 +126,7 @@ describe('enumeratePluginFragmentCatalogs — namespace uniqueness', () => {
   });
   afterAll(() => rmSync(root, { recursive: true, force: true }));
 
-  // THE FIXTURE MUST BE ABLE TO SUCCEED. Both roots carry a REAL, DISTINCT fragment,
+  // THE FIXTURE MUST BE ABLE TO SUCCEED. Both roots carry a REAL, DISTINCT value,
   // so absent the guard this call returns — and returns ONE catalog, the second root's,
   // with the first root's `dup:objective/first` silently gone. That is the exact
   // last-write-wins the rejection replaces, and asserting only `rejects.toThrow` on two
@@ -134,43 +134,37 @@ describe('enumeratePluginFragmentCatalogs — namespace uniqueness', () => {
   it('rejects two roots claiming ONE namespace — never last-write-wins', async () => {
     const firstDir = join(root, 'first');
     const secondDir = join(root, 'second');
-    writeStringFragment(firstDir, 'objective', 'first', 'first', 'the first');
-    writeStringFragment(
-      secondDir,
-      'objective',
-      'second',
-      'second',
-      'the second',
-    );
+    writeStringValue(firstDir, 'objective', 'first', 'first', 'the first');
+    writeStringValue(secondDir, 'objective', 'second', 'second', 'the second');
 
     const roots = [
-      { name: 'dup', fragmentsDir: firstDir },
-      { name: 'dup', fragmentsDir: secondDir },
+      { name: 'dup', factorsDir: firstDir },
+      { name: 'dup', factorsDir: secondDir },
     ];
     await expect(
-      enumeratePluginFragmentCatalogs(roots, FIXTURE_MANIFEST),
+      enumeratePluginValueCatalogs(roots, FIXTURE_MANIFEST),
     ).rejects.toThrow(DuplicateNamespaceError);
 
     // The report NAMES the namespace and BOTH roots — a duplicate is unfixable
     // without knowing which two dirs claimed it.
     let err: unknown;
     try {
-      await enumeratePluginFragmentCatalogs(roots, FIXTURE_MANIFEST);
+      await enumeratePluginValueCatalogs(roots, FIXTURE_MANIFEST);
     } catch (e) {
       err = e;
     }
     expect(err).toBeInstanceOf(DuplicateNamespaceError);
     const dup = err as DuplicateNamespaceError;
     expect(dup.namespace).toBe('dup');
-    expect(dup.fragmentsDirs).toEqual([firstDir, secondDir]);
+    expect(dup.factorsDirs).toEqual([firstDir, secondDir]);
 
     // NEGATIVE CONTROL: the same two dirs under DISTINCT namespaces enumerate fine,
     // so the rejection is keyed on the namespace and not on anything else the fixture
     // happens to share.
-    const ok = await enumeratePluginFragmentCatalogs(
+    const ok = await enumeratePluginValueCatalogs(
       [
-        { name: 'first', fragmentsDir: firstDir },
-        { name: 'second', fragmentsDir: secondDir },
+        { name: 'first', factorsDir: firstDir },
+        { name: 'second', factorsDir: secondDir },
       ],
       FIXTURE_MANIFEST,
     );
@@ -181,7 +175,7 @@ describe('enumeratePluginFragmentCatalogs — namespace uniqueness', () => {
   });
 });
 
-describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity', () => {
+describe('enumeratePluginValueCatalogs — cross-plugin reference acyclicity', () => {
   let root: string;
 
   beforeAll(() => {
@@ -216,10 +210,10 @@ describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity'
     );
 
     await expect(
-      enumeratePluginFragmentCatalogs(
+      enumeratePluginValueCatalogs(
         [
-          { name: 'A', fragmentsDir: aDir },
-          { name: 'B', fragmentsDir: bDir },
+          { name: 'A', factorsDir: aDir },
+          { name: 'B', factorsDir: bDir },
         ],
         FIXTURE_MANIFEST,
       ),
@@ -240,8 +234,8 @@ describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity'
       ].join('\n'),
     );
     await expect(
-      enumeratePluginFragmentCatalogs(
-        [{ name: 'C', fragmentsDir: cDir }],
+      enumeratePluginValueCatalogs(
+        [{ name: 'C', factorsDir: cDir }],
         FIXTURE_MANIFEST,
       ),
     ).rejects.toThrow(DanglingReferenceError);

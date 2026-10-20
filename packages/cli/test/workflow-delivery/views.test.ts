@@ -31,10 +31,14 @@ it.each(['design', 'state'])(
     const answer = views(h, verb);
     expect(existsSync(join(h.cwd, 'design/journal'))).toBe(false);
     expect(answer.contexts).toEqual([]);
-    expect(answer.practice).toHaveLength(1);
-    assertDelivered(answer.practice[0], verb);
+    expect(answer.practice.filter((c) => c.name === qualified)).toHaveLength(1);
+    assertDelivered(
+      answer.practice.find((c) => c.name === qualified),
+      verb,
+    );
     const named = views(h, verb, '--context', qualified);
     expect(named.contexts).toEqual([]);
+    expect(named.practice.map((c) => c.name)).toEqual([qualified]);
     assertDelivered(named.practice[0], verb);
   },
 );
@@ -62,8 +66,11 @@ it.each(['design', 'state'])(
     ]);
     const local = answer.contexts.find((c) => c.name === 'workflow')!;
     expectMeaning(local, 'A project-only practice.');
-    expect(answer.practice.map((c) => c.name)).toEqual([qualified]);
-    assertDelivered(answer.practice[0], verb);
+    expect(answer.practice.filter((c) => c.name === qualified)).toHaveLength(1);
+    assertDelivered(
+      answer.practice.find((c) => c.name === qualified),
+      verb,
+    );
     expect(snapshot(h.cwd)).toEqual(before);
   },
 );
@@ -78,9 +85,13 @@ it.each(['workflow', 'branch-practice'])(
     ownSource(h, name);
     const before = snapshot(h.cwd);
     for (const verb of ['design', 'state']) {
-      const { contexts: answer, practice } = views(h, verb);
-      // Held by the project, it is part of its design: no practice apart.
-      expect(practice).toEqual([]);
+      const { contexts, practice } = views(h, verb);
+      // Held by the project, it is part of its design: its own copy, unmarked,
+      // stands in the delivered context's place in the practice.
+      expect(practice.map((c) => c.name)).not.toContain(qualified);
+      expect(contexts).toEqual([]);
+      const answer = practice.filter((c) => !('delivered' in c));
+      expect(practice.at(-1)?.name).toBe(name);
       assertSourceView(answer, name);
       // Suppression already holds vacuously on a reader that ignores all delivery.
       // Prove the same assertions reject a duplicate and a delivered override.
@@ -259,12 +270,13 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
   ownSource(h);
   git(h.cwd, 'add', 'design');
   git(h.cwd, 'commit', '-m', 'Source workflow');
-  expect(
-    views(h, 'design')
-      .contexts.map((c) => c.name)
-      .sort(),
-  ).toEqual(['booking', 'workflow']);
-  expect(views(h, 'design').practice).toEqual([]);
+  const held = () => {
+    const { contexts, practice } = views(h, 'design');
+    expect(contexts.map((c) => c.name)).toEqual(['booking']);
+    expect(practice.map((c) => c.name)).toContain('workflow');
+    expect(practice.map((c) => c.name)).not.toContain(qualified);
+  };
+  held();
   git(h.cwd, 'switch', 'journal');
   expect(views(h, 'design').contexts.map((c) => c.name)).toEqual(['booking']);
   assertDelivered(
@@ -272,12 +284,7 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
     'design',
   );
   git(h.cwd, 'switch', 'source');
-  expect(
-    views(h, 'design')
-      .contexts.map((c) => c.name)
-      .sort(),
-  ).toEqual(['booking', 'workflow']);
-  expect(views(h, 'design').practice).toEqual([]);
+  held();
 });
 
 it('workflow/10 — the first project context records only itself and retains the delivered view', () => {
@@ -292,8 +299,11 @@ it('workflow/10 — the first project context records only itself and retains th
   expect(entry).not.toHaveProperty('delivered');
   const answer = views(h, 'design');
   expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
-  expect(answer.practice.map((c) => c.name)).toEqual([qualified]);
-  assertDelivered(answer.practice[0], 'design');
+  expect(answer.practice.filter((c) => c.name === qualified)).toHaveLength(1);
+  assertDelivered(
+    answer.practice.find((c) => c.name === qualified),
+    'design',
+  );
   expect(snapshot(h.cwd)).toEqual(journal);
 });
 
@@ -302,7 +312,12 @@ it('delivery/2 — one installation supplies multiple projects', () => {
   try {
     const result = h.command(['concepts', 'design'], other.root);
     expect(result.code, result.stderr).toBe(0);
-    assertDelivered(JSON.parse(result.stdout).practice.contexts[0], 'design');
+    assertDelivered(
+      JSON.parse(result.stdout).practice.contexts.find(
+        (c: { name: string }) => c.name === qualified,
+      ),
+      'design',
+    );
     expect(snapshot(other.root)).toEqual({});
   } finally {
     other.dispose();

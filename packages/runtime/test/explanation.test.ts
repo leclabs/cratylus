@@ -80,7 +80,14 @@ const PARAMETERS: Record<string, string[]> = {
   purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
-  supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
+  supersede: [
+    'concept',
+    'context',
+    'wording',
+    'reason',
+    'built-from',
+    'rename',
+  ],
   retire: ['concept', 'context', 'reason'],
   decide: [
     'id',
@@ -177,6 +184,25 @@ describe('concepts --explain', () => {
       expect(positional(verb), verb).toEqual([]);
   });
 
+  it('speaks of a concept’s text as its correction, never its residue', () => {
+    const explanation = explain(JOURNAL);
+    expect(JSON.stringify(explanation)).not.toMatch(/residue/i);
+    expect(explanation.purpose).toContain('term ≜ correction');
+    const verb = (name: string) =>
+      explanation.verbs.find((v) => v.name === name);
+    expect(verb('state')?.purpose).toContain('“term ≜ correction”');
+    expect(verb('leakage')?.purpose).toContain(
+      'each live concept’s correction',
+    );
+    for (const name of ['define', 'supersede'])
+      expect(
+        verb(name)?.parameters.find((p) => p.name === 'wording')?.description,
+        name,
+      ).toMatch(
+        /^The concept’s correction( now, restated whole)?: beside its term, .*the missing meaning supplied and the spurious meaning excluded, each stated once, .*never restating what the term already carries/,
+      );
+  });
+
   /** The live concepts of the journal of the repository at `from`, and the
    *  concepts it has retired. */
   function designAt(from: string) {
@@ -193,7 +219,7 @@ describe('concepts --explain', () => {
   }
 
   /** The verbs of `explanation` whose concept is no live concept of `live`. */
-  const unanchored = (explanation: Explanation, live: readonly string[]) =>
+  const ungrounded = (explanation: Explanation, live: readonly string[]) =>
     explanation.verbs
       .filter((v) => !live.includes(v.concept))
       .map((v) => v.name);
@@ -219,12 +245,12 @@ describe('concepts --explain', () => {
       close: 'closing the books',
     });
     const live = designAt(repositoryRoot).live;
-    expect(unanchored(explain(JOURNAL), live)).toEqual([]);
-    expect(unanchored(explain(VERSION_SKEW), live)).toEqual([]);
+    expect(ungrounded(explain(JOURNAL), live)).toEqual([]);
+    expect(ungrounded(explain(VERSION_SKEW), live)).toEqual([]);
   });
 
   it('convicts a verb whose concept the design has retired', () => {
-    const repo = mkdtempSync(join(tmpdir(), 'explain-anchor-'));
+    const repo = mkdtempSync(join(tmpdir(), 'explain-concept-'));
     try {
       execFileSync('git', ['init', '-q'], { cwd: repo });
       const concepts = (...argv: string[]) =>
@@ -242,7 +268,7 @@ describe('concepts --explain', () => {
             '--reason',
             'Fixture.',
           );
-      expect(unanchored(explain(JOURNAL), designAt(repo).live)).toEqual([]);
+      expect(ungrounded(explain(JOURNAL), designAt(repo).live)).toEqual([]);
       concepts(
         'retire',
         'supersession',
@@ -255,7 +281,7 @@ describe('concepts --explain', () => {
       const after = designAt(repo);
       expect(after.retired).toContain('supersession');
       expect(after.live).not.toContain('supersession');
-      expect(unanchored(explain(JOURNAL), after.live)).toEqual(['supersede']);
+      expect(ungrounded(explain(JOURNAL), after.live)).toEqual(['supersede']);
     } finally {
       rmSync(repo, { recursive: true, force: true });
     }

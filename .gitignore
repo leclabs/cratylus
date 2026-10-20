@@ -2,7 +2,6 @@ node_modules/
 dist/
 .turbo/
 *.tsbuildinfo
-.compile-state.json
 .DS_Store
 *.log
 .env
@@ -11,39 +10,11 @@ dist/
 # is per-machine operator state, never repo state. Without this rule a `git add -A` sweeps it into
 # a commit, which is exactly how it once reached history and had to be scrubbed back out.
 .envrc
-.forge/local/
 .claude/worktrees/
-# The projected corpus, one subdirectory per harness (`cratylus project --harness <h>`).
-#
-# A PROJECTION IS NOT A DEPLOYMENT. The render goes to a NEUTRAL staging dir that Claude
-# Code does NOT auto-load — deliberately NOT a `<repo>/.claude/{agents,skills}` tree, since
-# a project-scoped session would load that AS a de-facto deployment merely because it was
-# rendered. Scope is an accident applied at DEPLOY time, never a render side effect. The
-# real target is user scope, `~/.claude` per host; a `<repo>/.claude/{agents,skills}` tree
-# may exist only as an explicit project-scope opt-in by a downstream adopter.
-#
-# NAMED FOR ITS PRODUCER, which is the convention every tool in this class already follows
-# — `.next/`, `.nuxt/`, `.svelte-kit/`, `.astro/`, `.turbo/`. It is NOT `dist/`: `dist` is
-# the publishable library (`files: ["dist"]`, `clean: rm -rf dist`, turbo
-# `build.outputs`), singular per package and shipped to npm. This is a generated corpus for
-# deployment, plural per harness, and shipped nowhere.
-#
-# The harnesses are SUBDIRECTORIES rather than sibling dirs distinguished by suffix. The
-# previous names were `.render-ts` and `.render-ts-<harness>`, where `-ts` meant "the
-# TypeScript render, as opposed to the Python one" — and the Python one (`resolve.py`,
-# `deploy.py`, `packages/canon/ideas`) has not existed for some time. The discriminator
-# named a completed migration, and the concatenated-suffix shape is what let one harness
-# tree drift undetected. `harness-parity.test.ts` compares the two; siblings under one parent is
-# the shape that comparison actually has.
-#
-# `.cratylus/` is wholly derived and safe to `rm -rf`, which is why CI projects it
-# fresh before the gates that read it. It once had a companion attestation file kept
-# deliberately OUTSIDE this ignore — the render oracle — retired when
-# `harness-parity.test.ts` grew fixtures convicting the two regressions that
-# whole-tree hash existed to remember.
+# A project installation, one subdirectory per harness (`cratylus install --scope project`),
+# or an earlier render tree. Ignored here: this repository develops cratylus and commits no
+# installation of it.
 .cratylus/
-__pycache__/
-*.pyc
 .scratchpad/
 # Agent memory stores are per-agent home state — never repo-tracked (raw EPISODIC capture is agent-home only).
 EPISODIC.jsonl

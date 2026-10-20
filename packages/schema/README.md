@@ -1,29 +1,25 @@
 # @cratylus/schema
 
-The shapes a corpus authors against, for [cratylus](../../README.md) — the dimension
-meta-model as a TypeScript type system.
+The shapes [cratylus](../../README.md)'s canon is written against — its factors, their values,
+terms and corrections, hook declarations and plugin — as a TypeScript type system.
 
-It sits at the **bottom of the dependency graph**. `canon` authors against it, `forge` validates and
-projects against it, and it holds no opinion about either. This README is for the author of a
-corpus.
+It sits at the **bottom of the dependency graph**. `canon` is written against it, `forge` validates
+and projects against it, and it holds no opinion about either. Installing and using cratylus is
+[the `cratylus` README](../cli/README.md)'s; this README is for whoever works on the canon or on
+the projector.
 
-This module is the contract and **only** the contract. It states that a dimension _has_ a group, a
-repertoire, an arity, a default enforcement level and a projection, and derives an entire dimension
-type-system from any manifest obeying that shape. It does **not** state which dimensions exist —
-that is the corpus's, and it rides the plugin as `manifest`.
+This module is the contract and **only** the contract. It states that a factor _has_ a group, a
+repertoire, an arity, a default enforcement level and a projection, and derives an entire factor
+type-system from any manifest obeying that shape. It does **not** state which factors exist —
+that is the canon's, and it rides the plugin as `manifest`.
 
-## Install
+## Deriving the canon's type system
 
-```bash
-npm install @cratylus/schema
-```
-
-## Deriving a corpus's type system
-
-A corpus declares its manifest once and reads its whole dimension type-system out of it:
+The canon declares its manifest once (`packages/canon/src/manifest.ts`) and reads its whole
+factor type-system out of it. In outline:
 
 ```ts
-import type { AgentOf, DimensionMeta } from '@cratylus/schema';
+import type { AgentOf, FactorMeta } from '@cratylus/schema';
 
 export const MANIFEST = {
   role: {
@@ -49,81 +45,68 @@ export const MANIFEST = {
     projection: 'text',
     required: true,
   },
-} as const satisfies Record<string, DimensionMeta>;
+} as const satisfies Record<string, FactorMeta>;
 
-export type Dimension = keyof typeof MANIFEST;
+export type Factor = keyof typeof MANIFEST;
 export type Agent = AgentOf<typeof MANIFEST>;
 ```
 
-`as const satisfies` is **load-bearing**. A plain `: Record<string, DimensionMeta>` annotation
+`as const satisfies` is **load-bearing**. A plain `: Record<string, FactorMeta>` annotation
 widens the keys to `string`, which silently collapses every derivation to `string` and takes the
-corpus's dimension typing with it.
+canon's factor typing with it.
 
-`AgentOf<A>` gives every dimension whose arity is not `'attribute'` one field, named in camelCase,
+`AgentOf<A>` gives every factor whose arity is not `'attribute'` one field, named in camelCase,
 holding a list of `Entry` — `{ value, level, slot?, note? }`: the catalog value, the enforcement
 level it holds at, the slot it fills and a qualifier the design states. An explicitly empty
-dimension is `[]`. A wrong dimension→value is a **compile error**: each value is a nominal-branded
-string keyed to its dimension.
+factor is `[]`. A wrong factor→value is a **compile error**: each value is a nominal-branded
+string keyed to its factor.
 
-The group files a dimension; groups are ordered by first appearance and the projected text has one
-section each. The repertoire says how the dimension's values are sourced (`'latent'`, `'open'`,
+The group files a factor; groups are ordered by first appearance and the projected text has one
+section each. The repertoire says how the factor's values are sourced (`'latent'`, `'open'`,
 `'curated'`, or `'fixed'` — a closed list the design fixes). The arity says whether a field holds one
 value (`'scalar'`), many (`'set'`), one per named `Slot` (`'slots'`), or is no field at all but an
 attribute of other values (`'attribute'`). The level is the `EnforcementLevel` (`'advisory'`,
 `'firm'` or `'fixed'`) an entry takes by default, `null` when none applies. The projection says
-whether the dimension is rendered as `'text'` or compiled to harness settings (`'binding'`).
-`required` forbids holding the dimension empty.
+whether the factor is rendered as `'text'` or compiled to harness settings (`'binding'`).
+`required` forbids holding the factor empty.
 
-## Declaring a plugin
+## The canon as a plugin
 
-A package offers its corpus as an agent-plugin: the default export of `defineAgentPlugin`, an
-identity factory, so a consumer addresses the plugin by the imported binding and never by a string
-id.
+[`@cratylus/canon`](../canon/README.md)'s default export is the canon as an `AgentPlugin`, made with
+`defineAgentPlugin`, an identity factory: the `cratylus` command is built with that one plugin, and
+the projector reads it by the imported binding, never by a string id.
 
-```ts
-import { fileURLToPath } from 'node:url';
-import { defineAgentPlugin } from '@cratylus/schema';
-
-const dir = (rel: string) => fileURLToPath(new URL(rel, import.meta.url));
-
-export default defineAgentPlugin({
-  name: 'acme',
-  manifest: MANIFEST,
-  events: ['session.start', 'turn.end'],
-  fragments: dir('./dimensions'),
-  agents: dir('./agents'),
-  skills: dir('./skills'),
-  hooks: dir('./hooks'),
-});
-```
-
-`AgentPlugin` is a `Layout` (the four directories a projector scans: `fragments`, `agents`,
-`skills` and `hooks`) plus what the plugin contributes: the `manifest`, the `events` vocabulary,
+`AgentPlugin` is a `Layout` (the four directories the projector scans: `factors`, `agents`,
+`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary,
 the `practices` it offers, the `plumbing` every practice is installed with, and the `rulesets` it
-offers. A plugin gives its directories as absolute paths; [`@cratylus/canon`](../canon/README.md)
-shows one locating its own.
+offers. Canon gives its directories as absolute paths, located against its own module.
 
 ## What is here
 
-| export                                                                  | what it is                                                               |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `DimensionMeta` · `DimensionManifest` · `mergeManifest`                 | a dimension's metadata, the manifest shape, and the per-key merge        |
-| `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`          | how values are sourced, how many a field holds, and one held value       |
-| `DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `AgentOf`    | generic derivations over any manifest                                    |
-| `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `anchorOf` | a dimension value, bare or self-enforcing, and its α/residue split       |
-| `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                         |
-| `JsonValue`                                                             | the data a skill's runtime face may carry as `configuration`             |
-| `HookCell` · `hookIrOf` · `resolveWorker`                               | the doctrine-free source-cell kernel, and a worker's template resolution |
-| `ProjectionFact` · `ProjectionFacts`                                    | the names of the facts a projector binds into a hook worker's template   |
-| `AgentPlugin` · `Layout` · `defineAgentPlugin`                          | a package's plugin declaration                                           |
-| `Practice` · `Plumbing` · `Agent.dispatches`                            | a way of working, its shared plumbing, and an agent's dispatch           |
-| `Rule` · `Ruleset`                                                      | a working convention and why it holds, and one convention's rules        |
+| export                                                                                           | what it is                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `FactorMeta` · `FactorManifest` · `ManifestDeclaring` · `mergeManifest`                          | a factor's metadata, the manifest shape, a plugin as the merge sees one, and the per-key merge                              |
+| `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`                                   | how values are sourced, how many a field holds, and one held value                                                          |
+| `FactorOf` · `SetFactorOf` · `RequiredFactorOf` · `FieldFactorOf` · `FactorFieldsOf` · `AgentOf` | generic derivations over any manifest                                                                                       |
+| `KebabToCamel` · `kebabToCamel` · `FactorFieldName`                                              | a factor's name to the field it occupies, at the type level and at runtime                                                  |
+| `Value` · `Enforcing` · `Binding` · `enforcing` · `isFactorValue` · `bodyOf` · `termOf`          | a factor's value, bare or self-enforcing, and its term/correction split                                                     |
+| `Agent` · `factorValueOf` · `AgentContract` · `JsonSchema`                                       | the agent shape, a factor field read off it, and its typed handoff                                                          |
+| `Skill` · `SkillDeploy` · `SkillExpression` · `CapabilityName`                                   | the skill shape and the runtime capability it may be a face of                                                              |
+| `Mark` · `markToColor`                                                                           | an agent's emoji·hue mark, and its hue as a terminal color                                                                  |
+| `JsonValue`                                                                                      | the data a skill's runtime face may carry as `configuration`                                                                |
+| `HookDeclaration` · `HookSource` · `HookWorker` · `HookMessage` · `HookSubstrate` · `EventName`  | the doctrine-free hook declaration, its config-IR entry, its worker payload, the speech it carries, its substrate and event |
+| `hookIrOf` · `resolveWorker`                                                                     | a declaration's lift to the hook config-IR, and a worker's template resolution                                              |
+| `ProjectionFact` · `ProjectionFacts`                                                             | the names of the facts a projector binds into a hook worker's template                                                      |
+| `AgentPlugin` · `Layout` · `defineAgentPlugin`                                                   | the canon's plugin declaration                                                                                              |
+| `Practice` · `Plumbing`                                                                          | a way of working, and the plumbing every practice is installed with                                                         |
+| `Rule` · `Ruleset`                                                                               | a working convention and why it holds, and one convention's rules                                                           |
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
-`null`), and optionally the role it `holds`, the roles it `dispatches` to, its model `routing`
-(`{ tier, effort }`), `readOnly`, the `skills` it operates through and its `isolation`. The corpus's
-own fold copies these from its dimensions because the projector is blind to which dimension is
-which; a harness binds model routing per agent, and a practice is closed under `dispatches`.
+`null`), and optionally the role it `holds`, its model `routing` (`{ tier, effort }`), its typed
+handoff `contract`, the `skills` it operates through and its `isolation`. The canon's own fold
+copies `holds`, `routing` and `contract` from its factors, because the projector is blind to which
+factor is which; a harness binds model routing per agent. `skills` and `isolation` are not factors:
+a canon states them on the agent itself, and cratylus's own canon sets neither.
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic event name (`EventName`), the
 `Substrate` a constraint is realized on, the `Hook` wire shape, `NativeBinding`, and
@@ -134,15 +117,15 @@ harness. It imports nothing.
 
 `SkillDeploy.runtime` names the runtime capability a skill is a face of and, optionally, the
 `configuration` that capability receives: a `JsonValue`, with no opinion here about any
-capability's keys. `deploy` gathers the `configuration`
+capability's keys. `install` gathers the `configuration`
 from every skill of the resolved plugin set and emits it into the host runtime config keyed by
 capability, beside the event vocabulary; the runtime's `loadRuntimeConfig` lifts it. Meaning a
-capability needs therefore lives in the corpus and reaches the runtime as configuration, never as a
+capability needs therefore lives in the canon and reaches the runtime as configuration, never as a
 second copy spelled inside the runtime.
 
 ## No edge out
 
 This package imports nothing. A capability's name is a plain `CapabilityName` string here; the closed
-set is declared where a corpus declares its own vocabulary (`RUNTIME_CAPABILITIES` in
+set is declared where the canon declares its own vocabulary (`RUNTIME_CAPABILITIES` in
 `packages/canon/src/manifest.ts`), and `SkillDeploy.runtime` is parameterized over it. The shape
-belongs here, and the vocabulary belongs to the corpus that declares the members.
+belongs here, and the vocabulary belongs to the canon that declares the members.

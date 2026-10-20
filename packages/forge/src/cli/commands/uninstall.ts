@@ -537,7 +537,7 @@ function removePlacedFiles(
 
 /** What cratylus put in the runtime config in `home`'s file (or, where
  *  `$AGENT_RUNTIME_CONFIG` is set, that path): this harness's stanza, and — when no other
- *  installed harness has one — the corpus's parts too, the event vocabulary and the
+ *  installed harness has one — the canon's parts too, the event vocabulary and the
  *  configuration of the capabilities the deploy recorded writing. A part is taken out
  *  while it is what the deploy recorded; one the host has changed since stands, as does
  *  every key the host placed, each named. The file goes only when nothing is left in it. */
@@ -745,7 +745,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
   const { root } = placement;
   const run = { dry: opts.dryRun ?? false, verbose: opts.verbose ?? false };
   // A project's `.cratylus/<harness>` holding files but no installation record, with
-  // nothing referring into it, is an author's render tree: not this command's.
+  // nothing referring into it, is an earlier render tree: not this command's.
   if (
     scope === 'project' &&
     holdsRenderTree(root) &&
@@ -753,7 +753,7 @@ export function runUninstall(opts: UninstallCmdOpts): number {
       .length === 0
   ) {
     return fail(
-      `${root} holds files but no installation record, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; nothing is removed, so remove it yourself if it is no longer wanted`,
+      `${root} holds files but no installation record, so it is an earlier render tree, not an installation; nothing is removed, so remove it yourself if it is no longer wanted`,
     );
   }
   const tally: Tally = { removed: [], left: [] };

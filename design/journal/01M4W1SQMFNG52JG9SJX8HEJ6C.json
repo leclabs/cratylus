@@ -1,9 +1,0 @@
-{
-  "id": "01M4W1SQMFNG52JG9SJX8HEJ6C",
-  "at": "2026-10-14T01:52:58.511Z",
-  "by": "architect",
-  "kind": "accept",
-  "decisionId": "0209",
-  "entry": "01M4VZ5XZYX31KKDGZ7RJMAWNY",
-  "reason": "The operator, 2026-10-14: fix now whatever makes the tools work for a fresh session; realized with deprecation (0212)."
-}

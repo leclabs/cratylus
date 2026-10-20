@@ -1,9 +1,0 @@
-{
-  "id": "01M53CG04E4BSX8EGTZCX43RDT",
-  "at": "2026-10-16T22:14:34.894Z",
-  "by": "Lance Caraccioli",
-  "kind": "deprecate",
-  "decisionId": "0112",
-  "entry": "01M4NZSEAETNXKA7EKDG5T1DKE",
-  "reason": "Meaning is recorded only in concepts: agents' model role carries 'which model a tier runs on is the operator's choice, kept as the operator's own setting'; install: 'It asks for the model each tier runs on and keeps the answer as the host's own setting; a tier it can neither be told nor ask about is named as the operator's next step'; host (folded): 'whatever on it cratylus did not place, the operator's own settings included, is the host's own', which upgrade and uninstall keep via 'everything the host owns' now state it."
-}

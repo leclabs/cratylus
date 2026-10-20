@@ -1,8 +1,0 @@
-{
-  "id": "01M4Q6N9KXW21ZYZD98N78VX78",
-  "at": "2026-10-12T04:41:43.805Z",
-  "kind": "accept",
-  "decisionId": "0132",
-  "entry": "01M4Q6J6GJVSNMAA93R25F2648",
-  "reason": "The architect agrees: what is frozen is read from the record, as the branch's recorded tip holds it."
-}

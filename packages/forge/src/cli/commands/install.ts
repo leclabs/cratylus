@@ -1,31 +1,16 @@
-// `cratylus install [--harness <name>]` — the zero-config path, for an operator who
-// is not in a project at all.
+// `cratylus install [--harness <name>]` — placing the canon on this machine, for an
+// operator who wants their agents here and has no repository in hand at all.
 //
-// WHY THIS IS A DIFFERENT VERB FROM `deploy`. `project`/`deploy` serve a repository:
-// a corpus is named in a config, rendered into a tree the repo owns, and placed. That
-// is the right shape for a team pinning a corpus to a codebase, and the wrong shape
-// for the far more common case — someone who wants their agents on this machine and
-// has no repository in hand at all. Asking them to `npm init`, write a config, and
-// learn a two-stage pipeline to obtain the DEFAULT answer is the friction this verb
-// removes.
-//
-// WHAT MAKES IT SAFE TO DEFAULT A CORPUS HERE, when `project` must not. The corpus is
-// not INVENTED by the projector — it is handed in by the hub package that mounts this
-// verb. `forge` still knows no corpus: it installs what it was told to and refuses
-// when it was told nothing. The hub package supplies the default because it is the
-// only package permitted to know both halves. Another corpus is installed by naming
-// it in a `cratylus.config.ts`, which is the one way to choose.
-//
-// A CONFIG STILL WINS. If the cwd has one, `install` uses it — otherwise the operator
-// who wrote a config would be silently ignored by the friendliest command on the
-// surface, which is the sharpest way to lose their trust. A config that cannot be
-// loaded (its packages are not installed yet, it does not parse) ends the run with
-// the loader's own one-line message, writing nothing: falling back to the default
-// corpus there would install something other than what the config names.
+// IT INSTALLS THE CANON IT IS HANDED. The canon is not INVENTED by the projector — it
+// is handed in by the hub package that mounts this verb, the canon the command is
+// built with. `forge` still knows no canon: it installs what it was told to and
+// refuses when it was told nothing. The hub package supplies it because it is the only
+// package permitted to know both halves. Nothing in the working directory chooses
+// another.
 //
 // WHERE IT PLACES: THE OWNED ROOT. Everything install places for the user on the
 // harness lives under one root it owns (`~/.cratylus/<harness>`, `deploy/owned-root.ts`):
-// the corpus's agents and skills, the harness's adapters, and the version of cratylus
+// the canon's agents and skills, the harness's adapters, and the version of cratylus
 // that projected them. The harness's own surfaces only refer into it — for omp, the
 // owned root linked into omp's plugin directory as an extension package, as `omp plugin
 // link` would — so every project of the user is offered it and no host file is
@@ -46,12 +31,12 @@
 // the user's preselected; `--yes`, or no terminal, takes the user's.
 //
 // THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
-// which harness, which of the corpus's practices, which of its rules, and which model
+// which harness, which of the canon's practices, which of its rules, and which model
 // each tier the agents fall back to, and each persona's own role, runs on. Each has a
 // flag; a decision given by flag is never asked. The practices are the one decision no
 // run takes for the operator: with neither `--practices` nor `--all`, a terminal is
 // asked (or, under `--yes`, given the practices already installed here, or on a fresh
-// host the corpus's preselected ones) and a run with no terminal refuses, writing
+// host the canon's preselected ones) and a run with no terminal refuses, writing
 // nothing. Of the rest a run with no terminal (or `--yes`) takes the default. The rules
 // default to none, and the choice, once made, is recorded by name and kept by every
 // later install that is not told otherwise. Before anything is written the run shows
@@ -84,27 +69,18 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import { START } from '@cratylus/runtime';
 import {
   INSTALLATION_RECORD_FILE,
   type InstallScope,
 } from '@cratylus/runtime/runtime-config';
-import { mergeManifest } from '@cratylus/schema';
+import type { AgentPlugin } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
   adapterByName,
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
-import {
-  ConfigLoadError,
-  ConfigShapeError,
-  type CratylusConfig,
-  EmptyExtendsError,
-  MissingPackageError,
-  loadConfig,
-  requirePlugins,
-} from '../../config/index.js';
-import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type DeliveredDocument,
   addModelRoles,
@@ -129,12 +105,10 @@ import { harnessDirIn } from '../../deploy/scope.js';
 import {
   type OfferedRuleset,
   type ProjectedTree,
-  discoverFragments,
+  discoverValues,
   projectPluginSet,
-  resolveFragmentBodies,
 } from '../../project/index.js';
 import { resolveSkills } from '../../project/resolve-skills.js';
-import type { AgentPlugin } from '../../resolve/index.js';
 import { fail as failLine, say, warn as warnLine } from '../style.js';
 import {
   type InstallPrompts,
@@ -154,8 +128,8 @@ export interface InstallCmdOpts {
    *  Absent: asked on a terminal where the project is not the home, the user's
    *  preselected; else the user's. */
   scope?: InstallScope;
-  /** The corpus this CLI was composed with, imported statically by its owner. */
-  corpus?: AgentPlugin;
+  /** The canon this CLI was composed with, imported statically by its owner. */
+  canon?: AgentPlugin;
   /** The declared version of the build doing the install, recorded in the owned root
    *  as the version that projected it. */
   version?: string;
@@ -166,7 +140,7 @@ export interface InstallCmdOpts {
   dryRun?: boolean;
   cwd?: string;
   /** `--practices <name,…>`: the declared practices to install. Naming none is
-   *  refused, as is a name the corpus does not declare. Given with neither this nor
+   *  refused, as is a name the canon does not declare. Given with neither this nor
    *  `all`, a terminal is asked and a run without one is refused. */
   practices?: string;
   /** `--all`: install every declared practice. Refused beside `practices`. */
@@ -186,7 +160,7 @@ export interface InstallCmdOpts {
    *  Absent: asked where the host hides it and no earlier install was answered. */
   agentStatus?: string;
   /** `--yes`: on a terminal, take the default of every decision not given (the
-   *  practices already installed here, or on a fresh host the corpus's preselected
+   *  practices already installed here, or on a fresh host the canon's preselected
    *  ones), ask nothing, and place without asking to go ahead. It is no answer to the
    *  practices decision where there is no terminal. */
   yes?: boolean;
@@ -206,9 +180,7 @@ export interface InstallCmdOpts {
 /** Which harnesses this host actually has, by the directory each adapter reads (`home`
  *  names the home they are looked for in; absent, each harness's own default).
  *
- *  DETECTION IS OFFERED, NEVER ASSUMED. `project` may not guess a harness — a render
- *  tree that depends on which harness happens to be installed is not `REGENERABLE`,
- *  and that is a property about ARTIFACTS. `install` writes no artifact a build
+ *  DETECTION IS OFFERED, NEVER ASSUMED. `install` writes no artifact a build
  *  reproduces; it acts on THIS machine, where "which harnesses are here" is the
  *  question being asked rather than a variable leaking into an output. */
 export function detectHarnesses(home?: string): string[] {
@@ -293,12 +265,12 @@ function parseRules(raw: string, offered: readonly OfferedRuleset[]): string[] {
   if (unknown.length > 0) {
     const offers =
       offered.length === 0
-        ? 'this corpus offers no rulesets'
+        ? 'this canon offers no rulesets'
         : offered
             .map((s) => `${s.name}: ${list(s.rules.map((r) => r.name))}`)
             .join('; ');
     throw new Refusal(
-      `--rules: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no ruleset or rule of this corpus (${offers}); name only those, or 'none'`,
+      `--rules: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no ruleset or rule of this canon (${offers}); name only those, or 'none'`,
     );
   }
   return rules;
@@ -328,39 +300,6 @@ function parseModelRoles(
     chosen[role] = model;
   }
   return chosen;
-}
-
-/**
- * The cwd's config, or a refusal carrying the loader's message. `cratylus init` writes
- * a config whose packages are not yet installed, so an unloadable config is an
- * ordinary state of the directory: the loader's errors each already say what is wrong
- * and what to do, and that line is the whole of the run's output. A config that loads
- * but names no usable corpus (it extends nothing, or no plugin it extends carries the
- * dimension manifest) is refused the same way, before the render that would otherwise
- * end in a stack trace.
- */
-async function loadConfigOrRefuse(configPath: string): Promise<CratylusConfig> {
-  let config: CratylusConfig;
-  try {
-    config = await loadConfig(configPath);
-    requirePlugins(config, configPath);
-  } catch (e) {
-    if (
-      e instanceof MissingPackageError ||
-      e instanceof ConfigLoadError ||
-      e instanceof ConfigShapeError ||
-      e instanceof EmptyExtendsError
-    ) {
-      throw new Refusal(e.message);
-    }
-    throw e;
-  }
-  try {
-    mergeManifest(config.extends);
-  } catch (e) {
-    throw new Refusal(`${configPath}: ${(e as Error).message}`);
-  }
-  return config;
 }
 
 export async function runInstall(opts: InstallCmdOpts): Promise<number> {
@@ -450,43 +389,31 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
-  // an author's render tree, which no installation takes over (decision 0311).
+  // an earlier render tree, which no installation takes over (decision 0311).
   if (scope === 'project' && holdsRenderTree(root)) {
     throw new Refusal(
-      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; render that tree elsewhere with \`${CLI_BIN} project --out <dir>\`, or move it away, and install again`,
+      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an earlier render tree, not an installation; move it away, and install again`,
     );
   }
   // The installation this one replaces: its record, under the owned root.
   const prior = readInstallationRecord(root);
 
-  // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
-  const configPath = join(cwd, CONFIG_FILE);
-  let plugins: readonly AgentPlugin[];
-  let source: string;
-
-  if (existsSync(configPath)) {
-    const config = await loadConfigOrRefuse(configPath);
-    plugins = config.extends;
-    source = configPath;
-  } else if (opts.corpus !== undefined) {
-    plugins = [opts.corpus];
-    source = 'the corpus this command was built with';
-  } else {
-    // The refusal a LIBRARY owes: no corpus was named, and inventing one is the one
-    // thing this package may never do.
-    throw new Refusal(
-      `no corpus; write a ${CONFIG_FILE} that names one, or mount this CLI from a package that names one`,
-    );
+  // ── WHICH CANON ──────────────────────────────────────────────────────────────
+  if (opts.canon === undefined) {
+    // The refusal a LIBRARY owes: no canon was handed in, and inventing one is the
+    // one thing this package may never do.
+    throw new Refusal('no canon; mount this CLI from a package that names one');
   }
+  const plugins: readonly AgentPlugin[] = [opts.canon];
+  const source = 'the canon this command was built with';
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
-  // What the corpus renders depends on which practices are chosen, and which practices
-  // the corpus declares is only known from a render: so render the whole corpus once
+  // What the canon renders depends on which practices are chosen, and which practices
+  // the canon declares is only known from a render: so render the whole canon once
   // to learn them, and again with the ones chosen.
-  const resolvedBodies = resolveFragmentBodies(
-    await discoverFragments(plugins),
-    [],
-  );
+  // Discovery refuses a canon whose values share a namespace or whose
+  // reference graph dangles or cycles, before anything is rendered.
+  await discoverValues(plugins);
   const render = async (
     practices: readonly string[] | undefined,
     rules: readonly string[],
@@ -495,7 +422,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     const report = await projectPluginSet({
       plugins,
       adapter,
-      resolvedBodies,
       log: () => {},
       warn: (line) => warnings.push(line),
       // The hooks print each skill's directory, so what fits the harness's output cap
@@ -513,22 +439,33 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // practices, or a terminal is asked, and a run with neither refuses before anything
   // is written — under `--yes` and over an existing install alike, since what an
   // install placed last time is the default of a question, never an answer to one.
-  // A corpus that declares no practices has nothing to decide and places all it has.
+  // A canon that declares no practices has nothing to decide and places all it has.
   const declared = rendered.report.practices;
   const declaredNames = declared.map((p) => p.name);
   const declaredList =
     declaredNames.length === 0 ? 'none' : list(declaredNames);
   // What is installed here: the practices the last install recorded (in its owned
-  // root, or, for the user, an earlier installation's deploy record) that this corpus
-  // still declares. A host with none recorded is a fresh one.
+  // root, or, for the user, an earlier installation's deploy record) that this canon
+  // still declares, a former name of one counting as the practice that now holds it
+  // (decision 0332). A host with none recorded is a fresh one.
   const recorded =
     prior !== null
       ? (prior.practices ?? null)
       : scope === 'user'
         ? readManifest(harnessDir).practices
         : null;
+  const formerlyRecorded = (p: (typeof declared)[number]): string[] =>
+    recorded === null || recorded.includes(p.name)
+      ? []
+      : p.formerNames.filter((n) => recorded.includes(n));
   const installed =
-    recorded === null ? [] : declaredNames.filter((n) => recorded.includes(n));
+    recorded === null
+      ? []
+      : declared
+          .filter(
+            (p) => recorded.includes(p.name) || formerlyRecorded(p).length > 0,
+          )
+          .map((p) => p.name);
   const preselection =
     installed.length > 0
       ? installed
@@ -550,7 +487,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     const unknown = named.filter((n) => !declaredNames.includes(n));
     if (unknown.length > 0) {
       throw new Refusal(
-        `--practices: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no practice of this corpus (declared: ${declaredList}); name only declared practices`,
+        `--practices: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no practice of this canon (declared: ${declaredList}); name only declared practices`,
       );
     }
     chosen = named;
@@ -570,7 +507,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   }
   if (chosen !== undefined) {
     if (chosen.length === 0) throw nothingChosen();
-    // Declaration order, each once: the order the corpus lists them in.
+    // Declaration order, each once: the order the canon lists them in.
     chosen = declaredNames.filter((n) => (chosen as string[]).includes(n));
   }
 
@@ -607,7 +544,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     try {
       rendered = await render(chosen, rules);
     } catch (e) {
-      // A choice the corpus cannot place whole (a practice not closed under dispatch,
+      // A choice the canon cannot place whole (a practice not closed under dispatch,
       // say) is a refusal with nothing written, not a crash.
       throw new Refusal(e instanceof Error ? e.message : String(e));
     }
@@ -615,7 +552,19 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const removed = installed.filter(
     (n) => !(chosen ?? declaredNames).includes(n),
   );
-  const decided = chosen === undefined ? undefined : { chosen, removed };
+  // Each practice kept that the earlier install recorded by a former name, named once.
+  const taken = chosen;
+  const carried =
+    taken === undefined
+      ? []
+      : declared
+          .filter((p) => taken.includes(p.name))
+          .flatMap((p) => {
+            const from = formerlyRecorded(p);
+            return from.length > 0 ? [{ from, to: p.name }] : [];
+          });
+  const decided =
+    taken === undefined ? undefined : { chosen: taken, removed, carried };
   const tree: ProjectedTree = rendered.report;
 
   // ── WHICH MODELS ─────────────────────────────────────────────────────────────
@@ -791,7 +740,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const displayOpen = hidden && !statusAnswered;
 
   const placedTree: ProjectedTree = rendered.report;
-  // Each capability's configuration, as the corpus's skills declare it.
+  // Each capability's configuration, as the canon's skills declare it.
   const configuration = capabilityConfiguration(
     (await resolveSkills(plugins)).map((s) => s.skill),
   );
@@ -809,7 +758,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     const found = emptyFindings();
     found.warnings.push(...rendered.warnings);
     found.left.push(...left);
-    found.detail.push(`corpus: ${source}`, `harness: ${harness} → ${root}`);
+    found.detail.push(`canon: ${source}`, `harness: ${harness} → ${root}`);
     // An earlier installation first: what it placed on the harness's own surfaces is
     // taken back by its record, so what follows meets the host's own files. It was
     // only ever the user's, and a project install writes nothing under the home.
@@ -953,10 +902,15 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The practices installed and those taken out, or `undefined` where the corpus
-     *  declares none. */
+    /** The practices installed, those taken out, and those kept that the earlier
+     *  install recorded by a former name, or `undefined` where the canon declares
+     *  none. */
     practices:
-      | { chosen: readonly string[]; removed: readonly string[] }
+      | {
+          chosen: readonly string[];
+          removed: readonly string[];
+          carried: readonly { from: readonly string[]; to: string }[];
+        }
       | undefined;
     /** The rules placed, those of an earlier choice no longer offered, and whether the
      *  choice is still open: offered, but neither told, recorded nor asked. */
@@ -990,11 +944,17 @@ function describe(
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (ctx.practices !== undefined) {
+    const carried =
+      ctx.practices.carried.length > 0
+        ? `; ${dry ? 'would carry over' : 'carried over'} ${list(ctx.practices.carried.map((c) => `${list(c.from)} as ${c.to}`))}`
+        : '';
     const removed =
       ctx.practices.removed.length > 0
         ? `; ${dry ? 'would remove' : 'removed'} ${list(ctx.practices.removed)}`
         : '';
-    lines.push(`  practices: ${list(ctx.practices.chosen)}${removed}`);
+    lines.push(
+      `  practices: ${list(ctx.practices.chosen)}${carried}${removed}`,
+    );
   }
   if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
     const dropped =
@@ -1084,6 +1044,8 @@ function describe(
         ]
       : []),
     `to remove it all: ${uninstallCommand(adapter, ctx.scope)}${project ? `, run in ${ctx.base}` : ''}`,
+    // Where the architect is installed, the run ends with how using cratylus starts.
+    ...(tree.agentNames.includes('architect') ? [START] : []),
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;

@@ -11,18 +11,24 @@
 // IDENTITY: the identity the earliest of its entries carrying one carries,
 // which a closing of the books carries into each period it opens, else the id
 // of its earliest entry; it holds whatever the context is later described as
-// or called.
+// or called. Its POSITION is its 0-based place among the contexts its origin
+// delivers, upstream first: every reading orders delivered contexts by origin,
+// then position (`byDelivery`), never by the file each is read from.
 //
-// THE VIEWS show a delivered context APART from the project's own contexts, in
-// the place of its own `practiceOf` gives (`practice`), labelled as the practice
-// the project's agents work by and offered before the project's contexts; never
-// among them nor in the project's context map. It is named by its origin
+// THE VIEWS show the delivered contexts APART from the project's own other
+// contexts, in the place of their own `practiceOf` gives (`practice`), labelled
+// as the practice the project's agents work by and offered before the project's
+// other contexts, every delivered context in the delivered order; never among
+// those contexts nor in the project's context map. Each is named by its origin
 // (`<origin>:<context>`) and marked delivered and read-only, unless the journal
 // being read holds a context whose identity is its identity: that journal owns
-// the context, which is then part of its design and shown among its own. Nothing
-// is ever appended to a project's journal for a delivered context.
+// the context, part of its design, and its own copy stands in the delivered
+// context's place, named by its own name, unmarked and recorded into as any of
+// its contexts. Nothing is ever appended to a project's journal for a delivered
+// context.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { InstallScope } from '../../runtime-config.js';
 import { journalAt } from './journal.js';
 import { Folded, type Meaning, designState } from './views.js';
 
@@ -32,6 +38,8 @@ export interface DeliveredContext {
   readonly version: string;
   readonly context: string;
   readonly identity: string;
+  /** Its 0-based place, upstream first, among the contexts its origin delivers. */
+  readonly position: number;
   readonly subject: string;
   readonly relation: string;
   readonly concepts: readonly Meaning[];
@@ -51,15 +59,17 @@ export interface DeliveredMarks {
 
 /**
  * The projection of `context`, as the journal of the git repository holding
- * `from` records it now, delivered by `origin` at `version`. Refused where the
- * journal has no such context, or its description or a concept is competing:
- * a release delivers a settled design.
+ * `from` records it now, delivered by `origin` at `version`, at `position`
+ * among the contexts `origin` delivers. Refused where the journal has no such
+ * context, or its description or a concept is competing: a release delivers a
+ * settled design.
  */
 export function deliverContext(opts: {
   readonly from: string;
   readonly context: string;
   readonly origin: string;
   readonly version: string;
+  readonly position: number;
 }): DeliveredContext {
   const refuse = (message: string) => new Error(`deliverContext: ${message}`);
   const folded = new Folded(journalAt(opts.from, refuse).entries());
@@ -80,6 +90,7 @@ export function deliverContext(opts: {
     version: opts.version,
     context: opts.context,
     identity,
+    position: opts.position,
     subject: design.subject,
     relation: design.relation,
     concepts: design.concepts.map(({ name, wording, builtFrom }) => ({
@@ -88,6 +99,15 @@ export function deliverContext(opts: {
       builtFrom: [...builtFrom],
     })),
   };
+}
+
+/** The delivered order: by origin, then position, upstream first. */
+export function byDelivery(a: DeliveredContext, b: DeliveredContext): number {
+  return a.origin < b.origin
+    ? -1
+    : a.origin > b.origin
+      ? 1
+      : a.position - b.position;
 }
 
 /** The name a delivered context is shown under: `<origin>:<context>`. */
@@ -130,13 +150,14 @@ export function deliveredState(delivered: DeliveredContext) {
   };
 }
 
-/** What the views say the delivered practice is, in the place they show it. */
+/** What the views say the practice place holds, where they show it. */
 export const PRACTICE =
-  'the practice this project’s agents work by, delivered with the installation and read first, before the project’s own contexts; it is not part of this project’s design, never among its contexts nor in its context map, and is read-only, never recorded into its journal';
+  'the practice this project’s agents work by, read first, before the project’s other contexts: every context delivered with the installation, in the delivered order, upstream first; a delivered context is not part of this project’s design, never among its contexts nor in its context map, and is read-only, never recorded into its journal; where this project’s journal holds a delivered context itself, its own copy stands in that context’s place, under its own name, unmarked, part of the project’s design and recorded into as any of its contexts';
 
-/** The place of its own a view shows `contexts`, the delivered ones it covers,
- *  in: labelled as the practice, apart from the project's contexts; nothing
- *  where it covers none. */
+/** The place of its own a view shows `contexts` in, the delivered ones it
+ *  covers or the project's own copies in their place: labelled as the
+ *  practice, apart from the project's other contexts; nothing where it covers
+ *  none. */
 export function practiceOf<C>(contexts: readonly C[]): {
   practice?: { about: string; contexts: readonly C[] };
 } {
@@ -145,12 +166,20 @@ export function practiceOf<C>(contexts: readonly C[]): {
     : { practice: { about: PRACTICE, contexts } };
 }
 
-/** Whether `value`, read from `file`, is a delivered context; refuses one that
- *  is not, naming the file. */
-export function deliveredFrom(value: unknown, file: string): DeliveredContext {
+/** Whether `value`, read from `file` in the installation `installation`, is a
+ *  delivered context; refuses one that is not, naming the file, and one an
+ *  earlier cratylus projected, without its position, naming the remedy. */
+export function deliveredFrom(
+  value: unknown,
+  file: string,
+  installation: { readonly root: string; readonly scope: InstallScope },
+): DeliveredContext {
   const text = (v: unknown): v is string => typeof v === 'string';
   const record = value as Record<string, unknown> | null;
   const concepts = record?.concepts;
+  const malformed = new Error(
+    `${file} is not a delivered context: it needs origin, version, context, identity, a position (a whole number from 0), subject, relation and concepts each with name, wording and builtFrom`,
+  );
   if (
     typeof record !== 'object' ||
     record === null ||
@@ -168,8 +197,12 @@ export function deliveredFrom(value: unknown, file: string): DeliveredContext {
         c.builtFrom.every(text),
     )
   )
+    throw malformed;
+  if (record.position === undefined)
     throw new Error(
-      `${file} is not a delivered context: it needs origin, version, context, identity, subject, relation and concepts each with name, wording and builtFrom`,
+      `${file} carries no position: the ${installation.scope} installation at ${installation.root} was projected by an earlier cratylus; install again with the cratylus in use, at its ${installation.scope} scope`,
     );
+  if (!Number.isInteger(record.position) || (record.position as number) < 0)
+    throw malformed;
   return record as unknown as DeliveredContext;
 }
