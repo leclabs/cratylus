@@ -1,7 +1,8 @@
 // A practice renamed since an earlier install (decision 0332): a former name the
-// installation record holds counts as the practice that now holds it, so install keeps
-// it, records the current name only, says it carried it over, and removes nothing of
-// it. A former name given to --practices is no declared practice, refused as any is.
+// installation record, or an earlier deploy record, holds counts as the practice that
+// now holds it, so install keeps it, records the current name only, says it carried it
+// over, and removes nothing of it. A former name given to --practices is no declared
+// practice, refused as any is.
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -92,6 +93,46 @@ describe('an install over a record naming a former practice name', () => {
 
   it('asked on a terminal, offers it ticked under its current name', async () => {
     await installedUnderFormerName();
+    let initial: readonly string[] = [];
+    const prompts = answers({
+      practices: async (_offered, given) => {
+        initial = given;
+        return [...given];
+      },
+    });
+    expect(await install({ interactive: true, prompts })).toBe(0);
+    expect(initial).toEqual(['renamed']);
+    expect(record().practices).toEqual(['renamed']);
+    expect(out).toContain('carried over former as renamed');
+    expect(out).not.toMatch(/removed/);
+  });
+});
+
+describe('a user install over an earlier deploy record naming a former practice name', () => {
+  /** No installation record: the earlier layout's deploy record alone names it. */
+  const earlierDeployRecord = (): void => {
+    mkdirSync(join(home, '.omp', '.forge'), { recursive: true });
+    writeFileSync(
+      join(home, '.omp', '.forge', 'deploy-manifest.json'),
+      JSON.stringify({ version: 1, kinds: {}, practices: ['former'] }),
+    );
+  };
+
+  it('under --yes on a terminal keeps it, records the current name only, reports the carry-over and removes nothing', async () => {
+    earlierDeployRecord();
+    expect(
+      await install({ interactive: true, yes: true, prompts: answers() }),
+    ).toBe(0);
+    expect(record().practices).toEqual(['renamed']);
+    expect(out).toContain(
+      '  practices: renamed; carried over former as renamed\n',
+    );
+    expect(out).not.toMatch(/removed/);
+    expect(out).toContain('  1 agent,');
+  });
+
+  it('asked on a terminal, offers it ticked under its current name', async () => {
+    earlierDeployRecord();
     let initial: readonly string[] = [];
     const prompts = answers({
       practices: async (_offered, given) => {
