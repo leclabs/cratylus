@@ -41,10 +41,11 @@ import {
   projectorCommands,
   usageExitCode,
 } from '@cratylus/forge/cli';
+import { EXPLANATION, ORIENTATION, PURPOSE } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { capabilityCommands } from '@cratylus/runtime/main';
 import { DELIVERED_DIR } from '@cratylus/runtime/runtime-config';
-import { Command, type CommanderError } from 'commander';
+import { Command, type CommanderError, Help } from 'commander';
 
 /**
  * THIS build's version — the claim `--version` makes about THIS artifact.
@@ -141,16 +142,18 @@ function register(command: Command): void {
 /**
  * The command line: the projector's commands and the capabilities under one
  * program, which stops reading options at its first command so each command's flags
- * are its own. The help lists the consumer's commands first, then the capabilities,
- * then the corpus author's commands in a group of their own; which commands are whose
- * is forge's to say, not this file's.
+ * are its own. The help opens with what the command is for, then lists the consumer's
+ * commands, then the capabilities, then the corpus author's commands in a group of
+ * their own; which commands are whose is forge's to say, not this file's.
  */
 export function commandLine(): Command {
   const program = new Command(CLI_BIN)
-    .description(
-      'Project a corpus of agent semantics onto omp, and run the capabilities it installs',
-    )
+    .description(PURPOSE)
     .version(VERSION, '-v, --version', 'Print the version and exit')
+    .option(
+      '--explain',
+      'Print what the command is for and how to start, as JSON',
+    )
     .enablePositionalOptions();
   const { consumer, author } = projectorCommands({
     defaultCorpus: canon,
@@ -164,6 +167,13 @@ export function commandLine(): Command {
   for (const command of author)
     program.addCommand(command.helpGroup('Corpus authoring:'));
   register(program);
+  // The program's help opens with its description, ahead of the usage line.
+  program.configureHelp({
+    ...program.configureHelp(),
+    commandDescription: () => '',
+    formatHelp: (cmd, helper) =>
+      `${PURPOSE}\n${Help.prototype.formatHelp.call(helper, cmd, helper)}`,
+  });
   return program;
 }
 
@@ -197,17 +207,22 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 }
 
 /** Run the command line on `argv`, the words after the program's name. A call that
- *  names no command prints the help on stderr and fails, as a capability with no
- *  verb does. */
+ *  names no command prints the orientation and where to find everything else;
+ *  `--explain` alone prints the command's explanation as JSON. */
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
-  const program = commandLine();
   if (argv.length === 0) {
-    program.outputHelp({ error: true });
-    process.exitCode = 1;
+    process.stdout.write(
+      `${ORIENTATION}\nRun \`${CLI_BIN} --help\` for everything else.\n`,
+    );
     return;
   }
+  if (argv.length === 1 && argv[0] === '--explain') {
+    process.stdout.write(`${JSON.stringify(EXPLANATION)}\n`);
+    return;
+  }
+  const program = commandLine();
   // A first word that names no command is refused as one, even with `--help` after
   // it: Commander answers the program's help before it refuses the word, which
   // would read as though the program had it.

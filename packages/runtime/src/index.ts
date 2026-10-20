@@ -17,4 +17,13 @@ export {
 // artifacts it projects, so the version tool is offered whatever command they reach.
 export { VERSION_SKEW } from './capabilities/version-skew/index.js';
 export { explain } from './explanation.js';
+// The command as it describes itself: what it is for, how using it starts, where its theory is.
+export {
+  type CommandExplanation,
+  EXPLANATION,
+  ORIENTATION,
+  PURPOSE,
+  START,
+  THEORY,
+} from './self-description.js';
 export { ACTING_AGENT_ENV, actingAgent } from './acting-agent.js';
