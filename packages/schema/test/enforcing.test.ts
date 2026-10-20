@@ -4,7 +4,6 @@ import {
   bodyOf,
   enforcing,
   isDimensionValue,
-  withBody,
 } from '../src/index.js';
 
 type Guardrails = Value<'guardrails'>;
@@ -40,29 +39,6 @@ describe('enforcing — derived from the shape, never from a stored flag', () =>
     // A stored `enforcing: false` alongside a non-empty `events` is the state
     // this shape makes unrepresentable. Assert the field simply does not exist.
     expect('enforcing' in (bound as object)).toBe(false);
-  });
-});
-
-describe('withBody — folding a value must never silently UNBIND it', () => {
-  it('substitutes the declaration and PRESERVES substrate + events', () => {
-    const folded = withBody(bound, 'stance ≜ composed body');
-    expect(bodyOf(folded)).toBe('stance ≜ composed body');
-    expect(enforcing(folded)).toBe(true);
-    // The binding is the half a string-only fold would have dropped.
-    if (!enforcing(folded)) throw new Error('unreachable');
-    expect(folded.substrate).toBe('harness');
-    expect(folded.events).toEqual(['tool.use.pre']);
-  });
-
-  it('leaves a bare value bare — it does not manufacture a binding', () => {
-    const folded = withBody(bare, 'honesty ≜ composed body');
-    expect(folded).toBe('honesty ≜ composed body');
-    expect(enforcing(folded)).toBe(false);
-  });
-
-  it('does not mutate the value it folds', () => {
-    withBody(bound, 'mutated?');
-    expect(bodyOf(bound)).toBe('stance ≜ hold the stance');
   });
 });
 

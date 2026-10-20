@@ -31,7 +31,6 @@ const libEntry: Record<string, string> = {
   'core/harness-adapter': 'src/core/harness-adapter.ts',
   'project/index': 'src/project/index.ts',
   'catalog/index': 'src/catalog/index.ts',
-  'resolve/index': 'src/resolve/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;

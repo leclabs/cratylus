@@ -8,15 +8,6 @@
 // it. This module opens no file descriptor — that is a LOAD-BEARING property, not
 // tidiness: it is what makes "what does this plugin set project?" an answerable
 // question instead of a tmpdir excavation.
-//
-// AND RENDERING IS NOT SELECTING. `resolve()` folded the plugin set's fragments and
-// this projector rendered agents straight off their import bindings — two pipelines
-// over one plugin set that never met. Absent `patches` the fold is the IDENTITY, so
-// they agreed by construction and the missing pipe was invisible. `discoverFragments`
-// + `resolveFragmentBodies` are that pipe: they hand back the authored-body ⟼
-// resolved-body substitution an agent's dimension values undergo before `agentDef`,
-// which is what makes an agent render from the patched catalog under a patch and
-// not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { spawnSync } from 'node:child_process';
@@ -28,7 +19,6 @@ import {
   type Binding,
   type DimensionManifest,
   type Enforcing,
-  type Entry,
   type HookCell,
   type Plumbing,
   type Practice,
@@ -37,12 +27,9 @@ import {
   type Ruleset,
   type Skill,
   anchorOf,
-  bodyOf,
-  dimensionValueOf,
   hookIrOf,
   mergeManifest,
   resolveWorker,
-  withBody,
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import {
@@ -50,21 +37,13 @@ import {
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
-import {
-  dimensionFieldsOf,
-  enforcingValuesOf,
-} from '../core/exemplify/dimension-fields.js';
+import { enforcingValuesOf } from '../core/exemplify/dimension-fields.js';
 import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
 } from '../core/harness-adapter.js';
 import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
-import {
-  type LoadedPlugin,
-  type PatchEntry,
-  resolve as foldFragments,
-} from '../resolve/resolve.js';
 import { realizationOf } from './realization.js';
 import { resolveSkills, skillClosure } from './resolve-skills.js';
 import { runtimeShimContent } from './runtime-shim.js';
@@ -106,13 +85,7 @@ export interface ProjectablePlugin {
   readonly name: string;
   readonly agents?: string;
   readonly skills?: string;
-  /**
-   * Fragment (dimension-value) dir — scanned `<dir>/<dimension>/*.ts`. Projection
-   * needs it because an agent module inlines its dimension values BY IMPORT
-   * BINDING (`objective: insight_objective`), i.e. the body as authored on disk.
-   * Folding the fragments is the only way the projected Target can carry the
-   * COMPOSED value rather than the authored one (see `composedBodies`).
-   */
+  /** Fragment (dimension-value) dir — scanned `<dir>/<dimension>/*.ts` by `discoverFragments`. */
   readonly fragments?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
@@ -131,15 +104,6 @@ export interface ProjectOpts {
   readonly plugins: readonly ProjectablePlugin[];
   /** The harness adapter that renders each cell. */
   readonly adapter: HarnessAdapter;
-  /**
-   * The resolver's fold, as the substitution an agent's authored dimension values
-   * undergo: `resolveFragmentBodies(await discoverFragments(plugins), patches)`.
-   * Absent/empty ⇒ the fold is the identity and the projected bytes are unchanged.
-   *
-   * PASSED IN, not computed here, because a patch can only target a node some
-   * discovery already minted — see `discoverFragments`.
-   */
-  readonly resolvedBodies?: ReadonlyMap<string, string>;
   /**
    * `anchor → HarnessMechanism` — the realization payloads for this corpus's
    * enforcing values, INJECTED.
@@ -472,32 +436,9 @@ export function bindingsOf(
 }
 
 /**
- * Two fragment nodes share an authored body but fold to DIFFERENT values, so an
- * agent that selected that body has no determinate resolved value. Loud, because
- * silently picking one is exactly the merge ambiguity the resolver refuses.
- */
-export class AmbiguousFragmentBodyError extends Error {
-  constructor(
-    readonly body: string,
-    readonly values: readonly string[],
-  ) {
-    super(
-      `ambiguous fragment body: '${body.slice(0, 60)}${body.length > 60 ? '…' : ''}' is contributed by more than one node and resolves to ${values.length} different values — an agent selecting it has no determinate value`,
-    );
-    this.name = 'AmbiguousFragmentBodyError';
-  }
-}
-
-/**
- * DISCOVER the plugin set's fragment nodes — step ONE of routing projection through
- * the resolver, and SEPARATE from the fold on purpose.
- *
- * A string fragment's node is MINTED at scan time (`catalog/enumeratePluginFragmentCatalogs`),
- * so its object identity — the only address `resolve()` accepts —
- * exists only downstream of a discovery. Folding inside `projectPluginSet` would
- * therefore make its own nodes unaddressable and every caller's patch a guaranteed
- * `MissingExtendsTargetError`. Handing the discovery back is what makes a patch
- * targetable at all.
+ * DISCOVER the plugin set's fragment nodes (`catalog/enumeratePluginFragmentCatalogs`).
+ * Discovery refuses a namespace two plugins share and a reference graph that dangles
+ * or cycles, each with its named error.
  */
 export async function discoverFragments(
   plugins: readonly ProjectablePlugin[],
@@ -510,100 +451,6 @@ export async function discoverFragments(
   return roots.length === 0
     ? new Map()
     : enumeratePluginFragmentCatalogs(roots, mergeManifest(plugins));
-}
-
-/**
- * FOLD a discovery under the consumer `patches` → the substitution an agent's
- * authored dimension values must undergo: authored body ⟼ resolved body. Step TWO.
- *
- * WHY THIS EXISTS. An agent's selection is realized as an agent module's import
- * list — `objective: insight_objective` binds the fragment's body AS IT SAT ON DISK.
- * The catalog those values are supposed to be drawn from is the resolver's ordered
- * fold. Without this map the two coincide only by accident: the moment a patch moves
- * a fragment, the projected Target still carries the pre-fold string and
- * `COMPOSED(a) : S_on ⊆ catalog(on)` fails while every suite stays green.
- *
- * ONLY MOVED FRAGMENTS ARE RECORDED. A plugin originates each of its fragments with a
- * single `replace(body)`, so ABSENT PATCHES THE FOLD IS THE IDENTITY, the map is
- * empty, and the render tree is byte-for-byte what it was.
- */
-export function resolveFragmentBodies(
-  discovered: PluginFragmentCatalogs,
-  patches: readonly PatchEntry[] = [],
-): ReadonlyMap<string, string> {
-  if (discovered.size === 0) return new Map();
-  const extended: LoadedPlugin[] = [...discovered].map(([name, fragments]) => ({
-    name,
-    contributions: fragments.map((f) => ({
-      target: f.node,
-      op: 'replace' as const,
-      value: f.body,
-    })),
-  }));
-  const { fragments } = foldFragments({ extends: extended, patches });
-
-  // Collect every value each authored body resolves to, then admit only the moves.
-  const byBody = new Map<string, Set<string>>();
-  for (const entries of discovered.values()) {
-    for (const f of entries) {
-      if (typeof f.body !== 'string') continue;
-      const folded = fragments.get(f.node)?.value;
-      if (typeof folded !== 'string') continue;
-      const seen = byBody.get(f.body);
-      if (seen) seen.add(folded);
-      else byBody.set(f.body, new Set([folded]));
-    }
-  }
-  const subst = new Map<string, string>();
-  for (const [body, values] of byBody) {
-    if (values.size > 1) {
-      throw new AmbiguousFragmentBodyError(body, [...values]);
-    }
-    const [only] = values;
-    if (only !== undefined && only !== body) subst.set(body, only);
-  }
-  return subst;
-}
-
-/**
- * Rewrite an agent's DIMENSION entries through the resolved-body substitution.
- *
- * ONLY the value of each entry the catalog's dimension fields hold is touched:
- * the identity face (name, description, mark, key, …) does not live in a
- * `fragments` dir, so it is no fold subject, and an entry's level, slot and note
- * are the agent's, not the value's. An empty substitution returns the agent
- * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
- *
- * WHICH fields those are is read off the CATALOG, not listed here, so a corpus
- * that declares a dimension has its values folded the day it declares it.
- */
-function withResolvedBodies(
-  agent: Agent,
-  subst: ReadonlyMap<string, string>,
-  manifest: DimensionManifest,
-): Agent {
-  if (subst.size === 0) return agent;
-  // Spread first, then overwrite in place: every dimension key already exists on
-  // the agent (completeness law), so the field ORDER of the copy is the field
-  // order of the original — the fold moves bodies, never bytes of structure.
-  const folded: Record<string, unknown> = { ...agent };
-  for (const field of Object.values(dimensionFieldsOf(manifest))) {
-    const held = dimensionValueOf(agent, field);
-    if (!Array.isArray(held)) continue;
-    // Substitute a value's DECLARATION face and put the binding back. A value may
-    // be an enforcing cell rather than a bare string, and `substrate`/`events`
-    // are not bodies — folding a value must never silently unbind it. Keying the
-    // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
-    // authored body a bare one uses.
-    folded[field] = (held as readonly Entry[]).map((entry) => {
-      const body = bodyOf(entry.value);
-      return {
-        ...entry,
-        value: withBody(entry.value, subst.get(body) ?? body),
-      };
-    });
-  }
-  return folded as unknown as Agent;
 }
 
 /** A skill cell as the adapters render it. */
@@ -790,8 +637,7 @@ function selectRules(
  * override a canon CELL by shipping one of the same name. The winner is reported,
  * never silently applied.
  *
- * This is NOT "the same precedence `resolve()` gives fragments" — that claim was
- * here and it was false. Cells and fragments override ASYMMETRICALLY, deliberately:
+ * Cells and fragments override ASYMMETRICALLY, deliberately:
  *
  *   cell     — collides BY NAME, later plugin wins (here)
  *   fragment — does NOT collide. `enumeratePluginFragmentCatalogs` mints a distinct node
@@ -805,9 +651,8 @@ function selectRules(
  * naming the change. Per-plugin fragment identity makes that impossible by
  * construction rather than by discipline.
  *
- * Consequence a consumer must know: you can override canon's `nico`; you
- * cannot override canon's `objective/insight`. To change a fragment's body, patch
- * its node — see `discoverFragments` / `resolveFragmentBodies` below.
+ * So a later plugin can override canon's `nico`, and cannot override canon's
+ * `objective/insight`.
  */
 export async function projectPluginSet(
   opts: ProjectOpts,
@@ -828,13 +673,6 @@ export async function projectPluginSet(
   // fields an agent carries, its section order, and what counts as an enforcing
   // value — so every reader below is told, none left to guess at forge's own.
   const manifest = mergeManifest(opts.plugins, log);
-
-  // An agent is rendered from the RESOLVED catalog, never from the bodies its
-  // module happened to import. Every move is reported, never silent.
-  const subst = opts.resolvedBodies ?? new Map<string, string>();
-  for (const [from, to] of subst) {
-    log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
-  }
 
   // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
   // any cell is rendered and can be logged rather than discovered as a clobbered file.
@@ -866,18 +704,17 @@ export async function projectPluginSet(
   // Each RENDERED agent, once — what the agent surface composes from.
   const rendered: Agent[] = [];
   // Composed vectors, kept so the BINDINGS can be derived from what the agents
-  // actually compose — after the fold, since a folded body is the real one.
+  // actually compose.
   const composed: { name: string; agent: Agent }[] = [];
   // COMPOSE BEFORE RENDER. The mechanism a harness may emit depends on what the
   // agents compose (scope is derived from composition), so every vector must exist
   // before any is rendered. Rendering inside this loop would emit each agent's
   // hooks before the seam had decided whether this harness can carry them.
   const pending: string[] = [];
-  for (const [name, { agent: authored }] of [...agentSrc].sort(([a], [b]) =>
+  for (const [name, { agent: bodied }] of [...agentSrc].sort(([a], [b]) =>
     a < b ? -1 : a > b ? 1 : 0,
   )) {
     if (selection && !selection.agents.has(name)) continue;
-    const bodied = withResolvedBodies(authored, subst, manifest);
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
     // with everything they compose, and every adapter renders the list it is
     // handed rather than computing its own.
