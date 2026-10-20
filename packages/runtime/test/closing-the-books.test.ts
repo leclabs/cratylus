@@ -744,6 +744,7 @@ describe('closing the books', () => {
         context: 'workflow',
         origin: 'cratylus',
         version: '1.0.0',
+        position: 0,
       });
     const delivered = deliver();
     expect(delivered.identity).toBe(first);
@@ -857,6 +858,7 @@ describe('a close joined with a line of work that branched before it', () => {
       context: 'workflow',
       origin: 'cratylus',
       version: '1.0.0',
+      position: 0,
     });
     branchedThenClosed(() =>
       concepts(
@@ -896,6 +898,7 @@ describe('a close joined with a line of work that branched before it', () => {
         context: 'workflow',
         origin: 'cratylus',
         version: '1.0.0',
+        position: 0,
       }).identity,
     ).toBe(first);
   });

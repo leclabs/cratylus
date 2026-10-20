@@ -20,6 +20,7 @@ type Document = {
   version: string;
   context: string;
   identity: string;
+  position: number;
   subject: string;
   relation: string;
   concepts: { name: string; wording: string; builtFrom: string[] }[];
@@ -29,6 +30,7 @@ type Project = (options: {
   context: string;
   origin: string;
   version: string;
+  position: number;
 }) => Document;
 let root: string;
 beforeEach(() => {
@@ -52,6 +54,7 @@ function project() {
     context: 'workflow',
     origin: 'cratylus',
     version: '3.2.1',
+    position: 1,
   });
 }
 function seed() {
@@ -163,6 +166,7 @@ it('delivery/1 — projects exactly the current source design, first context ide
     version: '3.2.1',
     context: 'workflow',
     identity,
+    position: 1,
     subject: 'Current subject.',
     relation: 'Current relation.',
     concepts: [
@@ -206,6 +210,7 @@ it('workflow/1 — a library caller without delivered documents sees none and cr
       version: '3.2.1',
       context: 'workflow',
       identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
+      position: 1,
       subject: 'Installed only.',
       relation: '',
       concepts: [],

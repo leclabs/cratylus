@@ -166,7 +166,7 @@ it('a view of one context shows only what it names: the project’s, or the prac
   }
 });
 
-it('a journal holding the delivered context itself reads its own, among its contexts, with no practice apart', () => {
+it('a journal holding the delivered context itself reads its own, among its contexts and first, with no practice apart', () => {
   booking();
   const own = command([
     'context',
@@ -177,11 +177,17 @@ it('a journal holding the delivered context itself reads its own, among its cont
   const held = [{ ...delivered, identity: own.id }];
   for (const verb of ['state', 'design']) {
     const answer = command([verb], held) as Answer;
-    expect(answer.contexts.map((c) => c.name)).toEqual(['booking', 'workflow']);
+    expect(answer.contexts.map((c) => c.name)).toEqual(['workflow', 'booking']);
     expect(answer).not.toHaveProperty('practice');
   }
-  // Without delivery the same reading is unchanged.
-  expect(command(['design'], held)).toEqual(command(['design'], []));
+  // Without delivery the same contexts are read, each unchanged: only their
+  // order differs, the delivered one first.
+  const [heldDesign, undelivered] = [held, []].map((d) =>
+    [...(command(['design'], d) as Answer).contexts].sort((a, b) =>
+      a.name.localeCompare(b.name),
+    ),
+  );
+  expect(heldDesign).toEqual(undelivered);
 });
 
 it('decisions lead with their title, ids only as references, read apart from the design state', () => {

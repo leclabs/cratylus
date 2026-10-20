@@ -11,7 +11,9 @@
 // IDENTITY: the identity the earliest of its entries carrying one carries,
 // which a closing of the books carries into each period it opens, else the id
 // of its earliest entry; it holds whatever the context is later described as
-// or called.
+// or called. Its POSITION is its 0-based place among the contexts its origin
+// delivers, upstream first: every reading orders delivered contexts by origin,
+// then position (`byDelivery`), never by the file each is read from.
 //
 // THE VIEWS show a delivered context APART from the project's own contexts, in
 // the place of its own `practiceOf` gives (`practice`), labelled as the practice
@@ -19,8 +21,9 @@
 // among them nor in the project's context map. It is named by its origin
 // (`<origin>:<context>`) and marked delivered and read-only, unless the journal
 // being read holds a context whose identity is its identity: that journal owns
-// the context, which is then part of its design and shown among its own. Nothing
-// is ever appended to a project's journal for a delivered context.
+// the context, which is then part of its design and shown among its own, before
+// the rest of them, in the delivered order. Nothing is ever appended to a
+// project's journal for a delivered context.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { journalAt } from './journal.js';
@@ -32,6 +35,8 @@ export interface DeliveredContext {
   readonly version: string;
   readonly context: string;
   readonly identity: string;
+  /** Its 0-based place, upstream first, among the contexts its origin delivers. */
+  readonly position: number;
   readonly subject: string;
   readonly relation: string;
   readonly concepts: readonly Meaning[];
@@ -51,15 +56,17 @@ export interface DeliveredMarks {
 
 /**
  * The projection of `context`, as the journal of the git repository holding
- * `from` records it now, delivered by `origin` at `version`. Refused where the
- * journal has no such context, or its description or a concept is competing:
- * a release delivers a settled design.
+ * `from` records it now, delivered by `origin` at `version`, at `position`
+ * among the contexts `origin` delivers. Refused where the journal has no such
+ * context, or its description or a concept is competing: a release delivers a
+ * settled design.
  */
 export function deliverContext(opts: {
   readonly from: string;
   readonly context: string;
   readonly origin: string;
   readonly version: string;
+  readonly position: number;
 }): DeliveredContext {
   const refuse = (message: string) => new Error(`deliverContext: ${message}`);
   const folded = new Folded(journalAt(opts.from, refuse).entries());
@@ -80,6 +87,7 @@ export function deliverContext(opts: {
     version: opts.version,
     context: opts.context,
     identity,
+    position: opts.position,
     subject: design.subject,
     relation: design.relation,
     concepts: design.concepts.map(({ name, wording, builtFrom }) => ({
@@ -88,6 +96,15 @@ export function deliverContext(opts: {
       builtFrom: [...builtFrom],
     })),
   };
+}
+
+/** The delivered order: by origin, then position, upstream first. */
+export function byDelivery(a: DeliveredContext, b: DeliveredContext): number {
+  return a.origin < b.origin
+    ? -1
+    : a.origin > b.origin
+      ? 1
+      : a.position - b.position;
 }
 
 /** The name a delivered context is shown under: `<origin>:<context>`. */
@@ -157,6 +174,8 @@ export function deliveredFrom(value: unknown, file: string): DeliveredContext {
     !['origin', 'version', 'context', 'identity', 'subject', 'relation'].every(
       (field) => text(record[field]),
     ) ||
+    !Number.isInteger(record.position) ||
+    (record.position as number) < 0 ||
     !Array.isArray(concepts) ||
     !concepts.every(
       (c) =>
@@ -169,7 +188,7 @@ export function deliveredFrom(value: unknown, file: string): DeliveredContext {
     )
   )
     throw new Error(
-      `${file} is not a delivered context: it needs origin, version, context, identity, subject, relation and concepts each with name, wording and builtFrom`,
+      `${file} is not a delivered context: it needs origin, version, context, identity, a position (a whole number from 0), subject, relation and concepts each with name, wording and builtFrom`,
     );
   return record as unknown as DeliveredContext;
 }
