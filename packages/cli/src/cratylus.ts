@@ -208,7 +208,8 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 
 /** Run the command line on `argv`, the words after the program's name. A call that
  *  names no command prints the orientation and where to find everything else;
- *  `--explain` alone prints the command's explanation as JSON. */
+ *  `--explain` alone prints the command's explanation as JSON, and with any other
+ *  word is refused, running nothing. */
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
@@ -218,8 +219,22 @@ export async function main(argv: readonly string[]): Promise<void> {
     );
     return;
   }
-  if (argv.length === 1 && argv[0] === '--explain') {
-    process.stdout.write(`${JSON.stringify(EXPLANATION)}\n`);
+  // The program's own `--explain` is one given before any command word.
+  const explainAt = argv.indexOf('--explain');
+  if (
+    explainAt !== -1 &&
+    argv.slice(0, explainAt).every((word) => word.startsWith('-'))
+  ) {
+    if (argv.length === 1) {
+      process.stdout.write(`${JSON.stringify(EXPLANATION)}\n`);
+      return;
+    }
+    const others = argv.filter((_, i) => i !== explainAt);
+    fail(
+      '',
+      `--explain takes no other word, given ${others.map((word) => `'${word}'`).join(', ')}; run ${CLI_BIN} --help`,
+    );
+    process.exitCode = 1;
     return;
   }
   const program = commandLine();

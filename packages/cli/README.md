@@ -13,19 +13,16 @@ It needs Node 22 or later.
 ```sh
 cratylus install                     # the guided run: put the default corpus on this machine, no project needed
 cratylus install --scope project     # the same for the project you are in, to commit and share with its team
-omp --agent architect                # start with the architect, then say what you want
+omp --agent architect                # start here: the architect
 cratylus uninstall --harness omp     # take away what install placed
 ```
 
-Using cratylus starts with the architect: launch it with `omp --agent architect` and say what you
-want. It holds the meaning and hands the work to the other agents install placed, so you write
-none of your own. A completed install where the architect is installed ends with that line.
-
-`cratylus` with no arguments prints what it is for, how to start and where its theory is, a line
-each, then a line naming `cratylus --help` for everything else, on stdout, exit `0`.
-`cratylus --explain` prints the same as JSON, `{"name", "purpose", "orientation"}`: the cratylus
-extension shows that `orientation` in every omp session, as the command says it. `cratylus --help`
-opens with what it is for.
+`cratylus` with no arguments prints how to start: what the command is for, how using it starts and
+where its theory is, a line each, then a line naming `cratylus --help` for everything else, on
+stdout, exit `0`. A completed install where the architect is installed ends with the start line the
+command prints. `cratylus --explain` prints the same as JSON, `{"name", "purpose", "orientation"}`:
+the cratylus extension shows that `orientation` in every omp session, as the command says it.
+`cratylus --explain` takes no other word. `cratylus --help` opens with what it is for.
 
 The sections that follow are for whoever installs: the guided install and its two scopes, starting a
 session as an agent, the badge on the status line, the host's model routing on omp, the host runtime
