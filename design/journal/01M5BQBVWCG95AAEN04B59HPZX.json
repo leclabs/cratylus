@@ -1,0 +1,17 @@
+{
+  "id": "01M5BQBVWCG95AAEN04B59HPZX",
+  "at": "2026-10-20T03:58:29.260Z",
+  "by": "architect",
+  "kind": "supersede",
+  "context": "cratylic context design",
+  "name": "correction",
+  "wording": "beside its term, only what the term's reading needs: the missing meaning supplied and the spurious meaning excluded, each stated once; never a definition restating what the term already carries, nor one that must exclude what the term centrally means, which marks the wrong term",
+  "builtFrom": [
+    "term",
+    "semantic gap"
+  ],
+  "reason": "The illustrator, writing cold, found no line between a correction that narrows a term and a redefinition: a correction refines the concept the term addresses, and one that must argue against the term's core meaning addresses another concept under the wrong name.",
+  "supersedes": [
+    "01M5BPJ0181RC0FK1KSKZMC5YD"
+  ]
+}
