@@ -14,7 +14,7 @@
 //
 // TWO OF THOSE WERE SILENT, and that is the harm rather than the breakage. An empty list
 // is not an error, so the gates consuming them went green. A dark gate reads exactly like
-// a healthy corpus.
+// a healthy repository.
 //
 // THE ANSWER DOES NOT DEPEND ON THE ASKER. Every one of those sites wanted the same
 // directory, so it is computed here and derived everywhere.
@@ -22,7 +22,7 @@
 // TWO STRATEGIES, IN THIS ORDER, and the order is the design:
 //   1. ASK GIT. `git rev-parse --show-toplevel` is authoritative and cannot be miscounted.
 //   2. WALK UP FOR A MARKER. Required, not decorative: a published tarball and a
-//      `mkdtemp` fixture both have no `.git`, and this corpus's suites build synthetic
+//      `mkdtemp` fixture both have no `.git`, and this repository's suites build synthetic
 //      repos in temp dirs constantly. The marker is `pnpm-workspace.yaml` — the one file
 //      that means "workspace root" and appears exactly once.
 //
@@ -76,7 +76,7 @@ export function markerRoot(from: string): string | null {
  *
  * Pass a directory. Callers holding a module URL should pass
  * `dirname(fileURLToPath(import.meta.url))`, which is the one positional expression this
- * corpus still needs and the only one that cannot go stale: it names the file's own
+ * repository still needs and the only one that cannot go stale: it names the file's own
  * directory rather than a count of steps away from it.
  */
 export function repoRoot(from: string): string | null {
