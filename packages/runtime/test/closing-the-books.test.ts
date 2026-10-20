@@ -718,6 +718,63 @@ describe('closing the books', () => {
     ).toContainEqual({ name: 'gone', wording: 'Back again.', builtFrom: [] });
   });
 
+  it('opens a renamed concept as a define under its current name, every built-from by current names (0318)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    worded('define', 'hold', 'booking', 'A hold.');
+    concepts(
+      'define',
+      'reservation',
+      '--context',
+      'booking',
+      '--wording',
+      'A seat taken.',
+      '--reason',
+      'Because.',
+      '--built-from',
+      'hold',
+    );
+    concepts(
+      'supersede',
+      'hold',
+      '--context',
+      'booking',
+      '--rename',
+      'claim',
+      '--wording',
+      'Kept until paid.',
+      '--reason',
+      'Nearer term.',
+    );
+    const head = commit();
+    concepts('close');
+    const opened = entryFiles().filter((e) => e.kind !== 'context');
+    expect(opened).toMatchObject([
+      {
+        kind: 'define',
+        name: 'claim',
+        wording: 'Kept until paid.',
+        builtFrom: [],
+        reason: 'Nearer term.',
+        supersedes: [],
+        broughtForward: head,
+      },
+      {
+        kind: 'define',
+        name: 'reservation',
+        builtFrom: ['claim'],
+        broughtForward: head,
+      },
+    ]);
+    expect(opened[0]).not.toHaveProperty('was');
+    // Its earlier names stay in the closed period.
+    expect(() => concepts('history', 'hold', '--context', 'booking')).toThrow(
+      /has no concept 'hold'/,
+    );
+    expect(concepts('history', 'claim', '--context', 'booking')).toMatchObject({
+      versions: [{ kind: 'define', name: 'claim' }],
+    });
+  });
+
   it('compares a version only with versions it replaces: an opening replaces none', () => {
     concepts('context', 'booking', '--subject', 'Booking.');
     worded('define', 'hold', 'booking', 'A hold.');

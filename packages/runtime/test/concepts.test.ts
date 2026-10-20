@@ -747,6 +747,201 @@ describe('the concept journal as a library', () => {
   });
 });
 
+describe('renaming a concept (0318)', () => {
+  const recordAs = (verb: string, name: string, ...more: string[]) =>
+    concepts(verb, name, '--context', 'booking', ...more) as Record<
+      string,
+      unknown
+    >;
+  const rename = (name: string, to: string, wording: string) =>
+    recordAs(
+      'supersede',
+      name,
+      '--rename',
+      to,
+      '--wording',
+      wording,
+      '--reason',
+      `${to} is the nearer term.`,
+    );
+  const state = () =>
+    (concepts('state') as { contexts: { concepts: string[] }[] }).contexts[0]
+      ?.concepts;
+
+  beforeEach(() => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    version('define', 'Lasts ten minutes.', 'First.');
+    recordAs(
+      'define',
+      'reservation',
+      '--wording',
+      'Taken on a seat.',
+      '--reason',
+      'Seats are reserved.',
+      '--built-from',
+      'hold',
+    );
+  });
+
+  it('reads the concept under its new name only, its history under either name, and its parts by the new name', () => {
+    expect(rename('hold', 'claim', 'Lasts until paid.')).toMatchObject({
+      kind: 'rename',
+      name: 'claim',
+      was: 'hold',
+      wording: 'Lasts until paid.',
+    });
+    expect(state()).toEqual([
+      'claim ≜ Lasts until paid.',
+      'reservation ≜ Taken on a seat.',
+    ]);
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        {
+          concepts: [
+            { name: 'claim', wording: 'Lasts until paid.', builtFrom: [] },
+            { name: 'reservation', builtFrom: ['claim'] },
+          ],
+        },
+      ],
+    });
+    expect(JSON.stringify(concepts('design', '--history'))).not.toContain(
+      '"hold"',
+    );
+    const history = concepts('history', 'claim', '--context', 'booking');
+    expect(concepts('history', 'hold', '--context', 'booking')).toEqual(
+      history,
+    );
+    expect(history).toMatchObject({
+      name: 'claim',
+      versions: [
+        {
+          kind: 'define',
+          name: 'hold',
+          wording: 'Lasts ten minutes.',
+          reason: 'First.',
+        },
+        {
+          kind: 'rename',
+          name: 'claim',
+          was: 'hold',
+          wording: 'Lasts until paid.',
+          reason: 'claim is the nearer term.',
+        },
+      ],
+    });
+    // A reference is kept as written in the history.
+    expect(
+      concepts('history', 'reservation', '--context', 'booking'),
+    ).toMatchObject({ versions: [{ builtFrom: ['hold'] }] });
+    // A verb naming the concept by an earlier name acts on it, under its name.
+    expect(version('supersede', 'Lasts an hour.', 'Longer.')).toMatchObject({
+      kind: 'supersede',
+      name: 'claim',
+    });
+    expect(recordAs('retire', 'hold', '--reason', 'Dropped.')).toMatchObject({
+      name: 'claim',
+    });
+  });
+
+  it('keeps a name its concept’s: refusing it to a define and to another concept’s rename, and a rename to the current name', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    rename('reservation', 'booking slot', 'Taken on a seat.');
+    const define = (name: string) => [
+      'define',
+      name,
+      '--context',
+      'booking',
+      '--wording',
+      'New.',
+      '--reason',
+      'New.',
+    ];
+    const renaming = (name: string, to: string) => [
+      'supersede',
+      name,
+      '--context',
+      'booking',
+      '--rename',
+      to,
+      '--wording',
+      'New.',
+      '--reason',
+      'New.',
+    ];
+    refused(define('hold'), /name 'hold' is one the concept 'claim'/);
+    refused(define('claim'), /already has the concept 'claim'/);
+    refused(
+      renaming('claim', 'booking slot'),
+      /name 'booking slot' is one the concept 'booking slot'/,
+    );
+    refused(
+      renaming('claim', 'reservation'),
+      /name 'reservation' is one the concept 'booking slot'/,
+    );
+    refused(renaming('hold', 'claim'), /'claim' .* is already named 'claim'/);
+    // Its own earlier name may be taken back.
+    rename('claim', 'hold', 'Lasts ten minutes again.');
+    expect(state()).toEqual([
+      'hold ≜ Lasts ten minutes again.',
+      'booking slot ≜ Taken on a seat.',
+    ]);
+  });
+
+  it('lists versions naming the concept differently as competing, under the name it had before them', () => {
+    const first = (journal()[1] as string).replace(/\.json$/, '');
+    const sibling = (id: string, body: object) =>
+      writeFileSync(
+        join(repo, 'design/journal', `${id}.json`),
+        JSON.stringify({
+          id,
+          at: '2026-01-01T00:00:00.000Z',
+          context: 'booking',
+          wording: `${id.slice(-1)} wording.`,
+          builtFrom: [],
+          reason: 'Branch.',
+          supersedes: [first],
+          ...body,
+        }),
+      );
+    sibling('01Z00000000000000000000001', {
+      kind: 'rename',
+      name: 'claim',
+      was: 'hold',
+    });
+    sibling('01Z00000000000000000000002', { kind: 'supersede', name: 'hold' });
+    expect(concepts('design')).toMatchObject({
+      contexts: [
+        {
+          concepts: [{ name: 'reservation', builtFrom: ['hold'] }],
+          competing: [
+            {
+              name: 'hold',
+              versions: [
+                { name: 'claim', wording: '1 wording.' },
+                { wording: '2 wording.' },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(
+      (concepts('state') as { contexts: { competing: unknown[] }[] })
+        .contexts[0]?.competing,
+    ).toEqual([
+      { name: 'hold', versions: ['claim ≜ 1 wording.', 'hold ≜ 2 wording.'] },
+    ]);
+    expect(rename('claim', 'claim', 'Settled.')).toMatchObject({
+      was: 'hold',
+      supersedes: ['01Z00000000000000000000001', '01Z00000000000000000000002'],
+    });
+    expect(state()).toEqual([
+      'claim ≜ Settled.',
+      'reservation ≜ Taken on a seat.',
+    ]);
+  });
+});
+
 it('refuses a working directory outside any git repository', () => {
   const outside = mkdtempSync(join(tmpdir(), 'concepts-outside-'));
   try {

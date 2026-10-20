@@ -80,7 +80,14 @@ const PARAMETERS: Record<string, string[]> = {
   purpose: ['statement', 'reason'],
   context: ['context', 'subject', 'relation', 'reason'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
-  supersede: ['concept', 'context', 'wording', 'reason', 'built-from'],
+  supersede: [
+    'concept',
+    'context',
+    'wording',
+    'reason',
+    'built-from',
+    'rename',
+  ],
   retire: ['concept', 'context', 'reason'],
   decide: [
     'id',

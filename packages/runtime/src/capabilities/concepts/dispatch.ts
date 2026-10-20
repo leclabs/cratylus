@@ -18,7 +18,8 @@
 //   context    record a bounded context, or, with a reason, change one or
 //              bring a retired one back
 //   define     record a concept's first version
-//   supersede  record a version superseding every current one
+//   supersede  record a version superseding every current one, optionally
+//              renaming the concept
 //   retire     record a concept's retirement, or, without a concept, a bounded
 //              context's
 //   decide     record a decision of realization, open or accepted
@@ -89,7 +90,12 @@ import {
   practiceOf,
   qualifiedName,
 } from './delivered.js';
-import type { ContextEntry, DecideEntry, WordedEntry } from './entries.js';
+import type {
+  ContextEntry,
+  DecideEntry,
+  Draft,
+  WordedEntry,
+} from './entries.js';
 import { JOURNAL_DIR, type Journal, journalAt } from './journal.js';
 import {
   type Leak,
@@ -180,7 +186,7 @@ export const VERBS = {
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
-        'The concept whose versions to show, by its name in the bounded context; leave it out to show the bounded context’s own history',
+        'The concept whose versions to show, by its current name in the bounded context or any name it had; leave it out to show the bounded context’s own history',
       ),
       optional: true,
     },
@@ -284,10 +290,10 @@ export const VERBS = {
     concept: 'supersession',
     effect: 'appends',
     purpose:
-      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back',
-    when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; never to take a concept out of the design, which is retirement',
+      'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; given a new name, the version also renames the concept, which stays one concept: the design reads it under the new name only, its history lists every version with the name it was recorded under, and every concept built from it follows it to the new name',
+    when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; with a new name, when the concept’s name evokes a meaning the concept does not have, or misses one it does, and another term evokes it more nearly; never to take a concept out of the design, which is retirement',
     positional: concept(
-      'The concept whose meaning changes, by its name in the bounded context',
+      'The concept whose meaning changes, by its current name in the bounded context or any name it had',
     ),
     flags: {
       ...inContext('concept'),
@@ -297,6 +303,9 @@ export const VERBS = {
       ),
       reason: valueFlag('Why its meaning changes', { required: true }),
       ...BUILT_FROM,
+      rename: valueFlag(
+        'The concept’s new name, its term from this version on, when its current one evokes the wrong meaning; the correction is then stated against the new name. Never a name another concept of the context has or has had, nor the concept’s current name; a name the concept itself had before may be taken back',
+      ),
     },
   },
   retire: {
@@ -307,7 +316,7 @@ export const VERBS = {
     when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead; without a concept, when the design drops a whole bounded context of the project’s own, never a delivered one',
     positional: {
       ...concept(
-        'The concept that leaves the design, by its name in the bounded context; leave it out to retire the bounded context itself',
+        'The concept that leaves the design, by its current name in the bounded context or any name it had; leave it out to retire the bounded context itself',
       ),
       optional: true,
     },
@@ -881,19 +890,39 @@ function answerOf(
     }
     case 'define':
     case 'supersede': {
-      const name = read.named('concept');
+      const given = read.named('concept');
       const where = recordable();
       const wording = read.required('wording', 'the correction');
       const reason = read.required('reason', 'the reason');
       const builtFrom = args.flags.get('built-from') ?? [];
-      if (verb === 'define' && folded.versions(where, name).length > 0)
+      const had = folded.nameOf(where, given);
+      if (verb === 'define' && had !== undefined)
         throw refuse(
-          `the bounded context '${where}' already has the concept '${name}'; supersede it instead`,
+          had === given
+            ? `the bounded context '${where}' already has the concept '${given}'; supersede it instead`
+            : `the name '${given}' is one the concept '${had}' in '${where}' has had, and a name stays its concept's; name the new concept otherwise, or supersede '${had}'`,
         );
       const supersedes =
-        verb === 'define' ? [] : superseding(where, name, true);
-      const draft: Omit<WordedEntry, 'id' | 'at'> = {
-        kind: verb,
+        verb === 'define' ? [] : superseding(where, given, true);
+      const was = had ?? given;
+      const rename = read.optional('rename');
+      if (rename !== undefined) {
+        if (rename.trim() === '')
+          throw refuse(
+            'the new name is empty; give one, or leave --rename out',
+          );
+        if (rename === was)
+          throw refuse(
+            `the concept '${was}' in '${where}' is already named '${rename}'`,
+          );
+        const other = folded.nameOf(where, rename);
+        if (other !== undefined && !folded.same(where, rename, was))
+          throw refuse(
+            `the name '${rename}' is one the concept '${other}' in '${where}' has or has had, and a name stays its concept's; give another`,
+          );
+      }
+      const name = rename ?? was;
+      const stated = {
         context: where,
         name,
         wording,
@@ -901,13 +930,17 @@ function answerOf(
         reason,
         supersedes,
       };
+      const draft: Draft<WordedEntry> =
+        rename === undefined
+          ? { kind: verb, ...stated }
+          : { kind: 'rename', was, ...stated };
       const passage: Passage = { kind: 'concept', context: where, name };
       const found = [
         ...warnings(passage, [wording], own(where, name)),
         ...restating(
           passage,
           wording,
-          replacedWordings(where, name, supersedes),
+          replacedWordings(where, was, supersedes),
         ),
       ];
       const entry = journal.append(draft);
@@ -926,14 +959,14 @@ function answerOf(
           supersedes: folded.currentDescriptions(where).map((c) => c.id),
         });
       }
-      const name = read.named('concept');
+      const given = read.named('concept');
       const where = recordable();
       const reason = read.required('reason', 'the reason');
-      const supersedes = superseding(where, name, false);
+      const supersedes = superseding(where, given, false);
       return journal.append({
         kind: 'retire',
         context: where,
-        name,
+        name: folded.nameOf(where, given) ?? given,
         reason,
         supersedes,
       });
