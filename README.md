@@ -9,10 +9,14 @@ each defined in the terms the model already understands. The idea behind it, on 
 You need Node 22 or later, and omp run at least once on this machine.
 
 ```sh
-npm install -g cratylus   # the command
-cratylus install          # put the agents on this machine
-omp --agent mav           # start a session as an installed agent
+npm install -g cratylus      # the command
+cratylus install             # put the agents on this machine
+omp --agent architect        # start with the architect, then say what you want
 ```
+
+Using cratylus starts with the architect: launch it with `omp --agent architect` and say what you
+want. It holds the meaning and hands the work to the other agents cratylus installed. `cratylus`
+on its own says the same, and `cratylus --help` lists everything else.
 
 `cratylus install` asks only what you have not said: which harness, which practices (the ways of
 working it offers), which rules your agents follow in every project (rulesets such as `gitflow`,
