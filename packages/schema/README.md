@@ -83,25 +83,29 @@ offers. Canon gives its directories as absolute paths, located against its own m
 
 ## What is here
 
-| export                                                                | what it is                                                                  |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `FactorMeta` · `FactorManifest` · `mergeManifest`                     | a factor's metadata, the manifest shape, and the per-key merge              |
-| `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`        | how values are sourced, how many a field holds, and one held value          |
-| `FactorOf` · `SetFactorOf` · `RequiredFactorOf` · `AgentOf`           | generic derivations over any manifest                                       |
-| `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `termOf` | a factor's value, bare or self-enforcing, and its term/correction split     |
-| `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`        | the agent and skill shapes the canon is written in                          |
-| `JsonValue`                                                           | the data a skill's runtime face may carry as `configuration`                |
-| `HookDeclaration` · `hookIrOf` · `resolveWorker`                      | the doctrine-free hook declaration, and a worker's template resolution      |
-| `ProjectionFact` · `ProjectionFacts`                                  | the names of the facts a projector binds into a hook worker's template      |
-| `AgentPlugin` · `Layout` · `defineAgentPlugin`                        | the canon's plugin declaration                                              |
-| `Practice` · `Plumbing` · `Agent.dispatches`                          | a way of working, its shared plumbing, and an agent's dispatch              |
-| `Rule` · `Ruleset`                                                    | a working convention and why it holds, and one convention's rules           |
+| export                                                                                           | what it is                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `FactorMeta` · `FactorManifest` · `ManifestDeclaring` · `mergeManifest`                          | a factor's metadata, the manifest shape, a plugin as the merge sees one, and the per-key merge                              |
+| `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`                                   | how values are sourced, how many a field holds, and one held value                                                          |
+| `FactorOf` · `SetFactorOf` · `RequiredFactorOf` · `FieldFactorOf` · `FactorFieldsOf` · `AgentOf` | generic derivations over any manifest                                                                                       |
+| `KebabToCamel` · `kebabToCamel` · `FactorFieldName`                                              | a factor's name to the field it occupies, at the type level and at runtime                                                  |
+| `Value` · `Enforcing` · `Binding` · `enforcing` · `isFactorValue` · `bodyOf` · `termOf`          | a factor's value, bare or self-enforcing, and its term/correction split                                                     |
+| `Agent` · `factorValueOf` · `AgentContract` · `JsonSchema`                                       | the agent shape, a factor field read off it, and its typed handoff                                                          |
+| `Skill` · `SkillDeploy` · `SkillExpression` · `CapabilityName`                                   | the skill shape and the runtime capability it may be a face of                                                              |
+| `Mark` · `markToColor`                                                                           | an agent's emoji·hue mark, and its hue as a terminal color                                                                  |
+| `JsonValue`                                                                                      | the data a skill's runtime face may carry as `configuration`                                                                |
+| `HookDeclaration` · `HookSource` · `HookWorker` · `HookMessage` · `HookSubstrate` · `EventName`  | the doctrine-free hook declaration, its config-IR entry, its worker payload, the speech it carries, its substrate and event |
+| `hookIrOf` · `resolveWorker`                                                                     | a declaration's lift to the hook config-IR, and a worker's template resolution                                              |
+| `ProjectionFact` · `ProjectionFacts`                                                             | the names of the facts a projector binds into a hook worker's template                                                      |
+| `AgentPlugin` · `Layout` · `defineAgentPlugin`                                                   | the canon's plugin declaration                                                                                              |
+| `Practice` · `Plumbing`                                                                          | a way of working, and the plumbing every practice is installed with                                                         |
+| `Rule` · `Ruleset`                                                                               | a working convention and why it holds, and one convention's rules                                                           |
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
-`null`), and optionally the role it `holds`, the roles it `dispatches` to, its model `routing`
-(`{ tier, effort }`), `readOnly`, the `skills` it operates through and its `isolation`. The canon's
-own fold copies these from its factors because the projector is blind to which factor is
-which; a harness binds model routing per agent, and a practice is closed under `dispatches`.
+`null`), and optionally the role it `holds`, its model `routing` (`{ tier, effort }`), its typed
+handoff `contract`, the `skills` it operates through and its `isolation`. The canon's own fold
+copies these from its factors because the projector is blind to which factor is which; a harness
+binds model routing per agent.
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic event name (`EventName`), the
 `Substrate` a constraint is realized on, the `Hook` wire shape, `NativeBinding`, and
