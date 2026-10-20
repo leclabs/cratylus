@@ -3,8 +3,7 @@
 //
 // Two pipelines read one plugin set and never met:
 //   · `resolve()` folds the plugin `fragments` dirs (extends order, then consumer
-//     `patches`) into `ResolvedAgentSet.fragments` — reached only via
-//     `composeFromFile`, whose consumers (`compose`, `explain`) both PRINT.
+//     `patches`) into `ResolvedAgentSet.fragments`.
 //   · `projectPluginSet` scans the `agents`/`skills`/`hooks` dirs and renders
 //     bytes — and an agent module inlines its dimension values BY IMPORT BINDING
 //     (`objective: insight_objective`), i.e. the body as it sat on disk.

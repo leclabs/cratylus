@@ -39,14 +39,12 @@
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
-import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
+import { projectPluginSet } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -101,28 +99,19 @@ const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
 };
 
 // A REAL render tree, not a hand-rolled emitter call: the shim under test is the
-// one that actually lands. V7 made the projector RETURN the artifact tree, so the
-// caller is the one writer — project THEN write.
+// one the projector puts in the tree install places.
 let projectedShim = '';
 
-let scratch: string | undefined;
 beforeAll(async () => {
-  scratch = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
-  const out = scratch;
   const report = await projectPluginSet({
     plugins: [canonPlugin, carrierPlugin],
     adapter: adapterByName('omp'),
   });
-  writeRenderTree(out, report.files);
-  projectedShim = readFileSync(
-    join(out, 'skills', CELL, 'scripts', `${CAPABILITY}.mjs`),
-    'utf-8',
-  );
+  projectedShim =
+    report.files.find(
+      (f) => f.path === `skills/${CELL}/scripts/${CAPABILITY}.mjs`,
+    )?.content ?? '';
 }, 120_000);
-afterAll(async () => {
-  if (scratch !== undefined)
-    await rm(scratch, { recursive: true, force: true });
-});
 
 // Every hand-authored shell/`.mjs` source under each package's `src`: the ones a human
 // wrote and no compiler
@@ -310,7 +299,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
 // operator types what they were told to type. So the census is a gate at ZERO rather
 // than a ratchet: the derivation exists now, so a spelling is never the cheaper option.
 //
-// COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus deploy` is
+// COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus install` is
 // describing the command, not invoking it, and a gate that convicted prose would be
 // satisfied by deleting the prose. What is scanned is code position.
 
@@ -326,13 +315,7 @@ function codePositionOf(ts: string): string {
 /** Occurrences of the forge bin as a bare word: not the `@cratylus/` npm scope, not
  *  `cratylus` (the runtime's bin, held by the legs above), not a URL segment. */
 function spellsForgeBin(ts: string): number {
-  // A CONFIG FILENAME IS NOT THE BIN. `cratylus.config.ts` shares a word with the
-  // command and is a different concept — the name of a file a consumer writes, not
-  // the program they invoke. Deriving it from `CLI_BIN` was over-engineering that
-  // this very census provoked: vite does not compute `vite.config.ts` from its bin
-  // key either. Excluded by shape (`.config` follows) rather than by a file
-  // exemption, so the rule stays about CONCEPTS and no roster can go stale.
-  const re = new RegExp(`(?<![@./\\w-])${CLI_BIN}(?![-\\w/]|\\.config)`, 'g');
+  const re = new RegExp(`(?<![@./\\w-])${CLI_BIN}(?![-\\w/])`, 'g');
   return (codePositionOf(ts).match(re) ?? []).length;
 }
 
@@ -374,20 +357,18 @@ describe('the forge bin has exactly one authored home', () => {
     // The failure this whole file was written against, one bin over: a scan whose
     // predicate quietly stopped matching is green over any corpus. Feed it the
     // defect it exists to catch, and the two shapes it must NOT catch.
-    expect(spellsForgeBin(`const x = '${CLI_BIN} deploy';`)).toBe(1);
+    expect(spellsForgeBin(`const x = '${CLI_BIN} install';`)).toBe(1);
     expect(spellsForgeBin(`import x from '@${CLI_BIN}/forge';`)).toBe(0);
     // A BARE SPELLING IS THE DEFECT NOW. This expected 0 because the string was the
     // OTHER command's name — `cratylus-run` was not the build bin, so spelling it
     // here was somebody else's business. There is one command; every spelling of it
     // in code position is this gate's business.
     expect(spellsForgeBin(`const x = '${CLI_BIN}';`)).toBe(1);
-    // the filename shares a word with the command and is not it
-    expect(spellsForgeBin(`const f = '${CLI_BIN}.config.ts';`)).toBe(0);
     // and prose is out of scope, in both comment shapes
     expect(
-      spellsForgeBin(`// run \`${CLI_BIN} deploy\` first\nconst x = 1;`),
+      spellsForgeBin(`// run \`${CLI_BIN} install\` first\nconst x = 1;`),
     ).toBe(0);
-    expect(spellsForgeBin(`/* ${CLI_BIN} deploy */\nconst x = 1;`)).toBe(0);
+    expect(spellsForgeBin(`/* ${CLI_BIN} install */\nconst x = 1;`)).toBe(0);
   });
 
   it('the CLI brands its help with the name it is installed under', () => {

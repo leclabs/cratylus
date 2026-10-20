@@ -29,10 +29,8 @@ const DELIVERED = ['cratylic context design', 'workflow'];
 export default defineConfig({
   entry: {
     cratylus: 'src/cratylus.ts',
-    index: 'src/index.ts',
   },
   format: ['esm'],
-  dts: { entry: { index: 'src/index.ts' } },
   clean: true,
   sourcemap: true,
   banner: { js: '#!/usr/bin/env node' },

@@ -5,7 +5,6 @@
 // pins the shim's shape and executable mode, read from a real projection of canon
 // with the shim-carrier fixture, whose cell declares `versionSkew`.
 
-import { execFileSync } from 'node:child_process';
 import {
   existsSync,
   mkdtempSync,
@@ -14,26 +13,19 @@ import {
   statSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { emitRuntimeShim } from '@cratylus/forge/project';
+import { join } from 'node:path';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { emitRuntimeShim, projectPluginSet } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-
-const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+import canon from '../src/index.js';
+import carrier from './fixtures/shim-carrier/plugin.js';
 
 /** A cell that declares a `runtime` capability — a shim carrier, and the witness
  *  this gate reads. No canon cell declares one, so the shim-carrier fixture's. */
 const CELL = 'carrier';
 const CAPABILITY = 'versionSkew';
-const CARRIER = join(canonRoot, 'test', 'fixtures', 'shim-carrier');
-
-const shimOf = (out: string): string =>
-  readFileSync(
-    join(out, 'skills', CELL, 'scripts', `${CAPABILITY}.mjs`),
-    'utf-8',
-  );
 
 const scratch: string[] = [];
 function tmp(prefix: string): string {
@@ -53,37 +45,16 @@ function emitted(capability: string): string {
 
 let ompShim = '';
 
-/** Resolve the shipped CLI entry from the CLI package's declared bin. */
-function buildCli(): string {
-  const pkgPath = join(canonRoot, '..', 'cli', 'package.json');
-  const manifest = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
-    name: string;
-    bin: Record<string, string>;
-  };
-  // Select the BUILD command by name — the hub ships two, and taking index 0 would
-  // be a coin flip between `cratylus` and `cratylus`.
-  const entry = manifest.bin[manifest.name] as string;
-  return join(canonRoot, '..', 'cli', entry);
-}
-
 beforeAll(async () => {
-  const ompOut = join(tmp('runtime-shim-projection-'), 'omp');
-  execFileSync(
-    process.execPath,
-    [
-      buildCli(),
-      'project',
-      '--harness',
-      'omp',
-      '--config',
-      join(CARRIER, 'cratylus.config.ts'),
-      '--out',
-      ompOut,
-    ],
-    { cwd: canonRoot, stdio: 'pipe' },
-  );
-
-  ompShim = shimOf(ompOut);
+  const tree = await projectPluginSet({
+    plugins: [canon, carrier],
+    adapter: adapterByName('omp'),
+    warn: () => {},
+  });
+  ompShim =
+    tree.files.find(
+      (f) => f.path === `skills/${CELL}/scripts/${CAPABILITY}.mjs`,
+    )?.content ?? '';
 }, 120_000);
 
 describe('runtime thin shim (S6 forge-build-integration)', () => {
@@ -121,7 +92,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
     expect(readFileSync(dest, 'utf-8')).toBe(emitted(CAPABILITY));
-    // Owner-executable (0755) — the exec bit deploy preserves for scripts/*.
+    // Owner-executable (0755) — the exec bit install preserves for scripts/*.
     expect(statSync(dest).mode & 0o111).not.toBe(0);
   });
 

@@ -1,27 +1,12 @@
-// `cratylus install [--harness <name>]` — the zero-config path, for an operator who
-// is not in a project at all.
+// `cratylus install [--harness <name>]` — placing the corpus on this machine, for an
+// operator who wants their agents here and has no repository in hand at all.
 //
-// WHY THIS IS A DIFFERENT VERB FROM `deploy`. `project`/`deploy` serve a repository:
-// a corpus is named in a config, rendered into a tree the repo owns, and placed. That
-// is the right shape for a team pinning a corpus to a codebase, and the wrong shape
-// for the far more common case — someone who wants their agents on this machine and
-// has no repository in hand at all. Asking them to `npm init`, write a config, and
-// learn a two-stage pipeline to obtain the DEFAULT answer is the friction this verb
-// removes.
-//
-// WHAT MAKES IT SAFE TO DEFAULT A CORPUS HERE, when `project` must not. The corpus is
-// not INVENTED by the projector — it is handed in by the hub package that mounts this
-// verb. `forge` still knows no corpus: it installs what it was told to and refuses
-// when it was told nothing. The hub package supplies the default because it is the
-// only package permitted to know both halves. Another corpus is installed by naming
-// it in a `cratylus.config.ts`, which is the one way to choose.
-//
-// A CONFIG STILL WINS. If the cwd has one, `install` uses it — otherwise the operator
-// who wrote a config would be silently ignored by the friendliest command on the
-// surface, which is the sharpest way to lose their trust. A config that cannot be
-// loaded (its packages are not installed yet, it does not parse) ends the run with
-// the loader's own one-line message, writing nothing: falling back to the default
-// corpus there would install something other than what the config names.
+// IT INSTALLS THE CORPUS IT IS HANDED. The corpus is not INVENTED by the projector — it
+// is handed in by the hub package that mounts this verb, the corpus the command is
+// built with. `forge` still knows no corpus: it installs what it was told to and
+// refuses when it was told nothing. The hub package supplies it because it is the only
+// package permitted to know both halves. Nothing in the working directory chooses
+// another.
 //
 // WHERE IT PLACES: THE OWNED ROOT. Everything install places for the user on the
 // harness lives under one root it owns (`~/.cratylus/<harness>`, `deploy/owned-root.ts`):
@@ -89,23 +74,12 @@ import {
   INSTALLATION_RECORD_FILE,
   type InstallScope,
 } from '@cratylus/runtime/runtime-config';
-import { mergeManifest } from '@cratylus/schema';
 import {
   HARNESS_NAMES,
   type HarnessAdapter,
   adapterByName,
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
-import {
-  ConfigLoadError,
-  ConfigShapeError,
-  type CratylusConfig,
-  EmptyExtendsError,
-  MissingPackageError,
-  loadConfig,
-  requirePlugins,
-} from '../../config/index.js';
-import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type DeliveredDocument,
   addModelRoles,
@@ -207,9 +181,7 @@ export interface InstallCmdOpts {
 /** Which harnesses this host actually has, by the directory each adapter reads (`home`
  *  names the home they are looked for in; absent, each harness's own default).
  *
- *  DETECTION IS OFFERED, NEVER ASSUMED. `project` may not guess a harness — a render
- *  tree that depends on which harness happens to be installed is not `REGENERABLE`,
- *  and that is a property about ARTIFACTS. `install` writes no artifact a build
+ *  DETECTION IS OFFERED, NEVER ASSUMED. `install` writes no artifact a build
  *  reproduces; it acts on THIS machine, where "which harnesses are here" is the
  *  question being asked rather than a variable leaking into an output. */
 export function detectHarnesses(home?: string): string[] {
@@ -331,39 +303,6 @@ function parseModelRoles(
   return chosen;
 }
 
-/**
- * The cwd's config, or a refusal carrying the loader's message. `cratylus init` writes
- * a config whose packages are not yet installed, so an unloadable config is an
- * ordinary state of the directory: the loader's errors each already say what is wrong
- * and what to do, and that line is the whole of the run's output. A config that loads
- * but names no usable corpus (it extends nothing, or no plugin it extends carries the
- * dimension manifest) is refused the same way, before the render that would otherwise
- * end in a stack trace.
- */
-async function loadConfigOrRefuse(configPath: string): Promise<CratylusConfig> {
-  let config: CratylusConfig;
-  try {
-    config = await loadConfig(configPath);
-    requirePlugins(config, configPath);
-  } catch (e) {
-    if (
-      e instanceof MissingPackageError ||
-      e instanceof ConfigLoadError ||
-      e instanceof ConfigShapeError ||
-      e instanceof EmptyExtendsError
-    ) {
-      throw new Refusal(e.message);
-    }
-    throw e;
-  }
-  try {
-    mergeManifest(config.extends);
-  } catch (e) {
-    throw new Refusal(`${configPath}: ${(e as Error).message}`);
-  }
-  return config;
-}
-
 export async function runInstall(opts: InstallCmdOpts): Promise<number> {
   try {
     return await install(opts);
@@ -451,34 +390,25 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
-  // an author's render tree, which no installation takes over (decision 0311).
+  // an earlier render tree, which no installation takes over (decision 0311).
   if (scope === 'project' && holdsRenderTree(root)) {
     throw new Refusal(
-      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an author's render tree (what \`${CLI_BIN} project\` writes), not an installation; render that tree elsewhere with \`${CLI_BIN} project --out <dir>\`, or move it away, and install again`,
+      `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an earlier render tree, not an installation; move it away, and install again`,
     );
   }
   // The installation this one replaces: its record, under the owned root.
   const prior = readInstallationRecord(root);
 
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
-  const configPath = join(cwd, CONFIG_FILE);
-  let plugins: readonly AgentPlugin[];
-  let source: string;
-
-  if (existsSync(configPath)) {
-    const config = await loadConfigOrRefuse(configPath);
-    plugins = config.extends;
-    source = configPath;
-  } else if (opts.corpus !== undefined) {
-    plugins = [opts.corpus];
-    source = 'the corpus this command was built with';
-  } else {
-    // The refusal a LIBRARY owes: no corpus was named, and inventing one is the one
-    // thing this package may never do.
+  if (opts.corpus === undefined) {
+    // The refusal a LIBRARY owes: no corpus was handed in, and inventing one is the
+    // one thing this package may never do.
     throw new Refusal(
-      `no corpus; write a ${CONFIG_FILE} that names one, or mount this CLI from a package that names one`,
+      'no corpus; mount this CLI from a package that names one',
     );
   }
+  const plugins: readonly AgentPlugin[] = [opts.corpus];
+  const source = 'the corpus this command was built with';
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
   // What the corpus renders depends on which practices are chosen, and which practices

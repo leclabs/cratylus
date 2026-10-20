@@ -21,7 +21,6 @@ import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ompHarnessAdapter } from '../../src/adapters/omp/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
-import { runProject } from '../../src/cli/commands/project.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { projectOf } from '../../src/deploy/install-scope.js';
 import { sessionAgentHiding } from '../../src/deploy/read-settings.js';
@@ -624,25 +623,16 @@ describe('uninstall at project scope', () => {
   });
 });
 
-describe('a project installation and an author’s render tree never share a directory', () => {
+describe('a project installation never takes over an earlier render tree', () => {
   it('install refuses a project root over a render tree, writing nothing', async () => {
     mkdirSync(join(projectRoot(), 'agents'), { recursive: true });
     writeFileSync(join(projectRoot(), 'agents', 'alpha.md'), '# rendered\n');
     const before = snapshot(repo);
     expect(await install({ scope: 'project' })).toBe(1);
-    expect(out).toContain("it is an author's render tree");
+    expect(out).toContain('it is an earlier render tree');
     expect(snapshot(repo)).toEqual(before);
     expect(uninstall({ scope: 'project' })).toBe(1);
     expect(snapshot(repo)).toEqual(before);
-  });
-
-  it('project refuses to render into a directory holding an installation record', async () => {
-    expect(await install({ scope: 'project' })).toBe(0);
-    writeFileSync(join(repo, 'cratylus.config.ts'), 'export default {};\n');
-    const before = snapshot(projectRoot());
-    expect(await runProject({ cwd: repo })).toBe(1);
-    expect(out).toContain('holds an installation (installation.json)');
-    expect(snapshot(projectRoot())).toEqual(before);
   });
 });
 

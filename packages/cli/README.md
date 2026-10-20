@@ -11,7 +11,7 @@ It needs Node 22 or later.
 ## Use
 
 ```sh
-cratylus install                     # the guided run: put the default corpus on this machine, no project needed
+cratylus install                     # the guided run: put the bundled corpus on this machine, no project needed
 cratylus install --scope project     # the same for the project you are in, to commit and share with its team
 omp --agent architect                # start here: the architect
 cratylus uninstall --harness omp     # take away what install placed
@@ -28,7 +28,7 @@ The sections that follow are for whoever installs: the guided install and its tw
 session as an agent, the badge on the status line, the host's model routing on omp, the host runtime
 config, version skew, taking it away again, and what a command's exit code and streams mean. After
 them comes the reference, which is the help of every command once: install and uninstall, then the
-capabilities that agents and skills call, then the commands for writing a corpus of your own.
+capabilities that agents and skills call.
 
 ## The guided install
 
@@ -37,14 +37,8 @@ cratylus install
 ```
 
 `cratylus install` puts the bundled corpus's agents and skills into omp, for you or for one project
-(the scope, below). It needs no config. It looks for omp by its directory (`~/.omp`). Run it from a
-directory with no
-`cratylus.config.ts`: where one is there, install uses the corpus that file names in place of the
-bundled one. To install another corpus, name it in a `cratylus.config.ts`; install has no flag for
-it. Where that file cannot be loaded, because a package it imports is not installed there yet (the
-file `cratylus init` writes is one until you install its package) or because it does not parse,
-install ends with the one line the loader gives, `cratylus install: <what is wrong>; <what to do>`,
-writes nothing, and does not fall back to the bundled corpus.
+(the scope, below). It always installs the corpus this command is built with, and needs no
+config. It looks for omp by its directory (`~/.omp`).
 
 The run is short. It asks only what you have not said, shows what it will place before it places
 anything, places it once you confirm, and ends with a few lines saying what was done and what to do
@@ -224,14 +218,11 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 - `--model-roles: '<name>' is no tier or agent of this install (tiers: …; agents: …)`: an entry must
   be `<role>=<model>`, keyed by one of the tiers or agents it lists, and a model must be a name the
   harness accepts.
-- `<path>/cratylus.config.ts imports '<package>', which is not installed; run …`, or
-  `… does not parse`: the `cratylus.config.ts` in this directory cannot be loaded. Do what the line
-  says, or run install from a directory with no config.
 - `cancelled; nothing was written, so run it again to install`: you cancelled a question.
 
 At project scope install also refuses where the project is your home; where the project's
-`.cratylus/omp` holds files and no installation record, which is an author's render tree
-(`cratylus project` below) that a project root never shares a directory with; and where
+`.cratylus/omp` holds files and no installation record, which is an earlier render tree that a
+project root never takes over (move it away, and install again); and where
 `--model-roles` or `--agent-status` is given (`--model-roles: a project installation binds no
 models, …`, `--agent-status: a project installation writes no status line choice, …`): settle
 those at user scope instead.
@@ -340,8 +331,7 @@ arguments is no failure: it prints the orientation on stdout and exits `0`. A fa
 `cratylus <command>: <what went wrong>; <what to do>`, and a usage error, an unknown command or flag
 or a value outside its choices, names the word and the `--help` to read, with a nearest match when
 one is close. Colour marks only the prefix of a failure or warning, and only on a terminal with
-`NO_COLOR` unset. `deploy --check` exits `0` in sync, `1` on drift and `2` when it could not run,
-usage errors included. A reader that closes the pipe, as `cratylus project --verbose | head -1`
+`NO_COLOR` unset. A reader that closes the pipe, as `cratylus install --dry-run --verbose | head -1`
 does, ends the command quietly.
 
 ## Commands
@@ -588,130 +578,3 @@ A build that is no release says which commit it is from: a `cratylus` run from t
 ```sh
 cratylus versionSkew report [options]
 ```
-
-## Corpus authoring
-
-These write and render a corpus. A consumer who only installs one needs none of them; each answers `--help` like the rest.
-
-```sh
-cratylus init                 # write a cratylus.config.ts naming a corpus
-cratylus project              # render the resolved corpus into .cratylus/<harness>
-cratylus deploy               # place a render tree into an agent harness
-cratylus deploy --check       # is the deployed tree still what the corpus says?
-cratylus explain <filter>     # where each resolved value came from
-```
-
-### `cratylus init`
-
-Create cratylus.config.ts, extending a plugin package.
-
-```sh
-cratylus init [options]
-```
-
-| Flag             | What it does                                                           |
-| ---------------- | ---------------------------------------------------------------------- |
-| `--plugin <pkg>` | The plugin package the new config extends (default: "@cratylus/canon") |
-
-### `cratylus add`
-
-Add a plugin package to the extends list of cratylus.config.ts.
-
-```sh
-cratylus add [options] <plugin>
-```
-
-| Argument | What it is                |
-| -------- | ------------------------- |
-| `plugin` | The plugin package to add |
-
-### `cratylus compose`
-
-Print the fragments your config resolves to, one per line.
-
-```sh
-cratylus compose [options]
-```
-
-| Flag              | What it does                                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
-
-### `cratylus project`
-
-Render the plugins your config extends into a tree of an agent harness's files.
-
-```sh
-cratylus project [options]
-```
-
-| Flag               | What it does                                                                                  |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| `--config <path>`  | The config file to load (default: cratylus.config.ts in the current directory)                |
-| `--out <dir>`      | The directory to render into (default: .cratylus/<harness>, the tree `cratylus deploy` reads) |
-| `--harness <name>` | The agent harness to render for (choices: "omp", default: "omp")                              |
-| `--verbose`        | Also print one line per file rendered or pruned                                               |
-
-It refuses to render into a directory that holds an installation (`cratylus install --scope project`
-places one at `.cratylus/omp`); render elsewhere with `--out`.
-
-### `cratylus deploy`
-
-Place a rendered tree's agents, skills and hooks into an agent harness.
-
-```sh
-cratylus deploy [options]
-```
-
-| Flag                 | What it does                                                                                                                                                                                                                                                                       |
-| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--from <dir>`       | The render tree to deploy (default: .cratylus/<harness>, what `cratylus project` writes)                                                                                                                                                                                           |
-| `--agents-dir <dir>` | The agents directory, where it is not agents/ in the render tree                                                                                                                                                                                                                   |
-| `--skills-dir <dir>` | The skills directory, where it is not skills/ in the render tree                                                                                                                                                                                                                   |
-| `--hooks-dir <dir>`  | The hooks root, where it is not the render tree itself                                                                                                                                                                                                                             |
-| `--assets <decls>`   | Files to ship with a skill, as <skill>=<file>[,…]; one that is absent is a warning                                                                                                                                                                                                 |
-| `--kind <kind>`      | What to place (choices: "agent", "skill", "hooks", "all", default: "all")                                                                                                                                                                                                          |
-| `--scope <scope>`    | Where to place it: your home, as the owned root every project is offered, or a project (choices: "user", "project", default: "user")                                                                                                                                               |
-| `--harness <name>`   | The agent harness to place into (choices: "omp", default: "omp")                                                                                                                                                                                                                   |
-| `--home <dir>`       | The home directory the owned root is under, for --scope user (default: your home directory)                                                                                                                                                                                        |
-| `--project <dir>`    | The project root, for --scope project (default: the current directory)                                                                                                                                                                                                             |
-| `--config <path>`    | The config file the corpus's lifecycle events are read from (default: cratylus.config.ts in the project root)                                                                                                                                                                      |
-| `--only <names>`     | Place only these names, comma-separated                                                                                                                                                                                                                                            |
-| `--dry-run`          | Print the actions and change nothing                                                                                                                                                                                                                                               |
-| `--verbose`          | Also print the per-file detail of the run                                                                                                                                                                                                                                          |
-| `--check`            | Report where the deployed tree differs from the rendered one (stale, absent or foreign), changing nothing; exits 0 in sync, 1 on drift, 2 when the check could not run; it reads no config and writes nothing to narrate, so --config, --verbose and --dry-run are refused with it |
-
-### `cratylus explain`
-
-Show where each resolved fragment got its value.
-
-```sh
-cratylus explain [options] [agent]
-```
-
-| Argument | What it is                                                    |
-| -------- | ------------------------------------------------------------- |
-| `agent`  | Only the fragments whose id contains this text, ignoring case |
-
-| Flag              | What it does                                                                   |
-| ----------------- | ------------------------------------------------------------------------------ |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory) |
-| `--json`          | Print the machine-readable report instead of text                              |
-
-### `cratylus catalog`
-
-List the fragment ids your plugins let you extend, or count what the corpus holds.
-
-```sh
-cratylus catalog [options] [agent]
-```
-
-| Argument | What it is                                                    |
-| -------- | ------------------------------------------------------------- |
-| `agent`  | Only the fragments whose id contains this text, ignoring case |
-
-| Flag              | What it does                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| `--config <path>` | The config file to load (default: cratylus.config.ts in the current directory)                                |
-| `--corpus <dir>`  | Count the fragments of each dimension in this corpus instead (default with no config: canon's src/dimensions) |
-| `--json`          | Print the machine-readable report instead of a table                                                          |

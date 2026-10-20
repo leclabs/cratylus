@@ -8,7 +8,7 @@ export const PRACTICES: readonly Practice[] = [
   {
     name: 'corpus-authoring',
     description:
-      'Author the corpus of named concepts itself: discover the signs a model already holds, canonize them, and write the agents and skills that carry them.',
+      'Author the corpus of named concepts itself: discover the signs a model already holds and canonize them.',
     agents: [],
     skills: [
       'signify',
@@ -18,8 +18,6 @@ export const PRACTICES: readonly Practice[] = [
       'exemplify',
       'materialize',
       'formalize',
-      'create-agent',
-      'create-skill',
     ],
   },
   {

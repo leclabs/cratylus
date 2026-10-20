@@ -1,32 +1,9 @@
-// Scope resolvers — each returns the `.claude/` root an artifact lands in, with
-// the explicit input that scope requires. The artifact is identical across
-// scopes; scope is the accident (`scope-grant`).
-//
-//   user     home resolver    -> <home>/.claude    (no home: the harness's own
-//                                environment variable when it has one and it is
-//                                set, else $HOME/.claude)
-//   project  project resolver -> <project>/.claude  (project defaults to cwd)
-//
-// The bare-home guard: `--home` is the user's HOME dir, so a bare home
-// self-corrects — `.claude` appended, LOUDLY — while a path already ending in
-// `.claude` is used verbatim (back-compat). This mirrors the remote placer's
-// `resolveClaudeDir`. The footgun it fixes: before, LOCAL took an explicit
-// `--home` verbatim, so `--home /Users/lex` littered `/Users/lex/{agents,skills}`
-// beside the real `~/.claude`.
+// Where a harness's files are: under a named home, or, for none, the harness's own
+// directory.
 
 import { homedir } from 'node:os';
-import { basename, join, resolve as resolvePath } from 'node:path';
+import { join, resolve as resolvePath } from 'node:path';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
-
-export interface ScopeNote {
-  message: string;
-}
-
-export interface ScopeResult {
-  harnessDir: string;
-  // The warning the caller prints once when the bare-home guard fired.
-  note: ScopeNote | null;
-}
 
 /** Expand a leading `~` to the user's home dir (POSIX tilde convenience). */
 function expanduser(p: string): string {
@@ -55,7 +32,7 @@ function unnamedHomeDir(harnessHome: string, homeEnv?: string): string {
 /**
  * The directory a harness's files are in: `<home>/<harnessHome>` for a named home,
  * and for none what {@link unnamedHomeDir} says. A named home is verbatim here —
- * install and uninstall name a real home and no guard corrects it.
+ * install and uninstall name a real home and nothing corrects it.
  */
 export function harnessDirIn(
   adapter: Pick<HarnessAdapter, 'home' | 'homeEnv'>,
@@ -64,44 +41,4 @@ export function harnessDirIn(
   return home
     ? join(home, adapter.home)
     : unnamedHomeDir(adapter.home, adapter.homeEnv);
-}
-
-/**
- * User scope: `<home>/<harnessHome>`. No `--home` → the harness's own directory
- * (`unnamedHomeDir`). A bare home self-corrects (the dot-dir is appended, with a
- * loud NOTE); a path already ending in it is used verbatim.
- *
- * `harnessHome` and `homeEnv` are the ADAPTER's (`HarnessAdapter.home`,
- * `HarnessAdapter.homeEnv`), never a literal. `harnessHome` defaults to `.claude`
- * for callers that predate the parameter — a default, not an assumption: pass the
- * adapter's and a second harness lands where it belongs.
- */
-export function userScope(
-  home?: string | null,
-  harnessHome = '.omp',
-  homeEnv?: string,
-): ScopeResult {
-  if (!home) {
-    return { harnessDir: unnamedHomeDir(harnessHome, homeEnv), note: null };
-  }
-  const p = resolvePath(expanduser(home));
-  if (basename(p) === harnessHome) {
-    return { harnessDir: p, note: null };
-  }
-  const harnessDir = resolvePath(p, harnessHome);
-  return {
-    harnessDir,
-    note: {
-      message: `--home '${home}' is a home dir; deploying to ${harnessDir}`,
-    },
-  };
-}
-
-/** Project scope: `<project>/<harnessHome>` (project defaults to cwd). */
-export function projectScope(
-  project?: string | null,
-  harnessHome = '.omp',
-): ScopeResult {
-  const root = project ? resolvePath(expanduser(project)) : process.cwd();
-  return { harnessDir: resolvePath(root, harnessHome), note: null };
 }

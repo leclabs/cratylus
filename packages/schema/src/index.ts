@@ -334,7 +334,7 @@ export const withBody = <O extends string>(
 ): Value<O> => (enforcing(v) ? { ...v, body } : body);
 
 // ── The runtime dimension descriptor ────────────────────────────────────────
-// A consumer that needs a dimension's metadata at runtime (e.g. `cratylus catalog`)
+// A consumer that needs a dimension's metadata at runtime
 // reads the manifest its corpus declares. This package owns the SHAPE of an entry;
 // WHICH dimensions exist is the corpus's to state, and the corpus derives its own
 // `Dimension` union and per-dimension aliases from it with the helpers below.
@@ -664,19 +664,6 @@ export type JsonValue =
 /** How a skill cell deploys, beyond the default agent-resident projection. */
 export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
   /**
-   * Committed companion assets, staged by `deploy --assets` ONLY.
-   *
-   * NOT projected: `projectPluginSet` never reads this field, so a render tree
-   * carries no assets and a consumer who never passes `--assets` ships none. The
-   * field previously advertised "shipped byte-for-byte with the skill", which
-   * overstated a guarantee nothing enforced. The asset-staging bridge that would
-   * have honoured it — built for the event-tap capability — was abandoned once the
-   * runtime thin shim covered every motivating case, and `runtime` below replaced
-   * it. Zero cells declare `assets` today. Kept because `deploy/bundle.ts` still
-   * honours it.
-   */
-  readonly assets?: readonly string[];
-  /**
    * The RUNTIME capability this skill is a face of. When set, the projection ALSO
    * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
    * `cratylus <capability>` CLI — NOT a bundle of the impl (the capability logic
@@ -685,7 +672,7 @@ export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
    * forge composed a standalone, dependency-free `.mjs` at build time.
    *
    * `configuration` is what the capability receives from the corpus: data, never
-   * code, and no opinion here about any capability's keys. `deploy` emits it into
+   * code, and no opinion here about any capability's keys. `install` emits it into
    * the host runtime config keyed by `capability`, beside the event vocabulary, so
    * meaning the runtime needs reaches it as configuration rather than as a second
    * copy spelled inside the runtime. */

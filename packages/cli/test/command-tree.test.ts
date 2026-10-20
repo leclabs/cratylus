@@ -10,7 +10,6 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEPLOY_CHECK_EXIT } from '@cratylus/forge/deploy';
 import { ORIENTATION, PURPOSE } from '@cratylus/runtime';
 import { CAPABILITIES } from '@cratylus/runtime/capability';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -26,19 +25,8 @@ const rootReadme = readFileSync(
   'utf8',
 );
 
-/** The consumer's commands, which the help lists first. */
-const CONSUMER_COMMANDS = ['install', 'uninstall'] as const;
-
-/** The corpus author's commands, which the help lists last, apart. */
-const AUTHOR_COMMANDS = [
-  'init',
-  'add',
-  'compose',
-  'project',
-  'deploy',
-  'explain',
-  'catalog',
-] as const;
+/** The projector's commands, which the help lists first. */
+const COMMANDS = ['install', 'uninstall'] as const;
 
 interface Ran {
   readonly code: number;
@@ -104,23 +92,19 @@ describe('the top-level help lists every command and capability', () => {
     expect(code).toBe(0);
     expect(err).toBe('');
     const program = commandLine();
-    expect(listed(out, 'Commands')).toEqual([...CONSUMER_COMMANDS]);
+    expect(listed(out, 'Commands')).toEqual([...COMMANDS]);
     expect(listed(out, 'Capabilities')).toEqual([...CAPABILITIES]);
-    expect(listed(out, 'Corpus authoring')).toEqual([...AUTHOR_COMMANDS]);
     for (const command of program.commands)
       expect(out, command.name()).toContain(command.description());
   });
 
-  it('lists the consumer’s commands, then the capabilities, then the corpus author’s', async () => {
+  it('lists the commands, then the capabilities, and nothing else', async () => {
     const { out } = await run('--help');
     const at = (heading: string) => out.indexOf(`\n${heading}:\n`);
     expect(at('Commands')).toBeGreaterThan(-1);
     expect(at('Commands')).toBeLessThan(at('Capabilities'));
-    expect(at('Capabilities')).toBeLessThan(at('Corpus authoring'));
-    expect(listed(out, 'Commands').slice(0, 2)).toEqual([
-      'install',
-      'uninstall',
-    ]);
+    const headings = out.split('\n').filter((line) => /^\S.*:$/.test(line));
+    expect(headings).toEqual(['Options:', 'Commands:', 'Capabilities:']);
   });
 
   it('holds no blank spacer line and wraps no line', async () => {
@@ -222,22 +206,24 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
       ['--harnes', '--harness'],
     ],
     [['install', '--plugin', 'x'], ['--plugin']],
-    [['compose', '--bogus'], ['--bogus']],
+    [['install', '--bogus'], ['--bogus']],
     [['--versoin'], ['--versoin', '--version']],
     [
-      ['deploy', '--scope', 'porject'],
+      ['install', '--scope', 'porject'],
       ['porject', 'user', 'project'],
     ],
     [
-      ['deploy', '--kind', 'bogus'],
-      ['bogus', 'agent', 'skill', 'hooks', 'all'],
+      ['install', '--agent-status', 'bogus'],
+      ['bogus', 'show', 'hide'],
     ],
     [
-      ['deploy', '--harness', 'nope'],
+      ['uninstall', '--harness', 'nope'],
       ['nope', 'omp'],
     ],
     [['uninstall'], ['--harness']],
-    [['compose', 'extra'], ['extra']],
+    [['install', 'extra'], ['extra']],
+    [['project'], ['project']],
+    [['deploy'], ['deploy']],
   ] as const)('%j', async (words, names) => {
     const { code, out, err } = await run(...words);
     expect(code).toBe(1);
@@ -254,86 +240,6 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
   it('names the command whose help to read', async () => {
     const { err } = await run('install', '--harnes', 'omp');
     expect(err).toContain('cratylus install --help');
-  });
-
-  it('under deploy --check ends with no verdict, never with drift', async () => {
-    const { code, out, err } = await run(
-      'deploy',
-      '--check',
-      '--kind',
-      'bogus',
-    );
-    expect(code).toBe(DEPLOY_CHECK_EXIT.noVerdict);
-    expect(out).toBe('');
-    expect(err).toContain('bogus');
-  });
-});
-
-describe('a deploy flag that would take no effect is refused, never accepted and dropped', () => {
-  it.each([
-    [
-      ['--scope', 'project', '--home', '/h'],
-      ['--home', '--scope user'],
-    ],
-    [
-      [
-        '--from',
-        '/missing',
-        '--agents-dir',
-        '/a',
-        '--skills-dir',
-        '/s',
-        '--hooks-dir',
-        '/k',
-      ],
-      ['--from', '--agents-dir', '--skills-dir', '--hooks-dir'],
-    ],
-    [
-      ['--check', '--dry-run'],
-      ['--check', '--dry-run'],
-    ],
-    [
-      ['--check', '--verbose'],
-      ['--check', '--verbose'],
-    ],
-    [
-      ['--check', '--config', '/c.ts'],
-      ['--check', '--config'],
-    ],
-    [
-      ['--check', '--project', '/p'],
-      ['--project', '--check'],
-    ],
-    [
-      ['--config', '/c.ts', '--project', '/p'],
-      ['--project', '--config'],
-    ],
-    [
-      ['--kind', 'agent', '--skills-dir', '/s'],
-      ['--kind agent', '--skills-dir'],
-    ],
-    [
-      ['--kind', 'agent', '--assets', 's=x'],
-      ['--kind agent', '--assets'],
-    ],
-    [
-      ['--kind', 'hooks', '--agents-dir', '/a'],
-      ['--kind hooks', '--agents-dir'],
-    ],
-    [
-      ['--kind', 'skill', '--hooks-dir', '/k'],
-      ['--kind skill', '--hooks-dir'],
-    ],
-  ] as const)('deploy %j', async (flags, names) => {
-    const { code, out, err } = await run('deploy', ...flags);
-    expect(code).toBe(
-      flags.includes('--check' as never) ? DEPLOY_CHECK_EXIT.noVerdict : 1,
-    );
-    expect(out).toBe('');
-    const lines = err.trimEnd().split('\n');
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).toMatch(/^cratylus deploy: /);
-    for (const name of names) expect(lines[0], name).toContain(name);
   });
 });
 
@@ -384,7 +290,7 @@ describe('the README reference names exactly what the help lists, each once', ()
     const pages: { name: string; help: string }[] = [];
     const top = (await run('--help')).out;
     const capabilities = listed(top, 'Capabilities');
-    for (const heading of ['Commands', 'Capabilities', 'Corpus authoring'])
+    for (const heading of ['Commands', 'Capabilities'])
       for (const name of listed(top, heading)) {
         const help = (await run(name, '--help')).out;
         pages.push({ name, help });
@@ -502,22 +408,22 @@ describe('the README reference names exactly what the help lists, each once', ()
   it('convicts a reference with an entry missing, one twice, and one it should not have', () => {
     expect(
       discrepancies(
-        ['init', 'plan show', 'note'],
+        ['concepts', 'plan show', 'note'],
         ['plan show', 'plan show', 'frob', 'note'],
       ),
     ).toEqual({
-      missing: ['init'],
+      missing: ['concepts'],
       twice: ['plan show'],
       unlisted: ['frob'],
       misplaced: [],
     });
   });
 
-  it('convicts a reference with init moved ahead of install', () => {
-    const listing = ['install', 'uninstall', 'plan', 'plan show', 'init'];
+  it('convicts a reference with concepts moved ahead of install', () => {
+    const listing = ['install', 'uninstall', 'plan', 'plan show', 'concepts'];
     expect(
       discrepancies(listing, [
-        'init',
+        'concepts',
         'install',
         'uninstall',
         'plan',
@@ -527,7 +433,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       missing: [],
       twice: [],
       unlisted: [],
-      misplaced: ['init', 'install', 'uninstall', 'plan', 'plan show'],
+      misplaced: ['concepts', 'install', 'uninstall', 'plan', 'plan show'],
     });
   });
 
