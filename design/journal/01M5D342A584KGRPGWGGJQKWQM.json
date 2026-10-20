@@ -1,0 +1,9 @@
+{
+  "id": "01M5D342A584KGRPGWGGJQKWQM",
+  "at": "2026-10-20T16:43:11.045Z",
+  "by": "architect",
+  "kind": "deprecate",
+  "decisionId": "0305",
+  "entry": "01M540AJYHKNCXB8Q7J83GYFR8",
+  "reason": "Its context, corpus, is retired, the residue it cites is retired in favour of the semantic gap and its correction, and the cold-oracle script it bound was removed with authoring; the skills' formal statements are restated by practice-restated."
+}
