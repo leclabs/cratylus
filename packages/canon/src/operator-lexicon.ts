@@ -1,4 +1,4 @@
-// operator-lexicon — the corpus's shared operator vocabulary: the declared table `T`
+// operator-lexicon — the canon's shared operator vocabulary: the declared table `T`
 // of self-sufficient-formalism's `closed(B)`. One glyph ⇔ one sense (injective, like
 // signify on names): a glyph carries a single meaning across every fence, fixed by its
 // `sense` and pinned by its `signature`. `T` DECLARES rather than derives — the one table
@@ -9,7 +9,7 @@
 // never a maintained doc.
 //
 // `coldVerified`: a cold reader, given the glyph and nothing of its sense, recovers the operation
-// (SIGNIFIED/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
+// (MEANING/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
 // cold-surveyed against reader priors and passed. `${}` is a CODE mechanism (resolved at
 // eval, not decoded) ⇒ false.
 
@@ -105,7 +105,7 @@ export const OPERATORS = {
     coldVerified: true,
   },
   // ASCII operators. Barred for years not by cold-verification but by an encoding
-  // filter in the residue grammar (`codePointAt > 0x7f`); `=` and `|` were in live
+  // filter in the correction grammar (`codePointAt > 0x7f`); `=` and `|` were in live
   // use the whole time, hand-split in code. Cold-verifiability is the only bar.
   '=': {
     sense: 'equality-binding',
@@ -184,7 +184,7 @@ export const OPERATORS = {
   '${}': {
     sense: 'esm-reference',
     signature:
-      '${cell} — template-literal interpolation of another cell, resolved at eval',
+      '${value} — template-literal interpolation of another value, resolved at eval',
     coldVerified: false,
   },
 } as const satisfies Record<Glyph, OperatorEntry>;

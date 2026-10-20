@@ -2,8 +2,8 @@
 // is the architect's.
 
 import { persona } from '../compose.js';
-import { maintenance } from '../dimensions/communication-style/maintenance.js';
-import { softwareEngineering } from '../dimensions/expertise/software-engineering.js';
+import { maintenance } from '../factors/communication-style/maintenance.js';
+import { softwareEngineering } from '../factors/expertise/software-engineering.js';
 import { architectRole } from '../roles/architect.js';
 
 export const mav = persona(architectRole, {

@@ -2,10 +2,10 @@
 // is the architect's.
 
 import { persona } from '../compose.js';
-import { provenanceAttribution } from '../dimensions/communication-style/provenance-attribution.js';
-import { filmProduction } from '../dimensions/expertise/film-production.js';
-import { generativeVideo } from '../dimensions/expertise/generative-video.js';
-import { userCentered } from '../dimensions/stance/user-centered.js';
+import { provenanceAttribution } from '../factors/communication-style/provenance-attribution.js';
+import { filmProduction } from '../factors/expertise/film-production.js';
+import { generativeVideo } from '../factors/expertise/generative-video.js';
+import { userCentered } from '../factors/stance/user-centered.js';
 import { architectRole } from '../roles/architect.js';
 
 export const kino = persona(architectRole, {
