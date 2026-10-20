@@ -17,6 +17,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ACTING_AGENT_ENV } from '../src/acting-agent.js';
+import { deliverContext } from '../src/capabilities/concepts/delivered.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 
 let sandbox: string;
@@ -747,7 +748,7 @@ describe('the concept journal as a library', () => {
   });
 });
 
-describe('renaming a concept (0318)', () => {
+describe('renaming a concept (0322)', () => {
   const recordAs = (verb: string, name: string, ...more: string[]) =>
     concepts(verb, name, '--context', 'booking', ...more) as Record<
       string,
@@ -887,22 +888,24 @@ describe('renaming a concept (0318)', () => {
     ]);
   });
 
+  /** Write a version recorded on another line of work, superseding the first
+   *  version of `hold` unless it says otherwise. */
+  const sibling = (id: string, body: object) =>
+    writeFileSync(
+      join(repo, 'design/journal', `${id}.json`),
+      JSON.stringify({
+        id,
+        at: '2026-01-01T00:00:00.000Z',
+        context: 'booking',
+        wording: `${id.slice(-1)} wording.`,
+        builtFrom: [],
+        reason: 'Branch.',
+        supersedes: [(journal()[1] as string).replace(/\.json$/, '')],
+        ...body,
+      }),
+    );
+
   it('lists versions naming the concept differently as competing, under the name it had before them', () => {
-    const first = (journal()[1] as string).replace(/\.json$/, '');
-    const sibling = (id: string, body: object) =>
-      writeFileSync(
-        join(repo, 'design/journal', `${id}.json`),
-        JSON.stringify({
-          id,
-          at: '2026-01-01T00:00:00.000Z',
-          context: 'booking',
-          wording: `${id.slice(-1)} wording.`,
-          builtFrom: [],
-          reason: 'Branch.',
-          supersedes: [first],
-          ...body,
-        }),
-      );
     sibling('01Z00000000000000000000001', {
       kind: 'rename',
       name: 'claim',
@@ -938,6 +941,94 @@ describe('renaming a concept (0318)', () => {
     expect(state()).toEqual([
       'claim ≜ Settled.',
       'reservation ≜ Taken on a seat.',
+    ]);
+  });
+
+  it.each([
+    [
+      'the rename first',
+      ['01Z00000000000000000000001', '01Z00000000000000000000002'],
+    ],
+    [
+      'the define first',
+      ['01Z00000000000000000000002', '01Z00000000000000000000001'],
+    ],
+  ])(
+    'joins a rename to a name and a define of it on another line into one concept, competing, %s',
+    (_, [renameId, defineId]) => {
+      sibling(renameId as string, {
+        kind: 'rename',
+        name: 'claim',
+        was: 'hold',
+      });
+      sibling(defineId as string, {
+        kind: 'define',
+        name: 'claim',
+        supersedes: [],
+      });
+      const design = concepts('design') as {
+        contexts: {
+          concepts: { name: string }[];
+          competing: { name: string; versions: { name?: string }[] }[];
+        }[];
+      };
+      expect(design.contexts[0]?.concepts.map((c) => c.name)).toEqual([
+        'reservation',
+      ]);
+      expect(design.contexts[0]?.competing).toEqual([
+        expect.objectContaining({
+          name: 'hold',
+          versions: [
+            expect.objectContaining({ name: 'claim' }),
+            expect.objectContaining({ name: 'claim' }),
+          ],
+        }),
+      ]);
+      const history = concepts('history', 'claim', '--context', 'booking') as {
+        versions: { kind: string }[];
+      };
+      expect(history.versions.map((v) => v.kind).sort()).toEqual([
+        'define',
+        'define',
+        'rename',
+      ]);
+      expect(concepts('history', 'hold', '--context', 'booking')).toEqual(
+        history,
+      );
+    },
+  );
+
+  it('lists competing versions at different depths under the latest version they all supersede', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    version('supersede', 'Lasts an hour.', 'Longer.');
+    sibling('01Z00000000000000000000001', { kind: 'supersede', name: 'hold' });
+    expect(
+      (concepts('state') as { contexts: { competing: unknown[] }[] })
+        .contexts[0]?.competing,
+    ).toEqual([
+      {
+        name: 'hold',
+        versions: ['claim ≜ Lasts an hour.', 'hold ≜ 1 wording.'],
+      },
+    ]);
+  });
+
+  it('delivers a context holding a renamed concept under its current name, its references rewritten', () => {
+    rename('hold', 'claim', 'Lasts until paid.');
+    const delivered = deliverContext({
+      from: repo,
+      context: 'booking',
+      origin: 'cratylus',
+      version: '1.0.0',
+      position: 0,
+    });
+    expect(delivered.concepts).toEqual([
+      { name: 'claim', wording: 'Lasts until paid.', builtFrom: [] },
+      {
+        name: 'reservation',
+        wording: 'Taken on a seat.',
+        builtFrom: ['claim'],
+      },
     ]);
   });
 });

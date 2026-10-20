@@ -70,13 +70,15 @@ reason: no reading of the design shows it or its concepts, its decisions show on
 with a reason brings it back as it stood, and a delivered context it held the place of shows
 again.
 
-A concept is renamed by a version of its own kind (decision 0318): `supersede --rename` appends a
+A concept is renamed by a version of its own kind (decision 0322): `supersede --rename` appends a
 `rename` entry, a supersession whose `name` is the new one and whose `was` is the name it renames.
-The concept stays one through its names: `state` and `design` show it under its current name
-only, `design` shows each built-from reference by the current name of the concept it names, and
-`history` by its current name or any earlier one lists every version with the name it was
-recorded under. A name stays its concept's for the journal's period, and a close opens a renamed
-concept as a `define` under its current name, built-from references written by current names.
+A concept is the versions of one context joined by supersession or a shared name, whatever order
+they were recorded in, so it stays one through its names: `state` and `design` show it under its
+current name only, `design` shows each built-from reference by the current name of the concept it
+names, and `history` by its current name or any earlier one lists every version with the name it
+was recorded under. A name stays its concept's for the journal's period, and a close opens a
+renamed concept as a `define` under its current name, built-from references written by current
+names; a close is refused while a concept's competing versions name it differently.
 
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read, which append and which close as code.

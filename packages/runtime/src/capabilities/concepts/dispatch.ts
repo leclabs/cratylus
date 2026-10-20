@@ -166,7 +166,7 @@ export const VERBS = {
     concept: 'conceptual model',
     effect: 'reads',
     purpose:
-      'Read the design as it stands, the read that recovers it at a session’s start: in a place of its own (practice), the practice the project’s agents work by, each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts, each by its current meaning with the concepts it is built from, and competing versions; with history, also retired concepts and why each live concept’s version was written',
+      'Read the design as it stands, the read that recovers it at a session’s start: in a place of its own (practice), the practice the project’s agents work by, each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts, each by its current term and meaning with the concepts it is built from, each named by its current term, and competing versions, each carrying the name it gives where that differs from the one its concept is listed under; with history, also retired concepts and why each live concept’s version was written',
     when: 'First, at the start of a session or after it was compacted, for the practice and each bounded context the work touches, to recover what the design means from what is recorded rather than from memory, before reading the standing decisions the work needs and reading the design back; and after recording a change to the design, to see it as it stands; the project’s design is its own contexts only, its own copy of a delivered context, read in that context’s place, among them; a delivered context it does not hold is marked delivered and read-only, apart from its design',
     positional: null,
     flags: {
@@ -186,7 +186,7 @@ export const VERBS = {
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
-        'The concept whose versions to show, by its current name in the bounded context or any name it had; leave it out to show the bounded context’s own history',
+        'The concept whose versions to show, by its term in the bounded context, the current one or any it had; leave it out to show the bounded context’s own history',
       ),
       optional: true,
     },
@@ -272,9 +272,9 @@ export const VERBS = {
     effect: 'appends',
     purpose:
       'Record a new concept in one bounded context: its first version, in the context’s own words, with the reason it is written',
-    when: 'When the design gains a concept it does not have yet, a concept retired before the journal’s latest closing of the books included, since a close does not carry it; a concept already in the design changes by supersession instead',
+    when: 'When the design gains a concept it does not have yet, a concept retired before the journal’s latest closing of the books included, since a close does not carry it; a concept already in the design changes by supersession instead; a name a concept of the context has had since that close stays that concept’s, and is refused',
     positional: concept(
-      'The new concept’s name, the word its bounded context uses for it',
+      'The new concept’s term, the name its bounded context uses for it; never one a concept of the context has had',
     ),
     flags: {
       ...inContext('concept'),
@@ -293,7 +293,7 @@ export const VERBS = {
       'Record a new meaning for a concept that stays in the design: a new version, with its reason and who records it, superseding every current one while its earlier versions stay in its history; it also settles competing versions and brings a retired concept back; given a new name, the version also renames the concept, which stays one concept: the design reads it under the new name only, its history lists every version with the name it was recorded under, and every concept built from it follows it to the new name',
     when: 'When a concept remains part of the design but its meaning changes, when competing versions must be settled, or when a retired concept returns; with a new name, when the concept’s name evokes a meaning the concept does not have, or misses one it does, and another term evokes it more nearly; never to take a concept out of the design, which is retirement',
     positional: concept(
-      'The concept whose meaning changes, by its current name in the bounded context or any name it had',
+      'The concept whose meaning changes, by its term in the bounded context, the current one or any it had',
     ),
     flags: {
       ...inContext('concept'),
@@ -316,7 +316,7 @@ export const VERBS = {
     when: 'When the design no longer has the concept at all; a concept that stays in the design but now means something else is superseded instead; without a concept, when the design drops a whole bounded context of the project’s own, never a delivered one',
     positional: {
       ...concept(
-        'The concept that leaves the design, by its current name in the bounded context or any name it had; leave it out to retire the bounded context itself',
+        'The concept that leaves the design, by its term in the bounded context, the current one or any it had; leave it out to retire the bounded context itself',
       ),
       optional: true,
     },
@@ -402,8 +402,8 @@ export const VERBS = {
     concept: 'closing the books',
     effect: 'closes',
     purpose:
-      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity; each live concept’s current version; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired concept, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
-    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close',
+      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired concept, a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close, or while a concept’s competing versions give it different terms, until a supersede settles them',
     positional: null,
     flags: {},
   },
@@ -1071,6 +1071,11 @@ function answerOf(
       if (journal.entries().every((entry) => 'broughtForward' in entry))
         throw refuse(
           'nothing is recorded since the journal’s latest close; there is nothing to close',
+        );
+      const [apart] = folded.namesCompeting();
+      if (apart !== undefined)
+        throw refuse(
+          `the concept '${apart.name}' in '${apart.context}' has competing versions that name it differently, and a close carries no earlier name into the new period; settle them with concepts supersede first`,
         );
       const { openings, removed } = journal.close(folded.openings(commit));
       const [first] = openings;

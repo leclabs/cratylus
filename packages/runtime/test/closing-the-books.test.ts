@@ -718,7 +718,7 @@ describe('closing the books', () => {
     ).toContainEqual({ name: 'gone', wording: 'Back again.', builtFrom: [] });
   });
 
-  it('opens a renamed concept as a define under its current name, every built-from by current names (0318)', () => {
+  it('opens a renamed concept as a define under its current name, every built-from by current names (0322)', () => {
     concepts('context', 'booking', '--subject', 'Booking.');
     worded('define', 'hold', 'booking', 'A hold.');
     concepts(
@@ -773,6 +773,42 @@ describe('closing the books', () => {
     expect(concepts('history', 'claim', '--context', 'booking')).toMatchObject({
       versions: [{ kind: 'define', name: 'claim' }],
     });
+  });
+
+  it('refuses to close while a concept’s competing versions name it differently, changing nothing, until supersede settles them (0322)', () => {
+    concepts('context', 'booking', '--subject', 'Booking.');
+    const hold = worded('define', 'hold', 'booking', 'A hold.');
+    recorded({
+      kind: 'rename',
+      context: 'booking',
+      name: 'claim',
+      was: 'hold',
+      wording: 'Left line.',
+      builtFrom: [],
+      reason: 'Left.',
+      supersedes: [hold],
+    });
+    recorded({
+      kind: 'supersede',
+      context: 'booking',
+      name: 'hold',
+      wording: 'Right line.',
+      builtFrom: [],
+      reason: 'Right.',
+      supersedes: [hold],
+    });
+    commit();
+    const before = snapshot();
+    expect(() => concepts('close')).toThrow(
+      /^concepts close: the concept 'hold' in 'booking' has competing versions that name it differently.*settle them with concepts supersede first$/,
+    );
+    expect(snapshot()).toEqual(before);
+    worded('supersede', 'claim', 'booking', 'Settled.');
+    commit();
+    concepts('close');
+    expect(entryFiles().filter((e) => e.kind !== 'context')).toMatchObject([
+      { kind: 'define', name: 'hold', wording: 'Settled.' },
+    ]);
   });
 
   it('compares a version only with versions it replaces: an opening replaces none', () => {
