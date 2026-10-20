@@ -229,6 +229,8 @@ export interface ProjectedFile {
  */
 export interface ProjectedTree extends ProjectReport {
   readonly files: readonly ProjectedFile[];
+  /** The sorted names of the rendered agents: what an install placed. */
+  readonly agentNames: readonly string[];
   /** Each rendered agent that states a model routing ({@link Agent.routing}) → its
    *  tier and effort, by agent name in sorted order: what an install binds as the
    *  agent's own model role without re-reading a definition. */
@@ -1328,6 +1330,7 @@ export async function projectPluginSet(
     skills,
     shims,
     hooks,
+    agentNames: [...agentNames].sort(),
     agentModels,
     personas: [...personas].sort(),
     unisolated: [...unisolated].sort(),

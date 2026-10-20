@@ -69,6 +69,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
+import { START } from '@cratylus/runtime';
 import {
   INSTALLATION_RECORD_FILE,
   type InstallScope,
@@ -1014,6 +1015,8 @@ function describe(
         ]
       : []),
     `to remove it all: ${uninstallCommand(adapter, ctx.scope)}${project ? `, run in ${ctx.base}` : ''}`,
+    // Where the architect is installed, the run ends with how using cratylus starts.
+    ...(tree.agentNames.includes('architect') ? [START] : []),
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;
