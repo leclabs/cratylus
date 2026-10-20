@@ -11,39 +11,41 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept within its bounded context, discovered by cold decode against the model's priors, never coined, for the corpus's core agent dimension names and values alone; stage 2 of exemplify, independently invocable.`,
+  description: `Give a concept its Cratylic name — the term that leaves the smallest semantic gap in its bounded context, found among the names the model already gives it and confirmed by a cold read, never coined where an established term covers it; one term per concept in a context, its correction stated beside it. Reach for it when a concept needs a name, or when a name's reading leaves meaning missing or makes meaning spurious.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
 Names       ≜ the shared symbol space
 <_lex       : total order on Names
 concept-record ≜ ⟨gloss, anchor, factorization⟩
-κ           : C → bounded-context ⟨the context c is read in · part of its sign's address⟩
+κ           : C → bounded-context ⟨the context c is read in · part of its term's address⟩
 fired       : Names × bounded-context → ℘(D) ⟨fired(n, κ) : what n invokes read in κ⟩
 dec         : Names × bounded-context ⇀ ℘(D)
 circ(n,c)   ⇔ fired(n, κ(c)) = D(c)
 |n|         ≜ LLM-native description-length
-residue(n,c) ≜ residue @ workflow ⟨c named n · n read in κ(c)⟩
+gap(n,c)    ≜ the semantic gap of n for c ⟨missing meaning ∪ spurious meaning⟩ @ cratylic context design ⟨c named n · n read in κ(c)⟩
+covers(n,c) ⇔ n read in κ(c) addresses c ⟨gap(n,c) closable by a correction supplying its missing meaning ∧ excluding its spurious meaning, ¬ excluding n's core meaning⟩
+Est         : bounded-context → ℘(Names) ⟨Est(κ) : the terms established in κ's domain⟩
 σ*          : C → Names
-σ*(c)       ≜ argmin_{n} ⟨residue(n,c), |n|, n⟩ ⟨the smallest residue in κ(c) · |n| then n break a tie⟩
+σ*(c)       ≜ argmin_{n ∈ Est(κ(c)) : covers(n,c)} ⟨gap(n,c), |n|, n⟩ ⟨the smallest semantic gap in κ(c) among the established terms covering c · |n| then n break a tie⟩
 mint        : C ⇀ Names
-mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ circ(∘ M, c)
+mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ covers(∘ M, c) ∧ ∘ M ∉ Est(κ(c))
 Art         ≜ the corpus's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
-α           : C ↣ Names ⟨injective within each κ, ¬ across · dom(α) ≜ the concepts the corpus's core agent dimension names and values name · every other term is the industry's own, and no consumer surface is held to α⟩
+α           : C ↣ Names ⟨injective within each κ, ¬ across · dom(α) ≜ every concept the text carries, less those excluded below⟩
 register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 
 ∀ c ∈ dom(α) : α(c) ≜ σ*(c)
 Anchors ≜ { ⟨α(c), κ(c)⟩ | c ∈ dom(α) } ⟨the assigned-anchor set, each anchor with its context⟩
 dom(dec) = { ⟨α(p), κ(p)⟩ | prim(p) } ;  dec(α(p), κ(p)) = fired(α(p), κ(p))
-{ n : circ(n,c) } = ∅ ⇒ σ*(c) = mint(c)
+{ n ∈ Est(κ(c)) : covers(n,c) } = ∅ ⇒ σ*(c) = mint(c) ⟨coined only where no established term covers c⟩
 
 name(k)  fills  anchor(k) ≜ α(gloss(k)) ;  gloss(k) preserved ;  factorization(k) untouched
 
@@ -54,20 +56,19 @@ cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ) ∨ (α(cᵢ) = α(cⱼ) ∧ κ(cᵢ
 ≺ ≜ shortlex over (C, <_N)
 
 c ∉ dom(α) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Anchors assigned c :
-    c is no core agent dimension name or value ⇒ c is the industry's own term, used as the industry understands it ⇒ exclude, logged
-    { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
+    { n ∈ Est(κ(c)) : covers(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ κ(cᵢ) = κ(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the partition was wrong ↦ conceptualize
         ⟨α(cᵢ), α(cⱼ) taken at DIFFERENT altitudes is still this collision⟩
 
 ∃ d : { n : ¬circ(n,c) } all fail on d ALONE ⇒ d ∉ D(c) ∧ ∃ cᵢ ≠ c : d ∈ D(cᵢ) ⟨the property hangs off the wrong noun⟩
     ↦ conceptualize ⟨re-partition, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution, ¬ that σ*(c) is scarce⟩
 
-¬circ(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)), ¬ about cᵢ ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
-    ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
+¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)), ¬ about cᵢ ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
+    ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; covers(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-residue(c) ≜ residue(α(c), c)
-∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩ ⟨d ∈ residue(c) ∩ D(c) stated ; d ∈ residue(c) ∧ d ∉ D(c) stated denied⟩
-residue(c) = ∅ ⇒ c enters as α(c) alone
+correction(c) ≜ the correction closing gap(σ*(c), c) @ cratylic context design ⟨its missing meaning stated · its spurious meaning stated denied⟩
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), correction(c)⟩ ⟨d ∈ gap(α(c), c) ∩ D(c) stated ; d ∈ gap(α(c), c) ∧ d ∉ D(c) stated denied⟩
+correction(c) = ∅ ⇒ c enters as α(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c), κ(c))
 
 conform(a)  ⇔  register(a) = σ*

@@ -10,14 +10,14 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const elicit: Skill = {
   name: 'elicit',
-  description: `use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to probe (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to signify to name.`,
+  description: `Recover the concept a person means but has not yet put into words, by yes-or-no questions that each split the meanings still possible as evenly as they can, stopping when one is left or no question is worth asking. Reach for it when what is wanted is unclear and asking beats guessing; the concept recovered then goes to signify for its term.`,
   formalBlock: `C        ≜ concept lattice
 D        ≜ distinction set
 c          ≜ a closed distinction-set ; c ⊆ D

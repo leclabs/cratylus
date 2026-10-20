@@ -10,14 +10,14 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const conceptualize: Skill = {
   name: 'conceptualize',
-  description: `use this skill to extract the concepts latent in a source — which are primitive, what each means, how each factors — deciding nothing about names or form; stage 1 of exemplify.`,
+  description: `Find the concepts a source holds before any is named — which are primitive, what each means, and which concepts each of the others is built from, so each is distinct and together they cover the source. Reach for it when a design, a document or a domain has to be broken into concepts before each gets its Cratylic name; it decides no term and no form.`,
   formalBlock:
     `sources             ≜ input material ⟨multi-modal · bears substrate-boundaries⟩
 concept-record      ≜ ⟨ gloss , anchor? , factorization? ⟩

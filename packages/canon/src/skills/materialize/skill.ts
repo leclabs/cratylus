@@ -11,36 +11,38 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // them could be read, taken or deployed alone.
 //
 // The relation those edges named is CITATION, not dependency: these cells RESTATE each
-// other's signs in different registers (prose here, signature there). A citation
-// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// other's terms in different registers (prose here, signature there). A citation
+// belongs inside the block, at the term that borrows it (`@ <cell>`), where it needs
 // no import and cannot cycle. Composition is the caller's: an agent pipes these cells
 // in whatever order the work wants.
 
 export const materialize: Skill = {
   name: 'materialize',
-  description: `use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization \`F\`, emit the bipartite normal form \`CSF\` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.`,
+  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its correction, and each other concept by the terms of the concepts it is built from, never restating them, in a form chosen before writing, separate files or one document. Reach for it once concepts have their Cratylic names and must become context.`,
   formalBlock: `C ≜ concept lattice
 prim : C → 𝔹
 fac : C → ℘(℘(C))
 ≺ ≜ shortlex order over factorizations
-anchor : C → sign ∪ {⊥}
+anchor : C → term ∪ {⊥}
 gloss : C → text
 kind : C → Kinds
 Kinds ≜ the closed kind set
 
 concept-record   ≜ record(gloss, anchor, factorization)
-dfp(g) ≜ densest-faithful-point(g)
+correction @ signify
 cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content
-CSF ≜ bipartite-normal-form: primitive↦⟨anchor,gloss⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
+CSF ≜ bipartite-normal-form: primitive↦⟨anchor,correction⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
 F(m) ≜ min_≺ fac(m)
-CSF(c) ≜ ( anchor(c) , dfp(gloss(c)) )              ,  prim(c)
+CSF(c) ≜ ( anchor(c) , correction(c) )             ,  prim(c) ∧ correction(c) ≠ ∅
+CSF(c) ≜ anchor(c)                                ,  prim(c) ∧ correction(c) = ∅
 CSF(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F(c) } ) ,  ¬prim(c)
 realize(k) fills factorization(k) ≜ CSF(k) ; gloss(k), anchor(k) preserved
 anchor(k) = ⊥ ⇒ realize(k) = ⊥
 
+CSF(c) never restates what anchor(c) carries ⟨minimal @ signify⟩
 prose(c) ≜ render(CSF(c))
 CSF(c) ≽ prose(c)
 
