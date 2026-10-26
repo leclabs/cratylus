@@ -643,9 +643,10 @@ describe('the concept journal as a library', () => {
         status,
         ...(deprecation === undefined ? {} : { deprecation }),
       }));
-    // Decisions recorded by an earlier workflow name the cut they were about
-    // or the example files they keep; no verb records either now, so each is
-    // written as it was recorded, and each is read by its own status alone.
+    // Decisions recorded by an earlier version of the practice name the cut
+    // they were about or the example files they keep; no verb records either
+    // now, so each is written as it was recorded, and each is read by its own
+    // status alone.
     const recorded = (n: number, id: string, fields: object) => {
       const entry = `01J${'0'.repeat(22)}${n}`;
       writeFileSync(
@@ -1313,7 +1314,7 @@ describe('retiring a bounded context', () => {
     const delivered = {
       origin: 'cratylus',
       version: '3.2.1',
-      context: 'workflow',
+      context: 'intent-based delegation',
       identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
       position: 1,
       subject: 'How the work is done.',
@@ -1323,7 +1324,13 @@ describe('retiring a bounded context', () => {
     const before = journal();
     expect(() =>
       dispatchConcepts(
-        ['retire', '--context', 'cratylus:workflow', '--reason', 'R'],
+        [
+          'retire',
+          '--context',
+          'cratylus:intent-based delegation',
+          '--reason',
+          'R',
+        ],
         { from: repo, delivered: [delivered] },
       ),
     ).toThrow(/^concepts retire: .*is delivered by cratylus .*read-only/);

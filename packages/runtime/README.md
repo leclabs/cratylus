@@ -149,7 +149,7 @@ throws when called as a library. Never a silent no-op.
 ## Explaining itself
 
 Every capability explains itself: it declares, beside its verbs, its name and when to reach for it, and
-for each verb the concept of cratylus's own conceptual model it acts on, when to reach for it, and
+for each verb the concept of cratylus's own domain model it acts on, when to reach for it, and
 whether it `reads`, `appends` or `closes`. `concepts` does: `cratylus concepts --explain` prints the concept
 journal's explanation as one JSON object — `name` (`concept journal`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus concepts <verb> --explain`

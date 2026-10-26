@@ -81,8 +81,8 @@ const entryFiles = () =>
         unknown
       > & { id: string; kind: string },
   );
-/** Write `body` as an entry recorded by an earlier workflow or another line
- *  of work; its id. */
+/** Write `body` as an entry recorded by an earlier version of the practice or
+ *  another line of work; its id. */
 const recorded = (body: object): string => {
   const id = ulid();
   mkdirSync(dir(), { recursive: true });
@@ -941,7 +941,7 @@ describe('closing the books', () => {
     const first = idOf(
       concepts(
         'context',
-        'workflow',
+        'intent-based delegation',
         '--subject',
         'Earlier.',
         '--relation',
@@ -950,17 +950,17 @@ describe('closing the books', () => {
     );
     concepts(
       'context',
-      'workflow',
+      'intent-based delegation',
       '--subject',
       'Current.',
       '--reason',
       'Sharper.',
     );
-    worded('define', 'part', 'workflow', 'A part.');
+    worded('define', 'part', 'intent-based delegation', 'A part.');
     const deliver = () =>
       deliverContext({
         from: repo,
-        context: 'workflow',
+        context: 'intent-based delegation',
         origin: 'cratylus',
         version: '1.0.0',
         position: 0,
@@ -971,7 +971,7 @@ describe('closing the books', () => {
     concepts('close');
     expect(deliver()).toEqual(delivered);
     commit();
-    worded('define', 'piece', 'workflow', 'A piece.');
+    worded('define', 'piece', 'intent-based delegation', 'A piece.');
     commit();
     concepts('close');
     expect(deliver().identity).toBe(first);
@@ -982,7 +982,7 @@ describe('closing the books', () => {
       delivered: [delivered],
     }) as Record<string, unknown>;
     expect(state).toMatchObject({
-      practice: { contexts: [{ name: 'workflow' }] },
+      practice: { contexts: [{ name: 'intent-based delegation' }] },
       contexts: [],
     });
   });
@@ -1071,12 +1071,19 @@ describe('a close joined with a line of work that branched before it', () => {
 
   it('keeps a context’s identity when a change joined from that line is its earliest entry', () => {
     const first = idOf(
-      concepts('context', 'workflow', '--subject', 'Ours.', '--relation', ''),
+      concepts(
+        'context',
+        'intent-based delegation',
+        '--subject',
+        'Ours.',
+        '--relation',
+        '',
+      ),
     );
-    worded('define', 'part', 'workflow', 'A part.');
+    worded('define', 'part', 'intent-based delegation', 'A part.');
     const delivered = deliverContext({
       from: repo,
-      context: 'workflow',
+      context: 'intent-based delegation',
       origin: 'cratylus',
       version: '1.0.0',
       position: 0,
@@ -1084,22 +1091,25 @@ describe('a close joined with a line of work that branched before it', () => {
     branchedThenClosed(() =>
       concepts(
         'context',
-        'workflow',
+        'intent-based delegation',
         '--subject',
         'Theirs.',
         '--reason',
         'Theirs.',
       ),
     );
-    const state = dispatchConcepts(['state', '--context', 'workflow'], {
-      from: repo,
-      delivered: [delivered],
-    });
+    const state = dispatchConcepts(
+      ['state', '--context', 'intent-based delegation'],
+      {
+        from: repo,
+        delivered: [delivered],
+      },
+    );
     expect(state).toMatchObject({
       practice: {
         contexts: [
           {
-            name: 'workflow',
+            name: 'intent-based delegation',
             subject: null,
             competingDescriptions: [
               { subject: 'Theirs.' },
@@ -1112,7 +1122,7 @@ describe('a close joined with a line of work that branched before it', () => {
     });
     concepts(
       'context',
-      'workflow',
+      'intent-based delegation',
       '--subject',
       'Settled.',
       '--reason',
@@ -1121,7 +1131,7 @@ describe('a close joined with a line of work that branched before it', () => {
     expect(
       deliverContext({
         from: repo,
-        context: 'workflow',
+        context: 'intent-based delegation',
         origin: 'cratylus',
         version: '1.0.0',
         position: 0,
