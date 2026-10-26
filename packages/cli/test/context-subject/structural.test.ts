@@ -1,4 +1,4 @@
-// Binds design/examples/workflow/context-subject.md through the CLI only.
+// Binds design/examples/intent-based delegation/context-subject.md through the CLI only.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type TemporaryRepository,

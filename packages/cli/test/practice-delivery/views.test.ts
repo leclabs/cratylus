@@ -26,7 +26,7 @@ beforeEach(() => {
 afterEach(() => h.dispose());
 
 it.each(['design', 'state'])(
-  'workflow/1 — %s shows the release apart from the project, in a journal-less project without writing',
+  'intent-based delegation/1 — %s shows the release apart from the project, in a journal-less project without writing',
   (verb) => {
     const answer = views(h, verb);
     expect(existsSync(join(h.cwd, 'design/journal'))).toBe(false);
@@ -44,15 +44,20 @@ it.each(['design', 'state'])(
 );
 
 it.each(['design', 'state'])(
-  'workflow/2 — %s keeps unrelated same-name contexts separate, the release apart from the project',
+  'intent-based delegation/2 — %s keeps unrelated same-name contexts separate, the release apart from the project',
   (verb) => {
     h.seed();
-    h.concepts('context', 'workflow', '--subject', 'A project workflow.');
+    h.concepts(
+      'context',
+      'intent-based delegation',
+      '--subject',
+      'A project intent-based delegation.',
+    );
     h.concepts(
       'define',
       'practice',
       '--context',
-      'workflow',
+      'intent-based delegation',
       '--wording',
       'A project-only practice.',
       '--reason',
@@ -62,9 +67,11 @@ it.each(['design', 'state'])(
     const answer = views(h, verb);
     expect(answer.contexts.map((c) => c.name).sort()).toEqual([
       'booking',
-      'workflow',
+      'intent-based delegation',
     ]);
-    const local = answer.contexts.find((c) => c.name === 'workflow')!;
+    const local = answer.contexts.find(
+      (c) => c.name === 'intent-based delegation',
+    )!;
     expectMeaning(local, 'A project-only practice.');
     expect(answer.practice.filter((c) => c.name === qualified)).toHaveLength(1);
     assertDelivered(
@@ -75,8 +82,8 @@ it.each(['design', 'state'])(
   },
 );
 
-it.each(['workflow', 'branch-practice'])(
-  'workflow/3 — identity suppresses the release under the project name %s',
+it.each(['intent-based delegation', 'branch-practice'])(
+  'intent-based delegation/3 — identity suppresses the release under the project name %s',
   (name) => {
     // The baseline binds inclusion too: silently ignoring all delivery is not suppression.
     expect
@@ -161,7 +168,7 @@ it.each(
     ),
   ),
 )(
-  'workflow/4 — refuses %s on a delivered context in a %s journal without a substitute',
+  'intent-based delegation/4 — refuses %s on a delivered context in a %s journal without a substitute',
   (_verb, _journal, args, booking) => {
     if (booking) h.seed();
     const before = snapshot(h.cwd);
@@ -176,13 +183,18 @@ it.each(
   },
 );
 
-it('workflow/5 — appends to the unrelated project workflow while preserving delivery and provenance', () => {
-  h.concepts('context', 'workflow', '--subject', 'Project workflow.');
+it('intent-based delegation/5 — appends to the unrelated project intent-based delegation while preserving delivery and provenance', () => {
+  h.concepts(
+    'context',
+    'intent-based delegation',
+    '--subject',
+    'Project intent-based delegation.',
+  );
   h.concepts(
     'define',
     'practice',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'Earlier local practice.',
     '--reason',
@@ -194,7 +206,7 @@ it('workflow/5 — appends to the unrelated project workflow while preserving de
     'supersede',
     'practice',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'Current local practice.',
     '--reason',
@@ -205,7 +217,7 @@ it('workflow/5 — appends to the unrelated project workflow while preserving de
     expect(after[path]).toBe(bytes);
   expect(Object.keys(after)).toHaveLength(Object.keys(before).length + 1);
   expect(
-    h.concepts('history', 'practice', '--context', 'workflow'),
+    h.concepts('history', 'practice', '--context', 'intent-based delegation'),
   ).toMatchObject({
     versions: [
       expect.objectContaining({ wording: 'Earlier local practice.' }),
@@ -216,7 +228,9 @@ it('workflow/5 — appends to the unrelated project workflow while preserving de
     ],
   });
   const answer = views(h, 'design');
-  expect(answer.contexts.find((c) => c.name === 'workflow')).toMatchObject({
+  expect(
+    answer.contexts.find((c) => c.name === 'intent-based delegation'),
+  ).toMatchObject({
     concepts: [expect.objectContaining({ wording: 'Current local practice.' })],
   });
   assertDelivered(
@@ -226,7 +240,7 @@ it('workflow/5 — appends to the unrelated project workflow while preserving de
   expect(readFileSync(deliveredPath(h), 'utf8')).toBe(release);
 });
 
-it('workflow/6 — delivered history has only a current meaning and no invented version or decision', () => {
+it('intent-based delegation/6 — delivered history has only a current meaning and no invented version or decision', () => {
   h.seed();
   const before = snapshot(h.cwd);
   const concept = h.command([
@@ -262,18 +276,18 @@ it('workflow/6 — delivered history has only a current meaning and no invented 
   expect(snapshot(h.cwd)).toEqual(before);
 });
 
-it('workflow/9 — suppression follows each checked-out branch rather than a prior read', () => {
+it('intent-based delegation/9 — suppression follows each checked-out branch rather than a prior read', () => {
   h.seed();
   git(h.cwd, 'add', 'design');
   git(h.cwd, 'commit', '-m', 'Booking only');
   git(h.cwd, 'switch', '-c', 'source');
   ownSource(h);
   git(h.cwd, 'add', 'design');
-  git(h.cwd, 'commit', '-m', 'Source workflow');
+  git(h.cwd, 'commit', '-m', 'Source intent-based delegation');
   const held = () => {
     const { contexts, practice } = views(h, 'design');
     expect(contexts.map((c) => c.name)).toEqual(['booking']);
-    expect(practice.map((c) => c.name)).toContain('workflow');
+    expect(practice.map((c) => c.name)).toContain('intent-based delegation');
     expect(practice.map((c) => c.name)).not.toContain(qualified);
   };
   held();
@@ -287,7 +301,7 @@ it('workflow/9 — suppression follows each checked-out branch rather than a pri
   held();
 });
 
-it('workflow/10 — the first project context records only itself and retains the delivered view', () => {
+it('intent-based delegation/10 — the first project context records only itself and retains the delivered view', () => {
   views(h, 'state');
   h.seed();
   const journal = snapshot(h.cwd);

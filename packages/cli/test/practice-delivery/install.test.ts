@@ -24,7 +24,7 @@ beforeEach(() => {
 afterEach(() => h.dispose());
 
 it('delivery/1, delivery/2 — the built release installs its complete source design read-only with provenance', () => {
-  const actual = expectReleased(h, 'workflow', 1);
+  const actual = expectReleased(h, 'intent-based delegation', 1);
   expect(existsSync(join(owned(h), 'agents/architect.md'))).toBe(true);
   expect(snapshot(h.cwd)).toEqual({});
   assertDelivered(
@@ -88,12 +88,17 @@ it('delivery/4 — later development journal wording does not mutate the install
   ).toBe(true);
   const before = readFileSync(deliveredPath(h), 'utf8');
   const release = readDocument(h);
-  h.concepts('context', 'workflow', '--subject', 'Unreleased local workflow.');
+  h.concepts(
+    'context',
+    'intent-based delegation',
+    '--subject',
+    'Unreleased local intent-based delegation.',
+  );
   h.concepts(
     'define',
     'practice',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'Unreleased development practice.',
     '--reason',

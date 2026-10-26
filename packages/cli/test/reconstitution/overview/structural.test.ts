@@ -19,7 +19,7 @@ beforeEach(() => {
 });
 afterEach(() => f.dispose());
 
-it('workflow/2 — the design state gives subject and relation, then each live concept as a line', () => {
+it('intent-based delegation/2 — the design state gives subject and relation, then each live concept as a line', () => {
   seed(f);
   const answer = state(f);
   expect(answer, 'recorded subject, relation and concepts alone').toEqual({
@@ -36,7 +36,7 @@ it('workflow/2 — the design state gives subject and relation, then each live c
   expect(open(f), 'its decisions are read apart').toEqual(['colour']);
 });
 
-it('workflow/3 — the next design state reflects supersession, and acceptance, without rewriting', () => {
+it('intent-based delegation/3 — the next design state reflects supersession, and acceptance, without rewriting', () => {
   seed(f);
   concept(
     f,
@@ -69,7 +69,7 @@ it('workflow/3 — the next design state reflects supersession, and acceptance, 
   expect(state(f), 'a subsequent query computes the same state').toEqual(after);
 });
 
-it('workflow/8 — a branch journal stays local and lands with merge', () => {
+it('intent-based delegation/8 — a branch journal stays local and lands with merge', () => {
   seed(f);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Common design');
@@ -108,7 +108,7 @@ it('workflow/8 — a branch journal stays local and lands with merge', () => {
   expect(open(f)).toEqual([]);
 });
 
-it('workflow/16 — feature concepts, decisions and acceptances integrate in an ordinary checkout without a worktree', () => {
+it('intent-based delegation/16 — feature concepts, decisions and acceptances integrate in an ordinary checkout without a worktree', () => {
   seed(f);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Base film design');

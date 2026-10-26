@@ -88,7 +88,7 @@ it('delivery/3 — with neither route prose comes from the capability and claims
   );
 });
 
-it('delivery/6 — delivered capabilities explain when; no workflow-restating overview procedure or reach-for skill', () => {
+it('delivery/6 — delivered capabilities explain when; no practice-restating overview procedure or reach-for skill', () => {
   h = host();
   const skills = files(join(h.home, '.cratylus/omp/skills'))
     .filter((path) => path.endsWith('SKILL.md'))
