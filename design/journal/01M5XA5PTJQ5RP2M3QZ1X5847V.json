@@ -1,0 +1,11 @@
+{
+  "id": "01M5XA5PTJQ5RP2M3QZ1X5847V",
+  "at": "2026-10-26T23:54:15.762Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire-context",
+  "context": "development",
+  "reason": "It modelled how cratylus itself is built, checked and released, the project's own way of working rather than a part of the problem domain; AGENTS.md's working conventions state it, and its check and release named again, for cratylus alone, concepts intent-based delegation already holds.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDFZP"
+  ]
+}
