@@ -1,8 +1,9 @@
 // The lead role: owns a story's realization, or a task with no story; orchestrates its
 // tasks to builders and their changes to review as its story's risk calls for (Ship,
 // Show or Ask), joins each change by the project's own integration, and hands over the
-// outcome (workflow: lead; agents 0272; workflow 0267, 0268). Its values hold by scope
-// (0250-0257): decisive on the realization it owns, waiting at the operator's hold points.
+// outcome (intent-based delegation: lead; agent design 0272; intent-based delegation
+// 0267, 0268). Its values hold by scope (0250-0257): decisive on the realization it
+// owns, waiting at the operator's hold points.
 
 import type { RoleProfile } from '../compose.js';
 import { appendJournal } from '../factors/action-scope/append-journal.js';

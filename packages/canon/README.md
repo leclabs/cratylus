@@ -45,7 +45,7 @@ intent-based delegation. `architect`, `lead`, `builder` and `reviewer` are the g
 their roles, with `illustrator` and `check-writer` as specialists called in when a user story's risk
 warrants them. Each role is defined by what it receives and what it hands off, never by steps:
 
-- **architect** — the operator's principal architect, owning the conceptual model: receives intent,
+- **architect** — the operator's principal architect, owning the domain model: receives intent,
   hands off user stories, answers to meaning questions and read-backs; decides meaning only.
 - **lead** — owns a user story's realization, or a task with no story: orchestrates its tasks to
   builders (orchestrator-workers) and their changes to code review as the story's risk calls for
@@ -72,8 +72,8 @@ a factor, a scalar without exactly one value, a slot not filled exactly once, an
 
 kino, nico and mav are personas over the architect role, each named for its expertise (kino film
 production and generative video, nico terminology work as cratylic context design practises
-it, mav software engineering). The architect role owns the conceptual model of every context it is given, the
-canon included; a persona brings its expertise and owns nothing its role does not.
+it, mav software engineering). The architect role owns the domain model of every context it is
+given; a persona brings its expertise and owns nothing its role does not.
 Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
 an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
@@ -120,8 +120,8 @@ text.
 
 Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
 factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
-replies (0142(1)). Persona drift is a concept of the agents context, judged by the operator in real
-use; no agent carries countermeasure text against it.
+replies (0142(1)). Persona drift is a concept of the agent design context, judged by the operator in
+real use; no agent carries countermeasure text against it.
 
 ## The first principle
 
