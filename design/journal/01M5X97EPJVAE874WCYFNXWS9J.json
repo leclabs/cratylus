@@ -1,0 +1,14 @@
+{
+  "id": "01M5X97EPJVAE874WCYFNXWS9J",
+  "at": "2026-10-26T23:37:44.402Z",
+  "by": "Lance Caraccioli",
+  "kind": "rename-context",
+  "was": "workflow",
+  "name": "intent-based delegation",
+  "subject": "handing work from one person to a team of AI agents by intent and taking back results that realize the domain model: each party deciding how within its own rights, applying by its own judgment the practices the context composes (domain-driven design, specification by example, event sourcing, sign-off at hold points, delegation of authority, Ship/Show/Ask and orchestrator-workers); the semantic gap between intent and result closed by construction, never by a proxy (a green suite, an agent's own account) nor by agents remembering",
+  "relation": "core: practised on a user's own bounded contexts, never modelling them; its parties are agents described in agent design; conforms to cratylic context design",
+  "reason": "Workflow reads to a model as a fixed, repeatable sequence of steps that agents follow instead of thinking, which made them act like naive juniors; what the context models is intent-based delegation, which a cold read on two model families reads as giving the goal, the reason, the constraints and what done looks like, leaving the method to agents that plan and check their own work.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDFZK"
+  ]
+}

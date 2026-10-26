@@ -1,0 +1,13 @@
+{
+  "id": "01M5X97MHAQJ08Z71KJE5FWR58",
+  "at": "2026-10-26T23:37:50.378Z",
+  "by": "Lance Caraccioli",
+  "kind": "context",
+  "name": "cratylic context design",
+  "subject": "expressing intent to a model in the terms it already understands: each concept by the name the model already gives it in its domain, plus only the correction its reading needs",
+  "relation": "core; a published language upstream of every other context, each conforming to it: every concept a Cratylic name with its correction, confirmed by a cold read",
+  "reason": "Restated whole rather than extended.",
+  "supersedes": [
+    "01M5X97EZ5ERKDX3JC3WY7GNPP"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "01M5X97ERR1NWSNAYD8S7YXRA8",
+  "at": "2026-10-26T23:37:44.472Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "intent-based delegation",
+  "name": "intent-based delegation",
+  "reason": "It named the context itself; what it said is now the context's name and subject.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG0P"
+  ]
+}

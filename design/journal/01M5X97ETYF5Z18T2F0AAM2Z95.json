@@ -1,0 +1,14 @@
+{
+  "id": "01M5X97ETYF5Z18T2F0AAM2Z95",
+  "at": "2026-10-26T23:37:44.542Z",
+  "by": "Lance Caraccioli",
+  "kind": "rename-context",
+  "was": "agents",
+  "name": "agent design",
+  "subject": "what an AI agent is, how one is composed, and what it works by: its profile, and the practices, skills and rules it applies",
+  "relation": "supporting: describes the agents that intent-based delegation's parties are, and the agents, skills and rules delivery installs; conforms to cratylic context design",
+  "reason": "Agents reads, among the things installed into an agent harness, as the packaged agent files alone; the context models what an agent is, how one is composed and what it works by, which a cold read on two model families reads as agent design.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDFZN"
+  ]
+}
