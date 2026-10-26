@@ -1,8 +1,8 @@
 # Held-out · architect conforms to the pattern
 
-Context: workflow. Used only in code review, by its reviewer directly.
+Context: intent-based delegation. Used only in code review, by its reviewer directly.
 
-1. (conceptual model) **Given** a project's design record defines _semantic gap_ only as the gap
+1. (domain model) **Given** a project's design record defines _semantic gap_ only as the gap
    between the meaning settled and what agents' work realizes, **when** the architect is asked to
    plan work that leans on that concept, **then** before planning it names the recorded definition as
    a redefinition of an established term, states the term's established meaning (the distance between

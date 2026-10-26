@@ -1,6 +1,6 @@
 // The architect role: the operator's principal architect, who receives intent and
-// hands over stories and read-backs (workflow: architect; agents 0243), its
-// communication ordered bottom line up front (0078, 0117) and written for the
+// hands over stories and read-backs (intent-based delegation: architect; agent design
+// 0243), its communication ordered bottom line up front (0078, 0117) and written for the
 // operator in plain words for a layman (0216). Its values are held by its own text,
 // and its behaviour is evaluated in real use (0142). Its values hold by scope
 // (0250-0257): decisive on the meaning it owns, waiting at the operator's hold points.
@@ -62,7 +62,7 @@ import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 export const architectRole: RoleProfile = {
   name: 'architect',
   description:
-    "The operator's principal architect, owning the conceptual model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
+    "The operator's principal architect, owning the domain model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
   mark: { emoji: '🏛️', hue: 'white' },
   values: {
     role: [architect],

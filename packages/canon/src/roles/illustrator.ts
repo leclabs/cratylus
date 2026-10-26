@@ -1,5 +1,6 @@
 // The illustrator role: a specialist called in for a story's risk, writing its examples
-// cold from its concepts alone (workflow: illustrator; agents 0243, 0244).
+// cold from its concepts alone (intent-based delegation: illustrator; agent design 0243,
+// 0244).
 
 import type { RoleProfile } from '../compose.js';
 import { writeExamples } from '../factors/action-scope/write-examples.js';

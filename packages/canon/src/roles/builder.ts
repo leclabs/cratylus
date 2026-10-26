@@ -1,6 +1,7 @@
-// The builder role: receives one task and hands over one change (workflow: builder;
-// agents 0272). It performs realization (P); every other decision class is – (no
-// part). It names no procedure: how its change joins is the project's own (0268).
+// The builder role: receives one task and hands over one change (intent-based
+// delegation: builder; agent design 0272). It performs realization (P); every other
+// decision class is – (no part). It names no procedure: how its change joins is the
+// project's own (0268).
 
 import type { RoleProfile } from '../compose.js';
 import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';
