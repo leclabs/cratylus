@@ -1,9 +1,0 @@
-{
-  "id": "01M5XA5PRFZF0CFQYJ6GN9J729",
-  "at": "2026-10-26T23:54:15.695Z",
-  "by": "Lance Caraccioli",
-  "kind": "deprecate",
-  "decisionId": "0310",
-  "entry": "01M5DFH8HTW1712MJJ9P8WDG31",
-  "reason": "Cratylus's own way of working, not part of the problem domain: the project's own conventions are stated in its own files, where this one now stands (AGENTS.md, working conventions)."
-}

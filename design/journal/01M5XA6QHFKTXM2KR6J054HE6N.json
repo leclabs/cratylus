@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE6N",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "lead",
+  "wording": "holds the realization of a user story or a task with no story: receives it from the architect, hands tasks to builders and changes to code review, joins them by integration, hands the outcome back",
+  "builtFrom": [],
+  "reason": "The workflow keeps only the lead's place among the parties; that it never writes a change itself is a value of its profile, stated by the canon.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

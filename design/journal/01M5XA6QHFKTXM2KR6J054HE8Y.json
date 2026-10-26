@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE8Y",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "agent design",
+  "name": "practice",
+  "wording": "an established discipline, such as domain-driven design, specification by example or event sourcing, that an agent applies by its own judgment to the work in hand; named by the industry's own name, which carries the discipline, with only cratylus's departures from it written beside it; carried to an agent as skills and named in its expertise and procedure; never a sequence of steps for the agent to follow",
+  "builtFrom": [],
+  "reason": "Cratylus ships agents that apply established practices by their own judgment instead of a prescribed workflow, which had made agents act like naive juniors following instructions; the concept the agents work by had no name in the design.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

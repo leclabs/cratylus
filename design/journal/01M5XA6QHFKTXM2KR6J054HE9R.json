@@ -1,0 +1,16 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE9R",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0331",
+  "context": "delivery",
+  "title": "Authoring's remainder goes too: the consumer-patch fold, fragment provenance and the cold-oracle script",
+  "situation": "Code review of 0330's change found authoring code still present that nothing shipped or used in cratylus's own development reaches: the consumer-patch fold (patches, their ops and errors, the resolved-body substitution, per-fragment provenance and the published resolve subpath), reachable only through the removed configuration file and explain. The same change removed canon's cold-oracle script and forge's validate driver, which 0330 did not name: the script ran cold reads through a Claude configuration directory, a harness cratylus no longer supports, and cratylus's own cold reads run through the repository's omp cold-reader script.",
+  "decision": "The consumer-patch fold, fragment provenance and the resolve subpath are removed with their tests; discovery keeps its reference-graph check. The cold-oracle script and forge's validate driver stay removed. A plugin other than the corpus the command is built with is not something cratylus offers; the schema package's README addresses cratylus's contributors, never a corpus author. A check pins that install ignores a configuration file in its working directory.",
+  "consequences": "Completes 0330. The cold-decode-oracle stance and the cold read concept are unaffected: they name a practice, not the removed script.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

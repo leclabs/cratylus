@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE85",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "delivery",
+  "name": "version skew",
+  "wording": "between the cratylus that installed a harness's files and the command they call; reported at every harness start with both versions and the remedy, install again; never resolved by choosing a build",
+  "builtFrom": [],
+  "reason": "Restated in what its user observes, now that how delivery works inside is recorded as decisions rather than concepts.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

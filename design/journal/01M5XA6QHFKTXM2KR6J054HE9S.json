@@ -1,0 +1,16 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE9S",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "decide",
+  "decisionId": "0332",
+  "context": "delivery",
+  "title": "A practice keeps the names it was offered under, and install carries a recorded one over",
+  "situation": "practice-restated renames the practice that carries the skills of cratylic context design from corpus-authoring to cratylic-context-design. Install reads the practices an earlier installation recorded only by their current names, so a recorded name no practice still has is silently dropped, and with nothing else recorded the host reads as fresh.",
+  "decision": "A practice declares, beside its name, the names it was offered under before (formerNames). Wherever install reads the practices an earlier installation recorded, its installation record or an earlier deploy record alike, a recorded former name counts as the practice that now holds it: preselected on a terminal, taken under --yes, never reported as removed; the new record holds the current name only, and the report names each practice carried over, old name and new. A former name given to --practices is not a declared practice and is refused as any unknown name is, the refusal listing the declared ones. cratylic-context-design declares corpus-authoring as its former name.",
+  "consequences": "An upgrade over an installation that took corpus-authoring keeps its skills without a question. A later rename of a practice adds its old name to formerNames. One builder; review Ask.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization",
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE71",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "context map",
+  "wording": "recorded, never prose; each dependency carrying its consumer-driven contract",
+  "builtFrom": [],
+  "reason": "That an uncontracted dependency shows and nothing crosses a boundary unannounced follows from each dependency carrying its contract; only the residue stays.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

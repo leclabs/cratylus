@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7C",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "task",
+  "wording": "one builder, one change: its goal in its user story's terms, what it changes, the decisions binding it, what done means; a change preserving behaviour and altering no meaning (refactor, chore, docs, style) is a task with no story",
+  "builtFrom": [],
+  "reason": "The operator: a large residue has a real cause, a more precise name, a fused concept, or relations, procedure or implementation restated where they don't belong; each is resolved by that cause, each relation stated once in the concept owning it, and a concept counts as new only where no established name covers it.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

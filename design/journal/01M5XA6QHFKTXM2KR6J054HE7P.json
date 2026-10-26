@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7P",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "tailoring",
+  "wording": "of intent-based delegation per user story by its risk: a plain path, tasks of one builder each, or scaled up with illustration, held-out examples and a check-writer; the method never costs more than the change",
+  "builtFrom": [],
+  "reason": "Names the practice as intent-based delegation, never as a workflow, which reads as a fixed sequence of steps.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

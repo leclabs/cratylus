@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7R",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "code review",
+  "wording": "of any change, not only code, by exactly one non-author, against its user story's acceptance criteria and examples, held-out ones included; a contrived way around a check is a finding on that check, not on the change",
+  "builtFrom": [],
+  "reason": "Approving or naming findings is what the name already says, and never repairing is the reviewer's own value; that there is one reviewer is stated here once, no longer under Ship/Show/Ask, and held-out examples are named as part of what it judges against.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

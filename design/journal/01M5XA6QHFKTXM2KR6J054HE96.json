@@ -1,0 +1,17 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE96",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "cratylic context design",
+  "name": "Cratylic name",
+  "wording": "the term leaving a concept the smallest semantic gap in its domain, which depends on the model: intuition proposes, a cold read confirms; found, never coined; a coined name only where no established term covers the concept",
+  "builtFrom": [
+    "term",
+    "semantic gap",
+    "cold read"
+  ],
+  "reason": "INTRODUCTION's name for the label that most precisely evokes a concept; read cold it lands as a name whose word already carries its meaning, missing that it is measured by the gap, model-dependent and confirmed cold.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

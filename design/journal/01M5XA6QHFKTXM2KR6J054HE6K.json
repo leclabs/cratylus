@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE6K",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "context",
+  "name": "cratylic context design",
+  "subject": "expressing intent to a model in the terms it already understands: each concept by the name the model already gives it in its domain, plus only the correction its reading needs",
+  "relation": "core; a published language upstream of every other context, each conforming to it: every concept a Cratylic name with its correction, confirmed by a cold read",
+  "reason": "Restated whole rather than extended.",
+  "identity": "01M5BPHAP9136Y8S8EBJQJKC2F",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

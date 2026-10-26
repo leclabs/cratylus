@@ -1,0 +1,16 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE97",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "cratylic context design",
+  "name": "cratylism",
+  "wording": "held as the pattern's founding principle, never the fallacy of trusting a coined label to carry meaning: a name is natural to the model, its meaning already fixed by the universe of discourse, so each concept takes its Cratylic name; a kept name short of it is recorded as such",
+  "builtFrom": [
+    "universe of discourse",
+    "Cratylic name"
+  ],
+  "reason": "The principle the project is named for, names natural rather than conventional, belongs to the pattern every context conforms to; read cold, a model can take it for the fallacy of trusting a label to carry meaning, which the correction excludes.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

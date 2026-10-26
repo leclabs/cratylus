@@ -1,0 +1,16 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE94",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "cratylic context design",
+  "name": "correction",
+  "wording": "stated beside its term, each side of the gap once: the missing meaning supplied, the spurious meaning excluded; it refines the concept the term addresses, so it never restates what the term already carries, and one that must exclude the term's core meaning shows the term is wrong",
+  "builtFrom": [
+    "term",
+    "semantic gap"
+  ],
+  "reason": "Restated whole rather than extended.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

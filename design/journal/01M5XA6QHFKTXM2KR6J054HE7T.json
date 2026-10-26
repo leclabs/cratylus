@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7T",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "handoff",
+  "wording": "a user story, task, change, code review, outcome or read-back passed between parties, stating every part its form requires, so a missing part shows; parties are defined by what they receive and hand off, never by steps",
+  "builtFrom": [],
+  "reason": "The operator: each concept is an address plus a correction: the most precise established name as read within its bounded context, and a residue holding only the symmetric difference, its relations each stated once where owned, in the dense form of the canon's own values; the earlier restatement put the name before prose restating what the name already invokes, kept episodes and missed established names. Named handoff, the established term, in place of handover.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

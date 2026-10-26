@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE6X",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "efficiency",
+  "wording": "the share of effort realizing the meaning: every agent run on a user story or task, however launched, by role, tokens and elapsed time as the harness records them",
+  "builtFrom": [],
+  "reason": "Stopping and reporting a run far beyond its size is the lead's own value, management by exception, stated by the canon that composes it; efficiency keeps only what is measured.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}
