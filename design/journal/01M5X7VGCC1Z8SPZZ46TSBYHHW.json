@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VGCC1Z8SPZZ46TSBYHHW",
+  "at": "2026-10-26T23:13:44.332Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "integration",
+  "wording": "by the project's own conventions (branching, pull requests, who joins, when), which intent-based delegation never names; a change joins only once every check passes and any review due before joining approves it; how an agent harness hands a dispatched agent's work back is never integration",
+  "builtFrom": [],
+  "reason": "Names the practice as intent-based delegation, never as a workflow, which reads as a fixed sequence of steps.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG0E"
+  ]
+}

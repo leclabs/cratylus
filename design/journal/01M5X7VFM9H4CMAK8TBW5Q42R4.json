@@ -1,0 +1,15 @@
+{
+  "id": "01M5X7VFM9H4CMAK8TBW5Q42R4",
+  "at": "2026-10-26T23:13:43.561Z",
+  "by": "Lance Caraccioli",
+  "kind": "rename",
+  "was": "conceptual model",
+  "context": "workflow",
+  "name": "domain model",
+  "wording": "of the problem domain only, what its users observe or rely on, never how the project is built or works inside; its concepts, never code-level patterns such as entities or aggregates; its current state only: the purpose, the bounded contexts with their context map, each live concept as its Cratylic name and correction; what work is accepted against; the project's source of truth for its concepts, never for what an established name means: a recorded name that redefines an established term is a defect, corrected by a new version, never followed",
+  "builtFrom": [],
+  "reason": "Renamed to domain-driven design's own term: the record holds the model of the problem domain only, what its users observe or rely on, which the operator confirmed on 2026-10-26; conceptual model is no established term of domain-driven design, and a cold read on two model families read domain model as the same abstraction.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG0V"
+  ]
+}

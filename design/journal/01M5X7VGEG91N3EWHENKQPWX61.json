@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VGEG91N3EWHENKQPWX61",
+  "at": "2026-10-26T23:13:44.400Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "tailoring",
+  "wording": "of intent-based delegation per user story by its risk: a plain path, tasks of one builder each, or scaled up with illustration, held-out examples and a check-writer; the method never costs more than the change",
+  "builtFrom": [],
+  "reason": "Names the practice as intent-based delegation, never as a workflow, which reads as a fixed sequence of steps.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG0W"
+  ]
+}

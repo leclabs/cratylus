@@ -1,0 +1,12 @@
+{
+  "id": "01M5X7TYX5R96RM4RC9KY2F97C",
+  "at": "2026-10-26T23:13:26.437Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "delivery",
+  "name": "capability fidelity",
+  "reason": "How delivery works inside, not something its user observes or relies on: the concept journal holds the problem domain only. The choice keeps binding the work as decision 0336.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG17"
+  ]
+}

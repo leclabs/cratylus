@@ -1,0 +1,12 @@
+{
+  "id": "01M5X7TZ1B6V12VJVXXN73KYA1",
+  "at": "2026-10-26T23:13:26.571Z",
+  "by": "Lance Caraccioli",
+  "kind": "retire",
+  "context": "delivery",
+  "name": "runtime",
+  "reason": "How delivery works inside, not something its user observes or relies on: the concept journal holds the problem domain only. The choice keeps binding the work as decision 0337.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG1F"
+  ]
+}

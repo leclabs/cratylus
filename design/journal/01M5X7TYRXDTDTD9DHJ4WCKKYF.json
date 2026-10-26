@@ -1,0 +1,15 @@
+{
+  "id": "01M5X7TYRXDTDTD9DHJ4WCKKYF",
+  "at": "2026-10-26T23:13:26.301Z",
+  "by": "Lance Caraccioli",
+  "kind": "decide",
+  "decisionId": "0339",
+  "context": "delivery",
+  "title": "A harness's files are projected, never edited",
+  "situation": "The operator, 2026-10-26, under delegation of authority for the domain-model restructure: the concept journal holds the problem domain only, what a user observes or relies on. Delivery recorded how it works inside as concepts; those are choices of realization, recorded here so they keep binding the work once the concept leaves the design.",
+  "decision": "An agent harness's own files are generated deterministically from the agents, skills and rules cratylus ships, each written once, and regenerated, never edited.",
+  "consequences": "Nothing changes in what is built; the choice is now read among the standing decisions instead of the design.",
+  "status": "accepted",
+  "supersedes": null,
+  "decisionKind": "realization"
+}

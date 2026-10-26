@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VG7XK9GVMYQ5EWBYYSAV",
+  "at": "2026-10-26T23:13:44.189Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "reconstitution",
+  "wording": "a session, new or compacted, recovering from records, never memory: the domain model of the contexts it touches, the delivered contexts included, and the decisions its work needs; the work in flight from version control and outcomes",
+  "builtFrom": [],
+  "reason": "Follows the concept's new name, domain model, and names the delivered contexts by what they are rather than by one context's name.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG00"
+  ]
+}

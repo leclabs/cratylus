@@ -1,0 +1,11 @@
+{
+  "id": "01M5X7TYGGFWPBNVHJYZK4PNS6",
+  "at": "2026-10-26T23:13:26.032Z",
+  "by": "Lance Caraccioli",
+  "kind": "purpose",
+  "statement": "Cratylus lets a person settle what they mean once and have AI agents build exactly that, across sessions and tools, without the meaning drifting. It installs ready-made agents, the practices they apply and the tools they use into the agent harness the person already works in. The meaning lives in a durable record of the problem's domain that any fresh session reads to pick up where the last left off; the agents are written in words a model already understands, and apply established practices by their own judgment rather than follow a script; and the work is judged against examples agreed before it is built, with effort kept in proportion to the change.",
+  "reason": "The purpose said what cratylus achieves but not what it hands its user: ready-made agents, practices and tools installed into their own agent harness; and it did not say that the durable record holds the problem's domain only, nor that the agents apply practices by judgment instead of following a prescribed workflow, which the operator confirmed on 2026-10-26.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDFZJ"
+  ]
+}

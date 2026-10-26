@@ -1,0 +1,12 @@
+{
+  "id": "01M5X7VFBK6BFZGZR6G5EZHXD4",
+  "at": "2026-10-26T23:13:43.283Z",
+  "by": "Lance Caraccioli",
+  "kind": "define",
+  "context": "agents",
+  "name": "rule",
+  "wording": "a working convention an agent follows in whatever project it works in, stated once as the convention and why it holds; in force in every project once installed; never a prohibition against a failure not seen in real use; a project's own conventions stay in its own files, never a rule",
+  "builtFrom": [],
+  "reason": "Moved from canon: canon's subject was an inventory of what cratylus ships, which is the product itself, not a concept; a rule and a ruleset are things an agent works by, in the same language as skill, so they belong to agents.",
+  "supersedes": []
+}

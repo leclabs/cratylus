@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VFRME52G6KKYFWXRW0R0",
+  "at": "2026-10-26T23:13:43.700Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "bounded context",
+  "wording": "cut where the language changes, never by topic, topics within one model being its modules; its subject a part of the problem domain, classified core, supporting or generic, never the project's own infrastructure or way of working; holds every concept it models, each in exactly one context, whose subject is the domain its terms are read in; one architect may hold several, never merging their models; retired whole when the design drops it, its history kept",
+  "builtFrom": [],
+  "reason": "A project's record had mixed in its own infrastructure and its own way of building as contexts, and the restructure first cut one model by topic; domain-driven design draws a context where the language changes and classifies each part of the problem as core, supporting or generic.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG0A"
+  ]
+}

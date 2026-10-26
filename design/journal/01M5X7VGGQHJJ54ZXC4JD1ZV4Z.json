@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VGGQHJJ54ZXC4JD1ZV4Z",
+  "at": "2026-10-26T23:13:44.471Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "delivered context",
+  "wording": "a cratylus bounded context shipped read-only as the practice a project's agents work by, never part of the project's domain model: shown apart from the project's contexts, outside its context map, and read first by a fresh session, upstream always before downstream; a project holding that context itself reads its own in its place",
+  "builtFrom": [],
+  "reason": "Follows the concept's new name, domain model.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG1M"
+  ]
+}

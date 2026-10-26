@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7VGA46EP4871VVK5BPTSB",
+  "at": "2026-10-26T23:13:44.260Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "workflow",
+  "name": "brownfield adoption",
+  "wording": "of intent-based delegation: earlier records, the product and its documents are evidence for the domain model, never the model; the earlier record is replaced, never migrated",
+  "builtFrom": [],
+  "reason": "Follows domain model's new name, and names the practice it adopts as intent-based delegation, never as a workflow, which reads as a fixed sequence of steps.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG15"
+  ]
+}

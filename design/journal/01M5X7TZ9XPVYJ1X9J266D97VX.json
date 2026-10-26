@@ -1,0 +1,14 @@
+{
+  "id": "01M5X7TZ9XPVYJ1X9J266D97VX",
+  "at": "2026-10-26T23:13:26.845Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "delivery",
+  "name": "upgrade",
+  "wording": "install over an earlier version: everything cratylus placed at that scope replaced whole, the host's own untouched",
+  "builtFrom": [],
+  "reason": "Restated in what its user observes, now that how delivery works inside is recorded as decisions rather than concepts.",
+  "supersedes": [
+    "01M5DFH8HTW1712MJJ9P8WDG1A"
+  ]
+}
