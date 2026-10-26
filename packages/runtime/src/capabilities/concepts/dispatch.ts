@@ -15,8 +15,8 @@
 //              examples, and where a wording tells what is not its current
 //              meaning: a reading of the concept journal
 //   purpose    record the project's purpose, or, with a reason, change it
-//   context    record a bounded context, or, with a reason, change one or
-//              bring a retired one back
+//   context    record a bounded context, or, with a reason, change one,
+//              rename it or bring a retired one back
 //   define     record a concept's first version
 //   supersede  record a version superseding every current one, optionally
 //              renaming the concept
@@ -93,6 +93,7 @@ import {
 import type {
   ContextEntry,
   DecideEntry,
+  DescriptionEntry,
   Draft,
   WordedEntry,
 } from './entries.js';
@@ -117,12 +118,18 @@ import {
   stands,
 } from './views.js';
 
+/** What a `--context` flag says of the context it names: by any name. */
+const ANY_NAME =
+  'one already recorded with the context verb, by its current name or any it had';
+
 /** The recorded bounded context `what` belongs to, given where it must be. */
 const inContext = (what: string) =>
   ({
     context: valueFlag(
-      `The bounded context the ${what} belongs to, one already recorded with the context verb`,
-      { required: true },
+      `The bounded context the ${what} belongs to, ${ANY_NAME}`,
+      {
+        required: true,
+      },
     ),
   }) as const;
 
@@ -158,7 +165,7 @@ export const VERBS = {
     positional: null,
     flags: {
       context: valueFlag(
-        'Only this bounded context; every context when left out',
+        'Only this bounded context, by its current name or any it had; every context when left out',
       ),
     },
   },
@@ -171,7 +178,7 @@ export const VERBS = {
     positional: null,
     flags: {
       context: valueFlag(
-        'Only this bounded context; every context when left out',
+        'Only this bounded context, by its current name or any it had; every context when left out',
       ),
       history: switchFlag(
         'Also its history: retired concepts with why each was retired, and why each live concept’s version was written; since the journal’s latest closing of the books, which the answer then names with the commit holding the closed period',
@@ -182,7 +189,7 @@ export const VERBS = {
     concept: 'concept',
     effect: 'reads',
     purpose:
-      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each change with its reason, and each retirement of the context with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
+      'Show every version of one concept in the order recorded, each with the reason it was written, exactly as recorded; given no concept, show the bounded context’s own history instead: every description of its subject and place in the context map, each with the name the context had when it was recorded, each change with its reason, a rename also with the name it renames, and each retirement of the context with its reason, and, where any is recorded, the effort its past work took, each piece of work by its name with the figures last recorded for it; the versions and descriptions are those the journal holds since its latest closing of the books, each opening that close wrote marked brought forward, and the answer then names that close with the commit whose journal holds the earlier ones',
     when: 'To see how a concept came to mean what it does: what it meant before, why each change was made, or why it was retired; without a concept, to see what a bounded context was about and how it stood to the others before, why each change was made, and what its past work took',
     positional: {
       ...concept(
@@ -192,7 +199,7 @@ export const VERBS = {
     },
     flags: {
       context: valueFlag(
-        'The bounded context the concept belongs to, or, without a concept, the one whose own history to show; one already recorded with the context verb',
+        `The bounded context the concept belongs to, or, without a concept, the one whose own history to show; ${ANY_NAME}`,
         { required: true },
       ),
     },
@@ -206,7 +213,7 @@ export const VERBS = {
     positional: null,
     flags: {
       context: valueFlag(
-        'Only the decisions of this bounded context; every context’s when left out',
+        'Only the decisions of this bounded context, by its current name or any it had; every context’s when left out',
       ),
       open: switchFlag('Only the decisions still awaiting acceptance'),
       history: switchFlag(
@@ -223,7 +230,7 @@ export const VERBS = {
     positional: null,
     flags: {
       context: valueFlag(
-        'Only this bounded context’s concepts, description and examples; every context’s when left out',
+        'Only this bounded context’s concepts, description and examples, by its current name or any it had; every context’s when left out',
       ),
     },
   },
@@ -248,12 +255,12 @@ export const VERBS = {
     concept: 'bounded context',
     effect: 'appends',
     purpose:
-      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history; or, given a reason, bring a retired context back by a new description superseding its retirement, its subject and place carried from before it was retired where left out, its concepts and decisions then read as they stood',
-    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, to settle descriptions recorded differently in separate lines of work that were later joined, or when a retired context returns to the design',
+      'Record a new bounded context: a subject with its own model and vocabulary, and its place in the context map; or, given a reason, change a recorded context’s subject or place in the context map by a new description that supersedes the current one, which stays in the context’s history; or, given a reason and a new name, rename it by such a description: it stays one bounded context, with its identity, concepts, decisions and history, and every reading shows it under the new name only; or, given a reason, bring a retired context back by a new description superseding its retirement, its subject and place carried from before it was retired where left out, its concepts and decisions then read as they stood',
+    when: 'A reason marks a change. Without a reason, before the first concept or decision of a subject that has no bounded context yet; with a reason, when a recorded context’s subject or relation changes, to settle descriptions recorded differently in separate lines of work that were later joined, or when a retired context returns to the design; with a reason and a new name, when the context’s name evokes a meaning the context does not have, or misses one it does, and another name evokes it more nearly',
     positional: {
       name: 'context',
       description:
-        'The bounded context’s name, the word its concepts and decisions are recorded under; a change names a context already recorded',
+        'The bounded context’s name, the word its concepts and decisions are recorded under; a change names a context already recorded, by its current name or any it had; a new context never takes a name a recorded one has had',
     },
     flags: {
       subject: valueFlag(
@@ -264,6 +271,9 @@ export const VERBS = {
       ),
       reason: valueFlag(
         'Why a recorded context changes; needed to change one, and giving it marks the call as a change, never a recording',
+      ),
+      rename: valueFlag(
+        'The context’s new name, the word its concepts and decisions are recorded under from this description on, when its current one evokes the wrong meaning; needs a reason. Never a name another context of the journal has or has had, nor the context’s current name; a name the context itself had before may be taken back',
       ),
     },
   },
@@ -322,7 +332,7 @@ export const VERBS = {
     },
     flags: {
       context: valueFlag(
-        'The bounded context the concept belongs to, or, without a concept, the one that leaves the design; one already recorded with the context verb',
+        `The bounded context the concept belongs to, or, without a concept, the one that leaves the design; ${ANY_NAME}`,
         { required: true },
       ),
       reason: valueFlag(
@@ -402,8 +412,8 @@ export const VERBS = {
     concept: 'closing the books',
     effect: 'closes',
     purpose:
-      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, with its identity, and a retirement of it competing with that description, so the two still compete; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired bounded context with its concepts and decisions, a retired concept, a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
-    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close, or while a concept’s competing versions give it different terms, until a supersede settles them',
+      'Close the journal’s books as event sourcing does: open a new period with one entry per current version of each standing item, carrying its balance forward (the project’s purpose; each bounded context’s current description, a renamed context under its current name alone, with its identity, and a retirement of it competing with that description, so the two still compete; each live concept’s current version, a renamed concept under its current term alone and each concept it is built from named by its current term; each standing decision, accepted where it is accepted, with its governing kind), each of its item’s own kind, superseding nothing and naming the commit that holds the closed period, then take every other entry out of the journal, kept by version control at that commit; competing versions open each as an entry of their own, so they still compete, and a retired bounded context with its concepts and decisions, a retired concept, a context’s earlier names and a concept’s earlier terms, a superseded or deprecated decision, an acceptance, a classification, a cut’s figures, and the cut or example files an earlier decision’s entry recorded stay in the closed period; the design reads as before and each standing decision with the same meaning and status, its entry renewed as its opening’s, and the history readings name the close and its commit, where the closed period is read',
+    when: 'When the journal’s closed history no longer needs reading from the journal itself, once the journal is committed as it stands; done by the capability alone, the same for anyone who calls it, and refused, changing nothing, while the journal’s files differ from the commit at HEAD, one git ignores or is told to overlook included, holds entries of a newer runtime, holds no entry, or holds nothing recorded since its latest close, while a concept’s competing versions give it different terms, until a supersede settles them, or while a bounded context’s competing descriptions give it different names, until the context verb with a reason settles them',
     positional: null,
     flags: {},
   },
@@ -506,12 +516,14 @@ function answerOf(
     )[0];
   };
 
-  /** The recorded context `--context` names, given once. */
+  /** The recorded context `--context` names, by any name it has had, given
+   *  once: by its name now. */
   const context = (): string => {
-    const name = read.required('context', 'the bounded context');
-    if (!folded.contexts.has(name))
+    const given = read.required('context', 'the bounded context');
+    const name = folded.contextNamed(given);
+    if (name === undefined)
       throw refuse(
-        `the journal has no bounded context '${name}'; record it with concepts context first`,
+        `the journal has no bounded context '${given}'; record it with concepts context first`,
       );
     return name;
   };
@@ -700,16 +712,17 @@ function answerOf(
         ];
       });
       const examples = visibleExamples(journal.root)
-        .filter((e) =>
+        .map((e) => ({ ...e, where: folded.contextNamed(e.context) }))
+        .filter(({ context, where }) =>
           args.flags.has('context')
-            ? covered.includes(e.context)
-            : !folded.retired(e.context),
+            ? covered.includes(where ?? context)
+            : where === undefined || !folded.retired(where),
         )
         .flatMap((e) =>
           warnings(
             { kind: 'example', file: e.file, number: e.number },
             [e.text],
-            folded.contexts.has(e.context) ? own(e.context) : vocabulary([]),
+            e.where === undefined ? vocabulary([]) : own(e.where),
           ),
         );
       return { warnings: [...recorded, ...examples] };
@@ -812,39 +825,69 @@ function answerOf(
       });
     }
     case 'context': {
-      const name = read.named('context');
+      const given = read.named('context');
       const reason = read.optional('reason');
       const subject = read.optional('subject');
       const relation = read.optional('relation');
-      const recorded = folded.contexts.has(name);
+      const rename = read.optional('rename');
+      /** The context `given` names, by its name now; none when unrecorded. */
+      const name = folded.contextNamed(given);
       if (reason === undefined) {
-        if (recorded)
+        if (name !== undefined)
           throw refuse(
-            `the bounded context '${name}' is already recorded; give --reason to change it`,
+            name === given
+              ? `the bounded context '${name}' is already recorded; give --reason to change it`
+              : `the name '${given}' is one the bounded context '${name}' has had, and a name stays its context's; name the new context otherwise, or give --reason to change '${name}'`,
           );
-        const draft: Omit<ContextEntry, 'id' | 'at'> = {
+        if (rename !== undefined)
+          throw refuse(
+            `the journal has no bounded context '${given}' to rename; record it without --rename first`,
+          );
+        const draft: Draft<ContextEntry> = {
           kind: 'context',
-          name,
+          name: given,
           subject: read.required('subject', 'the subject'),
           relation: relation ?? '',
         };
-        const found = described(name, draft, ['subject', 'relation']);
+        const found = described(given, draft, ['subject', 'relation']);
         const entry = journal.append(draft);
         return found.length === 0 ? entry : { ...entry, warnings: found };
       }
-      if (!recorded)
+      if (name === undefined)
         throw refuse(
-          `the journal has no bounded context '${name}'; record it without --reason first`,
+          `the journal has no bounded context '${given}'; record it without --reason first`,
         );
       if (reason.trim() === '')
         throw refuse('the reason is empty; give why the context changes');
       const retired = folded.retired(name);
-      if (subject === undefined && relation === undefined && !retired)
-        throw refuse('give the --subject or --relation that changes, or both');
+      if (
+        subject === undefined &&
+        relation === undefined &&
+        rename === undefined &&
+        !retired
+      )
+        throw refuse(
+          'give the --subject or --relation that changes, or both, or the --rename it takes',
+        );
       if (subject !== undefined && subject.trim() === '')
         throw refuse(
           'the subject is empty; give one, or leave --subject out to keep it',
         );
+      if (rename !== undefined) {
+        if (rename.trim() === '')
+          throw refuse(
+            'the new name is empty; give one, or leave --rename out',
+          );
+        if (rename === name)
+          throw refuse(
+            `the bounded context '${name}' is already named '${rename}'`,
+          );
+        const other = folded.contextNamed(rename);
+        if (other !== undefined && other !== name)
+          throw refuse(
+            `the name '${rename}' is one the bounded context '${other}' has or has had, and a name stays its context's; give another`,
+          );
+      }
       /** The descriptions a field left out is carried from: the current ones,
        *  or, while retired, those the retirement superseded. */
       const descriptions = retired
@@ -870,9 +913,8 @@ function answerOf(
           );
         return first[field];
       };
-      const draft: Omit<ContextEntry, 'id' | 'at'> = {
-        kind: 'context',
-        name,
+      const stated = {
+        name: rename ?? name,
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
@@ -887,6 +929,10 @@ function answerOf(
           ]),
         ],
       };
+      const draft: Draft<DescriptionEntry> =
+        rename === undefined
+          ? { kind: 'context', ...stated }
+          : { kind: 'rename-context', was: name, ...stated };
       const found = described(name, draft, [
         ...(subject === undefined ? [] : (['subject'] as const)),
         ...(relation === undefined ? [] : (['relation'] as const)),
@@ -1080,6 +1126,11 @@ function answerOf(
       if (journal.entries().every((entry) => 'broughtForward' in entry))
         throw refuse(
           'nothing is recorded since the journal’s latest close; there is nothing to close',
+        );
+      const [renamed] = folded.contextNamesCompeting();
+      if (renamed !== undefined)
+        throw refuse(
+          `the bounded context '${renamed}' has competing descriptions that name it differently, and a close carries no earlier name into the new period; settle them with concepts context and a --reason first, giving --rename for a name other than '${renamed}'`,
         );
       const [apart] = folded.namesCompeting();
       if (apart !== undefined)

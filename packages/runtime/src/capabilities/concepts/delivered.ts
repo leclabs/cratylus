@@ -58,11 +58,12 @@ export interface DeliveredMarks {
 }
 
 /**
- * The projection of `context`, as the journal of the git repository holding
- * `from` records it now, delivered by `origin` at `version`, at `position`
- * among the contexts `origin` delivers. Refused where the journal has no such
- * context, or its description or a concept is competing: a release delivers a
- * settled design.
+ * The projection of `context`, by its current name or any it had, as the
+ * journal of the git repository holding `from` records it now, delivered by
+ * `origin` at `version`, at `position` among the contexts `origin` delivers,
+ * under its current name. Refused where the journal has no such context, or
+ * its description or a concept is competing: a release delivers a settled
+ * design.
  */
 export function deliverContext(opts: {
   readonly from: string;
@@ -73,23 +74,23 @@ export function deliverContext(opts: {
 }): DeliveredContext {
   const refuse = (message: string) => new Error(`deliverContext: ${message}`);
   const folded = new Folded(journalAt(opts.from, refuse).entries());
-  const identity = folded.identity(opts.context);
-  if (identity === undefined)
+  const context = folded.contextNamed(opts.context);
+  if (context === undefined)
     throw refuse(`the journal has no bounded context '${opts.context}'`);
-  const design = folded.design(opts.context);
+  const design = folded.design(context);
   if (design.subject === null || design.relation === null)
     throw refuse(
-      `the bounded context '${opts.context}' has competing descriptions; settle them before delivering it`,
+      `the bounded context '${context}' has competing descriptions; settle them before delivering it`,
     );
   if (design.competing.length > 0)
     throw refuse(
-      `the bounded context '${opts.context}' has competing versions of ${design.competing.map((c) => `'${c.name}'`).join(', ')}; settle them before delivering it`,
+      `the bounded context '${context}' has competing versions of ${design.competing.map((c) => `'${c.name}'`).join(', ')}; settle them before delivering it`,
     );
   return {
     origin: opts.origin,
     version: opts.version,
-    context: opts.context,
-    identity,
+    context,
+    identity: folded.identity(context) as string,
     position: opts.position,
     subject: design.subject,
     relation: design.relation,

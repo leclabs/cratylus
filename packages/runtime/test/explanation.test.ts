@@ -78,7 +78,7 @@ const PARAMETERS: Record<string, string[]> = {
   decisions: ['context', 'open', 'history'],
   leakage: ['context'],
   purpose: ['statement', 'reason'],
-  context: ['context', 'subject', 'relation', 'reason'],
+  context: ['context', 'subject', 'relation', 'reason', 'rename'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: [
     'concept',

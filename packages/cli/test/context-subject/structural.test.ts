@@ -14,6 +14,7 @@ import {
 interface Description {
   id: string;
   at: string;
+  name: string;
   subject: string;
   relation: string;
   reason?: string;
@@ -61,6 +62,7 @@ function version(entry: Description, supersedes: string[] = []): Description {
   return {
     id: entry.id,
     at: entry.at,
+    name: entry.name,
     subject: entry.subject,
     relation: entry.relation,
     ...(entry.reason === undefined ? {} : { reason: entry.reason }),
