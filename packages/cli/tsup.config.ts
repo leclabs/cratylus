@@ -13,7 +13,7 @@ import { defineConfig } from 'tsup';
 //
 // THE DELIVERED PRACTICE. Each build projects the repository's own contexts it
 // delivers, as its concept journal records them now, upstream first: `cratylic
-// context design`, then `workflow`. Each is written to
+// context design`, then `intent-based delegation`. Each is written to
 // `dist/delivered/cratylus/<context>.json`, named as recorded, with this package's
 // version and its place in that order: the release carries the projections, and
 // `install` places them read-only in the owned root. They are never authored
@@ -24,7 +24,7 @@ import { defineConfig } from 'tsup';
 // command run from its source tree, never installed as a package, says it beside its
 // version, so a development build is never mistaken for the release.
 /** The contexts this repository delivers, upstream first. */
-const DELIVERED = ['cratylic context design', 'workflow'];
+const DELIVERED = ['cratylic context design', 'intent-based delegation'];
 
 export default defineConfig({
   entry: {

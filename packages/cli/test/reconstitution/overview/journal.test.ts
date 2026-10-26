@@ -38,7 +38,7 @@ const past = (name?: string) =>
     'film-production',
   ).versions;
 
-it('workflow/14 — replacements are current; histories retain earlier versions and both reasons', () => {
+it('intent-based delegation/14 — replacements are current; histories retain earlier versions and both reasons', () => {
   seed(f);
   command(
     f,
@@ -100,7 +100,7 @@ it('workflow/14 — replacements are current; histories retain earlier versions 
   ).toEqual(['define take for the film.', 'supersede take for the film.']);
 });
 
-it('workflow/15 — competing concepts and context descriptions survive until one later version supersedes both', () => {
+it('intent-based delegation/15 — competing concepts and context descriptions survive until one later version supersedes both', () => {
   seed(f);
   git(f.root, 'add', 'design');
   git(f.root, 'commit', '-m', 'Common journal');

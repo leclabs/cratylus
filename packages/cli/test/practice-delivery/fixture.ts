@@ -44,11 +44,11 @@ export interface ContextView {
 export const document: Delivered = {
   origin: 'cratylus',
   version: '7.8.9',
-  context: 'workflow',
+  context: 'intent-based delegation',
   identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
   position: 1,
-  subject: 'The released workflow subject.',
-  relation: 'The released workflow relation.',
+  subject: 'The released intent-based delegation subject.',
+  relation: 'The released intent-based delegation relation.',
   concepts: [
     {
       name: 'practice',
@@ -58,8 +58,8 @@ export const document: Delivered = {
     { name: 'record', wording: 'The released record.', builtFrom: [] },
   ],
 };
-export const qualified = 'cratylus:workflow';
-/** The context upstream of every other cratylus delivers, read before workflow. */
+export const qualified = 'cratylus:intent-based delegation';
+/** The context upstream of every other cratylus delivers, read before intent-based delegation. */
 export const upstream: Delivered = {
   origin: 'cratylus',
   version: '7.8.9',
@@ -83,7 +83,7 @@ export function owned(h: Host): string {
  *  named by the context as recorded, spaces included. */
 export function deliveredPath(
   h: Host,
-  context = 'workflow',
+  context = 'intent-based delegation',
   root = owned(h),
 ): string {
   return join(root, `delivered/cratylus/${context}.json`);
@@ -101,13 +101,17 @@ export function putDocument(h: Host, value = document, root = owned(h)): void {
   writeFileSync(path, JSON.stringify(value));
   chmodSync(path, 0o444);
 }
-export function readDocument(h: Host, context = 'workflow'): Delivered {
+export function readDocument(
+  h: Host,
+  context = 'intent-based delegation',
+): Delivered {
   return JSON.parse(readFileSync(deliveredPath(h, context), 'utf8'));
 }
 /** Expects the installation `h` reaches to hold the release's projection of
  *  the repository's own `context`, at `position`, read-only: its current design,
  *  with its identity, the one its earliest entry carrying one carries, else its
- *  earliest entry's id; returns it. */
+ *  earliest entry's id, under any name it was recorded by before a rename;
+ *  returns it. */
 export function expectReleased(
   h: Host,
   context: string,
@@ -121,9 +125,28 @@ export function expectReleased(
   const actual = readDocument(h, context);
   const source = query<Design>(repositoryRoot, 'design', '--context', context)
     .contexts[0]!;
-  const recorded = Object.values(snapshot(repositoryRoot))
-    .map((bytes) => JSON.parse(Buffer.from(bytes, 'base64').toString()))
-    .filter((entry) => entry.kind === 'context' && entry.name === context)
+  const entries = Object.values(snapshot(repositoryRoot)).map((bytes) =>
+    JSON.parse(Buffer.from(bytes, 'base64').toString()),
+  );
+  const names = new Set([context]);
+  for (let grown = true; grown; ) {
+    grown = false;
+    for (const entry of entries)
+      if (
+        entry.kind === 'rename-context' &&
+        names.has(entry.name) &&
+        !names.has(entry.was)
+      ) {
+        names.add(entry.was);
+        grown = true;
+      }
+  }
+  const recorded = entries
+    .filter(
+      (entry) =>
+        (entry.kind === 'context' || entry.kind === 'rename-context') &&
+        names.has(entry.name),
+    )
     .sort((a, b) => a.id.localeCompare(b.id));
   const identity =
     recorded.find((entry) => entry.identity !== undefined)?.identity ??
@@ -224,7 +247,7 @@ export function expectMeaning(view: ContextView, wording: string): void {
     typeof first === 'string' ? first.split(' ≜ ')[1] : first?.wording,
   ).toBe(wording);
 }
-export function ownSource(h: Host, name = 'workflow'): void {
+export function ownSource(h: Host, name = 'intent-based delegation'): void {
   // Same identity, a different branch's current meaning; names do not decide ownership.
   const dir = join(h.cwd, 'design/journal');
   mkdirSync(dir, { recursive: true });
