@@ -83,6 +83,18 @@ was recorded under. A name stays its concept's for the journal's period, and a c
 renamed concept as a `define` under its current name, built-from references written by current
 names; a close is refused while a concept's competing versions name it differently.
 
+A bounded context is renamed the same way: `context --reason --rename` appends a `rename-context`
+entry, a description whose `name` is the new one and whose `was` is the name it renames. A context
+is its descriptions and retirements joined by supersession or a shared name, whatever order they
+were recorded in, so it stays one through its names, its identity unchanged: every reading shows
+it, its concepts and its decisions under its current name only, every verb naming a context takes
+its current name or any earlier one, and its own `history` lists every description with the name it
+was recorded under. A name stays its context's for the journal's period. A delivered context is
+matched by identity, so a project's own copy keeps its place whatever either is called, and
+`deliverContext` projects a context, named by any of its names, under its current name. A close
+opens a renamed context as a `context` under its current name with its identity, and is refused
+while a context's competing descriptions name it differently.
+
 The `.` barrel is contracts and declarations: it exports `JOURNAL`, the concept journal's
 explanation, so a consumer reads which verbs read, which append and which close as code.
 
