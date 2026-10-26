@@ -37,7 +37,7 @@
 // `history` is history asked for.
 //
 // HISTORY READ AS RECORDED. Entries are never rewritten, so what earlier
-// workflows recorded is still read: a decision recorded with a kind, the
+// versions of the practice recorded is still read: a decision recorded with a kind, the
 // classifications of a decision's kind, a decision recorded about a cut or
 // naming example files it keeps, each read by its own status alone, and the
 // efficiency entries recorded for cuts, the past effort a context's own
@@ -157,7 +157,7 @@ const isStatus = (status: string): status is (typeof STATUSES)[number] =>
  *  positional it acts on and the flags it takes. */
 export const VERBS = {
   state: {
-    concept: 'conceptual model',
+    concept: 'domain model',
     effect: 'reads',
     purpose:
       'Read the design state, the design’s short summary, worked out afresh from the journal for a model to read: the project’s purpose first, what the project is for; then, in a place of its own (practice), the practice the project’s agents work by: each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts each as one line “term ≜ correction”, and the competing versions none has settled, each such a line or “term retired”; the concepts each is built from, decisions, why each version was written, earlier versions and retired concepts are each read with a verb of their own',
@@ -170,7 +170,7 @@ export const VERBS = {
     },
   },
   design: {
-    concept: 'conceptual model',
+    concept: 'domain model',
     effect: 'reads',
     purpose:
       'Read the design as it stands, the read that recovers it at a session’s start: in a place of its own (practice), the practice the project’s agents work by, each context delivered with the installation, upstream first, or the project’s own copy of it in its place; then each of the project’s other bounded contexts: its subject, its place in the context map, its live concepts, each by its current term and meaning with the concepts it is built from, each named by its current term, and competing versions, each carrying the name it gives where that differs from the one its concept is listed under; with history, also retired concepts and why each live concept’s version was written',
@@ -222,7 +222,7 @@ export const VERBS = {
     },
   },
   leakage: {
-    concept: 'event-sourced conceptual model',
+    concept: 'event-sourced domain model',
     effect: 'reads',
     purpose:
       'Show where realization shows through text that should state meaning: each live concept’s correction and visible example that names code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and each live concept’s correction and current context description that cites a decision by its number, recounts its history (what changed, or what something used to be or no longer is) or only extends a version it replaces that the journal holds, keeping its wording whole and adding to it (an opening a closing of the books wrote replaces none), as a warning naming its passage and the words that leak; a decision records realization and is never inspected, the words a context’s concept names are its own words, never a leak, and so is each word its current subject names as that plain word on its own, though never a command, code span or flag that holds it',
@@ -235,7 +235,7 @@ export const VERBS = {
     },
   },
   purpose: {
-    concept: 'event-sourced conceptual model',
+    concept: 'event-sourced domain model',
     effect: 'appends',
     purpose:
       'Record the project’s purpose: what the project is for, in plain words, which the design state shows first; or, given a reason, change it by a new statement that supersedes the current one, which stays in the journal',
@@ -423,7 +423,7 @@ export const VERBS = {
 export const JOURNAL: CapabilityInterface = {
   name: 'concept journal',
   purpose: CAPABILITY_SUMMARIES.concepts,
-  when: 'Whenever work touches a project’s conceptual model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show first, in a place of their own (practice), the practice the project’s agents work by, every context the installation delivers in the delivered order, upstream first, each named by origin and context and marked delivered and read-only, apart from the project’s design; where the project’s journal holds such a context itself, its own copy stands in that place, under its own name, unmarked, part of its design and recorded into as any of its contexts, and the project’s other contexts follow. Decisions are shown by their titles first, their ids only as references',
+  when: 'Whenever work touches a project’s domain model: at the start of a session, or after it was compacted, to read first the design of the delivered practice and of each context the work touches, with the design state as its short summary, then the standing decisions its work needs, and the history where how something came to be matters; to read the design back before acting; to record the project’s purpose, each change to a bounded context or a concept as a new version with its reason, and each decision of realization as it is made; and to close the journal’s books, carrying what stands forward into the period that opens and leaving the closed period to version control, so the journal holds the design from its latest closing of the books on. A project’s design and context map are its own contexts only: its readings of the design state and the current design show first, in a place of their own (practice), the practice the project’s agents work by, every context the installation delivers in the delivered order, upstream first, each named by origin and context and marked delivered and read-only, apart from the project’s design; where the project’s journal holds such a context itself, its own copy stands in that place, under its own name, unmarked, part of its design and recorded into as any of its contexts, and the project’s other contexts follow. Decisions are shown by their titles first, their ids only as references',
   verbs: VERBS,
 };
 

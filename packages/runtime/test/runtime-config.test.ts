@@ -228,9 +228,9 @@ describe('the installation the command reads', () => {
       scope: 'project',
     });
     vi.stubEnv('CRATYLUS_INSTALLATION', root);
-    deliver(root, 'cratylus', 'workflow.json', {});
+    deliver(root, 'cratylus', 'intent-based delegation.json', {});
     expect(() => deliveredContexts()).toThrow(
-      `${join(root, 'delivered', 'cratylus', 'workflow.json')} carries no position: the project installation at ${root} was projected by an earlier cratylus; install again with the cratylus in use, at its project scope`,
+      `${join(root, 'delivered', 'cratylus', 'intent-based delegation.json')} carries no position: the project installation at ${root} was projected by an earlier cratylus; install again with the cratylus in use, at its project scope`,
     );
   });
 });

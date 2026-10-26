@@ -22,7 +22,7 @@ type Answer = {
 const delivered = {
   origin: 'cratylus',
   version: '3.2.1',
-  context: 'workflow',
+  context: 'intent-based delegation',
   identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
   position: 1,
   subject: 'How the work is done.',
@@ -103,7 +103,9 @@ it.each(['state', 'design'])(
     booking();
     const answer = command([verb]) as Answer;
     expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
-    expect(JSON.stringify(answer.contexts)).not.toContain('cratylus:workflow');
+    expect(JSON.stringify(answer.contexts)).not.toContain(
+      'cratylus:intent-based delegation',
+    );
     expect(answer.practice?.about).toMatch(
       /practice this project’s agents work by/,
     );
@@ -111,7 +113,7 @@ it.each(['state', 'design'])(
     expect(answer.practice?.about).toMatch(/never .* in its context map/);
     expect(answer.practice?.about).toMatch(/read first/);
     expect(answer.practice?.contexts.map((c) => c.name)).toEqual([
-      'cratylus:workflow',
+      'cratylus:intent-based delegation',
     ]);
     expect(answer.practice?.contexts[0]?.readOnly).toBe(true);
     const keys = Object.keys(answer);
@@ -124,7 +126,7 @@ it('state gives the practice as its design state, apart and marked, and the proj
   const answer = command(['state']) as Answer;
   expect(answer.practice?.contexts).toEqual([
     {
-      name: 'cratylus:workflow',
+      name: 'cratylus:intent-based delegation',
       subject: 'How the work is done.',
       relation: 'Upstream of every other context of its origin.',
       concepts: ['story ≜ A change of meaning, told.'],
@@ -132,7 +134,7 @@ it('state gives the practice as its design state, apart and marked, and the proj
       delivered: {
         origin: 'cratylus',
         version: '3.2.1',
-        context: 'workflow',
+        context: 'intent-based delegation',
         identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
       },
       readOnly: true,
@@ -158,11 +160,11 @@ it('a view of one context shows only what it names: the project’s, or the prac
     const practice = command([
       verb,
       '--context',
-      'cratylus:workflow',
+      'cratylus:intent-based delegation',
     ]) as Answer;
     expect(practice.contexts).toEqual([]);
     expect(practice.practice?.contexts.map((c) => c.name)).toEqual([
-      'cratylus:workflow',
+      'cratylus:intent-based delegation',
     ]);
   }
 });
@@ -171,9 +173,9 @@ it('a journal holding the delivered context itself reads its own copy in its pla
   booking();
   const own = command([
     'context',
-    'workflow',
+    'intent-based delegation',
     '--subject',
-    'The project’s own workflow.',
+    'The project’s own intent-based delegation.',
   ]) as { id: string };
   const held = [{ ...delivered, identity: own.id }];
   for (const verb of ['state', 'design']) {
@@ -181,12 +183,19 @@ it('a journal holding the delivered context itself reads its own copy in its pla
       practice: { contexts: Record<string, unknown>[] };
     };
     expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
-    expect(answer.practice.contexts.map((c) => c.name)).toEqual(['workflow']);
+    expect(answer.practice.contexts.map((c) => c.name)).toEqual([
+      'intent-based delegation',
+    ]);
     expect(answer.practice.contexts[0]).not.toHaveProperty('delivered');
     expect(answer.practice.contexts[0]).not.toHaveProperty('readOnly');
-    const one = command([verb, '--context', 'workflow'], held) as Answer;
+    const one = command(
+      [verb, '--context', 'intent-based delegation'],
+      held,
+    ) as Answer;
     expect(one.contexts).toEqual([]);
-    expect(one.practice?.contexts.map((c) => c.name)).toEqual(['workflow']);
+    expect(one.practice?.contexts.map((c) => c.name)).toEqual([
+      'intent-based delegation',
+    ]);
   }
   // Without delivery the design answers the same contexts, each unchanged:
   // only its place differs, the own copy in the practice place.
@@ -198,7 +207,11 @@ it('a journal holding the delivered context itself reads its own copy in its pla
     ...heldDesign.contexts,
   ]).toEqual(
     [...undelivered.contexts].sort((a, b) =>
-      a.name === 'workflow' ? -1 : b.name === 'workflow' ? 1 : 0,
+      a.name === 'intent-based delegation'
+        ? -1
+        : b.name === 'intent-based delegation'
+          ? 1
+          : 0,
     ),
   );
 });
@@ -236,7 +249,10 @@ describe('an upstream and a downstream delivered context', () => {
       booking();
       const identity = ownCopy('cratylic context design');
       expect(reads(verb, [downstream, { ...upstream, identity }])).toEqual({
-        practice: ['cratylic context design', 'cratylus:workflow'],
+        practice: [
+          'cratylic context design',
+          'cratylus:intent-based delegation',
+        ],
         contexts: ['booking'],
       });
     },
@@ -245,7 +261,7 @@ describe('an upstream and a downstream delivered context', () => {
   it.each(['state', 'design'])(
     '%s reads both own copies in the delivered order where the project holds both',
     (verb) => {
-      const down = ownCopy('workflow');
+      const down = ownCopy('intent-based delegation');
       booking();
       const up = ownCopy('cratylic context design');
       expect(
@@ -254,7 +270,7 @@ describe('an upstream and a downstream delivered context', () => {
           { ...upstream, identity: up },
         ]),
       ).toEqual({
-        practice: ['cratylic context design', 'workflow'],
+        practice: ['cratylic context design', 'intent-based delegation'],
         contexts: ['booking'],
       });
     },
@@ -265,7 +281,10 @@ describe('an upstream and a downstream delivered context', () => {
     (verb) => {
       booking();
       expect(reads(verb, [downstream, upstream])).toEqual({
-        practice: ['cratylus:cratylic context design', 'cratylus:workflow'],
+        practice: [
+          'cratylus:cratylic context design',
+          'cratylus:intent-based delegation',
+        ],
         contexts: ['booking'],
       });
     },
@@ -322,16 +341,16 @@ it('a retired own copy of a delivered context holds no place: the delivered one 
   booking();
   const own = command([
     'context',
-    'workflow',
+    'intent-based delegation',
     '--subject',
-    'The project’s own workflow.',
+    'The project’s own intent-based delegation.',
   ]) as { id: string };
   const held = [{ ...delivered, identity: own.id }];
   command(
     [
       'retire',
       '--context',
-      'workflow',
+      'intent-based delegation',
       '--reason',
       'Dropped for the practice.',
     ],
@@ -341,7 +360,7 @@ it('a retired own copy of a delivered context holds no place: the delivered one 
     const answer = command([verb], held) as Answer;
     expect(answer.contexts.map((c) => c.name)).toEqual(['booking']);
     expect(answer.practice?.contexts.map((c) => c.name)).toEqual([
-      'cratylus:workflow',
+      'cratylus:intent-based delegation',
     ]);
   }
 });
