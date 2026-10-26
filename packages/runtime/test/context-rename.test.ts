@@ -499,6 +499,192 @@ describe('lines of work joined after a rename', () => {
   );
 });
 
+describe('descriptions differing only in the name they give', () => {
+  /** A rename on one line, and on a joined line a reasoned description
+   *  under the old name alike in subject and relation, both superseding the
+   *  first description. */
+  beforeEach(() => {
+    sibling('01Z00000000000000000000001', {
+      kind: 'rename-context',
+      name: 'reservation',
+      was: 'booking',
+      subject: 'Seats for a show.',
+      relation: 'Stands alone.',
+      reason: 'Nearer.',
+      supersedes: [described],
+    });
+    sibling('01Z00000000000000000000002', {
+      kind: 'context',
+      name: 'booking',
+      subject: 'Seats for a show.',
+      relation: 'Stands alone.',
+      reason: 'Another line of work.',
+      supersedes: [described],
+    });
+  });
+  const settled = ['01Z00000000000000000000001', '01Z00000000000000000000002'];
+  const contextOpenings = () =>
+    entryFiles()
+      .filter((e) => e.kind === 'context')
+      .map((e) => [e.name, e.identity]);
+
+  it('compete, listed under the name they share an ancestor in', () => {
+    expect(concepts('state', '--context', 'booking')).toMatchObject({
+      contexts: [
+        {
+          name: 'booking',
+          subject: null,
+          competingDescriptions: [
+            {
+              name: 'reservation',
+              subject: 'Seats for a show.',
+              relation: 'Stands alone.',
+            },
+            { subject: 'Seats for a show.', relation: 'Stands alone.' },
+          ],
+        },
+      ],
+    });
+  });
+
+  it('are settled under the name it is listed under by a reason alone, nothing else changed; then a close succeeds', () => {
+    expect(
+      concepts('context', 'booking', '--reason', 'Settled.'),
+    ).toMatchObject({
+      kind: 'context',
+      name: 'booking',
+      subject: 'Seats for a show.',
+      relation: 'Stands alone.',
+      supersedes: settled,
+    });
+    expect(names(concepts('state'))).toEqual(['booking', 'fleet']);
+    commit();
+    concepts('close');
+    expect(contextOpenings()).toEqual([
+      ['booking', described],
+      ['fleet', expect.any(String)],
+    ]);
+  });
+
+  it('are settled under the listed name by --rename to it', () => {
+    expect(
+      concepts(
+        'context',
+        'booking',
+        '--reason',
+        'Settled.',
+        '--rename',
+        'booking',
+      ),
+    ).toMatchObject({ kind: 'context', name: 'booking', supersedes: settled });
+    expect(names(concepts('state'))).toEqual(['booking', 'fleet']);
+  });
+
+  it('are settled under the other competing name by --rename; then a close succeeds', () => {
+    expect(
+      concepts(
+        'context',
+        'booking',
+        '--reason',
+        'Settled.',
+        '--rename',
+        'reservation',
+      ),
+    ).toMatchObject({
+      kind: 'rename-context',
+      name: 'reservation',
+      was: 'booking',
+      supersedes: settled,
+    });
+    expect(names(concepts('state'))).toEqual(['reservation', 'fleet']);
+    commit();
+    concepts('close');
+    expect(contextOpenings()).toEqual([
+      ['reservation', described],
+      ['fleet', expect.any(String)],
+    ]);
+  });
+});
+
+describe('a retirement names no name of its own', () => {
+  it.each([
+    [
+      'the rename first',
+      ['01Z00000000000000000000001', '01Z00000000000000000000002'],
+    ],
+    [
+      'the retirement first',
+      ['01Z00000000000000000000002', '01Z00000000000000000000001'],
+    ],
+  ])(
+    'a rename and a retirement under the old name on joined lines list the context under the rename’s name, and a close opens both under it, %s',
+    (_, [renameId, retireId]) => {
+      sibling(renameId as string, {
+        kind: 'rename-context',
+        name: 'reservation',
+        was: 'booking',
+        subject: 'Seats for a show.',
+        relation: 'Stands alone.',
+        reason: 'Nearer.',
+        supersedes: [described],
+      });
+      sibling(retireId as string, {
+        kind: 'retire-context',
+        context: 'booking',
+        reason: 'Dropped.',
+        supersedes: [described],
+      });
+      expect(names(concepts('state'))).toEqual(['reservation', 'fleet']);
+      expect(concepts('state', '--context', 'booking')).toMatchObject({
+        contexts: [
+          {
+            name: 'reservation',
+            subject: null,
+            competingDescriptions: expect.arrayContaining([
+              { retired: true, reason: 'Dropped.' },
+              { subject: 'Seats for a show.', relation: 'Stands alone.' },
+            ]),
+            concepts: ['hold ≜ A hold.'],
+          },
+        ],
+      });
+      const head = commit();
+      concepts('close');
+      const opened = entryFiles();
+      expect(opened).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            kind: 'context',
+            name: 'reservation',
+            identity: described,
+            broughtForward: head,
+          }),
+          expect.objectContaining({
+            kind: 'retire-context',
+            context: 'reservation',
+            reason: 'Dropped.',
+            broughtForward: head,
+          }),
+        ]),
+      );
+      expect(JSON.stringify(opened)).not.toMatch(/"booking"/);
+      // They still compete after the close.
+      expect(concepts('state', '--context', 'reservation')).toMatchObject({
+        contexts: [{ name: 'reservation', subject: null }],
+      });
+    },
+  );
+
+  it('while retired, the context keeps the name of the descriptions its retirement supersedes', () => {
+    rename('booking', 'reservation');
+    concepts('retire', '--context', 'booking', '--reason', 'Dropped.');
+    expect(names(concepts('state'))).toEqual(['fleet']);
+    expect(concepts('history', '--context', 'booking')).toMatchObject({
+      context: 'reservation',
+    });
+  });
+});
+
 describe('closing the books on a renamed context', () => {
   it('opens it under its current name only, its identity, concepts and decisions kept', () => {
     rename('booking', 'reservation');

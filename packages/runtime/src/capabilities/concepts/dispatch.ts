@@ -860,11 +860,15 @@ function answerOf(
       if (reason.trim() === '')
         throw refuse('the reason is empty; give why the context changes');
       const retired = folded.retired(name);
+      /** Whether its current descriptions name it differently: a reason alone
+       *  then settles them under `name`, the name it is listed under. */
+      const namesCompete = folded.currentNames(name).length > 1;
       if (
         subject === undefined &&
         relation === undefined &&
         rename === undefined &&
-        !retired
+        !retired &&
+        !namesCompete
       )
         throw refuse(
           'give the --subject or --relation that changes, or both, or the --rename it takes',
@@ -878,7 +882,7 @@ function answerOf(
           throw refuse(
             'the new name is empty; give one, or leave --rename out',
           );
-        if (rename === name)
+        if (rename === name && !namesCompete)
           throw refuse(
             `the bounded context '${name}' is already named '${rename}'`,
           );
@@ -888,6 +892,9 @@ function answerOf(
             `the name '${rename}' is one the bounded context '${other}' has or has had, and a name stays its context's; give another`,
           );
       }
+      /** The new name it takes; none where it keeps the name it is listed
+       *  under, as when settling competing names under it. */
+      const renamed = rename === name ? undefined : rename;
       /** The descriptions a field left out is carried from: the current ones,
        *  or, while retired, those the retirement superseded. */
       const descriptions = retired
@@ -914,7 +921,7 @@ function answerOf(
         return first[field];
       };
       const stated = {
-        name: rename ?? name,
+        name: renamed ?? name,
         subject: subject ?? carried('subject'),
         relation: relation ?? carried('relation'),
         reason,
@@ -930,7 +937,7 @@ function answerOf(
         ],
       };
       const draft: Draft<DescriptionEntry> =
-        rename === undefined
+        renamed === undefined
           ? { kind: 'context', ...stated }
           : { kind: 'rename-context', was: name, ...stated };
       const found = described(name, draft, [

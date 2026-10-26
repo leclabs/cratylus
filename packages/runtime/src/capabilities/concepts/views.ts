@@ -44,9 +44,11 @@
 // `rename-context` gives it a new name from then on, and every name it has
 // had in the period names it: every entry recorded under any of them, a
 // concept's version, a decision, a cut's figures, is the context's, read under
-// its name now. Its name is the one its current entries give; while they name
-// it differently it is the name of the latest entry they all supersede, else
-// of its earliest entry. Renaming never changes its identity. Its current
+// its name now. Its name is the one its current descriptions give, a
+// retirement naming none of its own; while they name it differently it is the
+// name of the latest entry they all supersede, else of its earliest entry;
+// while retired, the name of the descriptions its retirements supersede.
+// Renaming never changes its identity. Its current
 // descriptions are the descriptions no later entry of it supersedes; recorded
 // alike on two branches they are one description, recorded differently, or
 // naming it differently, they are COMPETING, none chosen, until a later
@@ -403,7 +405,23 @@ export class Folded {
       ),
       contextNamesOf,
     )) {
-      const name = commonName(context, currentIn(context), recordedName);
+      // A retirement names no name of its own: the name is its current
+      // descriptions', or, while retired, the descriptions' it supersedes.
+      const current = currentIn(context);
+      const retiring = current.filter((e) => e.kind === 'retire-context');
+      const described = current.filter((e) => e.kind !== 'retire-context');
+      const retired = context.filter(
+        (e) =>
+          e.kind !== 'retire-context' &&
+          retiring.some((r) => r.supersedes.includes(e.id)),
+      );
+      const naming =
+        described.length > 0
+          ? described
+          : retired.length > 0
+            ? retired
+            : current;
+      const name = commonName(context, naming, recordedName);
       this.contexts.set(
         name,
         context.filter((e) => e.kind !== 'retire-context'),
@@ -655,13 +673,17 @@ export class Folded {
   }
 
   /** Each context not retired, by the name it is listed under, whose current
-   *  descriptions and retirements name it differently. */
+   *  descriptions name it differently. */
   contextNamesCompeting(): string[] {
     return [...this.contexts.keys()].filter(
-      (name) =>
-        !this.retired(name) &&
-        new Set(this.currentEntries(name).map(recordedName)).size > 1,
+      (name) => !this.retired(name) && this.currentNames(name).length > 1,
     );
+  }
+
+  /** The distinct names the current descriptions of `context` give it, in
+   *  append order; a retirement gives none. */
+  currentNames(context: string): string[] {
+    return [...new Set(this.currentDescriptions(context).map((d) => d.name))];
   }
 
   /** The entry of the one decision `id` names among those folded so far;
