@@ -1,8 +1,6 @@
-// The architect conforms to the pattern: its delivered profile, and every persona
-// over it, states in its own values that meaning decides which concepts a project
-// needs and each one's correction, never what an established name means, and that
-// the record's own names are inputs it checks like any other. The wording lives in
-// the values alone; this test reads it from them.
+// The architect renders each value listed below in its delivered profile, and every
+// persona over it renders the architect's line for each. The wording lives in the
+// values alone; this test reads it from them.
 
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';

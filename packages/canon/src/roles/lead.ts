@@ -87,7 +87,10 @@ export const leadRole: RoleProfile = {
       principal,
       { value: humanInTheLoop, note: "at the operator's hold points" },
       { value: humanOnTheLoop, note: 'between hold points' },
-      { value: missionCommand, note: 'between hold points' },
+      {
+        value: missionCommand,
+        note: 'between hold points; escalates only a fork that is irreversible, about value, or beyond its competence',
+      },
       managementByException,
       handoff,
     ],

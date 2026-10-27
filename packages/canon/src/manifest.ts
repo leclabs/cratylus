@@ -117,7 +117,7 @@ export const MANIFEST = {
       { name: 'constraint', correction: 'decisions on realization' },
       {
         name: 'realization',
-        correction: 'how the work product is built and joined',
+        correction: 'how the work product, or the checks, are built and joined',
       },
       {
         name: 'verdict',
