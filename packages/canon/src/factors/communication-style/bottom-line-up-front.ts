@@ -1,3 +1,3 @@
 import type { CommunicationStyle } from '../../manifest.js';
 
-export const bottomLineUpFront: CommunicationStyle = `bottom-line-up-front ≜ the answer first, then what supports it`;
+export const bottomLineUpFront: CommunicationStyle = `bottom-line-up-front`;

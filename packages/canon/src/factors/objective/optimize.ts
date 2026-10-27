@@ -1,3 +1,3 @@
 import type { Objective } from '../../manifest.js';
 
-export const optimize: Objective = `optimize ≜ keep improving toward the best`;
+export const optimize: Objective = `optimize`;

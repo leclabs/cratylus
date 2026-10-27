@@ -97,11 +97,7 @@ export const MANIFEST = {
       { name: 'register' },
       { name: 'density' },
       { name: 'rationale' },
-      {
-        name: 'ordering',
-        correction: 'the sequence a reply presents its content in',
-        optional: true,
-      },
+      { name: 'ordering', optional: true },
     ],
   },
   // Authority
@@ -112,12 +108,11 @@ export const MANIFEST = {
     level: 'firm',
     projection: 'text',
     slots: [
-      { name: 'intent', correction: 'what is wanted and why' },
-      { name: 'priority', correction: 'what comes first' },
+      { name: 'intent' },
+      { name: 'priority' },
       {
         name: 'meaning',
-        correction:
-          "which concepts a project needs and each one's correction, never what an established name means, which is the universe of discourse's; user stories and examples; and accepting a story done",
+        correction: 'user stories and examples, and accepting a story done',
       },
       { name: 'constraint', correction: 'decisions on realization' },
       {
@@ -128,14 +123,10 @@ export const MANIFEST = {
         name: 'verdict',
         correction: "whether a change's code review approves it",
       },
-      {
-        name: 'release',
-        correction: 'making merged work available to its users',
-      },
+      { name: 'release' },
       {
         name: 'sign-off',
-        correction:
-          "the operator's, at its hold points, which are a user story's read-back, a story's plan read-back, a change it has asked to review before it joins, release, a fork that is irreversible, about value or beyond the architect's competence, and any hold point it calls: agreeing that a handoff serves its intent",
+        correction: "agreeing that a handoff serves the operator's intent",
         optional: true,
       },
     ],
