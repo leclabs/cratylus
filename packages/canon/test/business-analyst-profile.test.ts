@@ -32,30 +32,49 @@ const rectifyEntry = businessAnalystRole.values.procedure?.find(
 const rectifyNote =
   rectifyEntry && 'note' in rectifyEntry ? rectifyEntry.note : undefined;
 
-/** Each decided value, as a predicate on a rendered line. */
-const decided: Record<string, (line: string) => boolean> = {
-  meaning: (l) => l.startsWith(`- meaning (${meaningCorrection}): **D**`),
-  rectify: (l) =>
-    l.startsWith(`- **${parts(rectify).name}** (${rectifyNote}) — `),
+/** Each decided value, as its factor's section and a predicate on a line in it. A
+ *  section scopes the line: a bare term may name a value of two factors, as
+ *  `reconstitution` does of procedure and memory. */
+const decided: Record<string, [string, (line: string) => boolean]> = {
+  meaning: [
+    'decision-rights',
+    (l) => l.startsWith(`- meaning (${meaningCorrection}): **D**`),
+  ],
+  rectify: [
+    'procedure',
+    (l) => l.startsWith(`- **${parts(rectify).name}** (${rectifyNote}) — `),
+  ],
   ...Object.fromEntries(
     Object.entries({
-      sourceOfTruth,
-      reconstitution,
-      cratylicContextDesign,
-      cratylism,
-      report,
-    }).map(([key, value]) => {
-      const { name, body } = parts(value);
-      return [
-        key,
-        (l: string) =>
-          body
-            ? l.startsWith(`- **${name}**`) && l.endsWith(` — ${body}`)
-            : l === `- **${name}**`,
-      ];
-    }),
+      memory: { sourceOfTruth },
+      procedure: { reconstitution, cratylicContextDesign },
+      stance: { cratylism },
+      deliverable: { report },
+    }).flatMap(([section, values]) =>
+      Object.entries(values).map(([key, value]) => {
+        const { name, body } = parts(value);
+        return [
+          key,
+          [
+            section,
+            (l: string) =>
+              body
+                ? l.startsWith(`- **${name}**`) && l.endsWith(` — ${body}`)
+                : l === `- **${name}**`,
+          ],
+        ];
+      }),
+    ),
   ),
 };
+
+/** The lines of an agent definition's `### <factor>` section. */
+function section(lines: readonly string[], factor: string): string[] {
+  const start = lines.indexOf(`### ${factor}`) + 1;
+  if (start === 0) return [];
+  const end = lines.findIndex((l, i) => i >= start && /^#{1,3} /.test(l));
+  return lines.slice(start, end === -1 ? undefined : end);
+}
 
 describe('the business analyst conforms to the pattern', async () => {
   const tree = await projectPluginSet({
@@ -71,18 +90,20 @@ describe('the business analyst conforms to the pattern', async () => {
   it("the business analyst's definition carries each decided value", () => {
     expect(meaningCorrection).toBeDefined();
     expect(rectifyNote).toBeDefined();
-    for (const [key, holds] of Object.entries(decided)) {
-      expect(businessAnalyst.filter(holds), key).toHaveLength(1);
+    for (const [key, [factor, holds]] of Object.entries(decided)) {
+      expect(section(businessAnalyst, factor).filter(holds), key).toHaveLength(
+        1,
+      );
     }
   });
 
   for (const persona of ['mav', 'nico', 'kino']) {
     it(`${persona} renders the business analyst's line for each decided value`, () => {
       const own = lines(persona);
-      for (const [key, holds] of Object.entries(decided)) {
-        const line = businessAnalyst.find(holds);
+      for (const [key, [factor, holds]] of Object.entries(decided)) {
+        const line = section(businessAnalyst, factor).find(holds);
         expect(line, key).toBeDefined();
-        expect(own, `${persona}: ${key}`).toContain(line);
+        expect(section(own, factor), `${persona}: ${key}`).toContain(line);
       }
     });
   }

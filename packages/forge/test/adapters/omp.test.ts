@@ -437,6 +437,25 @@ describe('omp agent definition', () => {
   });
 });
 
+describe('omp skill definition', () => {
+  it('survives a description carrying the characters YAML reserves', () => {
+    // A practice skill's selection line holds `: ` as an agent's description
+    // does, and its front matter is read by the same YAML parser.
+    const gnarly = 'a "quote", a \\ and a colon: here';
+    const { content } = ompHarnessAdapter.skillDef({
+      name: 'tides',
+      trigger: '/tides',
+      description: gnarly,
+      formalBlock: 'tide ≜ ⟨fixture⟩',
+      composedFrom: [],
+    });
+    expect(frontMatter(content)).toEqual({
+      name: 'tides',
+      description: gnarly,
+    });
+  });
+});
+
 describe('omp model roles', () => {
   it("binds an agent's own role to its tier and effort", () => {
     expect(ompRoleRouting.agentRole({ tier: 'frontier', effort: 'high' })).toBe(

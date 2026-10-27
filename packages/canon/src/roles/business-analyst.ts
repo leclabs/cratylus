@@ -101,11 +101,7 @@ export const businessAnalystRole: RoleProfile = {
       { value: none, slot: 'realization' },
       { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
-      {
-        value: recommends,
-        slot: 'sign-off',
-        note: "gives it in the product owner's place under a delegation of authority",
-      },
+      { value: recommends, slot: 'sign-off' },
     ],
     autonomy: [
       principal,

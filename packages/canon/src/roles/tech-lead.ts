@@ -56,14 +56,7 @@ export const techLeadRole: RoleProfile = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareDelivery, softwareEngineering],
-    procedure: [
-      behaviourDrivenDevelopment,
-      orchestratorWorkers,
-      {
-        value: shipShowAsk,
-        note: 'the product owner reviewing a change before it joins is Ask',
-      },
-    ],
+    procedure: [behaviourDrivenDevelopment, orchestratorWorkers, shipShowAsk],
     stance: [decisive, tailoring, separationOfConcerns, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -83,10 +76,7 @@ export const techLeadRole: RoleProfile = {
       principal,
       { value: humanInTheLoop, note: 'at a sign-off it does not hold' },
       { value: humanOnTheLoop, note: 'otherwise' },
-      {
-        value: missionCommand,
-        note: 'a meaning question goes to the business analyst',
-      },
+      missionCommand,
       managementByException,
       handoff,
     ],
