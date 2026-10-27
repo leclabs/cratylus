@@ -1,8 +1,9 @@
 // Rules at install: each ruleset the canon offers is taken whole, rule by rule, or not
 // at all, none by default. A flag tells install the choice, a terminal is asked it, and
 // the choice is recorded by rule name, kept by every later install not told otherwise;
-// a rule no longer offered is dropped from it and named. Uninstall takes the rules out
-// with the owned root, and the host's own rules stay.
+// a rule no longer offered is dropped from it and named. The canon's practice rulesets
+// are placed on every install, never offered, asked or recorded. Uninstall takes the
+// rules out with the owned root, and the host's own rules stay.
 
 import {
   existsSync,
@@ -26,7 +27,7 @@ import { answers, fixtureAgentSource, tmp } from './helpers.js';
 const rule = (name: string) => ({
   name,
   description: `the ${name} rule`,
-  convention: `Follow ${name}.`,
+  statement: `Follow ${name}.`,
   why: `${name} holds.`,
 });
 const branching: Ruleset = {
@@ -38,6 +39,11 @@ const commits: Ruleset = {
   name: 'commits',
   description: 'a fixture commit convention',
   rules: [rule('commits-small')],
+};
+const practice: Ruleset = {
+  name: 'practice',
+  description: 'a fixture practice departure',
+  rules: [rule('practice-examples')],
 };
 
 // One agents directory for the whole file: a module once imported is not read again.
@@ -66,21 +72,24 @@ afterEach(() => {
 
 const plugin = (
   rulesets: readonly Ruleset[] = [branching, commits],
+  practiceRulesets?: readonly Ruleset[],
 ): ProjectablePlugin => ({
   name: 'rules-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
   rulesets,
+  ...(practiceRulesets ? { practiceRulesets } : {}),
 });
 const install = (
   extra: Partial<Parameters<typeof runInstall>[0]> = {},
   rulesets?: readonly Ruleset[],
+  practiceRulesets?: readonly Ruleset[],
 ) =>
   runInstall({
     harness: 'omp',
     home,
     cwd,
-    canon: plugin(rulesets) as never,
+    canon: plugin(rulesets, practiceRulesets) as never,
     interactive: false,
     ...extra,
   });
@@ -204,5 +213,66 @@ describe('install — rules', () => {
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     expect(existsSync(owned())).toBe(false);
     expect(readFileSync(mine, 'utf8')).toBe('# my rule\n');
+  });
+});
+
+describe('install — the practice rulesets', () => {
+  const withPractice = (
+    extra: Partial<Parameters<typeof runInstall>[0]> = {},
+  ) => install(extra, undefined, [practice]);
+
+  it('places them with no choice made, records no choice, and leaves them out of the rulesets to choose', async () => {
+    expect(await withPractice()).toBe(0);
+    expect(placed()).toEqual(['practice-examples.md']);
+    expect(record().rules).toBeUndefined();
+    expect(out).toContain('rules: practice-examples');
+    expect(out).toMatch(/next:[\s\S]*\(rulesets: branching, commits\)/);
+  });
+
+  it('places them under --rules none, recording none chosen', async () => {
+    expect(await withPractice({ rules: 'none' })).toBe(0);
+    expect(placed()).toEqual(['practice-examples.md']);
+    expect(record().rules).toEqual([]);
+  });
+
+  it('places them alongside the rules chosen, recording only those chosen', async () => {
+    expect(await withPractice({ rules: 'commits' })).toBe(0);
+    expect(placed()).toEqual(['commits-small.md', 'practice-examples.md']);
+    expect(record().rules).toEqual(['commits-small']);
+    expect(out).toContain('rules: practice-examples, commits-small');
+    // An upgrade keeping the recorded choice places them again.
+    expect(await withPractice()).toBe(0);
+    expect(placed()).toEqual(['commits-small.md', 'practice-examples.md']);
+    expect(record().rules).toEqual(['commits-small']);
+  });
+
+  it('never offers them on a terminal', async () => {
+    let offered: readonly OfferedRuleset[] = [];
+    const prompts = answers({
+      rules: async (o) => {
+        offered = o;
+        return [];
+      },
+    });
+    expect(await withPractice({ interactive: true, prompts })).toBe(0);
+    expect(offered.map((s) => s.name)).toEqual(['branching', 'commits']);
+    expect(placed()).toEqual(['practice-examples.md']);
+    expect(record().rules).toEqual([]);
+  });
+
+  it('refuses a practice rule named in --rules, as no rule offered', async () => {
+    expect(await withPractice({ rules: 'practice-examples' })).toBe(1);
+    expect(out).toContain(
+      "--rules: 'practice-examples' is no ruleset or rule of this canon",
+    );
+    expect(existsSync(owned())).toBe(false);
+  });
+
+  it('places them at project scope too', async () => {
+    mkdirSync(join(cwd, '.git'));
+    expect(await withPractice({ scope: 'project' })).toBe(0);
+    expect(readdirSync(join(cwd, '.cratylus', 'omp', 'rules'))).toEqual([
+      'practice-examples.md',
+    ]);
   });
 });
