@@ -439,8 +439,8 @@ describe('omp agent definition', () => {
 
 describe('omp skill definition', () => {
   it('survives a description carrying the characters YAML reserves', () => {
-    // A practice skill's selection line holds `: ` as an agent's description
-    // does, and its front matter is read by the same YAML parser.
+    // A skill's description holds `: ` as an agent's description does, and its
+    // front matter is read by the same YAML parser.
     const gnarly = 'a "quote", a \\ and a colon: here';
     const { content } = ompHarnessAdapter.skillDef({
       name: 'tides',

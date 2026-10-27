@@ -8,4 +8,3 @@ pnpm-lock.yaml
 /AGENTS.md
 
 packages/canon/test/fixtures/
-packages/canon/generated/

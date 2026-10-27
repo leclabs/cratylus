@@ -112,9 +112,10 @@ reads the project installation; elsewhere it reads yours.
 
 ### Which rules
 
-A rule is a standard working convention your agents follow in every session of every project,
-stated with why it holds; a ruleset is one convention's rules (`gitflow`, `conventional-commits`,
-`commit-discipline`, `established-libraries`, `green-field`). On a terminal, install offers each
+A rule is stated with why it holds, and your agents follow it in every session of every project; a
+ruleset is a named set of rules offered together (`gitflow`, `conventional-commits`,
+`commit-discipline`, `established-libraries`, `green-field`). Install always places the
+`behaviour-driven-development` ruleset with the agents; it is never offered. On a terminal, install offers each
 ruleset in turn: all its rules, rule by rule, or none, which is the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
 (`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
@@ -122,8 +123,8 @@ ruleset or rule is refused, listing each ruleset with its rules.
 
 The choice is recorded in the root by rule name, and installing again keeps it without asking
 unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
-named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
-placed and the summary names choosing them as a next step.
+named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no offered rule
+is placed and the summary names choosing them as a next step.
 
 ### Which model each tier and persona runs on
 
