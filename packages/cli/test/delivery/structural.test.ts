@@ -46,7 +46,7 @@ afterEach(() => {
 });
 const negative = process.env.DELIVERY_NEGATIVE;
 
-it('delivery/1 — one user installation is offered in existing and later projects, without changing another user', () => {
+it('one user installation is offered in existing and later projects, without changing another user', () => {
   h = fresh();
   const second = join(h.root, 'second-user');
   mkdirSync(second);
@@ -77,7 +77,7 @@ it('delivery/1 — one user installation is offered in existing and later projec
   expect(tree(second)).toEqual(otherBefore);
 });
 
-it('delivery/2 — every projected leaf belongs to the owned root and outside surfaces are references, never copies', () => {
+it('every projected leaf belongs to the owned root and outside surfaces are references, never copies', () => {
   h = fresh();
   const before = tree(h.home);
   success(install(h));
@@ -89,7 +89,7 @@ it('delivery/2 — every projected leaf belongs to the owned root and outside su
     ).toBeGreaterThan(0);
 });
 
-it('delivery/3 — colliding host agent, skill, extension and settings survive installation', () => {
+it('colliding host agent, skill, extension and settings survive installation', () => {
   h = fresh();
   const material = hostMaterial(h);
   const before = tree(h.home);
@@ -98,7 +98,7 @@ it('delivery/3 — colliding host agent, skill, extension and settings survive i
   assertOwned(h, before);
 });
 
-it('delivery/4 — interactive install with all supplied answers asks nothing', async () => {
+it('interactive install with all supplied answers asks nothing', async () => {
   h = fresh();
   const asked: string[] = [];
   const rc = await runInstall({
@@ -147,7 +147,7 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
   expect(asked, 'never re-ask a supplied answer or confirm it').toEqual([]);
 });
 
-it('delivery/5 — after an answer interactive install asks only missing information, never the harness or an answered question', async () => {
+it('after an answer interactive install asks only missing information, never the harness or an answered question', async () => {
   h = fresh();
   const asked: string[] = [];
   const record = (name: string) => {
@@ -199,7 +199,7 @@ it('delivery/5 — after an answer interactive install asks only missing informa
   );
 });
 
-it('delivery/6 — reinstalling the same version leaves the entire installation and changed host settings unchanged', async () => {
+it('reinstalling the same version leaves the entire installation and changed host settings unchanged', async () => {
   h = fresh();
   success(install(h));
   const settings = join(h.home, '.omp/agent/config.yml');
@@ -224,7 +224,7 @@ it('delivery/6 — reinstalling the same version leaves the entire installation 
   }
 });
 
-it('delivery/7 — the version tool identifies the projecting build and the command reached, not another available build', async () => {
+it('the version tool identifies the projecting build and the command reached, not another available build', async () => {
   h = fresh();
   const other = join(h.root, 'other-build');
   cpSync(h.prefix, other, { recursive: true, verbatimSymlinks: true });
@@ -244,7 +244,7 @@ it('delivery/7 — the version tool identifies the projecting build and the comm
   }
 });
 
-it('delivery/8 — a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
+it('a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
   h = fresh();
   const bindings = earlier(h);
   version(h, '2.5.0');
@@ -277,7 +277,7 @@ it('delivery/8 — a real earlier projection is replaced by exactly the new proj
   }
 });
 
-it('delivery/8 — a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings', () => {
+it('a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings', () => {
   h = fresh();
   const bindings = earlier(h, 'pre-digest-installation.json');
   const manifest = JSON.parse(
@@ -309,7 +309,7 @@ it('delivery/8 — a genuine pre-digest installation leaves no earlier projectio
   );
 });
 
-it('delivery/8 — no earlier same-name agent outside the root survives the upgrade', () => {
+it('no earlier same-name agent outside the root survives the upgrade', () => {
   h = fresh();
   const bindings = earlier(h, 'pre-digest-installation.json');
   const oldArchitect = join(h.home, '.omp/agent/agents/architect.md');
@@ -331,7 +331,7 @@ it('delivery/8 — no earlier same-name agent outside the root survives the upgr
   }
 });
 
-it('delivery/9 — upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
+it('upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
   h = fresh();
   const bindings = earlier(h);
   success(install(h));
@@ -357,7 +357,7 @@ it('delivery/9 — upgrade discards all inside-root edits and additions but pres
   }
 });
 
-it('delivery/10 — upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
+it('upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
   h = fresh();
   const bindings = earlier(h);
   const material = hostMaterial(h, bindings);
@@ -385,7 +385,7 @@ it('delivery/10 — upgrade rewrites every reference while retaining the host re
 });
 
 it.each(['redirected', 'replaced'])(
-  'delivery/10 — upgrade preserves a host-%s installation reference location',
+  'upgrade preserves a host-%s installation reference location',
   (change) => {
     h = fresh();
     success(install(h));
@@ -425,7 +425,7 @@ it.each(['redirected', 'replaced'])(
   },
 );
 
-it('delivery/11 — uninstall removes the whole root and all its references, never customized host surfaces', () => {
+it('uninstall removes the whole root and all its references, never customized host surfaces', () => {
   h = fresh();
   const material = hostMaterial(h);
   success(install(h));
@@ -442,7 +442,7 @@ it.each([
   'removed-root',
   'unrecorded-reference',
 ])(
-  'delivery/11 — uninstall follows reference targets despite a %s and keeps shared host surfaces',
+  'uninstall follows reference targets despite a %s and keeps shared host surfaces',
   (damage) => {
     h = fresh();
     const material = hostMaterial(h);
@@ -494,7 +494,7 @@ it.each([
   },
 );
 
-it('delivery/12 — uninstall reaches all projects but neither their records nor a second user installation', () => {
+it('uninstall reaches all projects but neither their records nor a second user installation', () => {
   h = fresh();
   success(install(h));
   const second = join(h.root, 'second-user');
@@ -547,7 +547,7 @@ it('delivery/12 — uninstall reaches all projects but neither their records nor
   assertRemoved(h);
 });
 
-it('delivery/13 — both starts immediately warn about skew without invoking a tool, changing installation or selecting a build', async () => {
+it('both starts immediately warn about skew without invoking a tool, changing installation or selecting a build', async () => {
   h = fresh();
   success(install(h));
   version(h, '2.5.0');
@@ -565,7 +565,7 @@ it('delivery/13 — both starts immediately warn about skew without invoking a t
   }
 });
 
-it('delivery/14 — matching versions are silent at startup and both remain queryable', async () => {
+it('matching versions are silent at startup and both remain queryable', async () => {
   h = fresh();
   success(install(h));
   const ext = await load(h);
@@ -581,7 +581,7 @@ it('delivery/14 — matching versions are silent at startup and both remain quer
   }
 });
 
-it('delivery/15 — reinstalling with the reached command replaces the recorded version and resolves the startup warning', async () => {
+it('reinstalling with the reached command replaces the recorded version and resolves the startup warning', async () => {
   h = fresh();
   success(install(h));
   version(h, '2.5.0');
@@ -608,7 +608,7 @@ it('delivery/15 — reinstalling with the reached command replaces the recorded 
   }
 });
 
-it('delivery/13 — each startup reports a genuinely earlier command even when it cannot explain version skew', async () => {
+it('each startup reports a genuinely earlier command even when it cannot explain version skew', async () => {
   h = fresh();
   success(install(h));
   const old = earlierCommand(h);
@@ -626,7 +626,7 @@ it('delivery/13 — each startup reports a genuinely earlier command even when i
   }
 });
 
-it('delivery/15 — restoring the current command and reinstalling resolves real-build skew', async () => {
+it('restoring the current command and reinstalling resolves real-build skew', async () => {
   h = fresh();
   success(install(h));
   const old = earlierCommand(h);
@@ -657,7 +657,7 @@ it('delivery/15 — restoring the current command and reinstalling resolves real
   }
 });
 
-it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.0 route or causes a warning', async () => {
+it('a project-pinned 2.6.0 never redirects either installed 2.4.0 route or causes a warning', async () => {
   h = fresh();
   success(install(h));
   const pinned = join(h.cwd, 'pinned');
@@ -690,7 +690,7 @@ it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.
   }
 });
 
-it('delivery/17 — command and tool share journal writes and supersession through the installed runtime with no source path', async () => {
+it('command and tool share journal writes and supersession through the installed runtime with no source path', async () => {
   h = fresh();
   success(install(h));
   h.seed();
@@ -730,7 +730,7 @@ it('delivery/17 — command and tool share journal writes and supersession throu
   }
 });
 
-it('delivery/18 — command and tool report the same missing-decision refusal without changing the journal', async () => {
+it('command and tool report the same missing-decision refusal without changing the journal', async () => {
   h = fresh();
   success(install(h));
   h.seed();
@@ -753,7 +753,7 @@ it('delivery/18 — command and tool report the same missing-decision refusal wi
   }
 });
 
-it('delivery/19 — the event tap is absent from delivered commands, projection and harness tools, including hidden or disabled forms', async () => {
+it('the event tap is absent from delivered commands, projection and harness tools, including hidden or disabled forms', async () => {
   h = fresh();
   success(install(h));
   noTap(h);
@@ -767,7 +767,7 @@ it('delivery/19 — the event tap is absent from delivered commands, projection 
   }
 });
 
-it('delivery/20 — upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
+it('upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
   h = fresh();
   const bindings = earlier(h);
   put(

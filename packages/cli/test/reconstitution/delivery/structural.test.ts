@@ -18,7 +18,7 @@ afterEach(() => {
   h = undefined;
 });
 
-it('delivery/1 — native facility wins over an available extension and prose', async () => {
+it('native facility wins over an available extension and prose', async () => {
   let extensionCalls = 0;
   const adapter: HarnessAdapter & {
     nativeCapabilities: Record<string, string>;
@@ -54,7 +54,7 @@ it('delivery/1 — native facility wins over an available extension and prose', 
   ).toEqual([]);
 });
 
-it('delivery/3 — with neither route prose comes from the capability and claims only the command', async () => {
+it('with neither route prose comes from the capability and claims only the command', async () => {
   h = host();
   const adapter = { ...adapterByName('omp'), capabilitySurface: undefined };
   const tree = await projectPluginSet({
@@ -88,7 +88,7 @@ it('delivery/3 — with neither route prose comes from the capability and claims
   );
 });
 
-it('delivery/6 — delivered capabilities explain when; no practice-restating overview procedure or reach-for skill', () => {
+it('delivered capabilities explain when; no practice-restating overview procedure or reach-for skill', () => {
   h = host();
   const skills = files(join(h.home, '.cratylus/omp/skills'))
     .filter((path) => path.endsWith('SKILL.md'))
@@ -109,7 +109,7 @@ it('delivery/6 — delivered capabilities explain when; no practice-restating ov
       success(h.command([capability, '--explain'])),
     );
     // Exact copied definitions are a structural duplicate. Paraphrased
-    // restatements are covered by delivery/6's semantic retirement rubric.
+    // restatements are left to review.
     for (const skill of skills)
       for (const definition of [explanation.purpose, explanation.when])
         expect(
@@ -125,7 +125,7 @@ it('delivery/6 — delivered capabilities explain when; no practice-restating ov
   }
 });
 
-it('delivery/6 — concept journal when-text gives occasions for use, not reader behavior', () => {
+it('concept journal when-text gives occasions for use, not reader behavior', () => {
   h = host();
   const explanation = h.concepts<Explanation>('--explain');
   expect(explanation.when.trim(), 'when to reach for the capability').not.toBe(

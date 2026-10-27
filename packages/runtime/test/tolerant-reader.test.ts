@@ -1,7 +1,7 @@
 // The concept journal as an older runtime reads it: entries of kinds it does
 // not know, and entries of a known kind holding a value it does not know, are
 // read past and reported with every reading, appending still works and leaves every entry as it was, and an entry
-// of a known kind it cannot read is refused by name. The command-line examples
+// of a known kind it cannot read is refused by name. The command-line tests
 // (cli `test/delivery-journal`) bind the contract end to end; these hold it for
 // the library.
 

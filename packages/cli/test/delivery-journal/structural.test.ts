@@ -53,7 +53,7 @@ const knownViews = [
 
 describe('delivery: older concept journal readers', () => {
   it.each(['design', 'history'])(
-    'intent-based delegation/1 — %s reads past an unknown entry without inventing its meaning',
+    '%s reads past an unknown entry without inventing its meaning',
     (view) => {
       knownJournal(journal.root);
       unknownEntry(journal.root, 4);
@@ -110,7 +110,7 @@ describe('delivery: older concept journal readers', () => {
       fields: { decisionKind: 'policy' },
     },
   ])(
-    'intent-based delegation/1 — every view reads past an unknown $label inside a known entry kind',
+    'every view reads past an unknown $label inside a known entry kind',
     ({ kind, fields }) => {
       knownJournal(journal.root);
       const baselines = views.map((args) =>
@@ -156,7 +156,7 @@ describe('delivery: older concept journal readers', () => {
   );
 
   it.each(views.map((args) => ({ label: args.join(' '), args })))(
-    'intent-based delegation/2 — $label reports every unknown kind and count on both requests',
+    '$label reports every unknown kind and count on both requests',
     ({ args }) => {
       knownJournal(journal.root);
       const baseline = query(installed, journal.root, ...args);
@@ -197,7 +197,7 @@ describe('delivery: older concept journal readers', () => {
     },
   );
 
-  it('intent-based delegation/2 — report assertions reject missing warnings and missing or miscounted kinds without fixing field names', () => {
+  it('report assertions reject missing warnings and missing or miscounted kinds without fixing field names', () => {
     const counts = { annotation: 2, review: 1 };
     const golden = [
       {
@@ -227,7 +227,7 @@ describe('delivery: older concept journal readers', () => {
     }
   });
 
-  it('intent-based delegation/3 — append preserves every old byte and the next view reports unknown entries', () => {
+  it('append preserves every old byte and the next view reports unknown entries', () => {
     knownJournal(journal.root);
     unknownEntry(journal.root, 4);
     const before = snapshot(journal.root);
@@ -269,7 +269,7 @@ describe('delivery: older concept journal readers', () => {
     reportsUnknown(value, { annotation: 1 });
   });
 
-  it('intent-based delegation/4 — malformed known entry is refused by identity, not hidden by an unknown kind', () => {
+  it('malformed known entry is refused by identity, not hidden by an unknown kind', () => {
     knownJournal(journal.root);
     unknownEntry(journal.root, 2);
     entry(journal.root, 4, {
@@ -290,7 +290,7 @@ describe('delivery: older concept journal readers', () => {
     expect(snapshot(journal.root)).toEqual(before);
   });
 
-  it('intent-based delegation/5 — understood journals retain their meanings and histories without warnings or writes', () => {
+  it('understood journals retain their meanings and histories without warnings or writes', () => {
     knownJournal(journal.root);
     const before = snapshot(journal.root);
     assertKnownViews(
@@ -301,7 +301,7 @@ describe('delivery: older concept journal readers', () => {
     );
   });
 
-  it('intent-based delegation/5 — negative variants fail for stale meanings, reordered history, open acceptance, false warnings and reading writes', () => {
+  it('negative variants fail for stale meanings, reordered history, open acceptance, false warnings and reading writes', () => {
     knownJournal(journal.root);
     const golden = knownViews.map((args) =>
       query(installed, journal.root, ...args),
