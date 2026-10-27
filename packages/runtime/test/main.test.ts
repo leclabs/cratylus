@@ -12,6 +12,10 @@ import { CLI_BIN } from '../src/bin-name.js';
 import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
 import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
 import {
+  VERBS as MODEL,
+  dispatchModel,
+} from '../src/capabilities/model/index.js';
+import {
   VERBS as VERSION_SKEW,
   dispatchVersionSkew,
 } from '../src/capabilities/version-skew/index.js';
@@ -69,6 +73,7 @@ async function run(
 
 const SURFACES: { readonly [C in Capability]: VerbFlags } = {
   concepts: CONCEPTS,
+  model: MODEL,
   versionSkew: VERSION_SKEW,
 };
 
@@ -136,6 +141,7 @@ describe('the capability commands answer an undeclared verb with what to do', ()
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
     concepts: dispatchConcepts,
+    model: (argv) => dispatchModel(argv),
     versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 

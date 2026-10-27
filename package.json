@@ -29,7 +29,7 @@
     "release": "sh scripts/release.sh",
     "prepare": "husky",
     "dev": "turbo run dev --parallel",
-    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm build && pnpm lint && pnpm typecheck && pnpm test && pnpm cratylus model check"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

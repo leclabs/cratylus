@@ -124,9 +124,11 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
- *  (`<bin> <capability> --explain`), the concept journal and the version skew. */
+ *  (`<bin> <capability> --explain`), the concept journal, the model check and the
+ *  version skew. */
 export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
   'concepts',
+  'model',
   'versionSkew',
 ];
 
