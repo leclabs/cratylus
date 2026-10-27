@@ -1,5 +1,5 @@
-// `cratylus install [--harness <name>]` — placing the canon on this machine, for an
-// operator who wants their agents here and has no repository in hand at all.
+// `cratylus install [--harness <name>]` — placing the canon on this machine, for a
+// product owner who wants their agents here and has no repository in hand at all.
 //
 // IT INSTALLS THE CANON IT IS HANDED. The canon is not INVENTED by the projector — it
 // is handed in by the hub package that mounts this verb, the canon the command is
@@ -20,45 +20,44 @@
 // taken back by its own record as part of the run, leaving what the host placed or
 // changed.
 //
-// AT ONE OF TWO SCOPES (decision 0311). For the user, by default, as above. For a
-// project (`--scope project`), the root is `<project>/.cratylus/<harness>` and the
+// AT ONE OF TWO SCOPES (design/decisions/a-project-installation.md). For the user, by
+// default, as above. For a project (`--scope project`), the root is
+// `<project>/.cratylus/<harness>` and the
 // references are the project's own (omp: `<project>/.omp/plugins`), each relative, so
 // the project commits them for its team, and in that project omp loads the project's
 // installation in place of the user's. A project install writes nothing under the
-// home: no earlier installation is taken back, and the operator's choices are read
+// home: no earlier installation is taken back, and the product owner's choices are read
 // from and written to the project's settings (omp: `<project>/.omp/config.yml`). On a
 // terminal the scope is asked where it was not told and the project is not the home,
 // the user's preselected; `--yes`, or no terminal, takes the user's.
 //
-// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are four:
-// which harness, which of the canon's practices, which of its rules, and which model
-// each tier the agents fall back to, and each persona's own role, runs on. Each has a
-// flag; a decision given by flag is never asked. The practices are the one decision no
-// run takes for the operator: with neither `--practices` nor `--all`, a terminal is
-// asked (or, under `--yes`, given the practices already installed here, or on a fresh
-// host the canon's preselected ones) and a run with no terminal refuses, writing
-// nothing. Of the rest a run with no terminal (or `--yes`) takes the default. The rules
-// default to none, and the choice, once made, is recorded by name and kept by every
-// later install that is not told otherwise. Before anything is written the run shows
-// what it would place, and on a terminal that is not fully decided it asks once to go
-// ahead: declining writes nothing. What it places is then summarised in a few lines;
+// THE RUN IS GUIDED, and it is the product owner's decisions that it guides. There are three:
+// which harness, which of the canon's rules, and which model each tier the agents fall
+// back to, and each persona's own role, runs on. What is placed is no decision: every
+// agent and skill of the canon is installed. Each decision has a flag; a decision given
+// by flag is never asked, and a run with no terminal (or `--yes`) takes the default. The
+// rules default to none, and the choice, once made, is recorded by name and kept by
+// every later install that is not told otherwise. Before anything is written the run
+// shows what it would place, and on a terminal that is not fully decided it asks once to
+// go ahead: declining writes nothing. What it places is then summarised in a few lines;
 // the per-file detail is `--verbose`'s.
 //
 // THE PREVIEW IS THE RUN, DRY. The same steps run once with `dry` set, and what they
 // report is what is shown — so the preview cannot describe something the placement
 // then does differently.
 //
-// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING (decision 0112). An agent
-// declaration names its own model role first, then the tier and effort it holds
-// (decision 0111), and is never re-rendered with a model. The model a tier or a
-// persona's role runs on is the operator's to choose: install asks for it where the host
+// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING
+// (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md). An agent
+// declaration names its own model role first, then the tier and effort it holds,
+// and is never re-rendered with a model. The model a tier or a
+// persona's role runs on is the product owner's to choose: install asks for it where the host
 // binds none and writes the answer into the host's own model roles, recording nothing of
 // it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
 // never asked and never changed. Where install is neither told nor can ask, it places
 // everything else and names, as the next step, each tier the agents fall back to that
 // the host does not bind.
 //
-// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT (decision 0113). It is asked
+// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT. It is asked
 // only where the host hides the row an extension's status shows in, and was neither
 // told (`--agent-status`) nor answered at an earlier install of this root. The answer
 // is written as the host's own setting — shown, or left hidden as it is — and the record
@@ -82,7 +81,6 @@ import {
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import {
-  type DeliveredDocument,
   addModelRoles,
   capabilityConfiguration,
   ensureStatusSegment,
@@ -94,7 +92,6 @@ import {
   placementOf,
   projectOf,
   readInstallationRecord,
-  readManifest,
   rootFiles,
 } from '../../deploy/index.js';
 import {
@@ -118,7 +115,7 @@ import {
 } from './install-prompts.js';
 import { removeEarlierInstallation } from './uninstall.js';
 
-/** The operator's answer to whether the status line shows the session's agent. */
+/** The product owner's answer to whether the status line shows the session's agent. */
 type AgentStatus = 'show' | 'hide';
 
 export interface InstallCmdOpts {
@@ -133,18 +130,9 @@ export interface InstallCmdOpts {
   /** The declared version of the build doing the install, recorded in the owned root
    *  as the version that projected it. */
   version?: string;
-  /** The documents the release delivers, handed in by the command that holds the
-   *  release and placed read-only in the owned root as given. */
-  delivered?: readonly DeliveredDocument[];
   /** Show what would be placed and stop; write nothing. */
   dryRun?: boolean;
   cwd?: string;
-  /** `--practices <name,…>`: the declared practices to install. Naming none is
-   *  refused, as is a name the canon does not declare. Given with neither this nor
-   *  `all`, a terminal is asked and a run without one is refused. */
-  practices?: string;
-  /** `--all`: install every declared practice. Refused beside `practices`. */
-  all?: boolean;
   /** `--rules <name,…|none>`: the rules to place, each name a ruleset (taken whole)
    *  or one of its rules; `none` places none. Given at all, it settles the decision.
    *  Absent: the choice an earlier install recorded, else asked; told nothing and
@@ -159,10 +147,8 @@ export interface InstallCmdOpts {
    *  hides it, shows the session's agent. Given at all, it settles the decision.
    *  Absent: asked where the host hides it and no earlier install was answered. */
   agentStatus?: string;
-  /** `--yes`: on a terminal, take the default of every decision not given (the
-   *  practices already installed here, or on a fresh host the canon's preselected
-   *  ones), ask nothing, and place without asking to go ahead. It is no answer to the
-   *  practices decision where there is no terminal. */
+  /** `--yes`: on a terminal, take the default of every decision not given, ask
+   *  nothing, and place without asking to go ahead. */
   yes?: boolean;
   /** `--verbose`: also print the per-file detail of the run. */
   verbose?: boolean;
@@ -189,7 +175,7 @@ export function detectHarnesses(home?: string): string[] {
   );
 }
 
-/** A run that stops before writing, for a reason the operator can act on. */
+/** A run that stops before writing, for a reason the product owner can act on. */
 class Refusal extends Error {}
 
 /** A model value as omp writes in its `modelRoles`: an alias or selector. */
@@ -207,7 +193,7 @@ interface Findings {
   references: string[];
   /** How many items of an earlier installation were taken back. */
   earlier: number;
-  /** The model roles bound for the operator in the host's settings, as `role → model`. */
+  /** The model roles bound for the product owner in the host's settings, as `role → model`. */
   routes: string[];
   /** The tiers the agents fall back to that the host binds no model to. */
   unbound: string[];
@@ -333,7 +319,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // ── WHICH HARNESS ────────────────────────────────────────────────────────────
   // Decided by flag, or by the host having exactly one, or asked; a host with none or
   // two and no terminal to ask on is refused, because picking silently would install
-  // into a harness the operator was not thinking about.
+  // into a harness the product owner was not thinking about.
   let harness = opts.harness;
   if (harness === undefined) {
     const found = detectHarnesses(opts.home);
@@ -360,7 +346,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
   // ── WHICH SCOPE ──────────────────────────────────────────────────────────────
   // Told by flag; else asked on a terminal where the project of the working directory
-  // is not the home, the user's preselected; else the user's (decision 0311).
+  // is not the home, the user's preselected; else the user's
+  // (design/decisions/a-project-installation.md).
   const home = resolve(opts.home ?? homedir());
   const project = projectOf(cwd, home);
   let scopeAsked = false;
@@ -375,21 +362,22 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   });
   if ('refused' in placement) throw new Refusal(placement.refused);
   const { harnessDir, root, base } = placement;
-  // A project installation writes no operator's own setting: a tier's model and how
-  // the session shows its agent are each operator's, and the project is shared with
-  // every operator in it (decision 0313).
+  // A project installation writes no product owner's own setting: a tier's model and how
+  // the session shows its agent are each product owner's, and the project is shared with
+  // every product owner in it (design/decisions/a-project-installation.md).
   if (scope === 'project' && opts.modelRoles !== undefined) {
     throw new Refusal(
-      `--model-roles: a project installation binds no models, a model being each operator's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
+      `--model-roles: a project installation binds no models, a model being each product owner's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
     );
   }
   if (scope === 'project' && opts.agentStatus !== undefined) {
     throw new Refusal(
-      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each operator's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
+      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each product owner's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
-  // an earlier render tree, which no installation takes over (decision 0311).
+  // an earlier render tree, which no installation takes over
+  // (design/decisions/a-project-installation.md).
   if (scope === 'project' && holdsRenderTree(root)) {
     throw new Refusal(
       `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an earlier render tree, not an installation; move it away, and install again`,
@@ -408,16 +396,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const source = 'the canon this command was built with';
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
-  // What the canon renders depends on which practices are chosen, and which practices
-  // the canon declares is only known from a render: so render the whole canon once
-  // to learn them, and again with the ones chosen.
+  // Which rulesets the canon offers is only known from a render: so render the whole
+  // canon once to learn them, and again with the rules chosen.
   // Discovery refuses a canon whose values share a namespace or whose
   // reference graph dangles or cycles, before anything is rendered.
   await discoverValues(plugins);
-  const render = async (
-    practices: readonly string[] | undefined,
-    rules: readonly string[],
-  ) => {
+  const render = async (rules: readonly string[]) => {
     const warnings: string[] = [];
     const report = await projectPluginSet({
       plugins,
@@ -427,89 +411,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       // The hooks print each skill's directory, so what fits the harness's output cap
       // depends on this path; the projection cannot know it, install does.
       hostHome: base,
-      ...(practices !== undefined ? { practices } : {}),
       rules,
     });
     return { report, warnings };
   };
-  let rendered = await render(undefined, []);
-
-  // ── WHICH PRACTICES ──────────────────────────────────────────────────────────
-  // The one decision about WHAT is placed. It is never guessed: a flag names the
-  // practices, or a terminal is asked, and a run with neither refuses before anything
-  // is written — under `--yes` and over an existing install alike, since what an
-  // install placed last time is the default of a question, never an answer to one.
-  // A canon that declares no practices has nothing to decide and places all it has.
-  const declared = rendered.report.practices;
-  const declaredNames = declared.map((p) => p.name);
-  const declaredList =
-    declaredNames.length === 0 ? 'none' : list(declaredNames);
-  // What is installed here: the practices the last install recorded (in its owned
-  // root, or, for the user, an earlier installation's deploy record) that this canon
-  // still declares, a former name of one counting as the practice that now holds it
-  // (decision 0332). A host with none recorded is a fresh one.
-  const recorded =
-    prior !== null
-      ? (prior.practices ?? null)
-      : scope === 'user'
-        ? readManifest(harnessDir).practices
-        : null;
-  const formerlyRecorded = (p: (typeof declared)[number]): string[] =>
-    recorded === null || recorded.includes(p.name)
-      ? []
-      : p.formerNames.filter((n) => recorded.includes(n));
-  const installed =
-    recorded === null
-      ? []
-      : declared
-          .filter(
-            (p) => recorded.includes(p.name) || formerlyRecorded(p).length > 0,
-          )
-          .map((p) => p.name);
-  const preselection =
-    installed.length > 0
-      ? installed
-      : declared.filter((p) => p.preselected).map((p) => p.name);
-  const nothingChosen = (): Refusal =>
-    new Refusal(
-      `no practice was chosen (declared: ${declaredList}); installing none is not installing everything, so to take it all out run ${uninstallCommand(adapter, scope)}`,
-    );
+  let rendered = await render([]);
   let open = opts.harness === undefined || scopeAsked;
-  let chosen: string[] | undefined;
-  if (opts.all === true && opts.practices !== undefined) {
-    throw new Refusal(
-      '--practices and --all were both given; name the practices to install, or take every one with --all, not both',
-    );
-  }
-  if (opts.practices !== undefined) {
-    const named = parseNames(opts.practices);
-    if (named.length === 0) throw nothingChosen();
-    const unknown = named.filter((n) => !declaredNames.includes(n));
-    if (unknown.length > 0) {
-      throw new Refusal(
-        `--practices: ${list(unknown.map((n) => `'${n}'`))} ${unknown.length === 1 ? 'is' : 'are'} no practice of this canon (declared: ${declaredList}); name only declared practices`,
-      );
-    }
-    chosen = named;
-  } else if (declaredNames.length === 0) {
-    chosen = undefined;
-  } else if (opts.all === true) {
-    chosen = declaredNames;
-  } else if (!terminal) {
-    throw new Refusal(
-      `no terminal to ask which practices to install; name them with --practices <${declaredNames.join(',')}> (comma-separated), or install every one with --all`,
-    );
-  } else if (opts.yes === true) {
-    chosen = preselection;
-  } else {
-    open = true;
-    chosen = await answered(prompts.practices(declared, preselection));
-  }
-  if (chosen !== undefined) {
-    if (chosen.length === 0) throw nothingChosen();
-    // Declaration order, each once: the order the canon lists them in.
-    chosen = declaredNames.filter((n) => (chosen as string[]).includes(n));
-  }
 
   // ── WHICH RULES ──────────────────────────────────────────────────────────────
   // The standard conventions the agents follow in every project, each ruleset taken
@@ -540,39 +447,23 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   rules = offeredRules.filter((n) => rules.includes(n));
   const rulesOpen = !rulesDecided && offered.length > 0;
 
-  if (chosen !== undefined || rules.length > 0) {
+  if (rules.length > 0) {
     try {
-      rendered = await render(chosen, rules);
+      rendered = await render(rules);
     } catch (e) {
-      // A choice the canon cannot place whole (a practice not closed under dispatch,
-      // say) is a refusal with nothing written, not a crash.
+      // A choice the canon cannot place is a refusal with nothing written, not a crash.
       throw new Refusal(e instanceof Error ? e.message : String(e));
     }
   }
-  const removed = installed.filter(
-    (n) => !(chosen ?? declaredNames).includes(n),
-  );
-  // Each practice kept that the earlier install recorded by a former name, named once.
-  const taken = chosen;
-  const carried =
-    taken === undefined
-      ? []
-      : declared
-          .filter((p) => taken.includes(p.name))
-          .flatMap((p) => {
-            const from = formerlyRecorded(p);
-            return from.length > 0 ? [{ from, to: p.name }] : [];
-          });
-  const decided =
-    taken === undefined ? undefined : { chosen: taken, removed, carried };
   const tree: ProjectedTree = rendered.report;
 
   // ── WHICH MODELS ─────────────────────────────────────────────────────────────
   // The model each tier the agents fall back to, and each persona's own role, runs on
-  // (decision 0112): told by flag, or asked where the host binds none, and bound as the
-  // host's own setting. A role the host binds is its own: never asked, never changed.
-  // A project installation binds none: it reads the project's settings and the user's,
-  // writing neither, and names each tier neither binds (decision 0312).
+  // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md): told by
+  // flag, or asked where the host binds none, and bound as the host's own setting. A
+  // role the host binds is its own: never asked, never changed. A project installation
+  // binds none: it reads the project's settings and the user's, writing neither, and
+  // names each tier neither binds (design/decisions/a-project-installation.md).
   const routing = adapter.roleRouting;
   const agentModels = tree.agentModels;
   const agentRoles = Object.keys(agentModels).sort();
@@ -667,11 +558,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     }
   }
   // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
-  // Asked only where the host hides it and it was neither told nor answered before
-  // (decision 0113); the answer is the host's own setting from then on. A project
+  // Asked only where the host hides it and it was neither told nor answered before;
+  // the answer is the host's own setting from then on. A project
   // installation neither asks nor writes it: it reads the project's settings over the
   // user's, and where they hide the agent names showing it as a next step: in the
-  // project's file, where its own keys hide it, else at user scope (decision 0313).
+  // project's file, where its own keys hide it, else at user scope
+  // (design/decisions/a-project-installation.md).
   const statusHost =
     adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
   const statusFile =
@@ -746,8 +638,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   );
 
   // Whether this project installation made the project's harness directory, which its
-  // uninstall then removes where it is left empty (decision 0312); an installation
-  // that replaces another keeps what that one recorded.
+  // uninstall then removes where it is left empty
+  // (design/decisions/a-project-installation.md); an installation that replaces another
+  // keeps what that one recorded.
   const createdHarnessDir =
     scope === 'project' &&
     (prior !== null
@@ -775,8 +668,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
     }
-    // Whether the status line shows the session's agent: the operator's answer, written
-    // as the host's own setting and recorded nowhere as cratylus's (decision 0113).
+    // Whether the status line shows the session's agent: the product owner's answer, written
+    // as the host's own setting and recorded nowhere as cratylus's.
     if (agentStatus === 'show' && statusFile !== undefined)
       showAgentStatus(found, statusFile, adapter, dry);
     else if (agentStatus === 'hide')
@@ -784,8 +677,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         `  statusLine: ${statusFile} — the session's agent stays hidden, as answered`,
       );
     found.displayOpen = displayOpen;
-    // The models the operator chose, bound in the host's own model roles and recorded
-    // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
+    // The models the product owner chose, bound in the host's own model roles and recorded
+    // nowhere as cratylus's: upgrade and uninstall keep them
+    // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
     const bound = new Set<string>();
     const wanted = Object.entries(choices).map(([role, value]) => ({
       role,
@@ -824,11 +718,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       root,
       files: rootFiles(adapter, placedTree.files),
       ...(opts.version === undefined ? {} : { version: opts.version }),
-      ...(opts.delivered === undefined ? {} : { delivered: opts.delivered }),
       configuration,
       record: {
         scope,
-        ...(chosen === undefined ? {} : { practices: chosen }),
         ...(rulesDecided ? { rules } : {}),
         references: linked.references,
         ...(createdHarnessDir ? { createdHarnessDir: true as const } : {}),
@@ -848,7 +740,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       base,
       root,
       tree: placedTree,
-      practices: decided,
       rules: { chosen: rules, dropped: droppedRules, open: rulesOpen },
       config: configFile,
       ...(projectHiding === undefined ||
@@ -887,10 +778,10 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 }
 
 /**
- * What a run shows an operator, before it places (`dry`) and after: the root and the
- * harness; the practices; the rules; the counts; the references into the root; an
+ * What a run shows the product owner, before it places (`dry`) and after: the root and the
+ * harness; the rules; the counts; the references into the root; an
  * earlier installation taken back; each host file edited and what changed in it; the
- * models bound for the operator; what the host had set and was left alone — and, once
+ * models bound for the product owner; what the host had set and was left alone — and, once
  * placed, what to do next, the tiers no model is bound to among it.
  */
 function describe(
@@ -902,16 +793,6 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The practices installed, those taken out, and those kept that the earlier
-     *  install recorded by a former name, or `undefined` where the canon declares
-     *  none. */
-    practices:
-      | {
-          chosen: readonly string[];
-          removed: readonly string[];
-          carried: readonly { from: readonly string[]; to: string }[];
-        }
-      | undefined;
     /** The rules placed, those of an earlier choice no longer offered, and whether the
      *  choice is still open: offered, but neither told, recorded nor asked. */
     rules: {
@@ -943,19 +824,6 @@ function describe(
       : `${CLI_BIN} is installed in ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
-  if (ctx.practices !== undefined) {
-    const carried =
-      ctx.practices.carried.length > 0
-        ? `; ${dry ? 'would carry over' : 'carried over'} ${list(ctx.practices.carried.map((c) => `${list(c.from)} as ${c.to}`))}`
-        : '';
-    const removed =
-      ctx.practices.removed.length > 0
-        ? `; ${dry ? 'would remove' : 'removed'} ${list(ctx.practices.removed)}`
-        : '';
-    lines.push(
-      `  practices: ${list(ctx.practices.chosen)}${carried}${removed}`,
-    );
-  }
   if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
     const dropped =
       ctx.rules.dropped.length > 0
@@ -985,7 +853,7 @@ function describe(
       `  ${dry ? 'would bind' : 'bound'} in ${ctx.config}, as your own setting (upgrade and uninstall keep it): ${list(found.routes)}`,
     );
   }
-  // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
+  // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the product owner reads what the run
   // does, not only in the warning under it: an agent declaring a worktree of its own
   // that this harness cannot start builds in its dispatcher's checkout — or, where the
   // harness isolates a dispatched agent another way, in the copy that makes, which
@@ -1044,8 +912,8 @@ function describe(
         ]
       : []),
     `to remove it all: ${uninstallCommand(adapter, ctx.scope)}${project ? `, run in ${ctx.base}` : ''}`,
-    // Where the architect is installed, the run ends with how using cratylus starts.
-    ...(tree.agentNames.includes('architect') ? [START] : []),
+    // Where the business analyst is installed, the run ends with how using cratylus starts.
+    ...(tree.agentNames.includes('business-analyst') ? [START] : []),
   ];
   lines.push('  next:', ...next.map((item) => `    ${item}`));
   return lines;
@@ -1071,8 +939,8 @@ function hostConfigPath(
 
 /**
  * Show the session's agent on the host's status line at `path`, which hides it, as the
- * operator answered, and say what was done. The edit is the host's own setting from
- * then on: recorded nowhere as cratylus's (decision 0113).
+ * product owner answered, and say what was done. The edit is the host's own setting from
+ * then on: recorded nowhere as cratylus's.
  *
  * omp's status line is a list of segments (`adapter.statusSegment`). An extension's
  * status — where the cratylus extension puts the name and mark of the agent a session

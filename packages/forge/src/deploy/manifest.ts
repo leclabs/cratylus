@@ -47,27 +47,23 @@ export interface DeployManifest {
   // host's edit. It is what deploy would write, never what the host chose.
   agentModels: Record<string, string | null>;
   // The agents whose `model:` line is the host's, whatever its value against the
-  // rendering: one the operator chose at install, or one the host edited afterwards.
+  // rendering: one the product owner chose at install, or one the host edited afterwards.
   // A deploy places such a def carrying the line the host has, or none where the host
   // removed it, and never renders one over it — a value cannot say this, since a
   // chosen line can equal the rendered one and a removed line equals "none". A manifest
   // written before this list reads as `[]`: `agentModels` alone then decides.
   hostModels: string[];
-  // The model roles whose `modelRoles` entry in the host's config is the operator's
+  // The model roles whose `modelRoles` entry in the host's config is the product owner's
   // choice (omp), whatever its value against the one install seeds the entry with: a
   // value cannot say this, since a choice can equal the seed. Such an entry is the
   // host's from then on. A manifest written before this list reads as `[]`.
   hostRoutes: string[];
   // model role -> the value install seeded its `modelRoles` entry with (omp). An entry
   // that still holds that value and is not in `hostRoutes` is install's own seed, which
-  // a later install moves to the value it would seed now, or to the model the operator
+  // a later install moves to the value it would seed now, or to the model the product owner
   // chooses. A manifest written before this record reads as `{}`; an entry recorded in
   // `hostEdits` as an inserted line, standing byte for byte, is then install's own.
   modelRoleSeeds: Record<string, string>;
-  // The practices the last install chose, by name, for the next to preselect. `null` ⇒
-  // none recorded (a host installed before practices, or a deploy that is not an install),
-  // which an install reads as a fresh host.
-  practices: string[] | null;
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -78,7 +74,7 @@ export interface DeployManifest {
   // WROTE there, for every path in `kinds`. A placed file whose bytes still hash to this
   // is untouched since; one that does not is the host's own edit, and an uninstall
   // leaves it. A path with no digest (recorded before digests were kept) is taken back:
-  // the record of placing it is what makes it cratylus's (decision 0114).
+  // the record of placing it is what makes it cratylus's.
   digests: Record<string, string>;
   // rel path (from the deploy root, POSIX) of a host-owned TEXT file install edited
   // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
@@ -137,7 +133,6 @@ export function emptyManifest(): DeployManifest {
     hostModels: [],
     hostRoutes: [],
     modelRoleSeeds: {},
-    practices: null,
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -169,7 +164,6 @@ export function readManifest(harnessDir: string): DeployManifest {
       hostModels: parsed.hostModels ?? [],
       hostRoutes: parsed.hostRoutes ?? [],
       modelRoleSeeds: parsed.modelRoleSeeds ?? {},
-      practices: parsed.practices ?? null,
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},

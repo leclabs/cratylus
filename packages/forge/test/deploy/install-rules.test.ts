@@ -21,13 +21,7 @@ import type {
   ProjectablePlugin,
 } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  answers,
-  fixtureAgentSource,
-  fixturePractices,
-  tmp,
-} from './helpers.js';
+import { answers, fixtureAgentSource, tmp } from './helpers.js';
 
 const rule = (name: string) => ({
   name,
@@ -76,7 +70,6 @@ const plugin = (
   name: 'rules-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
-  practices: fixturePractices(['alpha']),
   rulesets,
 });
 const install = (
@@ -88,7 +81,6 @@ const install = (
     home,
     cwd,
     canon: plugin(rulesets) as never,
-    practices: FIXTURE_PRACTICE,
     interactive: false,
     ...extra,
   });

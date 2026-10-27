@@ -3,7 +3,7 @@
 // linked to the launcher — is placed no more: a session is started as an agent by
 // `omp --agent`. Nor is any module placed for one agent under `agent/personas/`: the
 // guardrail, session and isolation copies an earlier install put there were loaded
-// by no session. An operator who installed them is rid of them by the next install,
+// by no session. A product owner who installed them is rid of them by the next install,
 // which prunes what its record lists and it no longer writes, or by uninstall.
 
 import {
@@ -27,11 +27,7 @@ import {
 } from '../../src/deploy/manifest.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  fixtureAgentSource,
-  fixturePractices,
-} from './helpers.js';
+import { fixtureAgentSource } from './helpers.js';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -69,7 +65,6 @@ describe('the retired persona launch surface', () => {
       home,
       cwd,
       canon: plugin as never,
-      practices: FIXTURE_PRACTICE,
     });
 
   beforeEach(() => {
@@ -85,7 +80,6 @@ describe('the retired persona launch surface', () => {
       name: 'retired-launch-fixture',
       manifest: FIXTURE_MANIFEST,
       agents,
-      practices: fixturePractices(['alpha']),
     };
     for (const stream of [process.stdout, process.stderr])
       vi.spyOn(stream, 'write').mockImplementation(() => true);
@@ -157,7 +151,7 @@ describe('the retired persona launch surface', () => {
     expect(gone(link())).toBe(true);
   });
 
-  it('leaves a recorded command the operator has since pointed elsewhere', async () => {
+  it('leaves a recorded command the product owner has since pointed elsewhere', async () => {
     await installedEarlier();
     rmSync(link());
     symlinkSync('/usr/bin/true', link());

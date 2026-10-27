@@ -112,21 +112,24 @@ export const MANIFEST = {
       { name: 'priority' },
       {
         name: 'meaning',
-        correction: 'user stories and examples, and accepting a story done',
+        correction:
+          'concepts, user stories and examples, and accepting a realization',
       },
       { name: 'constraint', correction: 'decisions on realization' },
       {
         name: 'realization',
-        correction: 'how the work product, or the checks, are built and joined',
+        correction:
+          'how the work is built, its acceptance tests included, and joined',
       },
       {
         name: 'verdict',
-        correction: "whether a change's code review approves it",
+        correction:
+          "whether a realization passes its acceptance tests, and whether a change's code review approves it",
       },
       { name: 'release' },
       {
         name: 'sign-off',
-        correction: "agreeing that a handoff serves the operator's intent",
+        correction: "the product owner's go-ahead",
         optional: true,
       },
     ],
@@ -139,7 +142,7 @@ export const MANIFEST = {
     projection: 'text',
   },
   // Reach — what a role sees and changes. Never text, and compiled to no setting:
-  // every agent starts with the harness's default tools (decision 0142).
+  // every agent starts with the harness's default tools.
   'perception-scope': {
     group: 'Reach',
     arity: 'set',
@@ -306,7 +309,7 @@ export type Evaluation = Value<'evaluation'>;
 // bare `Capability` reads as what an agent is able to do (the `expertise`
 // factor above), which is a different concept; one root would cover two.
 export const RUNTIME_CAPABILITIES = [
-  'concepts',
+  'model',
   'versionSkew',
 ] as const satisfies readonly CapabilityName[];
 
@@ -355,7 +358,7 @@ export type { SkillExpression };
 // flattened them back. The correction was the argmin and the matcher its lossy
 // projection, so the two acts are named here and the projection is computed:
 //
-//   · `operator.consult.pre`   — about to put a question or a menu to the operator.
+//   · `product-owner.consult.pre` — about to put a question or a menu to the product owner.
 //     `principal.consult.pre` was the runner-up; `user.ask.pre` is rejected (`user`
 //     collides with deploy's install-scope `user`, and it is the VENDOR word while
 //     this pivot is vendor-neutral); `elicit.pre` is rejected (occupied by the
@@ -413,8 +416,8 @@ export const CANONICAL_EVENTS = [
   'subagent.end',
   // harness substrate — the working copy an agent is given
   'worktree.create',
-  // harness substrate — what the operator is asked and told
-  'operator.consult.pre',
+  // harness substrate — what the product owner is asked and told
+  'product-owner.consult.pre',
   'permission.request',
   'permission.deny',
   'notification',

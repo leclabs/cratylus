@@ -141,9 +141,9 @@ export interface RuntimeConfigRemoval {
  * and — when no other harness of `installed` still has a stanza in the file — the
  * vocabulary and the configuration of each capability the deploy wrote. A part the host
  * has changed since stands and is named. Where `record` is `null`, a deploy from before
- * it was kept, every one of those parts is cratylus's by that deploy, and goes
- * (decision 0114). `undefined` when the config holds no stanza of this harness, so
- * there is nothing of its to remove.
+ * it was kept, every one of those parts is cratylus's by that deploy, and goes.
+ * `undefined` when the config holds no stanza of this harness, so there is nothing
+ * of its to remove.
  */
 export function withoutRuntimeParts(
   doc: Plain,

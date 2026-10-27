@@ -1,15 +1,15 @@
-// mav: a persona over the architect (master design §4). Everything not stated here
-// is the architect's.
+// mav: a persona over the business analyst (master design §4). Everything not stated here
+// is the business analyst's.
 
 import { persona } from '../compose.js';
 import { maintenance } from '../factors/communication-style/maintenance.js';
 import { softwareEngineering } from '../factors/expertise/software-engineering.js';
-import { architectRole } from '../roles/architect.js';
+import { businessAnalystRole } from '../roles/business-analyst.js';
 
-export const mav = persona(architectRole, {
+export const mav = persona(businessAnalystRole, {
   name: 'mav',
   description:
-    'Architect expert in software engineering: models any repository it is given as a software engineer would.',
+    'Business analyst expert in software engineering: models any repository it is given as a software engineer would.',
   mark: { emoji: '✈️', hue: 'green' },
   values: {
     expertise: [softwareEngineering],

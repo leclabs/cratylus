@@ -73,10 +73,10 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
     expect(loss?.warning).toContain('example-agent-b'); // a
   });
 
-  it('tells the operator the rule SURVIVES — the whole reason this is not fatal', () => {
+  it('tells the product owner the rule SURVIVES — the whole reason this is not fatal', () => {
     // A warning that only announced a loss would read as silent non-enforcement.
     // What makes it safe to continue is that the declaration still governs, and
-    // the message has to say so or the operator cannot judge the risk.
+    // the message has to say so or the product owner cannot judge the risk.
     const [loss] = realizationOf(composed, shortfallAdapter).losses;
     expect(loss?.warning).toMatch(/declaration/i);
     expect(loss?.warning).toMatch(/steer, not a bound/i);

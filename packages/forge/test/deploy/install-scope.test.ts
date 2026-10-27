@@ -1,8 +1,9 @@
-// Installation scopes (decisions 0311, 0313): install and uninstall act for the user,
+// Installation scopes (design/decisions/a-project-installation.md): install and
+// uninstall act for the user,
 // by default, or inside one project. A project installation lives wholly in the
 // project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
-// writes no operator's own setting (a tier's model, how the session shows its agent),
+// writes no product owner's own setting (a tier's model, how the session shows its agent),
 // and leaves the user's installation as it is, as the user's leaves it.
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -26,13 +27,7 @@ import { projectOf } from '../../src/deploy/install-scope.js';
 import { sessionAgentHiding } from '../../src/deploy/read-settings.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  answers,
-  fixtureAgentSource,
-  fixturePractices,
-  tmp,
-} from './helpers.js';
+import { answers, fixtureAgentSource, tmp } from './helpers.js';
 
 /** The block a project installation keeps in `.omp/plugins/.gitignore`. */
 const BLOCK =
@@ -53,7 +48,6 @@ const canon: ProjectablePlugin = {
   name: 'scope-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
-  practices: fixturePractices(['alpha', 'beta', 'gamma']),
 };
 
 let home: string;
@@ -85,7 +79,6 @@ const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     home,
     cwd,
     canon: canon as never,
-    practices: FIXTURE_PRACTICE,
     interactive: false,
     version: '1.0.0',
     ...extra,

@@ -76,12 +76,12 @@ export const canonicalToOmp: Readonly<Record<EventName, string>> = {
  * The omp tool name each ACT is carried by.
  *
  * An ACT is a canonical event naming WHAT the agent is doing rather than which
- * lifecycle moment fired — consulting the operator, dispatching a subagent. Every
+ * lifecycle moment fired — consulting the product owner, dispatching a subagent. Every
  * harness carries these on a generic tool event plus a selector, and the selector
  * is where harnesses differ.
  */
 const OMP_ACT_TOOL: Readonly<Record<EventName, string>> = {
-  'operator.consult.pre': 'ask',
+  'product-owner.consult.pre': 'ask',
   'subagent.dispatch.pre': 'task',
   'subagent.end': 'task',
 };
@@ -133,8 +133,8 @@ export function ompBindingOf(event: EventName): NativeBinding | undefined {
  *
  * `tool_call` is documented _"Fired before a tool is executed. Hooks can block
  * execution."_ and `session_stop` is _"awaited before settle"_, taking an explicit
- * `{decision: "block", reason}` that "remains blocking until the hook allows
- * completion or the operator interrupts". Those are the two, and the second was
+ * `{decision: "block", reason}` that stays blocking until the hook allows
+ * completion or the product owner interrupts. Those are the two, and the second was
  * missing: `turn.end` sat on the notification-only `agent_end`, so the canon's
  * one turn-end BOUND was realized as a steer on this harness.
  *
@@ -203,7 +203,7 @@ export const OMP_ENVELOPE_KIND: Readonly<
  * `Agent|SendMessage` — one act, either spelling, and the first is enough.
  */
 export const OMP_WORKER_TOOL: Readonly<Record<EventName, string>> = {
-  'operator.consult.pre': 'AskUserQuestion',
+  'product-owner.consult.pre': 'AskUserQuestion',
   'subagent.dispatch.pre': 'Agent',
 };
 

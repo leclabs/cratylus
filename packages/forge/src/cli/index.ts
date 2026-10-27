@@ -21,13 +21,11 @@
 
 import { Command, Option } from 'commander';
 import { HARNESS_NAMES } from '../adapters/registry/index.js';
-import type { DeliveredDocument } from '../deploy/index.js';
 import type { ProjectablePlugin } from '../project/index.js';
 import { runInstall } from './commands/install.js';
 import { runUninstall } from './commands/uninstall.js';
 
 export { fail } from './style.js';
-export type { DeliveredDocument } from '../deploy/index.js';
 
 /** What the commands are built with. */
 export interface ProjectorOptions {
@@ -41,10 +39,6 @@ export interface ProjectorOptions {
   /** The declared version of the build the commands are held in: what `install`
    *  records in the owned root as the version that projected it. */
   readonly version?: string;
-  /** The documents the release delivers (`<origin>/<context>.json` and its bytes),
-   *  handed in by the command that holds the release: `install` places them
-   *  read-only in the owned root as given and computes nothing about them. */
-  readonly delivered?: readonly DeliveredDocument[];
 }
 
 /** The scopes `install` and `uninstall` act at. */
@@ -62,7 +56,7 @@ const harnessOption = (description: string): Option =>
 export function projectorCommands(options: ProjectorOptions = {}): Command[] {
   const install = new Command('install')
     .description(
-      'Install the bundled canon, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
+      'Install the bundled canon, every one of its agents and skills, and the rules you choose, into an agent harness on this machine, asking what you have not said',
     )
     .addOption(
       harnessOption(
@@ -75,13 +69,6 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
         'Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user)',
       ).choices(SCOPES),
     )
-    .addOption(
-      new Option(
-        '--practices <names>',
-        'The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)',
-      ),
-    )
-    .addOption(new Option('--all', 'Install every practice, without asking'))
     .addOption(
       new Option(
         '--rules <names>',
@@ -97,13 +84,13 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
     .addOption(
       new Option(
         '--agent-status <choice>',
-        "Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no operator's own setting (default: at user scope, asked where the status line hides it)",
+        "Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no product owner's own setting (default: at user scope, asked where the status line hides it)",
       ).choices(['show', 'hide']),
     )
     .addOption(
       new Option(
         '-y, --yes',
-        'Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)',
+        'Take the default of every decision not given, and place without asking to go ahead',
       ),
     )
     .addOption(
@@ -125,8 +112,6 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
       async (opts: {
         harness?: string;
         scope?: (typeof SCOPES)[number];
-        practices?: string;
-        all?: boolean;
         rules?: string;
         modelRoles?: string;
         agentStatus?: string;
@@ -140,9 +125,6 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
           scope: opts.scope,
           canon: options.canon,
           version: options.version,
-          delivered: options.delivered,
-          practices: opts.practices,
-          all: opts.all,
           rules: opts.rules,
           modelRoles: opts.modelRoles,
           agentStatus: opts.agentStatus,

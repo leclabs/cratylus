@@ -1,9 +1,9 @@
-// Shared install-test scaffolding: temp dirs, fixture practices and scripted answers.
+// Shared install-test scaffolding: temp dirs, fixture agents and scripted answers.
 
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { type Practice, kebabToCamel } from '@cratylus/schema';
+import { kebabToCamel } from '@cratylus/schema';
 import { afterAll } from 'vitest';
 import type { InstallPrompts } from '../../src/cli/commands/install-prompts.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
@@ -19,20 +19,6 @@ export function tmp(prefix: string): string {
   const d = mkdtempSync(join(tmpdir(), prefix));
   scratch.push(d);
   return d;
-}
-
-/** The one practice a fixture canon declares: every agent it has, preselected. A
- *  run that installs it takes the whole fixture, as a run without practices would. */
-export const FIXTURE_PRACTICE = 'fixture';
-export function fixturePractices(agents: readonly string[]): Practice[] {
-  return [
-    {
-      name: FIXTURE_PRACTICE,
-      description: 'every agent of the fixture',
-      agents: [...agents],
-      preselected: true,
-    },
-  ];
 }
 
 /** The source of a fixture agent module `<name>.ts` over {@link FIXTURE_MANIFEST}:
@@ -60,13 +46,12 @@ export function fixtureAgentSource(
   return `export const ${kebabToCamel(name)} = ${JSON.stringify(agent, null, 2)};\n`;
 }
 
-/** The prompts of a guided install, answering as an operator who accepts every
+/** The prompts of a guided install, answering as a product owner who accepts every
  *  default; `over` replaces the answers a case is about. */
 export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
   return {
     harness: async (found) => found[0],
     scope: async () => 'user',
-    practices: async (_offered, initial) => [...initial],
     rules: async () => [],
     routes: async () => ({}),
     agentStatus: async () => true,

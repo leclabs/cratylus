@@ -1,21 +1,22 @@
 // The questions `cratylus install` may ask, behind one seam.
 //
 // `runInstall` decides WHICH decisions are open and WHAT to ask about each; how a
-// question reaches an operator is this file's. Tests hand `runInstall` their own
+// question reaches the product owner is this file's. Tests hand `runInstall` their own
 // `InstallPrompts`, so a guided run is driven answer by answer with no terminal, and
 // the terminal implementation (`@clack/prompts`) is the only place a prompt library
 // is named.
 //
-// EVERY QUESTION MAY BE ANSWERED `undefined`, which is the operator cancelling
+// EVERY QUESTION MAY BE ANSWERED `undefined`, which is the product owner cancelling
 // (Ctrl-C, Esc). `runInstall` treats it as "stop": nothing has been written yet, and
 // nothing is written after.
 
 import * as clack from '@clack/prompts';
 import type { InstallScope } from '@cratylus/runtime/runtime-config';
-import type { OfferedPractice, OfferedRuleset } from '../../project/index.js';
+import type { OfferedRuleset } from '../../project/index.js';
 
-/** One model role the host binds no model to, which the operator may bind: a tier the
- *  installed agents fall back to, or a persona's own role (decision 0112). */
+/** One model role the host binds no model to, which the product owner may bind: a tier the
+ *  installed agents fall back to, or a persona's own role
+ *  (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md). */
 export interface RoleQuestion {
   /** The model role, as the host's settings name it. */
   readonly role: string;
@@ -37,15 +38,8 @@ export interface InstallPrompts {
   /** Where to install: for the user, every project offered it (preselected), or
    *  inside `project` only, which then loads it in place of the user's. */
   scope(project: string): Promise<InstallScope | undefined>;
-  /** Which practices to install, each offered with its description; `initial` are
-   *  preselected: those already installed here, or on a fresh host the canon's own.
-   *  At least one is required. */
-  practices(
-    offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
-    initial: readonly string[],
-  ): Promise<string[] | undefined>;
   /** Which rules to place, each ruleset offered whole, rule by rule, or not at all;
-   *  nothing is chosen unless the operator chooses it. The answer is the rules chosen,
+   *  nothing is chosen unless the product owner chooses it. The answer is the rules chosen,
    *  by name, possibly none. */
   rules(offered: readonly OfferedRuleset[]): Promise<string[] | undefined>;
   /** The model per role asked: the answer of each role bound, a role left unbound
@@ -136,21 +130,6 @@ export const terminalPrompts: InstallPrompts = {
             ? 'Which harness should the canon be installed into?'
             : 'No harness found on this host. Which one should the canon be installed into?',
         options: options.map((value) => ({ value, label: value })),
-      }),
-    );
-  },
-
-  async practices(offered, initial) {
-    return answer(
-      await clack.multiselect({
-        message:
-          'Which practices should be installed? (space toggles, enter accepts)',
-        options: offered.map((p) => ({
-          value: p.name,
-          label: `${p.name} — ${p.description}`,
-        })),
-        initialValues: [...initial],
-        required: true,
       }),
     );
   },

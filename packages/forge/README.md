@@ -4,8 +4,8 @@ The build core for [cratylus](../../README.md): it resolves a plugin set into on
 agents, skills, values and hooks, renders that set into the files a harness reads, and installs
 them.
 
-This README is for whoever works on the library, or on an adapter for a harness. What an operator
-does with the `cratylus` command — install and its flags, the practices, starting a session as an
+This README is for whoever works on the library, or on an adapter for a harness. What the product owner
+does with the `cratylus` command — install and its flags, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
 
@@ -38,30 +38,11 @@ port. The plugin set `install` projects is the canon the `cratylus` command is b
 companion get their shim emitted alongside them. A shim forwards its arguments to
 `cratylus <capability>` with the caller's environment, and it needs no session from any harness.
 
-### A render may name practices
+### A render is the whole plugin set
 
-A plugin declares **practices** (`AgentPlugin.practices`): ways of working an install offers as one
-choice, each naming the agents it installs and any skills no agent carries, beside the **plumbing**
-(`AgentPlugin.plumbing`) every practice is installed with and none is offered as. `projectPluginSet`
-renders the practices it is given (`ProjectOpts.practices`); named none, it renders every agent,
-skill and hook exactly as a plugin set declaring no practice does, byte for byte. Given names, it
-renders the union of those practices' agents, skills they declare and compose, and hooks declared
-by the chosen practices or plugin plumbing. An empty list is refused: no practice is not every
-practice.
-
-A chosen set must be closed under skill composition. Before anything is rendered, projection checks
-that every skill an agent is given, with what that composes, is carried by the plugin set; a set
-that is not is refused by one error naming the practice, the agent and the skill that is missing.
-Whom an agent dispatches is never closed over (decision 0142). A name that is no declared practice
-is refused, naming the declared ones. The tree
-reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected,
-former names) for an install to offer, whatever was rendered.
-
-A practice renamed declares the names it was offered under before (`Practice.formerNames`,
-decision 0332). An install over an earlier one whose record (its installation record, or an earlier
-deploy record) names a former name keeps the practice, records its new name only, and reports the
-carry-over, old name and new. A former name is no declared practice: render and `--practices`
-refuse it as any unknown name.
+`projectPluginSet` renders every agent, skill and hook the plugin set declares; an install places
+them all. The one choice a render takes is which rules to place (`ProjectOpts.rules`), and the tree
+reports the declared rulesets (`ProjectedTree.rulesets`) for an install to offer.
 
 ### An agent is given its skills' closure
 
@@ -83,8 +64,7 @@ description, then one section per factor group in catalog order, each value as i
 correction, marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and
 model are never text. On OMP the definition's front matter carries `model: "@<name>"`, the model
 role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
-any agent
-(decision 0142). `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
+any agent. `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
 its own role.
 
@@ -104,8 +84,9 @@ owned root is taken back by its deploy manifest (`removeEarlierInstallation`), w
 before digests were recorded included.
 
 Model routing is host configuration, not a placed artifact: a declaration names its own role first,
-then its tier and effort (decision 0111), and is never rendered with a model. Which model a tier or
-a persona's role runs on is the operator's choice (decision 0112): `install` asks for each the host
+then its tier and effort, and is never rendered with a model. Which model a tier or a persona's
+role runs on is the product owner's choice
+(`design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md`): `install` asks for each the host
 does not bind and writes the answer into the host's `modelRoles` as the host's own entry, recorded
 in no installation record, so upgrade and uninstall keep it; an earlier installation's seeded
 entries stay the same way.

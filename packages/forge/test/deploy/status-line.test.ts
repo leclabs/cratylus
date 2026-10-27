@@ -19,11 +19,7 @@ import type { StatusSegmentHost } from '../../src/core/harness-adapter.js';
 import { ensureStatusSegment } from '../../src/deploy/status-line.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  fixtureAgentSource,
-  fixturePractices,
-} from './helpers.js';
+import { fixtureAgentSource } from './helpers.js';
 
 const roots: string[] = [];
 function tmpRoot(): string {
@@ -571,7 +567,6 @@ function canon(): ProjectablePlugin {
     name: 'status-line-fixture',
     manifest: FIXTURE_MANIFEST,
     agents,
-    practices: fixturePractices(['alpha', 'beta']),
   };
 }
 
@@ -589,7 +584,6 @@ describe('install — the status line', () => {
       home,
       cwd,
       canon: plugin as never,
-      practices: FIXTURE_PRACTICE,
       verbose: true,
       ...extra,
     });
@@ -640,12 +634,10 @@ describe('install — the status line', () => {
       // discovers, so the place it renders is made whatever the canon delivers.
       const agents = join(tmpRoot(), 'none');
       mkdirSync(agents, { recursive: true });
-      plugin = { ...plugin, agents, practices: undefined };
+      plugin = { ...plugin, agents };
       const host = `${ROLES}statusLine:\n  preset: custom\n  leftSegments: [model]\n  showHookStatus: false\n`;
       const read = seed(host);
-      expect(
-        await install('omp', { practices: undefined, agentStatus: 'show' }),
-      ).toBe(0);
+      expect(await install('omp', { agentStatus: 'show' })).toBe(0);
       expect(read()).toContain('leftSegments: [model, status]');
     });
 
@@ -697,9 +689,9 @@ describe('install — the status line', () => {
     });
   });
 
-  // Decision 0113: whether the status line shows the session's agent is the
-  // operator's choice, written as the host's own setting.
-  describe("the operator's choice of showing the session's agent", () => {
+  // Whether the status line shows the session's agent is the
+  // product owner's choice, written as the host's own setting.
+  describe("the product owner's choice of showing the session's agent", () => {
     const HIDDEN = `modelRoles:\n  default: "@default"\nstatusLine:\n  preset: minimal\n  showHookStatus: false\n`;
     const SHOWN = HIDDEN.replace(
       'showHookStatus: false',
@@ -721,7 +713,6 @@ describe('install — the status line', () => {
             prompts: {
               harness: async () => 'omp',
               scope: async () => 'user',
-              practices: async (_offered, initial) => [...initial],
               rules: async () => [],
               routes: async () => ({}),
               agentStatus: async () => {

@@ -1,6 +1,6 @@
 // The deploy layer — forge's placement stage, as `install` and `uninstall` use it.
 // It places an already-projected render tree in an owned root the harness's own
-// surfaces refer into, edits the host's own settings where the operator chose so, and
+// surfaces refer into, edits the host's own settings where the product owner chose so, and
 // takes back what an earlier installation recorded placing (`manifest.ts` —
 // attribution by record, never by naming convention, because the harness's roots also
 // hold artifacts that are not ours).
@@ -22,7 +22,6 @@ export {
 // The owned root: everything install places for a user on a harness, and the
 // references the harness's own surfaces hold into it.
 export {
-  type DeliveredDocument,
   holdsRenderTree,
   linkOwnedRoot,
   ownedRootIn,

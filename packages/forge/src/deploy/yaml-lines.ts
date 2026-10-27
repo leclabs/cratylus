@@ -2,7 +2,7 @@
 // inserting text: `model-roles.ts` and `status-line.ts`.
 //
 // Neither reads the file with a YAML library or writes it with one, because a library
-// that reads then serializes rewrites the operator's comments, quoting, key order and
+// that reads then serializes rewrites the product owner's comments, quoting, key order and
 // every key that is not the one being added — and those bytes must survive. What is
 // needed instead is small: where each line ends, which lines are keys, and what a
 // key's inline value is. That is all this holds, so the two editors read a file the

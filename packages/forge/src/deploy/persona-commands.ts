@@ -11,7 +11,7 @@
 // still a symlink into this harness's own home, where the launcher it was linked to
 // sat. Its target need not exist: a reinstall prunes the launcher before this runs. A
 // recorded name since taken by anything else — a regular file, a link elsewhere — is
-// the operator's now: it is reported, dropped from the record, and left as it is.
+// the product owner's now: it is reported, dropped from the record, and left as it is.
 
 import { existsSync, lstatSync, readlinkSync, unlinkSync } from 'node:fs';
 import { dirname, join, resolve, sep } from 'node:path';

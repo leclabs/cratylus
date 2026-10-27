@@ -13,11 +13,11 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": ["dist", "generated"],
   "scripts": {
-    "build": "pnpm run clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "build": "pnpm run clean && node tooling/practices.ts && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist generated",
+    "dev": "node tooling/practices.ts && tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "prepack": "pnpm run build",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",

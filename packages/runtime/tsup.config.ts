@@ -12,8 +12,6 @@ export default defineConfig([
       'bin-name': 'src/bin-name.ts',
       capability: 'src/capability.ts',
       'runtime-config': 'src/runtime-config.ts',
-      ulid: 'src/ulid.ts',
-      'verb-flags': 'src/verb-flags.ts',
     },
     format: ['esm'],
     dts: true,

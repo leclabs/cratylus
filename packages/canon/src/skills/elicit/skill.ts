@@ -24,9 +24,9 @@ c          ≜ a closed distinction-set ; c ⊆ D
 q ∈ c      ⇔ c draws the distinction q
 priors   ≜ structured understanding of a token before any definition
 μ          ≜ prior mass over candidates read off priors by conceptual fit ; μ : ℘(C) → [0,1] ; μ(C) = 1
-t          ≜ the operator's hidden target concept ; t ∈ C ; unobserved
+t          ≜ the product owner's hidden target concept ; t ∈ C ; unobserved
 candidates          ≜ the live candidate set ; candidates ⊆ C
-q          ≜ a query ; q ∈ D ; operator answers yes ∨ no
+q          ≜ a query ; q ∈ D ; product owner answers yes ∨ no
 θ          ≜ the burden threshold ; θ ∈ (0,1]
 
 Y(q)      ≜ { c ∈ candidates | q ∈ c }

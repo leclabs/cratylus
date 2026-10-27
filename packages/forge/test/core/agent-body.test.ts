@@ -59,11 +59,11 @@ const CATALOG = {
 } as const satisfies FactorManifest;
 
 const agent = {
-  name: 'reviewer',
+  name: 'code-reviewer',
   description: 'Reviews a change before it lands.',
   mark: { emoji: '🔎', hue: 'cyan' },
   key: null,
-  role: [{ value: 'reviewer ≜ judges a change', level: 'fixed' }],
+  role: [{ value: 'code-reviewer ≜ judges a change', level: 'fixed' }],
   decisionRights: [
     { value: 'I ≜ gives input', level: 'fixed', slot: 'intent' },
     {
@@ -77,7 +77,12 @@ const agent = {
     { value: 'zero-trust ≜ verifies before it trusts', level: 'firm' },
     { value: 'terse', level: 'advisory' },
   ],
-  handoffs: [{ value: 'builder ≜ hands work to a builder', level: 'fixed' }],
+  handoffs: [
+    {
+      value: 'software-engineer ≜ hands work to a software engineer',
+      level: 'fixed',
+    },
+  ],
   evaluation: [],
 } as Agent;
 
@@ -85,7 +90,7 @@ describe('agentBody — the projected text of an agent', () => {
   it('renders identity, then grouped text factors with explained entry lines', () => {
     expect(agentBody(agent, CATALOG)).toBe(
       [
-        '# 🔎 reviewer',
+        '# 🔎 code-reviewer',
         '',
         'Reviews a change before it lands.',
         '',
@@ -93,7 +98,7 @@ describe('agentBody — the projected text of an agent', () => {
         '',
         '### role',
         '',
-        '- **reviewer** — judges a change (fixed)',
+        '- **code-reviewer** — judges a change (fixed)',
         '',
         '### stance',
         '',
@@ -119,13 +124,13 @@ describe('agentBody — the projected text of an agent', () => {
 
   it('heads an unmarked agent with its name alone', () => {
     const body = agentBody({ ...agent, mark: null }, CATALOG);
-    expect(body.split('\n')[0]).toBe('# reviewer');
+    expect(body.split('\n')[0]).toBe('# code-reviewer');
   });
 
   it('never renders a binding factor, an attribute factor or the key', () => {
     const body = agentBody(agent, CATALOG);
     expect(body).not.toContain('handoffs');
-    expect(body).not.toContain('builder');
+    expect(body).not.toContain('software-engineer');
     expect(body).not.toContain('## Reach');
     expect(body).not.toContain('enforcement-level');
     expect(body).not.toMatch(/^#+ key\b/im);
@@ -134,7 +139,9 @@ describe('agentBody — the projected text of an agent', () => {
   it('refuses a vector whose text factor is not a list of entries', () => {
     expect(() =>
       agentBody({ ...agent, stance: null } as unknown as Agent, CATALOG),
-    ).toThrow(/agent 'reviewer': its 'stance' field is not a list of entries/);
+    ).toThrow(
+      /agent 'code-reviewer': its 'stance' field is not a list of entries/,
+    );
   });
 
   it('states the deliverable field by field, with what each field means', () => {
