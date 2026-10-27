@@ -89,7 +89,7 @@ export const leadRole: RoleProfile = {
       { value: humanOnTheLoop, note: 'between hold points' },
       {
         value: missionCommand,
-        note: 'between hold points; escalates only a fork that is irreversible, about value, or beyond its competence',
+        note: 'between hold points, escalating a fork beyond its own competence',
       },
       managementByException,
       handoff,
