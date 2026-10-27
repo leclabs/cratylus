@@ -6,17 +6,19 @@
 // its name and subject, and one file per concept, `<context>/<concept>.md`: its
 // term as the first line's `# heading`, its correction up to any `##` section,
 // and optionally `## Examples`, each example a `### name` (or `### name (judged in
-// review)`) over Given, When and Then lines. A concept is `<context>/<concept>`,
-// the directory and the file stem.
+// review)`) over Given lines, then When lines, then Then lines, each run going on
+// in `And` lines. A concept is `<context>/<concept>`, the directory and the file
+// stem. Beside them is `purpose.md`, and no other record.
 //
-// An acceptance test is a plain `it(`/`test(` call whose title is exactly
-// `<context>/<concept>: <example name>`, in any test file under the repository,
-// outside `node_modules`, `dist` and hidden directories.
+// An acceptance test is a plain `it(`/`test(` call, outside comments, whose title
+// is exactly `<context>/<concept>: <example name>`, in any test file under the
+// repository, outside `node_modules`, `dist` and hidden directories.
 //
-// The check FAILS for a malformed record or context, an example no acceptance
-// test names and not judged in review, and an acceptance test naming an example
-// the model does not have. It WARNS, never fails, of implementation leakage in a
-// record's correction and examples and of history recounted in its correction.
+// The check FAILS for a malformed record or context, a misplaced record, an
+// example no acceptance test names and not judged in review, and an acceptance
+// test naming an example the model does not have. It WARNS, never fails, of
+// implementation leakage in a record's correction and examples and of history
+// recounted in its correction.
 //
 // Pure: it reads files and nothing else — no network, no subprocess.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,6 +30,7 @@ import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
+import { uncommented } from './comments.js';
 import { type Leak, leaks, recounts, vocabulary } from './leakage.js';
 
 export const VERBS = {
@@ -54,6 +57,12 @@ export const MODEL_DIR = 'design/model';
 
 /** The marker an example's heading ends with when it is judged in review. */
 const JUDGED = ' (judged in review)';
+
+/** The steps of an example, in their order; each run of one may go on in `And` lines. */
+const STEPS = ['Given', 'When', 'Then'] as const;
+
+/** The step a line of an example opens. */
+const STEP = /^(Given|When|Then|And)\b/;
 
 /** A test file: any `.test` or `.spec` script. */
 const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
@@ -191,9 +200,32 @@ function readRecord(
   for (const { name, lines } of examples) {
     if (named.has(name)) fail(`has two examples named "${name}"`, name);
     named.add(name);
-    for (const step of ['Given', 'When', 'Then'])
-      if (!lines.some((l) => new RegExp(`^${step}\\b`).test(l)))
-        fail(`example "${name}" has no ${step} line`, name);
+    const steps = lines.map((l) => STEP.exec(l)?.[1]);
+    const other = steps.indexOf(undefined);
+    if (other >= 0) {
+      fail(
+        `example "${name}" has a line that is no Given, When, Then or And: ${lines[other]}`,
+        name,
+      );
+      continue;
+    }
+    const missing = STEPS.filter((step) => !steps.includes(step));
+    for (const step of missing)
+      fail(`example "${name}" has no ${step} line`, name);
+    if (missing.length > 0) continue;
+    let at = -1;
+    const astray = steps.findIndex((step) => {
+      const next = STEPS.indexOf(step as (typeof STEPS)[number]);
+      if (step === 'And') return at < 0;
+      if (next !== at && next !== at + 1) return true;
+      at = next;
+      return false;
+    });
+    if (astray >= 0)
+      fail(
+        `example "${name}" is out of order at: ${lines[astray]}; its lines are Given, then When, then Then, each continued by And`,
+        name,
+      );
   }
   return {
     record: { id, term, correction: corrected, examples },
@@ -225,7 +257,8 @@ interface AcceptanceTest {
   readonly example: string;
 }
 
-/** The acceptance tests in the test files under `root`, by file, then line. */
+/** The acceptance tests in the test files under `root`, by file, then line:
+ *  calls in comments are none. */
 export function acceptanceTests(root: string): AcceptanceTest[] {
   const found: AcceptanceTest[] = [];
   const walk = (dir: string) => {
@@ -236,7 +269,7 @@ export function acceptanceTests(root: string): AcceptanceTest[] {
         continue;
       }
       if (!TEST_FILE.test(name)) continue;
-      const text = readFileSync(path, 'utf8');
+      const text = uncommented(readFileSync(path, 'utf8'));
       const file = relative(root, path).split(sep).join('/');
       for (const match of text.matchAll(TEST_CALL)) {
         const quoted = match[1] ?? match[2] ?? match[3] ?? '';
@@ -287,6 +320,28 @@ function warningsOf(
   return warnings;
 }
 
+/** A file named as a record, whatever the case of its extension. */
+const RECORD_FILE = /\.md$/i;
+
+/** The failure of the record at `path`, in the model, placed where no record goes. */
+function misplaced(path: string): ModelFailure {
+  return {
+    concept: path,
+    message: `${path}: a misplaced record; a record is purpose.md, <context>/context.md or <context>/<concept>.md`,
+  };
+}
+
+/** The records at any depth under `dir`, each as its path under `prefix`. */
+function recordsIn(dir: string, prefix: string): string[] {
+  return entries(dir).flatMap(({ name, directory }) =>
+    directory
+      ? recordsIn(join(dir, name), `${prefix}/${name}`)
+      : RECORD_FILE.test(name)
+        ? [`${prefix}/${name}`]
+        : [],
+  );
+}
+
 /** The model check of the domain model at `model`, against the acceptance
  *  tests under `root`. */
 export function checkModel(root: string, model: string): ModelReport {
@@ -295,11 +350,21 @@ export function checkModel(root: string, model: string): ModelReport {
   /** Each context's concepts, each with its examples. */
   const records = new Map<string, Map<string, readonly Example[]>>();
   for (const { name: context, directory } of entries(model)) {
-    if (!directory) continue;
+    if (!directory) {
+      if (RECORD_FILE.test(context) && context !== 'purpose.md')
+        failures.push(misplaced(context));
+      continue;
+    }
     const dir = join(model, context);
-    const files = entries(dir).filter(
-      (e) => !e.directory && e.name.endsWith('.md'),
-    );
+    const contents = entries(dir);
+    const files: typeof contents = [];
+    for (const entry of contents) {
+      const path = `${context}/${entry.name}`;
+      if (entry.directory)
+        failures.push(...recordsIn(join(dir, entry.name), path).map(misplaced));
+      else if (entry.name.endsWith('.md')) files.push(entry);
+      else if (RECORD_FILE.test(entry.name)) failures.push(misplaced(path));
+    }
     let subject: string | undefined;
     if (files.some((f) => f.name === 'context.md')) {
       const read = readContext(

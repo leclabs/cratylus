@@ -108,15 +108,20 @@ function concept(
   );
 }
 
+/** A test call titled `title`, composed from parts. */
+function titled(title: string) {
+  const call = 'it';
+  return `${call}('${title}', () => {});`;
+}
+
+/** A test file of `lines`, after its import (line 1) and a blank line (line 2). */
+function testFile(path: string, lines: string[]) {
+  put(path, `${["import { it } from 'vitest';", '', ...lines].join('\n')}\n`);
+}
+
 /** A test file whose acceptance tests carry `titles`; returns the line of each. */
 function acceptanceTests(path: string, titles: string[]) {
-  const call = 'it';
-  const lines = [
-    "import { it } from 'vitest';",
-    '',
-    ...titles.map((title) => `${call}('${title}', () => {});`),
-  ];
-  put(path, `${lines.join('\n')}\n`);
+  testFile(path, titles.map(titled));
   return Object.fromEntries(
     titles.map((title, i) => [title, `${path}:${i + 3}`]),
   );
@@ -168,6 +173,33 @@ it('delivery/model-check: an example with no acceptance test fails', () => {
     }),
   ]);
 
+  // Nor does a title only in a comment name it, nor one that only starts with
+  // its name or differs from it in case.
+  const removes = 'shop/basket: removes an item';
+  for (const unnamed of [
+    `// ${titled(removes)}`,
+    `/* ${titled(removes)} */`,
+    `/*\n${titled(removes)}\n*/`,
+    titled(`${removes} twice`),
+    titled('shop/basket: Removes an item'),
+  ]) {
+    testFile('test/basket.test.ts', [
+      titled('shop/basket: adds an item'),
+      unnamed,
+    ]);
+    const still = check();
+    expect(still.code, unnamed).toBe(1);
+    expect(
+      still.report.failures.filter((f) => f.test === undefined),
+      unnamed,
+    ).toEqual([
+      expect.objectContaining({
+        concept: 'shop/basket',
+        example: 'removes an item',
+      }),
+    ]);
+  }
+
   // Mended: once a test names it, the same model passes.
   acceptanceTests('test/basket.test.ts', [
     'shop/basket: adds an item',
@@ -208,6 +240,56 @@ it('delivery/model-check: a test naming a missing example fails', () => {
       }),
     ]),
   );
+
+  // A title only in a comment names nothing, so nothing missing.
+  for (const commented of [
+    `// ${titled('shop/basket: empties the basket')}`,
+    `/* ${titled('shop/basket: empties the basket')} */`,
+  ]) {
+    testFile('test/basket.test.ts', [
+      titled('shop/basket: adds an item'),
+      commented,
+    ]);
+    const quiet = check();
+    expect(quiet.code, commented).toBe(0);
+    expect(quiet.report.failures, commented).toEqual([]);
+  }
+
+  // The example's name under another concept, or a title that only starts with
+  // it or differs from it in case, names an example the model lacks and leaves
+  // shop/basket's unbound.
+  for (const [title, named, example] of [
+    ['shop/till: adds an item', 'shop/till', 'adds an item'],
+    ['shop/basket: adds an item twice', 'shop/basket', 'adds an item twice'],
+    ['shop/basket: Adds an item', 'shop/basket', 'Adds an item'],
+  ] as const) {
+    testFile('test/basket.test.ts', [titled(title)]);
+    const wrong = check();
+    expect(wrong.code, title).toBe(1);
+    expect(wrong.report.failures, title).toHaveLength(2);
+    expect(wrong.report.failures, title).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          concept: 'shop/basket',
+          example: 'adds an item',
+        }),
+        expect.objectContaining({
+          concept: named,
+          example,
+          test: 'test/basket.test.ts:3',
+        }),
+      ]),
+    );
+    expect(
+      wrong.report.failures.filter((f) => f.test === undefined),
+      `${title} binds nothing`,
+    ).toEqual([
+      expect.objectContaining({
+        concept: 'shop/basket',
+        example: 'adds an item',
+      }),
+    ]);
+  }
 
   // Mended: the tests naming what the model has pass.
   acceptanceTests('test/basket.test.ts', ['shop/basket: adds an item']);

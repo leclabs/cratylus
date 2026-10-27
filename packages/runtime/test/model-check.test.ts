@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
+import { uncommented } from '../src/capabilities/model/comments.js';
 import {
   acceptanceTests,
   checkModel,
@@ -190,6 +191,55 @@ describe('finding acceptance tests', () => {
       },
     ]);
   });
+
+  it('reads no test in a line or a block comment, keeping the lines after them', () => {
+    write(
+      'a.test.ts',
+      [
+        `// ${source(title)}`,
+        `/* ${source(title)} */`,
+        `/*\n * ${source(title)} */`,
+        `const u = 'http://x'; ${source(title)}`,
+      ].join(''),
+    );
+    expect(acceptanceTests(root).map((t) => t.test)).toEqual(['a.test.ts:5']);
+  });
+});
+
+describe('blanking comments', () => {
+  it('blanks a line comment and a block comment, keeping lines and columns', () => {
+    const code = 'a; // b\n/* c\nd */ e;\n';
+    expect(uncommented(code)).toBe('a;     \n    \n     e;\n');
+    expect(uncommented('a /* b')).toBe('a'.padEnd(6));
+  });
+
+  it('keeps a comment marker in a string', () => {
+    const code = `f('http://x', "/* y */", 'a\\' // b'); // c`;
+    expect(uncommented(code)).toBe(
+      `f('http://x', "/* y */", 'a\\' // b');     `,
+    );
+  });
+
+  it('keeps a template’s text and blanks the comments in its substitutions', () => {
+    const code = 'f(`a // b ${g(/* c */ `d // e ${h}`)} /* f */`); // g';
+    expect(uncommented(code)).toBe(
+      'f(`a // b ${g(        `d // e ${h}`)} /* f */`);     ',
+    );
+    expect(uncommented('`${{ a: 1 }.a} // x` // y')).toBe(
+      '`${{ a: 1 }.a} // x`     ',
+    );
+  });
+
+  it('keeps a regular expression whole, and a division a division', () => {
+    expect(uncommented("x.replace(/\\/\\/'[/]/g, ''); // c")).toBe(
+      "x.replace(/\\/\\/'[/]/g, '');     ",
+    );
+    const division = 'a = b / c; // d / e';
+    expect(uncommented(division)).toBe('a = b / c;'.padEnd(division.length));
+    expect(uncommented("return /'/.test(s); // q")).toBe(
+      "return /'/.test(s);     ",
+    );
+  });
 });
 
 describe('malformed records and contexts', () => {
@@ -259,6 +309,78 @@ describe('malformed records and contexts', () => {
       },
       { concept: 'stock/context', message: 'stock: has no context.md' },
     ]);
+  });
+
+  it('fails an example whose lines are not Given, then When, then Then, each going on in And', () => {
+    const examples: Record<string, string[]> = {
+      'in order': [
+        'Given a basket',
+        'And a book in it',
+        'When the shopper pays',
+        'And leaves',
+        'Then the basket is empty',
+        'And the book is sold',
+      ],
+      'and first': ['And a basket', 'Given a book', 'When paid', 'Then sold'],
+      'when first': ['When paid', 'Given a book', 'Then sold'],
+      'then before when': ['Given a book', 'Then sold', 'When paid'],
+      'given again': ['Given a book', 'When paid', 'Then sold', 'Given more'],
+      'a stray line': ['Given a book', 'When paid', 'But slowly', 'Then sold'],
+    };
+    write(
+      'design/model/shop/basket.md',
+      [
+        '# basket',
+        'Kept until checkout',
+        '## Examples',
+        ...Object.entries(examples).flatMap(([name, lines]) => [
+          `### ${name} (judged in review)`,
+          '',
+          ...lines,
+          '',
+        ]),
+      ].join('\n'),
+    );
+    const order = (name: string, line: string) => ({
+      concept: 'shop/basket',
+      example: name,
+      message: `shop/basket: example "${name}" is out of order at: ${line}; its lines are Given, then When, then Then, each continued by And`,
+    });
+    expect(check().failures).toEqual([
+      order('and first', 'And a basket'),
+      order('when first', 'When paid'),
+      order('then before when', 'Then sold'),
+      order('given again', 'Given more'),
+      {
+        concept: 'shop/basket',
+        example: 'a stray line',
+        message:
+          'shop/basket: example "a stray line" has a line that is no Given, When, Then or And: But slowly',
+      },
+    ]);
+  });
+
+  it('fails a record anywhere but purpose.md, a context.md or a concept’s file', () => {
+    write('design/model/shop/basket.md', BASKET);
+    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('design/model/notes.md', '# notes\n\nLoose\n');
+    write('design/model/Purpose.MD', '# Purpose\n\nTwice\n');
+    write('design/model/shop/till.MD', '# till\n\nWhere a shopper pays\n');
+    write('design/model/shop/drafts/old.md', '# old\n\nGone\n');
+    write('design/model/shop/drafts/deep/older.Md', '# older\n\nGone\n');
+    write('design/model/shop/drafts/image.png', 'not a record');
+    write('design/model/shop/cover.txt', 'not a record');
+    const placed =
+      'a misplaced record; a record is purpose.md, <context>/context.md or <context>/<concept>.md';
+    expect(check().failures).toEqual(
+      [
+        'Purpose.MD',
+        'notes.md',
+        'shop/drafts/deep/older.Md',
+        'shop/drafts/old.md',
+        'shop/till.MD',
+      ].map((path) => ({ concept: path, message: `${path}: ${placed}` })),
+    );
   });
 });
 

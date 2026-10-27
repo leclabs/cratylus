@@ -57,7 +57,6 @@ the command's own self-description (`EXPLANATION`, `ORIENTATION`, `PURPOSE`, `ST
 | `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                    |
 | `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                      |
 | `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                     |
-| `./ulid`           | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                         |
 | `./package.json`   | the manifest                                                                                                                                                   |
 
 ## Verbs
