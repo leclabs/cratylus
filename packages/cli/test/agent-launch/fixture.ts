@@ -39,16 +39,7 @@ export function fixture(): Fixture {
   };
   const installed = spawnSync(
     'cratylus',
-    [
-      'install',
-      '--harness',
-      'omp',
-      '--home',
-      home,
-      '--all',
-      '--model-roles',
-      'default',
-    ],
+    ['install', '--harness', 'omp', '--home', home, '--model-roles', 'default'],
     { cwd, env, encoding: 'utf8', timeout: 60_000 },
   );
   if (installed.error) throw installed.error;

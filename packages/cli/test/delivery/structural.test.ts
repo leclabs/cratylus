@@ -106,7 +106,6 @@ it('interactive install with all supplied answers asks nothing', async () => {
     home: h.home,
     cwd: h.cwd,
     canon,
-    all: true,
     rules: 'none',
     modelRoles: 'default',
     scope: 'user',
@@ -119,10 +118,6 @@ it('interactive install with all supplied answers asks nothing', async () => {
       scope: async () => {
         asked.push('scope');
         return 'user';
-      },
-      practices: async (offered) => {
-        asked.push('practices');
-        return offered.map((p) => p.name);
       },
       rules: async () => {
         asked.push('rules');
@@ -168,10 +163,6 @@ it('after an answer interactive install asks only missing information, never the
         record('scope');
         return 'user';
       },
-      practices: async (offered) => {
-        record('practices');
-        return offered.map((p) => p.name);
-      },
       rules: async () => {
         record('rules');
         return [];
@@ -191,8 +182,8 @@ it('after an answer interactive install asks only missing information, never the
     },
   });
   expect(rc).toBe(0);
-  expect(asked).toContain('practices');
-  if (negative === '5') asked.push('practices'); // Negative recording: a second request for the answered selection.
+  expect(asked).toContain('rules');
+  if (negative === '5') asked.push('rules'); // Negative recording: a second request for the answered selection.
   expect(asked).not.toContain('harness');
   expect(asked.length, 'no answered question repeated').toBe(
     new Set(asked).size,

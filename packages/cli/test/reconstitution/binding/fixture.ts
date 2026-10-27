@@ -9,12 +9,11 @@ import { parseYaml } from '../../yaml.js';
 import { omp } from './omp-mocks.js';
 
 export const roles = [
-  'architect',
-  'illustrator',
-  'lead',
-  'check-writer',
-  'builder',
-  'reviewer',
+  'business-analyst',
+  'tech-lead',
+  'test-engineer',
+  'software-engineer',
+  'code-reviewer',
 ];
 export const story = {
   story: 'film',
@@ -24,29 +23,21 @@ export const story = {
     "The creative's approval of a finished film is recorded.",
   ],
   outOfScope: [],
-  path: 'plain',
-  review: 'Ask: each change reviewed before it joins.',
-  cost: 'One task.',
-  examples: ['film-production/1'],
-  decisions: ['0081'],
+  examples: ['film-production/approval'],
 };
 export const outcome = {
   story: 'film',
+  joined: 'merged',
   criteria: [
     {
       criterion: "The creative's approval of a finished film is recorded.",
       holds: true,
       evidence:
-        'film-production/1: the approval is recorded once the creative approves',
+        'film-production/approval: the approval is recorded once the creative approves',
     },
   ],
   meaningQuestions: [],
   followUps: ['Approval could be exercised with another creative.'],
-  cost: {
-    agentRuns: { total: 3, byRole: { builder: 1, reviewer: 1, lead: 1 } },
-    tokens: 127,
-    elapsed: '14m',
-  },
 };
 export const assignment = (value: unknown) =>
   `\`\`\`assignment\n${JSON.stringify(value)}\n\`\`\``;
