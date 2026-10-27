@@ -21,7 +21,7 @@ import type { Host, ToolResult } from '../capability-port/fixture.js';
 import { host, run, success, toolJSON } from '../capability-port/fixture.js';
 import { omp } from '../reconstitution/binding/omp-mocks.js';
 import { parseYaml } from '../yaml.js';
-export { success, toolJSON };
+export { success };
 export const here = dirname(fileURLToPath(import.meta.url));
 export function put(path: string, text: string) {
   mkdirSync(dirname(path), { recursive: true });
@@ -423,32 +423,6 @@ export function noTap(h: Host) {
     JSON.stringify(projection),
     'no installed event tap, including disabled scripts',
   ).not.toMatch(/event[-_ ]?tap/i);
-}
-
-// Observe the real installed entry point without replacing its implementation.
-// The observer reads the declared package version on every process invocation.
-export function traceCommand(h: Host) {
-  const pkg = join(h.prefix, 'node_modules/cratylus/package.json');
-  const bin = JSON.parse(readFileSync(pkg, 'utf8')).bin.cratylus as string;
-  const file = join(dirname(pkg), bin);
-  const log = join(h.root, 'command-invocations.jsonl');
-  const original = readFileSync(file, 'utf8');
-  const first = original.startsWith('#!') ? original.indexOf('\n') + 1 : 0;
-  const observation = `import {appendFileSync as deliveryAppend,readFileSync as deliveryRead} from 'node:fs';deliveryAppend(${JSON.stringify(log)},JSON.stringify({version:JSON.parse(deliveryRead(${JSON.stringify(pkg)},'utf8')).version,args:process.argv.slice(2)})+'\\n');\n`;
-  writeFileSync(
-    file,
-    original.slice(0, first) + observation + original.slice(first),
-  );
-  return () =>
-    existsSync(log)
-      ? readFileSync(log, 'utf8')
-          .trim()
-          .split('\n')
-          .filter(Boolean)
-          .map(
-            (line) => JSON.parse(line) as { version: string; args: string[] },
-          )
-      : [];
 }
 
 // These are the actual pre-delivery packages, not today's code with another label.

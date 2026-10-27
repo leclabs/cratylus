@@ -196,7 +196,7 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the repository reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['concepts', 'model', 'versionSkew']),
+      expect.arrayContaining(['model', 'versionSkew']),
     );
     expect(BASENAMES).toEqual(expect.arrayContaining(['provisional-mailbox']));
     // No canon skill declares a capability today, so the subset axis's reader is
@@ -254,7 +254,7 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
 
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic input that violates it', () => {
-    const caps = ['concepts', 'model', 'versionSkew'];
+    const caps = ['model', 'versionSkew'];
 
     // AXIS 1, forward: a port module outside the keyspace WITHOUT the prefix. This
     // is the shape a second hand-written exception would take, and there is no
@@ -278,7 +278,7 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
       ),
     ).toHaveLength(1);
 
-    // A keyspace member with no port module is legal: `concepts` and `model` have none.
+    // A keyspace member with no port module is legal: `model` and `versionSkew` have none.
     // …and a clean input really is clean through the same function, so the two
     // convictions above are the predicate biting, not the predicate always firing.
     expect(portKeyspaceViolations(caps, ['version-skew'])).toEqual([]);

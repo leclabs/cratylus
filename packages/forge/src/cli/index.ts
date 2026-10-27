@@ -21,13 +21,11 @@
 
 import { Command, Option } from 'commander';
 import { HARNESS_NAMES } from '../adapters/registry/index.js';
-import type { DeliveredDocument } from '../deploy/index.js';
 import type { ProjectablePlugin } from '../project/index.js';
 import { runInstall } from './commands/install.js';
 import { runUninstall } from './commands/uninstall.js';
 
 export { fail } from './style.js';
-export type { DeliveredDocument } from '../deploy/index.js';
 
 /** What the commands are built with. */
 export interface ProjectorOptions {
@@ -41,10 +39,6 @@ export interface ProjectorOptions {
   /** The declared version of the build the commands are held in: what `install`
    *  records in the owned root as the version that projected it. */
   readonly version?: string;
-  /** The documents the release delivers (`<origin>/<context>.json` and its bytes),
-   *  handed in by the command that holds the release: `install` places them
-   *  read-only in the owned root as given and computes nothing about them. */
-  readonly delivered?: readonly DeliveredDocument[];
 }
 
 /** The scopes `install` and `uninstall` act at. */
@@ -131,7 +125,6 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
           scope: opts.scope,
           canon: options.canon,
           version: options.version,
-          delivered: options.delivered,
           rules: opts.rules,
           modelRoles: opts.modelRoles,
           agentStatus: opts.agentStatus,

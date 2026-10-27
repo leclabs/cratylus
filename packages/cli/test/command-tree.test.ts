@@ -256,30 +256,33 @@ describe('neither README restates the orientation the command prints', () => {
   });
 });
 
-describe('the README restates nothing the concept journal explains of itself', () => {
-  it('holds no purpose, when or parameter description of the journal or a verb', async () => {
-    const { code, out } = await run('concepts', '--explain');
-    expect(code).toBe(0);
-    const explanation = JSON.parse(out) as {
-      purpose: string;
-      when: string;
-      verbs: {
+describe('the README restates nothing a capability explains of itself', () => {
+  it.each(CAPABILITIES)(
+    'holds no purpose, when or parameter description of %s or a verb',
+    async (capability) => {
+      const { code, out } = await run(capability, '--explain');
+      expect(code).toBe(0);
+      const explanation = JSON.parse(out) as {
         purpose: string;
         when: string;
-        parameters: { description: string }[];
-      }[];
-    };
-    const said = [
-      explanation.purpose,
-      explanation.when,
-      ...explanation.verbs.flatMap((v) => [
-        v.purpose,
-        v.when,
-        ...v.parameters.map((p) => p.description),
-      ]),
-    ];
-    expect(said.filter((text) => readme.includes(text))).toEqual([]);
-  });
+        verbs: {
+          purpose: string;
+          when: string;
+          parameters: { description: string }[];
+        }[];
+      };
+      const said = [
+        explanation.purpose,
+        explanation.when,
+        ...explanation.verbs.flatMap((v) => [
+          v.purpose,
+          v.when,
+          ...v.parameters.map((p) => p.description),
+        ]),
+      ];
+      expect(said.filter((text) => readme.includes(text))).toEqual([]);
+    },
+  );
 });
 
 describe('the README reference names exactly what the help lists, each once', () => {
@@ -408,22 +411,28 @@ describe('the README reference names exactly what the help lists, each once', ()
   it('convicts a reference with an entry missing, one twice, and one it should not have', () => {
     expect(
       discrepancies(
-        ['concepts', 'plan show', 'note'],
+        ['versionSkew', 'plan show', 'note'],
         ['plan show', 'plan show', 'frob', 'note'],
       ),
     ).toEqual({
-      missing: ['concepts'],
+      missing: ['versionSkew'],
       twice: ['plan show'],
       unlisted: ['frob'],
       misplaced: [],
     });
   });
 
-  it('convicts a reference with concepts moved ahead of install', () => {
-    const listing = ['install', 'uninstall', 'plan', 'plan show', 'concepts'];
+  it('convicts a reference with a capability moved ahead of install', () => {
+    const listing = [
+      'install',
+      'uninstall',
+      'plan',
+      'plan show',
+      'versionSkew',
+    ];
     expect(
       discrepancies(listing, [
-        'concepts',
+        'versionSkew',
         'install',
         'uninstall',
         'plan',
@@ -433,7 +442,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       missing: [],
       twice: [],
       unlisted: [],
-      misplaced: ['concepts', 'install', 'uninstall', 'plan', 'plan show'],
+      misplaced: ['versionSkew', 'install', 'uninstall', 'plan', 'plan show'],
     });
   });
 

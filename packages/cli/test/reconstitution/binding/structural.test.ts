@@ -5,18 +5,15 @@ import type { Fixture } from '../../agent-launch/fixture.js';
 import {
   assignment,
   bindingFixture,
-  command,
   declaration,
   load,
   outcome,
   outputValidator,
   roles,
   story,
-  succeeds,
   task,
 } from './fixture.js';
 import type { LoadedExtension } from './fixture.js';
-import { omp } from './omp-mocks.js';
 
 let f: Fixture;
 let running: LoadedExtension | undefined;
@@ -123,7 +120,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     });
   }
   for (const role of roles) {
-    it(`${role} keeps default tools including shell and all journal appends`, async () => {
+    it(`${role} keeps default tools including shell`, async () => {
       const d = declaration(f, role);
       // The opt-in red run also exercises roles whose current declaration already conforms.
       if (process.env.BINDING_RED === '1') d.frontmatter.tools = ['read'];
@@ -136,14 +133,6 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
         running.activeTools,
         'no narrowed replacement of the harness defaults',
       ).toEqual([]);
-      const journal = running.tools.find((t) => t.name === 'concept_journal');
-      const explanation = succeeds(f, 'concepts', '--explain') as {
-        verbs: { name: string }[];
-      };
-      expect(
-        journal?.parameters.properties.verb.enum,
-        'no journal appending operation withheld',
-      ).toEqual(explanation.verbs.map((v) => v.name));
     });
   }
   it('code-reviewer gathers evidence in the normal environment without a required worktree', async () => {
@@ -196,39 +185,5 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     }
     running = await load(f, { role: 'code-reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
-  });
-  it('no retired read-only journal gate survives as an alternate narrowing route', async () => {
-    running = await load(f, { role: 'tech-lead', kind: 'sub' });
-    // An old host declaration cannot resurrect the retired appending-verb gate.
-    omp.agents.find((a) => a.name === 'code-reviewer')!.tools = ['read'];
-    running.ctx.agent.name = 'code-reviewer';
-    await running.fire('session_start');
-    const journal = running.tools
-      .filter((t) => t.name === 'concept_journal')
-      .at(-1);
-    expect(
-      journal?.parameters.properties.verb.enum,
-      'no journal read-only gate or tech-lead journal-append restriction remains',
-    ).toContain('define');
-    const answer = await journal!.execute(
-      'append',
-      {
-        verb: 'define',
-        concept: 'screening',
-        context: 'film-production',
-        wording: 'A showing of the film.',
-        reason: 'Evidence that the appending tool remains reachable.',
-      },
-      undefined,
-      undefined,
-      running.ctx,
-    );
-    expect(
-      answer,
-      'append actually reaches the capability, not just its advertised schema',
-    ).not.toHaveProperty('isError', true);
-    expect(
-      command(f, 'concepts', 'design', '--context', 'film-production').stdout,
-    ).toContain('screening');
   });
 });

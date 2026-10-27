@@ -476,16 +476,6 @@ export interface HarnessAdapter {
    */
   capabilitySurface?(): readonly HarnessProjection[];
   /**
-   * The harness's OWN facilities that hold a runtime capability, by capability id
-   * (`concepts`) → the facility's name. Projection chooses, for each
-   * capability, the native facility first (no extension tool and no prose for it),
-   * then the {@link capabilitySurface} extension, then prose generated from the
-   * capability's own explanation, and reports which form each took.
-   *
-   * Absent ⇒ the harness holds no capability natively.
-   */
-  readonly nativeCapabilities?: Readonly<Record<string, string>>;
-  /**
    * Where an extension's status appears in this harness's status line, for a harness
    * whose status line is a LIST OF SEGMENTS a host lays out (omp's `statusLine`): the
    * status of the cratylus extension (the agent a session was started as) is an

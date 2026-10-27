@@ -27,7 +27,6 @@ const plugin: ProjectablePlugin = {
   // The fixture canon declares its own factors — nothing else can.
   manifest: FIXTURE_MANIFEST,
   agents: join(fixtures, 'agents'),
-  skills: join(fixtures, 'skills'),
   hooks: join(fixtures, 'hooks'),
 };
 
@@ -66,7 +65,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     const t = await tree();
     const paths = t.files.map((f) => f.path).sort();
     // OMP's session-hook modules and cratylus's own module, which offers the
-    // capabilities as tools and `--agent`, alongside the hook worker and skills. No
+    // capabilities as tools and `--agent`, alongside the hook worker. No
     // per-agent module (omp cannot scope a guard to one agent), launcher, persona
     // overlay or badge.
     expect(paths).toEqual(
@@ -75,13 +74,11 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
         `enforcing/_session/${CLI_BIN}.ts`,
         `enforcing/_session/${CLI_BIN}-session.ts`,
         'hooks/ping/ping.sh',
-        'skills/greet/SKILL.md',
-        'skills/greet/scripts/concepts.mjs',
       ].sort(),
     );
     // Bytes, not paths-on-disk: every entry carries its own content.
     for (const f of t.files) expect(typeof f.content).toBe('string');
-    expect(t).toMatchObject({ agents: 1, skills: 1, shims: 1, hooks: 1 });
+    expect(t).toMatchObject({ agents: 1, skills: 0, shims: 0, hooks: 1 });
   });
 
   it('carries the adapter-rendered agent bytes', async () => {
@@ -91,17 +88,6 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(agent?.content).toContain(
       'A fixture agent used to exercise the projection seam.',
     );
-  });
-
-  it('carries the skill body and its runtime shim, shim marked executable', async () => {
-    const t = await tree();
-    const skill = t.files.find((f) => f.path === 'skills/greet/SKILL.md');
-    expect(skill?.content).toContain('G ≜ ⟨greeting⟩');
-    const shim = t.files.find(
-      (f) => f.path === 'skills/greet/scripts/concepts.mjs',
-    );
-    expect(shim?.executable).toBe(true);
-    expect(shim?.content).toContain(`spawnSync('${CLI_BIN}', ['concepts'`);
   });
 
   it('carries the OMP session-hook module and its byte-identity-pinned worker', async () => {

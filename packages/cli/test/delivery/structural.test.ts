@@ -12,7 +12,7 @@ import canon from '@cratylus/canon';
 import { afterEach, expect, it } from 'vitest';
 import { runInstall } from '../../../forge/src/cli/commands/install.js';
 import type { Host } from '../capability-port/fixture.js';
-import { run, toolText } from '../capability-port/fixture.js';
+import { run } from '../capability-port/fixture.js';
 import { parseYaml } from '../yaml.js';
 import {
   assertOwned,
@@ -30,8 +30,6 @@ import {
   put,
   skew,
   success,
-  toolJSON,
-  traceCommand,
   tree,
   treeWithoutBindings,
   uninstall,
@@ -499,35 +497,7 @@ it('uninstall reaches all projects but neither their records nor a second user i
   ];
   for (const cwd of projects) {
     mkdirSync(cwd, { recursive: true });
-    success(run('git', ['init', '--initial-branch=journal'], cwd, h.env));
-    success(
-      h.command(
-        [
-          'concepts',
-          'context',
-          'booking',
-          '--subject',
-          'This project schedules deliveries',
-        ],
-        cwd,
-      ),
-    );
-    success(
-      h.command(
-        [
-          'concepts',
-          'define',
-          'delivery window',
-          '--context',
-          'booking',
-          '--wording',
-          'A reserved hour',
-          '--reason',
-          'Project design',
-        ],
-        cwd,
-      ),
-    );
+    success(run('git', ['init', '--initial-branch=main'], cwd, h.env));
     put(join(cwd, 'work.txt'), 'project work');
   }
   const before = projects.map((cwd) => tree(cwd));
@@ -656,8 +626,6 @@ it('a project-pinned 2.6.0 never redirects either installed 2.4.0 route or cause
   version(h, '2.6.0', pinned);
   symlinkSync(join(pinned, 'node_modules'), join(h.cwd, 'node_modules'), 'dir');
   put(join(h.cwd, 'package.json'), '{"dependencies":{"cratylus":"2.6.0"}}');
-  h.seed();
-  const calls = traceCommand(h);
   const ext = await load(h);
   try {
     await ext.start();
@@ -666,79 +634,7 @@ it('a project-pinned 2.6.0 never redirects either installed 2.4.0 route or cause
       command: '2.4.0',
     });
     expect(ext.notifications.filter((n) => n.level === 'warning')).toEqual([]);
-    const before = calls().length;
-    expect(
-      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
-    ).toEqual(h.concepts('state'));
-    const reached = calls()
-      .slice(before)
-      .filter((c) => c.args[0] === 'concepts' && c.args[1] === 'state');
-    expect(reached.length).toBeGreaterThanOrEqual(2);
-    expect(reached.every((c) => c.version === '2.4.0')).toBe(true);
     expect(success(h.command(['--version'])).trim()).toBe('2.4.0');
-  } finally {
-    ext.restore();
-  }
-});
-
-it('command and tool share journal writes and supersession through the installed runtime with no source path', async () => {
-  h = fresh();
-  success(install(h));
-  h.seed();
-  h.concepts(
-    'define',
-    'delivery window',
-    '--context',
-    'booking',
-    '--wording',
-    'A two-hour interval.',
-    '--reason',
-    'First design',
-  );
-  const ext = await load(h);
-  try {
-    const observed = toolJSON(
-      await ext.call('concept_journal', { verb: 'state' }),
-    );
-    const initial = negative === '17' ? {} : observed; // Negative recording: adapter returns its own empty design.
-    expect(JSON.stringify(initial)).toContain('A two-hour interval.');
-    const changed = await ext.call('concept_journal', {
-      verb: 'supersede',
-      concept: 'delivery window',
-      context: 'booking',
-      wording: 'A one-hour interval.',
-      reason: 'Revised design',
-    });
-    expect(changed.isError).not.toBe(true);
-    const after = h.concepts('state');
-    expect(JSON.stringify(after)).toContain('A one-hour interval.');
-    expect(
-      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
-    ).toEqual(after);
-    expect(h.env.PATH).not.toContain('/workspaces/cratylus');
-  } finally {
-    ext.restore();
-  }
-});
-
-it('command and tool report the same missing-decision refusal without changing the journal', async () => {
-  h = fresh();
-  success(install(h));
-  h.seed();
-  const before = tree(h.cwd);
-  const command = h.command(['concepts', 'accept', 'missing-decision']);
-  const ext = await load(h);
-  try {
-    const result = await ext.call('concept_journal', {
-      verb: 'accept',
-      id: 'missing-decision',
-    });
-    if (negative === '18') result.isError = false;
-    expect(command.code).not.toBe(0);
-    expect(result.isError).toBe(true);
-    expect(toolText(result)).toContain(command.stderr.trim());
-    expect(command.stderr).toMatch(/missing-decision/);
-    expect(tree(h.cwd)).toEqual(before);
   } finally {
     ext.restore();
   }
