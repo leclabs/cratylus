@@ -63,16 +63,7 @@ export function fresh() {
 export const owned = (h: Host) => join(h.home, '.cratylus/omp');
 export function install(h: Host, home = h.home, cwd = h.cwd) {
   return h.command(
-    [
-      'install',
-      '--harness',
-      'omp',
-      '--home',
-      home,
-      '--all',
-      '--model-roles',
-      'default',
-    ],
+    ['install', '--harness', 'omp', '--home', home, '--model-roles', 'default'],
     cwd,
   );
 }
@@ -127,8 +118,8 @@ export function treeWithoutBindings(h: Host): Tree {
 }
 export function hostMaterial(h: Host, inherited: Record<string, string> = {}) {
   const material = {
-    '.omp/agent/agents/architect.md':
-      '---\nname: architect\ndescription: Host architect\n---\nMira owns this declaration.\n',
+    '.omp/agent/agents/business-analyst.md':
+      '---\nname: business-analyst\ndescription: Host business analyst\n---\nMira owns this declaration.\n',
     '.agents/skills/host-skill/SKILL.md':
       '---\nname: host-skill\ndescription: Host skill\n---\nMira owns this skill.\n',
     '.omp/agent/extensions/host.ts': 'export default function host() {}\n',
@@ -501,6 +492,18 @@ export function earlierCommand(h: Host) {
   ).not.toBe(0);
   return {
     version: value,
+    /** Install with the earlier command's own surface: 0.11.0 took no run without a practices choice. */
+    install: () =>
+      h.command([
+        'install',
+        '--harness',
+        'omp',
+        '--home',
+        h.home,
+        '--all',
+        '--model-roles',
+        'default',
+      ]),
     restore: () => {
       h.env.PATH = currentPath;
     },

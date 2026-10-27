@@ -112,21 +112,24 @@ export const MANIFEST = {
       { name: 'priority' },
       {
         name: 'meaning',
-        correction: 'user stories and examples, and accepting a story done',
+        correction:
+          'concepts, user stories and examples, and accepting a realization',
       },
       { name: 'constraint', correction: 'decisions on realization' },
       {
         name: 'realization',
-        correction: 'how the work product, or the checks, are built and joined',
+        correction:
+          'how the work is built, its acceptance tests included, and joined',
       },
       {
         name: 'verdict',
-        correction: "whether a change's code review approves it",
+        correction:
+          "whether a realization passes its acceptance tests, and whether a change's code review approves it",
       },
       { name: 'release' },
       {
         name: 'sign-off',
-        correction: "agreeing that a handoff serves the operator's intent",
+        correction: "the product owner's go-ahead",
         optional: true,
       },
     ],

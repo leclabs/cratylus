@@ -39,10 +39,10 @@ const deliverableV: Deliverable =
 
 const baseFixture: Agent = {
   name: 'fixture',
-  description: 'a builder fixture',
+  description: 'a software engineer fixture',
   mark: { emoji: '✈️', hue: 'green' },
   key: null,
-  role: [{ value: 'builder ≜ receives one task', level: 'fixed' }],
+  role: [{ value: 'software-engineer ≜ receives one task', level: 'fixed' }],
   objective: [
     {
       value: 'correctness ≜ does what its task says',
@@ -70,7 +70,7 @@ const baseFixture: Agent = {
     {
       value: 'human-in-the-loop ≜ a person approves',
       level: 'fixed',
-      note: 'of the lead',
+      note: 'of the tech lead',
     },
   ],
   perceptionScope: [{ value: 'work ≜ the realization itself', level: 'fixed' }],

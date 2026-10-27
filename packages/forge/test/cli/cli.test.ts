@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runInstall } from '../../src/cli/commands/install.js';
-import { answers, fixturePractices } from '../deploy/helpers.js';
+import { answers } from '../deploy/helpers.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 describe('guided install confirmation', () => {
@@ -54,7 +54,6 @@ describe('guided install confirmation', () => {
       manifest: FIXTURE_MANIFEST,
       agents: join(fixtures, 'agents'),
       skills: join(fixtures, 'skills'),
-      practices: fixturePractices(['probe']),
     };
     const before = snapshot(home);
     let seenBefore: string[] | undefined;
@@ -72,14 +71,11 @@ describe('guided install confirmation', () => {
         home,
         cwd,
         harness: 'omp',
-        practices: undefined,
         interactive: true,
         prompts: answers({
-          practices: async () => ['fixture'],
           confirm: async () => {
             seenBefore = Object.keys(snapshot(home));
             expect(out).toContain('cratylus would install');
-            expect(out).toContain('practices: fixture');
             return false;
           },
         }),

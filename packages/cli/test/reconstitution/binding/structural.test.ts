@@ -30,17 +30,19 @@ afterEach(() => {
 });
 
 describe('reconstitution — binding (delivered declarations and extension)', () => {
-  it('a typed story starts the lead with those inputs and its output schema, never prose substitutes', async () => {
-    const validate = outputValidator(f, 'lead');
+  it('a typed story starts the tech-lead with those inputs and its output schema, never prose substitutes', async () => {
+    const validate = outputValidator(f, 'tech-lead');
     expect(
       validate(outcome),
       'binds its deliverable as the harness output schema',
     ).toBe(true);
     running = await load(f);
-    const event = task('lead', story);
+    const event = task('tech-lead', story);
     const before = structuredClone(event);
     const result = await running.fire('tool_call', event);
-    expect(result?.block, 'starts the lead with those inputs').not.toBe(true);
+    expect(result?.block, 'starts the tech-lead with those inputs').not.toBe(
+      true,
+    );
     expect(event, 'assignment inputs are not substituted').toEqual(before);
     expect(event.input.tasks[0]!.task).toBe(assignment(story));
     if (result?.input !== undefined)
@@ -52,20 +54,20 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
 
   for (const field of [
     'evidence',
+    'joined',
     'criteria',
     'meaningQuestions',
     'followUps',
-    'cost',
   ]) {
     it(`fluent explanation cannot substitute for an outcome omitting ${field}`, () => {
-      const validate = outputValidator(f, 'lead');
+      const validate = outputValidator(f, 'tech-lead');
       const bad = structuredClone(outcome) as Record<string, unknown>;
       if (field === 'evidence') {
         // biome-ignore lint/performance/noDelete: this negative must omit the field, not set it to undefined.
         delete (bad.criteria as Record<string, unknown>[])[0]!.evidence;
       } else delete bad[field];
       expect(
-        validate('Every criterion holds; the reviewer approved the work.'),
+        validate('Every criterion holds; the code-reviewer approved the work.'),
         'a fluent explanation never substitutes for the deliverable',
       ).toBe(false);
       expect(validate(bad), `return omitting ${field} does not pass`).toBe(
@@ -79,37 +81,32 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
   }
   const contracts = [
     {
-      role: 'builder',
+      role: 'software-engineer',
       output: {
         change: 'Records the approval when the creative approves.',
-        tests: 'Adds the check binding film-production/1.',
-        verified: 'Every check passes.',
+        tests: 'Adds the acceptance test for film-production/approval.',
+        verified: 'Every acceptance test passes.',
       },
       missingReturn: 'verified',
     },
     {
-      role: 'reviewer',
+      role: 'code-reviewer',
       output: { verdict: 'approve', findings: [], meaningQuestions: [] },
       missingReturn: 'verdict',
     },
     {
-      role: 'check-writer',
+      role: 'test-engineer',
       output: {
         story: 'film',
-        checks: [
+        tests: [
           {
-            example: 'film-production/1',
-            check: 'approval check',
-            seenRed: true,
+            example: 'film-production/approval',
+            test: 'film-production/approval: the creative approves',
+            seenFailing: true,
           },
         ],
       },
-      missingReturn: 'checks',
-    },
-    {
-      role: 'illustrator',
-      output: { examples: [], flaggedTerms: [] },
-      missingReturn: 'flaggedTerms',
+      missingReturn: 'tests',
     },
   ];
   for (const contract of contracts) {
@@ -149,11 +146,11 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       ).toEqual(explanation.verbs.map((v) => v.name));
     });
   }
-  it('reviewer gathers evidence in the normal environment without a required worktree', async () => {
-    const d = declaration(f, 'reviewer');
+  it('code-reviewer gathers evidence in the normal environment without a required worktree', async () => {
+    const d = declaration(f, 'code-reviewer');
     expect(
       d.frontmatter.isolation,
-      'never requires an isolated copy or a separate worktree merely because it is a reviewer',
+      'never requires an isolated copy or a separate worktree merely because it is a code-reviewer',
     ).not.toBe('worktree');
     const isolationModule = join(
       f.home,
@@ -171,44 +168,47 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     }
     if (process.env.BINDING_RED === '1')
       isolationHooks.push(async () => ({
-        input: { tasks: [{ agent: 'reviewer', isolated: true }] },
+        input: { tasks: [{ agent: 'code-reviewer', isolated: true }] },
       }));
     for (const hook of isolationHooks) {
       const answer = await hook(
-        task('reviewer', {
+        task('code-reviewer', {
           change: '#1',
           story: 'film',
-          examples: ['film-production/1'],
+          examples: ['film-production/approval'],
         }),
       );
       expect(
         answer,
-        'the delivered binding never requires an isolated reviewer task',
+        'the delivered binding never requires an isolated code-reviewer task',
       ).not.toEqual(
         expect.objectContaining({
           input: expect.objectContaining({
             tasks: expect.arrayContaining([
-              expect.objectContaining({ agent: 'reviewer', isolated: true }),
+              expect.objectContaining({
+                agent: 'code-reviewer',
+                isolated: true,
+              }),
             ]),
           }),
         }),
       );
     }
-    running = await load(f, { role: 'reviewer', kind: 'sub' });
+    running = await load(f, { role: 'code-reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
   });
   it('no retired read-only journal gate survives as an alternate narrowing route', async () => {
-    running = await load(f, { role: 'lead', kind: 'sub' });
+    running = await load(f, { role: 'tech-lead', kind: 'sub' });
     // An old host declaration cannot resurrect the retired appending-verb gate.
-    omp.agents.find((a) => a.name === 'reviewer')!.tools = ['read'];
-    running.ctx.agent.name = 'reviewer';
+    omp.agents.find((a) => a.name === 'code-reviewer')!.tools = ['read'];
+    running.ctx.agent.name = 'code-reviewer';
     await running.fire('session_start');
     const journal = running.tools
       .filter((t) => t.name === 'concept_journal')
       .at(-1);
     expect(
       journal?.parameters.properties.verb.enum,
-      'no journal read-only gate or lead journal-append restriction remains',
+      'no journal read-only gate or tech-lead journal-append restriction remains',
     ).toContain('define');
     const answer = await journal!.execute(
       'append',

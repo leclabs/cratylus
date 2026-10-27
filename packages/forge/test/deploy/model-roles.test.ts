@@ -21,11 +21,7 @@ import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { addModelRoles } from '../../src/deploy/model-roles.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  fixtureAgentSource,
-  fixturePractices,
-} from './helpers.js';
+import { fixtureAgentSource } from './helpers.js';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -104,7 +100,6 @@ describe('install — model roles', () => {
     name: 'model-roles-fixture',
     manifest: FIXTURE_MANIFEST,
     agents,
-    practices: fixturePractices(['alpha', 'beta', 'gamma']),
   });
   const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     runInstall({
@@ -112,7 +107,6 @@ describe('install — model roles', () => {
       home,
       cwd,
       canon: plugin() as never,
-      practices: FIXTURE_PRACTICE,
       ...extra,
     });
   const host = (text: string) => {
@@ -201,9 +195,9 @@ describe('install — model roles', () => {
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     expect(readFileSync(config(), 'utf8')).toBe(bound);
     out = '';
-    expect(await install({ modelRoles: 'builder=x/y' })).toBe(1);
+    expect(await install({ modelRoles: 'software-engineer=x/y' })).toBe(1);
     expect(out).toContain(
-      "'builder' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
+      "'software-engineer' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
     );
   });
 
@@ -217,7 +211,6 @@ describe('install — model roles', () => {
         prompts: {
           harness: async () => 'omp',
           scope: async () => 'user',
-          practices: async (offered) => offered.map((p) => p.name),
           rules: async () => [],
           routes: async (questions) => {
             asked = questions.map((q) => `${q.roleOf}:${q.role}`);

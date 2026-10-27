@@ -66,7 +66,7 @@ describe('enumeratePluginValueCatalogs — namespaced multi-plugin discovery', (
     );
     // Each also carries a distinct value so enumeration is non-trivial.
     writeStringValue(alphaDir, 'objective', 'insight', 'insight', 'insight');
-    writeStringValue(betaDir, 'role', 'builder', 'builder', 'the builder');
+    writeStringValue(betaDir, 'role', 'engineer', 'engineer', 'the engineer');
 
     plugins = await enumeratePluginValueCatalogs(
       [
@@ -92,7 +92,7 @@ describe('enumeratePluginValueCatalogs — namespaced multi-plugin discovery', (
         .get('beta')
         ?.map((f) => f.node.id)
         .sort(),
-    ).toEqual(['beta:objective/parsimony', 'beta:role/builder']);
+    ).toEqual(['beta:objective/parsimony', 'beta:role/engineer']);
   });
 
   it('namespaces ids by plugin — a shared term does NOT collide', () => {
@@ -106,11 +106,11 @@ describe('enumeratePluginValueCatalogs — namespaced multi-plugin discovery', (
   });
 
   it('files each value under its factor with value shape from arity', () => {
-    const builder = plugins
+    const engineer = plugins
       .get('beta')
-      ?.find((f) => f.node.id.endsWith('/builder'));
-    expect(builder?.factor).toBe('role'); // role is scalar arity → scalar value shape
-    expect(builder?.node.valueShape).toBe('scalar');
+      ?.find((f) => f.node.id.endsWith('/engineer'));
+    expect(engineer?.factor).toBe('role'); // role is scalar arity → scalar value shape
+    expect(engineer?.node.valueShape).toBe('scalar');
     const insight = plugins
       .get('alpha')
       ?.find((f) => f.node.id.endsWith('/insight'));

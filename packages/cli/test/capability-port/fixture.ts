@@ -151,7 +151,6 @@ function hostIn(root: string): Host {
     'omp',
     '--home',
     home,
-    '--all',
     '--model-roles',
     'default',
   ]);

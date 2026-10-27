@@ -775,63 +775,6 @@ export interface Layout {
 }
 
 /**
- * A PRACTICE — a way of working the canon offers as one installable choice: the
- * agents, skills and hooks that carry it, installed together.
- *
- * A practice is CLOSED under skill composition: every agent it installs finds every
- * skill it composes, and projection refuses a chosen set that is not closed rather
- * than render one whose agents name skills it does not carry.
- *
- * It is data, not a factor and not a value: nothing about WHO an agent is
- * changes by being in one.
- */
-export interface Practice {
-  /** The name an install offers and a render is asked for. Unique in the set. */
-  readonly name: string;
-  /**
-   * The names this practice was offered under before. An install over an earlier one
-   * that recorded a former name counts it as this practice: kept, and recorded under
-   * `name` from then on. A former name is no name an install offers or a render is
-   * asked for. Absent ⇒ none.
-   */
-  readonly formerNames?: readonly string[];
-  /** The one line an install shows a consumer deciding whether to take it. */
-  readonly description: string;
-  /** The agents this practice installs, by name. */
-  readonly agents: readonly string[];
-  /**
-   * The skills this practice installs BEYOND those its agents are given. A skill
-   * an agent is given (`Agent.skills`) travels with the agent and need not be
-   * repeated here; a skill no agent carries (a practice made of skills alone) is
-   * named here. Whatever the skills compose comes with them.
-   */
-  readonly skills?: readonly string[];
-  /**
-   * The hook declarations, by id, this practice registers BEYOND those its agents'
-   * compositions bind. A hook bound by a composition travels with the agents that
-   * compose what it binds and is named nowhere; a hook that binds no composition, and
-   * exists for what a practice's agents declare rather than compose, is named here, so
-   * that every install that places those agents places the hook. A hook every practice
-   * needs is {@link Plumbing.hooks} instead.
-   */
-  readonly hooks?: readonly string[];
-  /** `true` ⇒ a fresh install selects this practice unless the operator declines. */
-  readonly preselected?: true;
-}
-
-/**
- * The PLUMBING the canon's practices depend on: installed with any practice, offered
- * as none. A skill or hook here belongs to no practice, and names what other parts need
- * rather than a way of working.
- */
-export interface Plumbing {
-  /** Skills installed with any practice; whatever they compose comes with them. */
-  readonly skills?: readonly string[];
-  /** Hook declarations, by id, registered with any practice and bound to no agent. */
-  readonly hooks?: readonly string[];
-}
-
-/**
  * A package's plugin declaration: its {@link Layout}, plus what it contributes.
  *
  * `name` stays on the wrapper because uniqueness is a registry-level property no
@@ -872,26 +815,10 @@ export interface AgentPlugin extends Layout {
    */
   readonly events?: readonly EventName[];
   /**
-   * WHICH practices the canon offers — each a way of working an install offers as
-   * ONE choice. Absent ⇒ the canon declares none and projects everything it holds, as
-   * before.
-   *
-   * It rides the plugin the way `events` does, and for the same reason: which
-   * practices exist is the canon's to say, so the projector receives them as data
-   * and an install only OFFERS what is declared. Plugins compose: a later plugin's
-   * practice of the same name replaces an earlier one's.
-   */
-  readonly practices?: readonly Practice[];
-  /**
-   * What every practice is installed with and none is offered as — see
-   * {@link Plumbing}. Plugins compose: the set's plumbing is the union.
-   */
-  readonly plumbing?: Plumbing;
-  /**
    * WHICH rulesets the canon offers — each one standard convention's rules, which
    * an install offers whole, rule by rule, or not at all. Absent ⇒ none.
    *
-   * It rides the plugin the way `practices` does: which rulesets exist is the
+   * It rides the plugin the way `events` does: which rulesets exist is the
    * canon's to say, and the projector receives them as data. Plugins compose: a
    * later plugin's ruleset of the same name replaces an earlier one's.
    */

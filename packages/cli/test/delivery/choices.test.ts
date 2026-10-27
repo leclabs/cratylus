@@ -173,7 +173,7 @@ it('upgrading a real earlier installation keeps all seeded models and the edited
   h = fresh();
   configure(h, { smol: 'fixture/fast', alternate: 'other/model' });
   const old = earlierCommand(h);
-  success(install(h));
+  success(old.install());
   const legacy = readFileSync(
     join(h.home, '.omp/.forge/deploy-manifest.json'),
     'utf8',

@@ -95,10 +95,6 @@ export async function guided(
         asked.push('scope');
         return 'user' as const;
       },
-      practices: async () => {
-        asked.push('practices');
-        return [];
-      },
       rules: async () => {
         asked.push('rules');
         return [];
@@ -126,7 +122,6 @@ export async function guided(
       cwd: h.cwd,
       canon: choiceCanon(h, answers.four) as never,
       version: '2.4.0',
-      all: true,
       scope: 'user',
       interactive: true,
       prompts,

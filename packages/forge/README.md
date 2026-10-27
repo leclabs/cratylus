@@ -5,7 +5,7 @@ agents, skills, values and hooks, renders that set into the files a harness read
 them.
 
 This README is for whoever works on the library, or on an adapter for a harness. What an operator
-does with the `cratylus` command — install and its flags, the practices, starting a session as an
+does with the `cratylus` command — install and its flags, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
 
@@ -38,30 +38,11 @@ port. The plugin set `install` projects is the canon the `cratylus` command is b
 companion get their shim emitted alongside them. A shim forwards its arguments to
 `cratylus <capability>` with the caller's environment, and it needs no session from any harness.
 
-### A render may name practices
+### A render is the whole plugin set
 
-A plugin declares **practices** (`AgentPlugin.practices`): ways of working an install offers as one
-choice, each naming the agents it installs and any skills no agent carries, beside the **plumbing**
-(`AgentPlugin.plumbing`) every practice is installed with and none is offered as. `projectPluginSet`
-renders the practices it is given (`ProjectOpts.practices`); named none, it renders every agent,
-skill and hook exactly as a plugin set declaring no practice does, byte for byte. Given names, it
-renders the union of those practices' agents, skills they declare and compose, and hooks declared
-by the chosen practices or plugin plumbing. An empty list is refused: no practice is not every
-practice.
-
-A chosen set must be closed under skill composition. Before anything is rendered, projection checks
-that every skill an agent is given, with what that composes, is carried by the plugin set; a set
-that is not is refused by one error naming the practice, the agent and the skill that is missing.
-Whom an agent dispatches is never closed over (decision 0142). A name that is no declared practice
-is refused, naming the declared ones. The tree
-reports the declared practices (`ProjectedTree.practices`: name, description, whether preselected,
-former names) for an install to offer, whatever was rendered.
-
-A practice renamed declares the names it was offered under before (`Practice.formerNames`,
-decision 0332). An install over an earlier one whose record (its installation record, or an earlier
-deploy record) names a former name keeps the practice, records its new name only, and reports the
-carry-over, old name and new. A former name is no declared practice: render and `--practices`
-refuse it as any unknown name.
+`projectPluginSet` renders every agent, skill and hook the plugin set declares; an install places
+them all. The one choice a render takes is which rules to place (`ProjectOpts.rules`), and the tree
+reports the declared rulesets (`ProjectedTree.rulesets`) for an install to offer.
 
 ### An agent is given its skills' closure
 
