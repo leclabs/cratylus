@@ -144,7 +144,7 @@ directory fields are resolved against `import.meta.url` at definition time and c
 entry. Canon reaches the projector as **data** — the canon is passed to it as a plugin — and no
 unit imports it.
 
-No unit imports the runtime either. A skill names the capability it routes to — `concepts` or
+No unit imports the runtime either. A skill names the capability it routes to — `model` or
 `versionSkew`, the two built into the runtime — as `runtime: { capability: … }`,
 never its implementation, and a hook declaration that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
