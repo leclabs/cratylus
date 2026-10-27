@@ -2,7 +2,7 @@
   "$schema": "https://turbo.build/schema.json",
   // agentGuidance — OFF. turbo (>=2.11) otherwise writes a managed "turborepo-agent-rules"
   // block into the repo-root AGENTS.md before repository-scoped commands when an AI agent is
-  // detected. That file is hand-authored by the operator, so a turbo-written block is an
+  // detected. That file is hand-authored by the product owner, so a turbo-written block is an
   // unasked edit. The opt-out does not remove an existing block; none is committed.
   "agentGuidance": false,
   "tasks": {

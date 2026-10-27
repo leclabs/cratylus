@@ -45,7 +45,7 @@ import { Command, type CommanderError, Help } from 'commander';
  * already uses: tsup inlines this module into `dist/cratylus.js`, so a relative
  * `../package.json` would resolve from the wrong depth once bundled. It is the
  * manifest's, never forge's or the runtime's, because the version a command reports
- * is a claim about the artifact the operator installed.
+ * is a claim about the artifact the product owner installed.
  *
  * A build that is no release says which commit it is from, as the version's build
  * metadata (`0.13.0+62c7b190`, `.modified` when built from uncommitted changes), so a

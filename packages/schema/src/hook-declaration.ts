@@ -45,7 +45,7 @@ export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
  * It has a declared home because it is the only hook content scored at R=LLM that
  * had none: it lived as `printf` bodies inside shell workers, reachable only by
  * parsing shell, which is a proxy for the property rather than the property.
- * OPERATOR diagnostics (`>&2`) are not speech; neither is the shell's own machinery.
+ * PRODUCT-OWNER diagnostics (`>&2`) are not speech; neither is the shell's own machinery.
  */
 export interface HookMessage {
   /** Stable id — the `{{speech:<id>}}` address. */

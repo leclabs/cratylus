@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// No command in this suite may discover the operator's installation.
+// No command in this suite may discover the product owner's installation.
 const home = mkdtempSync(join(tmpdir(), 'cratylus-cli-suite-'));
 Reflect.deleteProperty(process.env, 'CRATYLUS_INSTALLATION');
 process.env.HOME = home;

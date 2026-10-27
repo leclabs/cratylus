@@ -9,7 +9,7 @@
 //
 // WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
 // call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
-// reads the installation that harness runs. Called by the operator with none named,
+// reads the installation that harness runs. Called by the product owner with none named,
 // it is the project installation nearest above the working directory, as the harness
 // would load there, else the one installation under the home, when there is exactly one.
 //

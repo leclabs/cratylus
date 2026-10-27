@@ -1,12 +1,12 @@
 // The questions `cratylus install` may ask, behind one seam.
 //
 // `runInstall` decides WHICH decisions are open and WHAT to ask about each; how a
-// question reaches an operator is this file's. Tests hand `runInstall` their own
+// question reaches the product owner is this file's. Tests hand `runInstall` their own
 // `InstallPrompts`, so a guided run is driven answer by answer with no terminal, and
 // the terminal implementation (`@clack/prompts`) is the only place a prompt library
 // is named.
 //
-// EVERY QUESTION MAY BE ANSWERED `undefined`, which is the operator cancelling
+// EVERY QUESTION MAY BE ANSWERED `undefined`, which is the product owner cancelling
 // (Ctrl-C, Esc). `runInstall` treats it as "stop": nothing has been written yet, and
 // nothing is written after.
 
@@ -14,7 +14,7 @@ import * as clack from '@clack/prompts';
 import type { InstallScope } from '@cratylus/runtime/runtime-config';
 import type { OfferedRuleset } from '../../project/index.js';
 
-/** One model role the host binds no model to, which the operator may bind: a tier the
+/** One model role the host binds no model to, which the product owner may bind: a tier the
  *  installed agents fall back to, or a persona's own role (decision 0112). */
 export interface RoleQuestion {
   /** The model role, as the host's settings name it. */
@@ -38,7 +38,7 @@ export interface InstallPrompts {
    *  inside `project` only, which then loads it in place of the user's. */
   scope(project: string): Promise<InstallScope | undefined>;
   /** Which rules to place, each ruleset offered whole, rule by rule, or not at all;
-   *  nothing is chosen unless the operator chooses it. The answer is the rules chosen,
+   *  nothing is chosen unless the product owner chooses it. The answer is the rules chosen,
    *  by name, possibly none. */
   rules(offered: readonly OfferedRuleset[]): Promise<string[] | undefined>;
   /** The model per role asked: the answer of each role bound, a role left unbound

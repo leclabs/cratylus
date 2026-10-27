@@ -1325,7 +1325,7 @@ describe('omp tool definitions', () => {
       }
     });
 
-    it("lets the operator's own --model and --thinking win, the body still carried", async () => {
+    it("lets the product owner's own --model and --thinking win, the body still carried", async () => {
       omp.agents = [CARTOGRAPHER()];
       omp.args = { model: 'fixture/base', thinking: 'low' };
       const both = await started('cartographer');
@@ -1647,7 +1647,7 @@ describe('omp tool definitions', () => {
       expect(told).toEqual([]);
     });
 
-    it('never touches the active tools, whatever --tools the operator gave', async () => {
+    it('never touches the active tools, whatever --tools the product owner gave', async () => {
       omp.agents = [CARTOGRAPHER()];
       omp.args = { tools: ['read', 'grep'] };
       const { did, fire } = await started('cartographer');
@@ -1787,7 +1787,7 @@ describe('omp tool definitions', () => {
       });
     });
 
-    it("leaves advisor and pre-planning to the operator's --advisor and --prewalk family", async () => {
+    it("leaves advisor and pre-planning to the product owner's --advisor and --prewalk family", async () => {
       for (const args of [
         { advisor: true, prewalk: true },
         { advisor: true, noPrewalk: true },

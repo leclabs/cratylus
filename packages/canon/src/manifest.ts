@@ -358,7 +358,7 @@ export type { SkillExpression };
 // flattened them back. The correction was the argmin and the matcher its lossy
 // projection, so the two acts are named here and the projection is computed:
 //
-//   · `operator.consult.pre`   — about to put a question or a menu to the operator.
+//   · `product-owner.consult.pre` — about to put a question or a menu to the product owner.
 //     `principal.consult.pre` was the runner-up; `user.ask.pre` is rejected (`user`
 //     collides with deploy's install-scope `user`, and it is the VENDOR word while
 //     this pivot is vendor-neutral); `elicit.pre` is rejected (occupied by the
@@ -416,8 +416,8 @@ export const CANONICAL_EVENTS = [
   'subagent.end',
   // harness substrate — the working copy an agent is given
   'worktree.create',
-  // harness substrate — what the operator is asked and told
-  'operator.consult.pre',
+  // harness substrate — what the product owner is asked and told
+  'product-owner.consult.pre',
   'permission.request',
   'permission.deny',
   'notification',

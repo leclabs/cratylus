@@ -501,7 +501,7 @@ export interface HarnessAdapter {
    * a projected definition names the role named for the agent first, which the host
    * may bind, and then the tier and effort the agent holds (decision 0111). The
    * projection names no model id: which model a role or tier runs on is the host's
-   * own setting, which install writes only as the operator answers (decision 0112).
+   * own setting, which install writes only as the product owner answers (decision 0112).
    *
    * Three facts, the harness's own: WHERE the host keeps its roles (`configRels`,
    * harness-home relative, in the order the harness READS them); the role a tier is
@@ -560,7 +560,7 @@ export interface StatusSegmentHost {
   readonly configRels: readonly string[];
   /** The project's config files that hold it, relative to the project's harness
    *  directory (`<project>/.omp`), in read order: what a project installation reads,
-   *  and never writes, since it writes no operator's own setting (decision 0313). */
+   *  and never writes, since it writes no product owner's own setting (decision 0313). */
   readonly projectConfigRels: readonly string[];
   /** The segment an extension's status renders in. */
   readonly segment: string;

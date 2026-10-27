@@ -46,7 +46,7 @@ export function fixtureAgentSource(
   return `export const ${kebabToCamel(name)} = ${JSON.stringify(agent, null, 2)};\n`;
 }
 
-/** The prompts of a guided install, answering as an operator who accepts every
+/** The prompts of a guided install, answering as a product owner who accepts every
  *  default; `over` replaces the answers a case is about. */
 export function answers(over: Partial<InstallPrompts> = {}): InstallPrompts {
   return {

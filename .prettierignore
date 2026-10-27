@@ -4,7 +4,7 @@ dist/
 .claude/worktrees/
 pnpm-lock.yaml
 
-# The repo-root AGENTS.md is hand-authored by the operator and kept verbatim.
+# The repo-root AGENTS.md is hand-authored by the product owner and kept verbatim.
 /AGENTS.md
 
 packages/canon/test/fixtures/

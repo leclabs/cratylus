@@ -690,8 +690,8 @@ describe('install — the status line', () => {
   });
 
   // Decision 0113: whether the status line shows the session's agent is the
-  // operator's choice, written as the host's own setting.
-  describe("the operator's choice of showing the session's agent", () => {
+  // product owner's choice, written as the host's own setting.
+  describe("the product owner's choice of showing the session's agent", () => {
     const HIDDEN = `modelRoles:\n  default: "@default"\nstatusLine:\n  preset: minimal\n  showHookStatus: false\n`;
     const SHOWN = HIDDEN.replace(
       'showHookStatus: false',
