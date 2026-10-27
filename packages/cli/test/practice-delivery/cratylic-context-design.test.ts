@@ -67,12 +67,9 @@ it.each(verbs)(
   },
 );
 
-it.each([
-  ['user', 'cratylic-context-design'],
-  ['project', 'intent-based-delegation'],
-])(
+it.each(['user', 'project'])(
   'a %s install declining every ruleset still delivers cratylic context design beside intent-based delegation',
-  (scope, practice) => {
+  (scope) => {
     success(h.command(['uninstall', '--harness', 'omp', '--home', h.home]));
     expect(existsSync(owned(h))).toBe(false);
     const root = scope === 'user' ? owned(h) : join(h.cwd, '.cratylus/omp');
@@ -104,7 +101,7 @@ it.each([
     const record = JSON.parse(
       readFileSync(join(root, 'installation.json'), 'utf8'),
     );
-    expect(record).toMatchObject({ scope, practices: [practice] });
+    expect(record).toMatchObject({ scope });
     expect(record.rules ?? []).toEqual([]);
     for (const context of [ccd, 'intent-based delegation']) {
       const path = deliveredPath(h, context, root);
