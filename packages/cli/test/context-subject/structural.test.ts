@@ -1,4 +1,4 @@
-// Binds design/examples/intent-based delegation/context-subject.md through the CLI only.
+// Checks a context's subject and relation, their changes and history, through the CLI only.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type TemporaryRepository,
@@ -90,7 +90,7 @@ function current(
 }
 
 describe('context subjects', () => {
-  it('Example 1 — changing the subject keeps the relation and both descriptions in history', () => {
+  it('changing the subject keeps the relation and both descriptions in history', () => {
     const first = record();
     const changed = append(
       fixture.root,
@@ -115,7 +115,7 @@ describe('context subjects', () => {
     expect(history().versions[0]).not.toHaveProperty('reason');
   });
 
-  it('Example 2 — changing the relation keeps the subject and the earlier context map in history', () => {
+  it('changing the relation keeps the subject and the earlier context map in history', () => {
     const first = record();
     const changed = append(
       fixture.root,
@@ -141,7 +141,7 @@ describe('context subjects', () => {
     });
   });
 
-  it('Example 3 — refused changes append nothing and a reason never creates an unknown context', () => {
+  it('refused changes append nothing and a reason never creates an unknown context', () => {
     record();
     const before = snapshot(fixture.root);
     refuse(
@@ -206,7 +206,7 @@ describe('context subjects', () => {
     );
   });
 
-  it('Example 4 — settling merged descriptions supersedes both and keeps both in history', () => {
+  it('settling merged descriptions supersedes both and keeps both in history', () => {
     const { root } = fixture;
     git(root, 'commit', '--allow-empty', '-m', 'Common ancestor');
     git(root, 'switch', '-c', 'left');
@@ -286,7 +286,7 @@ describe('context subjects', () => {
     expect(past.versions[2]).toEqual(version(settled, settled.supersedes));
   });
 
-  it('Example 5 — reconstitution reads only current subject and relation, with earlier descriptions only in history', () => {
+  it('reconstitution reads only current subject and relation, with earlier descriptions only in history', () => {
     const first = record();
     const changed = append(
       fixture.root,

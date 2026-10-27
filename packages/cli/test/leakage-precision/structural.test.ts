@@ -71,7 +71,7 @@ describe('leakage precision', () => {
     expect(inspect()).toEqual([]);
   });
 
-  it('Example 3 — a subject owns the tool word only within its context', () => {
+  it('a subject owns the tool word only within its context', () => {
     context('delivery', `The practice of checking work with ${tool}.`);
     context();
     for (const scope of ['delivery', 'workflow']) {
@@ -112,7 +112,7 @@ describe('leakage precision', () => {
     }
   });
 
-  it('Example 6 — a subject owns the plain word, not a command, code span or flag', () => {
+  it('a subject owns the plain word, not a command, code span or flag', () => {
     context('workflow', `The practice of checking work with ${tool}.`);
     const entries = [
       { name: 'plain', form: tool },

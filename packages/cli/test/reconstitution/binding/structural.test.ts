@@ -30,7 +30,7 @@ afterEach(() => {
 });
 
 describe('reconstitution — binding (delivered declarations and extension)', () => {
-  it('agent design/1 — a typed story starts the lead with those inputs and its output schema, never prose substitutes', async () => {
+  it('a typed story starts the lead with those inputs and its output schema, never prose substitutes', async () => {
     const validate = outputValidator(f, 'lead');
     expect(
       validate(outcome),
@@ -57,7 +57,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     'followUps',
     'cost',
   ]) {
-    it(`agent design/4 — fluent explanation cannot substitute for an outcome omitting ${field}`, () => {
+    it(`fluent explanation cannot substitute for an outcome omitting ${field}`, () => {
       const validate = outputValidator(f, 'lead');
       const bad = structuredClone(outcome) as Record<string, unknown>;
       if (field === 'evidence') {
@@ -113,7 +113,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     },
   ];
   for (const contract of contracts) {
-    it(`agent design/5 — ${contract.role} return mismatch is caught by its declared output schema`, () => {
+    it(`${contract.role} return mismatch is caught by its declared output schema`, () => {
       const validate = outputValidator(f, contract.role);
       expect(validate(contract.output), 'a fitting return is accepted').toBe(
         true,
@@ -126,7 +126,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     });
   }
   for (const role of roles) {
-    it(`agent design/7, intent-based delegation/30 — ${role} keeps default tools including shell and all journal appends`, async () => {
+    it(`${role} keeps default tools including shell and all journal appends`, async () => {
       const d = declaration(f, role);
       // The opt-in red run also exercises roles whose current declaration already conforms.
       if (process.env.BINDING_RED === '1') d.frontmatter.tools = ['read'];
@@ -149,7 +149,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
       ).toEqual(explanation.verbs.map((v) => v.name));
     });
   }
-  it('agent design/8 — reviewer gathers evidence in the normal environment without a required worktree', async () => {
+  it('reviewer gathers evidence in the normal environment without a required worktree', async () => {
     const d = declaration(f, 'reviewer');
     expect(
       d.frontmatter.isolation,
@@ -197,7 +197,7 @@ describe('reconstitution — binding (delivered declarations and extension)', ()
     running = await load(f, { role: 'reviewer', kind: 'sub' });
     expect(running.ctx.cwd, 'normal working environment').toBe(f.cwd);
   });
-  it('agent design/10 — no retired read-only journal gate survives as an alternate narrowing route', async () => {
+  it('no retired read-only journal gate survives as an alternate narrowing route', async () => {
     running = await load(f, { role: 'lead', kind: 'sub' });
     // An old host declaration cannot resurrect the retired appending-verb gate.
     omp.agents.find((a) => a.name === 'reviewer')!.tools = ['read'];
