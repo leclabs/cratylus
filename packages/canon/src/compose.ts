@@ -30,7 +30,6 @@ import {
 } from '@cratylus/schema';
 import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 import { type Agent, type Factor, MANIFEST } from './manifest.js';
-import { PRACTICES } from './practice.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
@@ -186,8 +185,6 @@ function agentOf(
       ? { deliverable: DELIVERABLE_CONTRACTS[deliverable] }
       : {}),
   };
-  // The practices this agent's procedure names, each loaded as its practice skill.
-  const skills = terms('procedure').filter((t) => PRACTICES.includes(t));
   return {
     name: identity.name,
     description: identity.description,
@@ -199,7 +196,6 @@ function agentOf(
       effort: slotTerm('model', 'effort'),
     },
     ...(Object.keys(contract).length > 0 ? { contract } : {}),
-    ...(skills.length > 0 ? { skills } : {}),
     ...vector,
   } as unknown as Agent;
 }

@@ -30,7 +30,3 @@ SELF.md
 # after a manual publish. A build artifact that only some invocations put in the
 # ignored place is a build artifact one `git add -A` from being committed.
 *.tgz
-
-# The practice skills' concepts, rendered from design/model by canon's build
-# (`packages/canon/tooling/practices.ts`). The domain model is their one source.
-packages/canon/generated/
