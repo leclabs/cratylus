@@ -815,14 +815,20 @@ export interface AgentPlugin extends Layout {
    */
   readonly events?: readonly EventName[];
   /**
-   * WHICH rulesets the canon offers — each one standard convention's rules, which
-   * an install offers whole, rule by rule, or not at all. Absent ⇒ none.
+   * WHICH rulesets the canon offers — each a named set of rules, which an install
+   * offers whole, rule by rule, or not at all. Absent ⇒ none.
    *
    * It rides the plugin the way `events` does: which rulesets exist is the
    * canon's to say, and the projector receives them as data. Plugins compose: a
    * later plugin's ruleset of the same name replaces an earlier one's.
    */
   readonly rulesets?: readonly Ruleset[];
+  /**
+   * The rulesets by which the practice the plugin's agents work by departs from
+   * it: installed with the agents on every install, never offered. Absent ⇒ none.
+   * Composed as `rulesets` are.
+   */
+  readonly practiceRulesets?: readonly Ruleset[];
 }
 
 /**

@@ -343,8 +343,8 @@ export interface HarnessAdapter {
   skillDef(skill: ResolvedSkill): HarnessProjection;
   /**
    * Project a rule → the file this harness loads in every session of every
-   * project, under the `rules/` directory of the owned root: the convention and why
-   * it holds, with whatever front-matter makes the harness always apply it.
+   * project, under the `rules/` directory of the owned root: the rule and why it
+   * holds, with whatever front-matter makes the harness always apply it.
    */
   ruleDef(rule: Rule): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports

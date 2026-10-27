@@ -24,14 +24,15 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field      | what it is                                                                                    |
-| ---------- | --------------------------------------------------------------------------------------------- |
-| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
-| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
-| `rulesets` | **which rulesets exist** — the standard conventions an install offers (`src/rulesets.ts`)     |
-| `factors`  | the factors' values, filed one directory per factor                                           |
-| `agents`   | the composed agents: five generic holders of their roles, and three personas                  |
-| `skills`   | the skills — each a self-sufficient formal block plus the siblings it composes                |
+| field              | what it is                                                                                    |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `manifest`         | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
+| `events`           | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
+| `rulesets`         | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)      |
+| `practiceRulesets` | the rulesets the agents' practice departs by, installed with the agents (`src/rulesets.ts`)   |
+| `factors`          | the factors' values, filed one directory per factor                                           |
+| `agents`           | the composed agents: five generic holders of their roles, and three personas                  |
+| `skills`           | the skills — each a self-sufficient formal block plus the siblings it composes                |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
 canon's agent design. The manifest rides the plugin rather than living in the projector, so the
@@ -81,25 +82,10 @@ than its reach, is made, and composition warns (a `CompositionWarning`), naming 
 harm from one is on record.
 
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
-effort (`routing`), its typed handoff (`contract`) and the practice skills it loads (`skills`, below).
-Nothing narrows its tools or whom it may
+effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
 dispatch: every agent keeps the agent harness's defaults. Its `key` is reserved for ipseic
 agents and is empty. `holder`, `persona`, `CompositionRefusal`, the five role profiles and `MANIFEST` are
 also named exports, for a plugin that composes agents of its own over these roles.
-
-## The practice skills
-
-The practices the agents work by are bounded contexts of cratylus's own domain model, and each
-reaches the agents as a skill named for its context: `cratylic-context-design` and
-`behaviour-driven-development`. Neither restates a concept by hand. `build` runs
-`tooling/practices.ts` before `tsc`: it reads `design/model/<context>/` — the context's name and
-subject from `context.md`, each concept's term and correction from its record, never its examples —
-and writes `generated/practices.json`, a sibling of `src/` and `dist/` that ships in the package and
-is never committed. `src/practice.ts` reads it when a practice skill loads, and the skill's formal
-block is the context's name and subject, then one `<term> ≜ <correction>` line per concept, each
-byte for byte as recorded. Composition gives an agent, as `skills`, each practice its procedure
-names, in procedure order, so the business analyst and its personas load both and the other four
-roles load behaviour-driven development.
 
 ## Typed handoffs
 

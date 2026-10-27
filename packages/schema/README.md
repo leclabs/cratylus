@@ -77,8 +77,8 @@ whether the factor is rendered as `'text'` or compiled to harness settings (`'bi
 the projector reads it by the imported binding, never by a string id.
 
 `AgentPlugin` is a `Layout` (the four directories the projector scans: `factors`, `agents`,
-`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary
-and the `rulesets` it offers. Canon gives its directories as absolute paths, located against its
+`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary,
+the `rulesets` it offers and the `practiceRulesets` installed with its agents. Canon gives its directories as absolute paths, located against its
 own module.
 
 ## What is here
@@ -98,7 +98,7 @@ own module.
 | `hookIrOf` · `resolveWorker`                                                                     | a declaration's lift to the hook config-IR, and a worker's template resolution                                              |
 | `ProjectionFact` · `ProjectionFacts`                                                             | the names of the facts a projector binds into a hook worker's template                                                      |
 | `AgentPlugin` · `Layout` · `defineAgentPlugin`                                                   | the canon's plugin declaration                                                                                              |
-| `Rule` · `Ruleset`                                                                               | a working convention and why it holds, and one convention's rules                                                           |
+| `Rule` · `Ruleset`                                                                               | a rule and why it holds, and a named set of rules offered together                                                          |
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
 `null`), and optionally the role it `holds`, its model `routing` (`{ tier, effort }`), its typed

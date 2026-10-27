@@ -40,9 +40,11 @@ companion get their shim emitted alongside them. A shim forwards its arguments t
 
 ### A render is the whole plugin set
 
-`projectPluginSet` renders every agent, skill and hook the plugin set declares; an install places
-them all. The one choice a render takes is which rules to place (`ProjectOpts.rules`), and the tree
-reports the declared rulesets (`ProjectedTree.rulesets`) for an install to offer.
+`projectPluginSet` renders every agent, skill and hook the plugin set declares, and every rule of
+its practice rulesets (`AgentPlugin.practiceRulesets`); an install places them all. The one choice a
+render takes is which offered rules to place (`ProjectOpts.rules`), and the tree reports the offered
+rulesets (`ProjectedTree.rulesets`) for an install to offer, and the practice rules it rendered
+(`ProjectedTree.practiceRules`).
 
 ### An agent is given its skills' closure
 
