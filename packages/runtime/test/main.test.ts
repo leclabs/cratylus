@@ -23,7 +23,7 @@ import {
   type Capability,
 } from '../src/capability.js';
 import { capabilityCommands } from '../src/main.js';
-import { type VerbFlags, refused } from '../src/verb-flags.js';
+import type { Verbs } from '../src/verbs.js';
 import { repository } from './verb-surface.js';
 
 const repo = repository();
@@ -69,7 +69,7 @@ async function run(
   return { code, out: out.join(''), err: err.join('') };
 }
 
-const SURFACES: { readonly [C in Capability]: VerbFlags } = {
+const SURFACES: { readonly [C in Capability]: Verbs } = {
   model: MODEL,
   versionSkew: VERSION_SKEW,
 };
@@ -133,39 +133,46 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   );
 });
 
-describe('the capability commands leave a verb’s flags to the verb’s own reader', () => {
-  it('a flag the verb does not take is refused as `refused` words it', async () => {
-    const { code, out, err } = await run(['versionSkew', 'report', '--bogus']);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toBe(
-      `cratylus ${refused('versionSkew', 'report', ['--bogus'], VERSION_SKEW.report)}\n`,
+describe('the capability commands refuse any token after the verb', () => {
+  it.each([[['extra']], [['--bogus']], [['extra', '--bogus']]])(
+    'versionSkew report %j exits 1 with one line naming each token and the verb’s --help',
+    async (tokens) => {
+      const { code, out, err } = await run([
+        'versionSkew',
+        'report',
+        ...tokens,
+      ]);
+      expect(out).toBe('');
+      expect(code).toBe(1);
+      expect(err.trimEnd().split('\n')).toHaveLength(1);
+      expect(err).toMatch(
+        /^cratylus versionSkew report: it takes no arguments/,
+      );
+      for (const token of tokens) expect(err).toContain(`'${token}'`);
+      expect(err.trimEnd()).toMatch(/cratylus versionSkew report --help$/);
+    },
+  );
+
+  it('refuses in the very words its dispatcher throws when called as a library', async () => {
+    expect(() => dispatchVersionSkew(['report', 'extra'], {})).toThrow(
+      (await run(['versionSkew', 'report', 'extra'])).err
+        .trimEnd()
+        .replace(`${CLI_BIN} `, ''),
     );
   });
-});
 
-describe('the capability commands refuse a word the verb does not take', () => {
-  it('a surplus word exits 1 with one line naming it and the verb’s --help', async () => {
-    const { code, out, err } = await run(['versionSkew', 'report', 'extra']);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err.trimEnd().split('\n')).toHaveLength(1);
-    expect(err).toMatch(/^cratylus versionSkew report: /);
-    expect(err).toContain("'extra'");
-    expect(err.trimEnd()).toMatch(/cratylus versionSkew report --help\.$/);
-  });
-
-  it('an untaken flag and a surplus word are refused together in the one line', async () => {
-    const { code, out, err } = await run([
+  it('reads `--help`, `-h` or `--explain` as any token after the verb', async () => {
+    const help = (await run(['versionSkew', 'report', '--help'])).out;
+    expect((await run(['versionSkew', 'report', 'extra', '-h'])).out).toBe(
+      help,
+    );
+    const explained = await run([
       'versionSkew',
       'report',
-      'extra',
       '--bogus',
+      '--explain',
     ]);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toBe(
-      `cratylus ${refused('versionSkew', 'report', ['--bogus'], VERSION_SKEW.report, ['extra'])}\n`,
-    );
+    expect(explained.code).toBe(0);
+    expect(JSON.parse(explained.out)).toMatchObject({ name: 'report' });
   });
 });

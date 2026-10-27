@@ -1,7 +1,7 @@
 // A capability explains itself: `<capability> --explain` gives the whole
 // capability and `<capability> <verb> --explain` one verb, as JSON, read out of the
-// same declarations its help prints and its calls are read against. These hold
-// the explanation's shape and that the help says what it says.
+// same declarations its help prints. These hold the explanation's shape and that
+// the help says what it says.
 
 import { Command } from 'commander';
 import { describe, expect, it, vi } from 'vitest';
@@ -76,10 +76,8 @@ describe('versionSkew --explain', () => {
       'purpose',
       'when',
       'effect',
-      'parameters',
     ]);
     expect(explained.effect).toBe('reads');
-    expect(explained.parameters).toEqual([]);
   });
 
   it('refuses a verb the capability does not declare, as without --explain', async () => {

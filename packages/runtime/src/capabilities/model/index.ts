@@ -26,7 +26,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { CLI_BIN } from '../../bin-name.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
-import { type VerbFlags, readArgv } from '../../verb-flags.js';
+import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
 import { type Leak, leaks, recounts, vocabulary } from './leakage.js';
 
@@ -37,10 +37,8 @@ export const VERBS = {
     purpose:
       'Check every concept record in the domain model and bind each example to the acceptance test that names it; print the failures and warnings as JSON, exiting 1 on any failure',
     when: 'In the project’s one check, and after changing a concept record or an acceptance test',
-    positional: null,
-    flags: {},
   },
-} as const satisfies VerbFlags<string, ExplainedVerb>;
+} as const satisfies Verbs<string, ExplainedVerb>;
 
 export type ModelVerb = keyof typeof VERBS;
 
@@ -379,7 +377,6 @@ export function dispatchModel(
   cwd: string = process.cwd(),
 ): ModelReport {
   const verb: ModelVerb = verbOf(argv, 'model', VERBS);
-  readArgv(argv.slice(1), 'model', verb, VERBS[verb]);
   const root = repositoryRoot(cwd);
   const model = join(root, MODEL_DIR);
   if (!existsSync(model) || !statSync(model).isDirectory())

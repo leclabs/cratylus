@@ -50,47 +50,32 @@ the command's own self-description (`EXPLANATION`, `ORIENTATION`, `PURPOSE`, `ST
 
 ## Subpaths
 
-| subpath            | what it carries                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.`                | `MODEL_CHECK`, `VERSION_SKEW`, `explain`, and the command's self-description: `EXPLANATION`, `ORIENTATION`, `PURPOSE`, `START`, `THEORY`, `CommandExplanation`                                                                                                                                                                                                                                                                                            |
-| `./capability`     | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                                                                                                                                                                                                                                                                                                                         |
-| `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                                                                                                                                                                                                                                                                                                               |
-| `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                                                                                                                                                                                                                                                                                                                |
-| `./ulid`           | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                                                                                                                                                                                                                                                                                                                    |
-| `./verb-flags`     | `VerbFlags`, `Verb`, `Positional`, `Flags`, `Flag`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused`, `nearest` — each verb's purpose, positional (its name and description) and flags (whether each takes a value, its description, and whether it is required, takes one of a few values or repeats), the one reader (a flag that takes no value never takes the next token), and the one refusal of an untaken flag or surplus word |
-| `./package.json`   | the manifest                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| subpath            | what it carries                                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.`                | `MODEL_CHECK`, `VERSION_SKEW`, `explain`, and the command's self-description: `EXPLANATION`, `ORIENTATION`, `PURPOSE`, `START`, `THEORY`, `CommandExplanation` |
+| `./capability`     | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                              |
+| `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                    |
+| `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                      |
+| `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                     |
+| `./ulid`           | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                         |
+| `./package.json`   | the manifest                                                                                                                                                   |
 
-## Verbs and their flags
+## Verbs
 
-Each verb declares, beside it, its purpose in a line, the positional it acts on (its name and a
-line describing it), and the flags it takes, each with whether it takes a value and a one-line
-description, and, where it applies, whether the verb refuses a call without it, the values it takes
-one of, and whether it is given once per value; a flag cannot be taken undescribed, since the
-declaration does not compile without it, and each capability's one-line summary is declared once
-in `CAPABILITY_SUMMARIES` (`./capability`). One reader in
-`./verb-flags` reads the verb's arguments against that declaration. A flag that takes a value is
-given as `--flag value` or `--flag=value`, taking the next token unless it begins with `--`; a flag
-that takes no value is given alone and never takes the next token, so in `--flag -x` the `-x` is
-read as the attempted flag it is. A verb takes at most its declared
-positional: a second word where it declares one, any word where it declares none, is refused, so
-no word a consumer types is silently dropped. An unknown flag is refused before the
-verb acts: nothing is written, and the call exits `1`. A single-dash token (`-x`) is an attempted
-flag and is refused too, as is a flag that takes no value given one (`--flag=x`). One refusal,
-homed in `./verb-flags`, names every such flag as given, the verb's nearest flag to each when one is
-within an edit for every three letters (`--wordin` and `-wording` get `--wording`), every surplus word,
-and the verb's positional and every flag it takes, and asks for the call to be corrected and run
-again, or for the verb's `--help`, in one line.
+Each verb declares, beside it, its purpose in a line, and each capability's one-line summary is
+declared once in `CAPABILITY_SUMMARIES` (`./capability`). A verb takes no arguments: it is called by
+its name alone, and any token after it is refused before the verb acts, in one line naming each
+such token and the verb's `--help`, exiting `1`, so no word a consumer types is silently dropped.
 
 ## Routing
 
 `capabilityCommands` builds one Commander command per capability, and routes
-`<capability> <verb> [args]` through one table typed over `Capability`, so a capability without a
-route does not compile. Each capability's verb surface owns its verbs' flag grammar: `model`
+`<capability> <verb>` through one table typed over `Capability`, so a capability without a
+route does not compile. `model`
 and `versionSkew` print their JSON result. A refusal exits `1` as `cratylus <message>` (the message opens
 with the capability and the verb, as `cratylus model check: …`),
-and a verb the capability does not declare is refused by `verbOf` in the one wording every dispatcher
-throws when called as a library. Never a silent no-op.
+and a verb the capability does not declare, or any token after the verb, is refused by `verbOf` in
+the one wording every dispatcher throws when called as a library. Never a silent no-op.
 
 `capabilityCommands` exports commands and builds no program. The program lives in
 [`cratylus`](../cli/README.md), which adds them to one tree beside the projector's commands, so its
@@ -103,12 +88,9 @@ for each verb the concept of cratylus's own domain model it acts on, when to rea
 effect; both verbs there are, `check` and `report`, only read. `cratylus model --explain` prints the
 model check's explanation as one JSON object — `name` (`model check`), `purpose` (its line in
 `CAPABILITY_SUMMARIES`), `when`, and `verbs` in declared order — and `cratylus model check --explain`
-prints one verb: `name`, `concept`, `purpose`, `when`, `effect`, and `parameters`, each positional
-(`positional: true`) and flag with its `description`, whether it is `required`, and its JSON Schema
-(`string`, `string` with an `enum`, `boolean` for a flag that takes no value, or an `array` of
-`string` for one given once per value); `check` takes none. The explanation is read out of the
-same declarations the help prints and the reader reads calls against, so it cannot say what the
-verb does not take. The explanation's name is the tool's: in omp the model check is `model_check`
+prints one verb: `name`, `concept`, `purpose`, `when` and `effect`. The explanation is read out of
+the same declarations the help prints, so the two cannot drift apart. The explanation's name is the
+tool's: in omp the model check is `model_check`
 and version skew `version_skew`.
 
 ## The host runtime config
