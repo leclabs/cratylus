@@ -77,9 +77,9 @@ whether the factor is rendered as `'text'` or compiled to harness settings (`'bi
 the projector reads it by the imported binding, never by a string id.
 
 `AgentPlugin` is a `Layout` (the four directories the projector scans: `factors`, `agents`,
-`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary,
-the `practices` it offers, the `plumbing` every practice is installed with, and the `rulesets` it
-offers. Canon gives its directories as absolute paths, located against its own module.
+`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary
+and the `rulesets` it offers. Canon gives its directories as absolute paths, located against its
+own module.
 
 ## What is here
 
@@ -98,7 +98,6 @@ offers. Canon gives its directories as absolute paths, located against its own m
 | `hookIrOf` · `resolveWorker`                                                                     | a declaration's lift to the hook config-IR, and a worker's template resolution                                              |
 | `ProjectionFact` · `ProjectionFacts`                                                             | the names of the facts a projector binds into a hook worker's template                                                      |
 | `AgentPlugin` · `Layout` · `defineAgentPlugin`                                                   | the canon's plugin declaration                                                                                              |
-| `Practice` · `Plumbing`                                                                          | a way of working, and the plumbing every practice is installed with                                                         |
 | `Rule` · `Ruleset`                                                                               | a working convention and why it holds, and one convention's rules                                                           |
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
