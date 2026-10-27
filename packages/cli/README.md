@@ -346,7 +346,7 @@ cratylus uninstall [options]
 
 ## Capabilities
 
-A capability is a cratylus function an agent calls as a tool and you run as a command. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one takes. The runtime's capabilities are exactly two, `model` and `versionSkew`:
+A capability is a cratylus function an agent calls as a tool and you run as a command. `cratylus <capability> --help` lists its verbs, and `cratylus <capability> <verb> --help` what one does. A verb takes no arguments: any word after it is refused, naming the word and the verb's `--help`. The runtime's capabilities are exactly two, `model` and `versionSkew`:
 
 ```sh
 cratylus model check
@@ -355,7 +355,7 @@ cratylus versionSkew report
 
 ### `cratylus model`
 
-The model check. Its one verb is `check`, which takes no flags and only reads.
+The model check. Its one verb is `check`, which takes no arguments and only reads.
 
 What the model check is for, when to reach for it and the concept its verb acts on are stated once, by the runtime, and not repeated here: `cratylus model --help` and `cratylus model check --help` print them, and `cratylus model --explain` and `cratylus model check --explain` print the same explanation as JSON (its name `model check`). In omp it is the tool `model_check`.
 

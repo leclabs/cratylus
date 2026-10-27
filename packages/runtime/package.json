@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.19.0",
-  "description": "The per-host runtime: the built-in capabilities (versionSkew) and the host runtime config.",
+  "description": "The per-host runtime: the built-in capabilities (model, versionSkew) and the host runtime config.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -30,10 +30,6 @@
     "./runtime-config": {
       "types": "./dist/runtime-config.d.ts",
       "import": "./dist/runtime-config.js"
-    },
-    "./verb-flags": {
-      "types": "./dist/verb-flags.d.ts",
-      "import": "./dist/verb-flags.js"
     }
   },
   "files": ["dist"],

@@ -3,7 +3,7 @@
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
 // commands (`install`, `uninstall`), `@cratylus/runtime/main` one command per
-// capability (`versionSkew`), and `@cratylus/canon` the canon `install`
+// capability (`model`, `versionSkew`), and `@cratylus/canon` the canon `install`
 // installs. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
