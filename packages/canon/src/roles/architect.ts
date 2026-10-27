@@ -83,7 +83,7 @@ export const architectRole: RoleProfile = {
     procedure: [
       {
         value: rectify,
-        note: "maps every wording of a concept, the operator's and the record's own alike, to its most precise established name: a recorded name that redefines an established term is a defect it flags and corrects by recording a new version before any work leans on it, never a meaning it follows; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear",
+        note: "a recorded name that redefines an established term is corrected before any work leans on it; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear",
       },
       illustration,
       orchestratorWorkers,
@@ -115,19 +115,12 @@ export const architectRole: RoleProfile = {
       { value: none, slot: 'realization' },
       { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
-      {
-        value: recommends,
-        slot: 'sign-off',
-        note: 'puts its handoffs up for it; takes it only where delegation of authority grants it',
-      },
+      { value: recommends, slot: 'sign-off' },
     ],
     autonomy: [
-      { value: principal, note: 'in meaning' },
+      principal,
       { value: humanInTheLoop, note: "at the operator's hold points" },
-      {
-        value: humanOnTheLoop,
-        note: 'between hold points, and at one whose sign-off delegation of authority grants it',
-      },
+      { value: humanOnTheLoop, note: 'between hold points' },
       { value: missionCommand, note: 'between hold points' },
     ],
     perceptionScope: [
@@ -144,12 +137,7 @@ export const architectRole: RoleProfile = {
     ],
     memory: [sourceOfTruth, working, memoryReconstitution],
     assignment: [intent],
-    deliverable: [
-      {
-        value: readBack,
-        note: "a user story's is a hold point: the story starts on the operator's sign-off of it",
-      },
-    ],
+    deliverable: [readBack],
     guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],
     evaluation: [inUse],
   },
