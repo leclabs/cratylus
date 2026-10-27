@@ -1,7 +1,8 @@
 # Cratylus
 
-Cratylus installs a team of named agents and skills into omp, the coding-agent harness,
-each defined in the terms the model already understands. The idea behind it, on one page, is in
+Cratylus installs the industry roles of behaviour-driven development — business analyst, tech lead,
+software engineer, test engineer and code reviewer — with their skills into omp, the coding-agent
+harness, each defined in the terms the model already understands. The idea behind it, on one page, is in
 **[INTRODUCTION.md](./INTRODUCTION.md)**.
 
 ## Install and use
@@ -11,13 +12,13 @@ You need Node 22 or later, and omp run at least once on this machine.
 ```sh
 npm install -g cratylus      # the command
 cratylus install             # put the agents on this machine
-omp --agent architect        # start here: the architect
+omp --agent business-analyst # start here: the business analyst
 ```
 
 `cratylus` with no arguments prints how to start, and `cratylus --help` lists everything else.
 
-`cratylus install` asks only what you have not said: which harness, which practices (the ways of
-working it offers), which rules your agents follow in every project (rulesets such as `gitflow`,
+`cratylus install` installs every agent and skill cratylus ships, and asks only what you have not
+said: which harness, which rules your agents follow in every project (rulesets such as `gitflow`,
 `conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`), and which
 model each agent falls back to. It shows what it will place and places it once you confirm, under
 one root cratylus owns, `~/.cratylus/omp/`, which omp loads in every project.

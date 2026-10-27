@@ -13,13 +13,13 @@ It needs Node 22 or later.
 ```sh
 cratylus install                     # the guided run: put the canon cratylus ships on this machine, no project needed
 cratylus install --scope project     # the same for the project you are in, to commit and share with its team
-omp --agent architect                # start here: the architect
+omp --agent business-analyst         # start here: the business analyst
 cratylus uninstall --harness omp     # take away what install placed
 ```
 
 `cratylus` with no arguments prints how to start: what the command is for, how using it starts and
 where its theory is, a line each, then a line naming `cratylus --help` for everything else, on
-stdout, exit `0`. A completed install where the architect is installed ends with the start line the
+stdout, exit `0`. A completed install where the business analyst is installed ends with the start line the
 command prints. `cratylus --explain` prints the same as JSON, `{"name", "purpose", "orientation"}`:
 the cratylus extension shows that `orientation` in every omp session, as the command says it.
 `cratylus --explain` takes no other word. `cratylus --help` opens with what it is for.
@@ -36,26 +36,24 @@ capabilities that agents and skills call.
 cratylus install
 ```
 
-`cratylus install` puts the agents and skills of the canon cratylus ships into omp, for you or for one project
+`cratylus install` puts every agent and skill of the canon cratylus ships into omp, for you or for one project
 (the scope, below). It always installs the canon this command is built with, and needs no
 config. It looks for omp by its directory (`~/.omp`).
 
 The run is short. It asks only what you have not said, shows what it will place before it places
 anything, places it once you confirm, and ends with a few lines saying what was done and what to do
 next. Per-file detail is `--verbose`'s. Given every decision up front it asks nothing and places
-without asking to go ahead; run without a terminal (stdin and stdout), it never waits on a question
-and installs only the practices it is named, or every practice when told `--all`.
+without asking to go ahead; run without a terminal (stdin and stdout), it never waits on a question.
 
 ### The decisions
 
-Five decisions are yours, each with the flag that settles it (a decision given by flag is never
+Four decisions are yours, each with the flag that settles it (a decision given by flag is never
 asked):
 
 | Decision                                  | Flag                                    | Asked when                                                                                      | Where nothing is asked                                   |
 | ----------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Which agent harness                       | `--harness omp`                         | absent, and the host has no omp directory                                                       | none: refused                                            |
 | Which scope                               | `--scope <user\|project>`               | absent, on a terminal, where the project here is not your home                                  | user                                                     |
-| Which practices                           | `--practices <name,…>` / `--all`        | neither is given, on a terminal                                                                 | none: refused, whatever `--yes` says                     |
 | Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                                    | the choice the last install recorded, else none          |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | at user scope, a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
@@ -66,9 +64,8 @@ Unless a flag settled every decision, the preview ends with that last question. 
 cancelling any question with Ctrl-C or Esc, writes nothing.
 
 `--yes` (`-y`) takes the default of every decision not given and places without asking to go ahead.
-On a terminal that is the practices already installed here, else the preselected ones; it is no
-answer to the practices question where there is no terminal. `--dry-run` prints what would be placed
-and stops, writing nothing, and `--verbose` also prints the per-file detail.
+`--dry-run` prints what would be placed and stops, writing nothing, and `--verbose` also prints the
+per-file detail.
 
 ### Which scope
 
@@ -113,25 +110,6 @@ the keys in your `~/.omp/agent/config.yml` that hide it, your own setting, to ch
 Inside a project that has one, the `cratylus` command you run yourself, naming no installation,
 reads the project installation; elsewhere it reads yours.
 
-### Which practices
-
-A practice is a way of working that install offers as one choice: the agents and skills that
-carry it, installed together. On a terminal, install asks one question that lists each practice with its
-description, the practices already installed here ticked (on a fresh host, the one the canon
-preselects).
-
-`--practices <name,…>` names the practices to install, as in
-`--practices intent-based-delegation`, and `--all` takes every one. They are refused together, and
-so is a name no practice answers to; that refusal lists the
-practices the canon declares. Without a terminal and with neither flag, `install` refuses before
-writing anything and lists them too: what it installed last time is a default for a question, never
-an answer to one. An empty choice is refused as well (`--practices ''`, or every practice unticked),
-since none is not every; to take it all out, run `cratylus uninstall --harness <h>`.
-
-Installing again is how you change the choice. A practice installed before and not chosen now is
-removed, with what no chosen practice still carries. A practice renamed since an earlier install
-counts as installed and is carried over under its new name, which the report names beside the old.
-
 ### Which rules
 
 A rule is a standard working convention your agents follow in every session of every project,
@@ -151,7 +129,7 @@ placed and the summary names choosing them as a next step.
 
 Which model runs an agent is yours to choose, and it is your agent harness's own setting, never
 cratylus's (decision 0112). Each agent's definition names its own model role first, then the tier
-and effort its design gives it: `builder` declares `["@builder", "@frontier:medium"]`, and is never
+and effort its design gives it: `business-analyst` declares `["@business-analyst", "@frontier:high"]`, and is never
 rewritten with a model. So two kinds of role decide the model: a tier the agents fall back to
 (`frontier`, `frontier-other-family`, …), and the role named for an agent, which wins over its tier
 where you bind it.
@@ -159,7 +137,7 @@ where you bind it.
 On a terminal, a user install asks for a model for each tier, and each persona's role, that your
 omp settings do not bind under `modelRoles` (`~/.omp/agent/config.yml`), and writes each answer
 there as an ordinary entry of yours (`frontier: "openai/gpt-6"`). `--model-roles` settles the
-decision instead, keyed by a tier or an agent's name (`frontier=openai/gpt-6,builder=google/gemini-3-pro`);
+decision instead, keyed by a tier or an agent's name (`frontier=openai/gpt-6,business-analyst=google/gemini-3-pro`);
 `--model-roles default` binds nothing. Nothing install binds for you is recorded as cratylus's, so
 installing again, upgrading and uninstalling all keep it, and you change it by editing your config.
 A role your config already binds is never asked and never changed; a `--model-roles` entry for it is
@@ -185,7 +163,7 @@ Everything install places for you lives under one root it owns: at user scope `~
   runtime.json              each capability's configuration, where the canon declares any
   delivered/cratylus/<context>.json
                             each context this release delivers, read-only: cratylic context design, then intent-based delegation
-  installation.json         its scope (user or project), what install did outside the root, and the practices and rules installed
+  installation.json         its scope (user or project), what install did outside the root, and the rules installed
 ```
 
 omp's own surfaces only refer into it, the way `omp plugin link` does. At user scope `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. At project scope the references are in `<project>/.omp/plugins`, each relative so that a clone elsewhere resolves it: `node_modules/cratylus-omp` is a link to `../../../.cratylus/omp`, `package.json` names it as `"cratylus-omp": "file:../../.cratylus/omp"`, and `.gitignore` there holds a block that re-includes that one link where the project ignores `node_modules`: a `# cratylus: …` comment line, then `!/node_modules/`, `/node_modules/*` and `!/node_modules/cratylus-omp`. Install appends the block whole after your own lines, or creates the file where there is none, and never reads or changes a line of yours, even one identical to a line of the block. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
@@ -200,7 +178,7 @@ Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/c
 
 **An isolated agent's dispatch.** An agent may declare a worktree of its own; none of the bundled agents does. omp's agent definition has no field for isolation, so install does what omp offers: a dispatch of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's checkout and never writes the main checkout. What it built is kept as the branch `omp/task/<id>` in your repository, not applied. The copy is made from the dispatcher's HEAD and its uncommitted work, and omp takes no ref to start it from; building off the bound plan's line is the agent's own work. Where the checkout has uncommitted work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once per such agent and install prints the same in its summary. For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied, until you change the settings.
 
-**The delivered practice.** Each release carries two of cratylus's own contexts — the practice it ships — upstream first: `cratylic context design`, then `intent-based delegation`. Each is projected as cratylus's concept journal records it at that release's build: the current subject and relation and every live concept at its current meaning, with no history, decisions or retired concepts. Install places each read-only at `delivered/cratylus/<context>.json` (`delivered/cratylus/cratylic context design.json`, `delivered/cratylus/intent-based delegation.json`), at either scope and whatever practices and rules you choose, with cratylus as its origin, the release's version, the identity of the context in cratylus's journal and its `position`, its place in that order from 0 (cratylic context design 0, intent-based delegation 1); installing again replaces them with the new release's, and uninstall removes them with the root. Neither is ever written into any project's journal (`cratylus concepts` below).
+**The delivered practice.** Each release carries two of cratylus's own contexts — the practice it ships — upstream first: `cratylic context design`, then `intent-based delegation`. Each is projected as cratylus's concept journal records it at that release's build: the current subject and relation and every live concept at its current meaning, with no history, decisions or retired concepts. Install places each read-only at `delivered/cratylus/<context>.json` (`delivered/cratylus/cratylic context design.json`, `delivered/cratylus/intent-based delegation.json`), at either scope and whatever rules you choose, with cratylus as its origin, the release's version, the identity of the context in cratylus's journal and its `position`, its place in that order from 0 (cratylic context design 0, intent-based delegation 1); installing again replaces them with the new release's, and uninstall removes them with the root. Neither is ever written into any project's journal (`cratylus concepts` below).
 
 **An earlier installation** — cratylus before the owned root placed its agents in `~/.omp/agent/agents`, its skills in `~/.agents/skills`, its extensions in `~/.omp/agent/extensions`, hook workers in `~/.omp/hooks`, `modelRoles` and a status line in `config.yml`, and `~/.cratylus.json` — is taken back by the next user install, by its own record (`~/.omp/.forge/deploy-manifest.json`): each file it placed while it is still the bytes it wrote, each line it added while it stands as written, and the record last. A file or a part of `~/.cratylus.json` it placed before it recorded what it wrote is cratylus's by that record, and goes too, as does a status line layout in `config.yml` that is byte for byte the one it wrote; so no earlier agent outside the root takes the place of the root's. The `modelRoles` entries it seeded are the one exception: which model a role runs on is your setting, so they stay in your config as your own from then on, and the run names them. A file you changed since it recorded the bytes it wrote is yours, and is left and named; one it never recorded placing is never touched.
 
@@ -211,11 +189,6 @@ A refusal is one line on stderr, `cratylus install: <what went wrong>; <what to 
 
 - `no harness found (looked for <dir>); …`: omp has no directory here. Run it once, or name it
   with `--harness omp`.
-- `no terminal to ask which practices to install; …`: add `--practices` with the names it lists, or
-  `--all`.
-- `--practices: '<name>' is no practice of this canon (declared: …)`, and `no practice was chosen`:
-  name only declared practices, and at least one.
-- `--practices and --all were both given`: give one.
 - `--model-roles: '<name>' is no tier or agent of this install (tiers: …; agents: …)`: an entry must
   be `<role>=<model>`, keyed by one of the tiers or agents it lists, and a model must be a name the
   harness accepts.
@@ -233,8 +206,8 @@ those at user scope instead.
 An installed agent starts as the session itself through omp's own flag:
 
 ```sh
-omp --agent architect            # start the agent architect
-omp --agent architect -p 'hi'    # every other word on the command line is omp's own flag
+omp --agent business-analyst            # start the agent business-analyst
+omp --agent business-analyst -p 'hi'    # every other word on the command line is omp's own flag
 ```
 
 Install places no launcher and links no command for it: `--agent` is cratylus's extension (see
@@ -257,7 +230,7 @@ removes them too.
 ## The badge on the status line
 
 An agent's badge is its mark and name, or the name alone when it has no mark, in the status line of
-a session that runs it: `🏛️ architect`. It shows in the top-level interactive session and never in a
+a session that runs it: `✈️ mav`. It shows in the top-level interactive session and never in a
 subagent's, and it carries no color. Where the host's status line hides it, a user `cratylus install` asks whether to show it (`--agent-status show|hide`), and shows it only on `show`. A project installation never asks or writes it: where the settings hide it, it names as your next step the project's own keys that do, to change in the project's `.omp/config.yml`, or, where your settings alone do, `cratylus install --scope user --agent-status show` (or, where your user installation already recorded an answer, the keys in your own config to change). The host's own
 configuration is only ever added to, and `--dry-run` says what would be set and writes nothing.
 
@@ -299,7 +272,7 @@ so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 ## The host's model routing on omp
 
-An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `builder` declares `model: ["@builder", "@frontier:medium"]`. omp tries them in order, so a `modelRoles.builder` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:medium`, which is `modelRoles.frontier` at medium effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (decision 0112), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
+An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `business-analyst` declares `model: ["@business-analyst", "@frontier:high"]`. omp tries them in order, so a `modelRoles.business-analyst` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:high`, which is `modelRoles.frontier` at high effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (decision 0112), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 
 ## The host runtime config
 
@@ -341,7 +314,7 @@ Every command and every capability verb answers `--help`; this reference is that
 
 ### `cratylus install`
 
-Install the bundled canon, its agents, skills and rules, into an agent harness on this machine, asking what you have not said.
+Install the bundled canon, every one of its agents and skills, and the rules you choose, into an agent harness on this machine, asking what you have not said.
 
 ```sh
 cratylus install [options]
@@ -351,12 +324,10 @@ cratylus install [options]
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                                                                          |
 | `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project")                                                       |
-| `--practices <names>`     | The practices to install, comma-separated (default: asked on a terminal, the ones already installed here preselected; without a terminal, required unless --all)                                                                                                                                                                            |
-| `--all`                   | Install every practice, without asking                                                                                                                                                                                                                                                                                                      |
 | `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                                                                        |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked) |
 | `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no operator's own setting (default: at user scope, asked where the status line hides it) (choices: "show", "hide")                                     |
-| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead (the practices already installed here, else the preselected ones; not an answer where there is no terminal)                                                                                                                                              |
+| `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead                                                                                                                                                                                                                                                          |
 | `--verbose`               | Also print the per-file detail of the run                                                                                                                                                                                                                                                                                                   |
 | `--dry-run`               | Print what would be placed and stop, writing nothing                                                                                                                                                                                                                                                                                        |
 | `--home <dir>`            | The home directory to install under: the owned root is <home>/.cratylus/<harness> (default: your home directory)                                                                                                                                                                                                                            |
