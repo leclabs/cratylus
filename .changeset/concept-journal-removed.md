@@ -1,0 +1,13 @@
+---
+'cratylus': minor
+'@cratylus/runtime': minor
+'@cratylus/forge': minor
+'@cratylus/canon': minor
+---
+
+The concept journal is removed, with nothing in its place in these packages: the domain model is plain files in `design/model/`. `cratylus concepts` is gone and is refused as an unknown command; the runtime's capabilities (`CAPABILITIES`) and canon's `RUNTIME_CAPABILITIES` are `versionSkew` alone. Also gone:
+
+- `@cratylus/runtime`: `JOURNAL`, `deliverContext`, `DeliveredContext`, `ACTING_AGENT_ENV` and `actingAgent` from `.`; `DELIVERED_DIR` and `deliveredContexts` from `./runtime-config`; the `./ulid` subpath; the record store; and the `closes` effect, so a verb's effect is `reads` or `appends`. The command's theory line points at cratylic context design's domain model instead of the journal's design verb.
+- Delivered contexts: a build no longer projects cratylus's own contexts into `dist/delivered/`, and install no longer places `delivered/<origin>/<context>.json` in the owned root; `@cratylus/forge/cli` no longer takes `delivered` or exports `DeliveredDocument`.
+- The acting agent: the omp extension no longer names the session's agent in `CRATYLUS_AGENT` on capability or shell calls, and no longer offers the `concept_journal` tool.
+- Capability prose: `HarnessAdapter.nativeCapabilities`, the projection report's `capabilities` and the `capabilities/<capability>.md` prose form are gone; the cratylus omp extension is emitted whenever the adapter has a capability surface.

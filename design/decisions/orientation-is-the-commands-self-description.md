@@ -1,0 +1,5 @@
+# Orientation is the command's own self-description
+
+The runtime holds the command's self-description in one module, and nothing else words it: its purpose, one line saying what cratylus is for; and its orientation, a few lines: what it is for; how to start, by launching the business analyst with `omp --agent business-analyst` and saying what you want, its agents coming installed so none need writing; and, for whoever asks why it works, that its theory is cratylic context design, with where its domain model is.
+
+`cratylus --explain` answers it as JSON (name, purpose, orientation); the help's first line is the purpose; `cratylus` with no arguments prints the orientation and where the full help is, on stdout, and exits 0. The cratylus omp extension asks the reached command for `--explain` once at load and appends the orientation verbatim to every turn's system prompt in every session, launched or not, main or dispatched; a command that cannot explain itself leaves it out. A completed install's report ends with the orientation's start line where the installation holds the business analyst. The READMEs do not restate the orientation.

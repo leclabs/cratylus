@@ -8,7 +8,6 @@ import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { dispatchVersionSkew } from '../src/capabilities/version-skew/index.js';
 import {
   NoInstallationError,
-  deliveredContexts,
   installationRoot,
   installationScope,
   loadRuntimeConfig,
@@ -179,58 +178,5 @@ describe('the installation the command reads', () => {
       scope: 'project',
       installation: root,
     });
-  });
-
-  /** Writes `fields` as the delivered document `<origin>/<file>` of `root`. */
-  function deliver(
-    root: string,
-    origin: string,
-    file: string,
-    fields: Record<string, unknown>,
-  ): void {
-    mkdirSync(join(root, 'delivered', origin), { recursive: true });
-    writeFileSync(
-      join(root, 'delivered', origin, file),
-      JSON.stringify({
-        origin,
-        version: '2.4.0',
-        context: file.replace(/\.json$/, ''),
-        identity: `${origin}-${file}`,
-        subject: 'S.',
-        relation: 'R.',
-        concepts: [],
-        ...fields,
-      }),
-    );
-  }
-
-  it('delivers its contexts by origin, then position, never by file name', () => {
-    const root = place(join(tmp(), 'omp'), { scope: 'user' });
-    vi.stubEnv('CRATYLUS_INSTALLATION', root);
-    // File-name order in each origin is the reverse of position order, and the
-    // origins' contexts interleave by position.
-    deliver(root, 'b', 'a.json', { position: 1 });
-    deliver(root, 'b', 'z.json', { position: 0 });
-    deliver(root, 'a', 'a.json', { position: 2 });
-    deliver(root, 'a', 'm.json', { position: 1 });
-    deliver(root, 'a', 'z.json', { position: 0 });
-    expect(deliveredContexts().map((d) => `${d.origin}:${d.context}`)).toEqual([
-      'a:z',
-      'a:m',
-      'a:a',
-      'b:z',
-      'b:a',
-    ]);
-  });
-
-  it('refuses a delivered document an earlier cratylus projected, naming the installation and the remedy', () => {
-    const root = place(join(tmp(), 'app', '.cratylus', 'omp'), {
-      scope: 'project',
-    });
-    vi.stubEnv('CRATYLUS_INSTALLATION', root);
-    deliver(root, 'cratylus', 'intent-based delegation.json', {});
-    expect(() => deliveredContexts()).toThrow(
-      `${join(root, 'delivered', 'cratylus', 'intent-based delegation.json')} carries no position: the project installation at ${root} was projected by an earlier cratylus; install again with the cratylus in use, at its project scope`,
-    );
   });
 });

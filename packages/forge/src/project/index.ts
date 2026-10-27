@@ -10,7 +10,6 @@
 // question instead of a tmpdir excavation.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { spawnSync } from 'node:child_process';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
@@ -194,18 +193,6 @@ export interface ProjectedTree extends ProjectReport {
    *  rules: what an install offers, whole or rule by rule. Empty when the set
    *  declares none. Reported whether or not a render named any rule. */
   readonly rulesets: readonly OfferedRuleset[];
-  /** Which form each runtime capability took on this harness, in capability order:
-   *  the harness's own facility, the extension tool, or prose generated from the
-   *  capability's explanation, the last resort. */
-  readonly capabilities: readonly ProjectedCapability[];
-}
-
-/** The form a runtime capability takes on a harness. */
-export interface ProjectedCapability {
-  readonly capability: 'concepts';
-  readonly form: 'native' | 'extension' | 'prose';
-  /** The harness's own facility holding it, for the native form. */
-  readonly facility?: string;
 }
 
 /** A declared ruleset as an install offers it: whole, rule by rule, or not at all. */
@@ -286,83 +273,6 @@ async function hookOf(modPath: string): Promise<HookDeclaration | null> {
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
   return declaration ?? null;
-}
-
-/** The runtime capabilities a harness is offered, those that explain themselves. */
-const EXPLAINED_CAPABILITIES: readonly ProjectedCapability['capability'][] = [
-  'concepts',
-];
-
-/** A capability as `<bin> <capability> --explain` answers it: the shape the
- *  prose is generated from. */
-export interface Explanation {
-  readonly name: string;
-  readonly purpose: string;
-  readonly when: string;
-  readonly verbs: readonly {
-    readonly name: string;
-    readonly concept: string;
-    readonly purpose: string;
-    readonly when: string;
-    readonly effect: string;
-    readonly parameters: readonly {
-      readonly name: string;
-      readonly description: string;
-      readonly required: boolean;
-      readonly positional?: true;
-    }[];
-  }[];
-}
-
-/**
- * A capability's own explanation, asked of the installed command, as every other
- * route to a capability is: projection never reaches the runtime's code. Refuses,
- * naming the command, when it cannot answer — prose is never written from anything
- * but the capability's own account.
- */
-function explanationOf(capability: string): Explanation {
-  const asked = spawnSync(CLI_BIN, [capability, '--explain'], {
-    encoding: 'utf8',
-    timeout: 30_000,
-  });
-  if (asked.error !== undefined || asked.status !== 0)
-    throw new Error(
-      `the prose form of '${capability}' is generated from \`${CLI_BIN} ${capability} --explain\`, which did not answer: ${asked.error?.message ?? (asked.stderr.trim() || `exit ${asked.status}`)}`,
-    );
-  return JSON.parse(asked.stdout) as Explanation;
-}
-
-/**
- * A capability as prose, the last resort: generated from its own explanation
- * alone (purpose, when, each verb's concept, purpose, when, effect and
- * parameters), and saying it is reached through the command, since no tool holds
- * it here.
- */
-export function capabilityProse(capability: string, e: Explanation): string {
-  const command = `${CLI_BIN} ${capability}`;
-  return [
-    `# ${e.name}`,
-    '',
-    e.purpose,
-    '',
-    `When: ${e.when}`,
-    '',
-    `Reached through the \`${command}\` command: run \`${command} <verb>\` with the parameters below, in the repository it concerns. \`${command} --explain\` prints this explanation as JSON.`,
-    ...e.verbs.flatMap((v) => [
-      '',
-      `## ${v.name} (concept: ${v.concept}; ${v.effect})`,
-      '',
-      v.purpose,
-      '',
-      `When: ${v.when}`,
-      ...(v.parameters.length > 0 ? [''] : []),
-      ...v.parameters.map(
-        (p) =>
-          `- \`${p.positional === true ? `<${p.name}>` : `--${p.name}`}\` (${p.required ? 'required' : 'optional'}): ${p.description}`,
-      ),
-    ]),
-    '',
-  ].join('\n');
 }
 
 /**
@@ -628,35 +538,6 @@ export async function projectPluginSet(
   // every harness, which is why a shortfall here is a warning and not a refusal.
   const bindings = bindingsOf(composed, manifest);
 
-  // CAPABILITY FIDELITY. Each runtime capability takes the highest form this
-  // harness offers: its own facility, else the cratylus extension tool, else prose
-  // generated from the capability's own explanation — the last resort, which every
-  // rendered agent carries and the tree holds as a file of its own.
-  const nativeCapabilities = opts.adapter.nativeCapabilities ?? {};
-  const capabilities: ProjectedCapability[] = EXPLAINED_CAPABILITIES.map(
-    (capability) => {
-      const facility = nativeCapabilities[capability];
-      if (facility !== undefined)
-        return { capability, form: 'native', facility };
-      return {
-        capability,
-        form:
-          opts.adapter.capabilitySurface !== undefined ? 'extension' : 'prose',
-      };
-    },
-  );
-  const prose = capabilities.flatMap(({ capability, form }) =>
-    form === 'prose'
-      ? [
-          {
-            capability,
-            text: capabilityProse(capability, explanationOf(capability)),
-          },
-        ]
-      : [],
-  );
-  const agentProse =
-    prose.length === 0 ? '' : `\n${prose.map((p) => p.text).join('\n')}`;
   const degraded = new Set<string>();
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
@@ -686,10 +567,7 @@ export async function projectPluginSet(
       ...(mechanisms ? { mechanisms } : {}),
       ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
     });
-    files.push({
-      path: join('agents', filename),
-      content: content + agentProse,
-    });
+    files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
     rendered.push(agent);
@@ -782,24 +660,15 @@ export async function projectPluginSet(
   }
 
   // THE CAPABILITY INTERFACE: what offers the runtime's capabilities as tools,
-  // staged by scope as the agent surface is — asked for only where some capability
-  // took the extension form, so a harness holding every one natively is given no
-  // lower-fidelity tool beside its own facility.
-  if (capabilities.some((c) => c.form === 'extension')) {
-    for (const s of opts.adapter.capabilitySurface?.() ?? []) {
-      const path = join(
-        ENFORCING_STAGE_DIR,
-        s.scope ?? SESSION_SCOPE,
-        s.filename,
-      );
-      files.push({ path, content: s.content });
-      log(`EMIT tool definition ${path}`);
-    }
-  }
-  for (const { capability, text } of prose) {
-    const path = join('capabilities', `${capability}.md`);
-    files.push({ path, content: text });
-    log(`EMIT capability prose ${path}`);
+  // staged by scope as the agent surface is.
+  for (const s of opts.adapter.capabilitySurface?.() ?? []) {
+    const path = join(
+      ENFORCING_STAGE_DIR,
+      s.scope ?? SESSION_SCOPE,
+      s.filename,
+    );
+    files.push({ path, content: s.content });
+    log(`EMIT tool definition ${path}`);
   }
 
   for (const rule of chosenRules) {
@@ -1006,7 +875,6 @@ export async function projectPluginSet(
         description: rule.description,
       })),
     })),
-    capabilities,
   };
 }
 

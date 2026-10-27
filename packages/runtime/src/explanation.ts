@@ -2,7 +2,7 @@
 // THE CAPABILITY INTERFACE — what a capability says of itself when asked to
 // explain itself: its name, its purpose and when to reach for it, and for each
 // verb the concept it acts on, its purpose, when to reach for it, whether it
-// reads, appends or closes, and each parameter with its description and JSON
+// reads or appends, and each parameter with its description and JSON
 // schema.
 //
 // Nothing here is worded. The capability declares its name and when beside its
@@ -16,16 +16,16 @@ import type { Flag, Verb, VerbFlags } from './verb-flags.js';
 
 /** A verb that explains itself: beyond its purpose, positional and flags, the
  *  term of the concept it acts on, when to reach for it, and whether it only
- *  reads, appends, or closes what it holds. */
+ *  reads or appends to what it holds. */
 export interface ExplainedVerb extends Verb {
   readonly concept: string;
   readonly when: string;
   readonly effect: Effect;
 }
 
-/** What a verb does to what its capability holds: only reads it, appends to
- *  it, or closes it, carrying what stands forward and removing the rest. */
-export type Effect = 'reads' | 'appends' | 'closes';
+/** What a verb does to what its capability holds: only reads it, or appends to
+ *  it. */
+export type Effect = 'reads' | 'appends';
 
 /** A capability that explains itself: its name, its purpose, when to reach for
  *  it, and its verbs, in the order it declares them. */

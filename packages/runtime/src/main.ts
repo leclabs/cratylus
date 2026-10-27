@@ -23,16 +23,15 @@
 // `readArgv` stays their one reader, so every `verb flags` refusal is the
 // dispatcher's own. The one thing read here is whether the tokens ask for help
 // or for the explanation: `--help`, `-h` or `--explain` as a token of its own,
-// never as the value of a flag that takes one — `concepts context c --subject
-// -h` keeps `-h` as the subject. Help wins over the explanation. A verb the
+// never as the value of a flag that takes one — `--<flag> -h`, where the flag
+// takes a value, keeps `-h` as its value. Help wins over the explanation. A verb the
 // capability does not declare is refused by `verbOf`, the one home of that
 // refusal.
 //
-// Each capability prints its JSON result; `concepts` is handed the
-// contexts the installation it reaches delivers, so its views show them beside the
-// project's own. A refusal is a loud code-1 failure, printed as `cratylus <message>`,
-// a message opening with the capability and the verb, so it reads as every other
-// command's failure does.
+// Each capability prints its JSON result on stdout. A result that is a failure, a
+// model check that fails, is still printed on stdout and exits 1. A refusal is a
+// loud code-1 failure, printed on stderr as `cratylus <message>`, a message opening
+// with the capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
 //
@@ -45,10 +44,10 @@
 import { Command, Option } from 'commander';
 import { CLI_BIN } from './bin-name.js';
 import {
-  VERBS as CONCEPTS,
-  JOURNAL,
-} from './capabilities/concepts/dispatch.js';
-import { dispatchConcepts } from './capabilities/concepts/index.js';
+  MODEL_CHECK,
+  VERBS as MODEL_VERBS,
+  dispatchModel,
+} from './capabilities/model/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
   VERSION_SKEW,
@@ -66,45 +65,49 @@ import {
   explain,
   explainVerb,
 } from './explanation.js';
-import { deliveredContexts } from './runtime-config.js';
 import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 
 /**
  * Each capability's verb surface: the verbs it declares, and its verb and
- * arguments in, the text it prints out, and, where it explains itself, its
- * interface. A refusal throws.
+ * arguments in, the result it prints out and whether that result is a failure,
+ * and, where it explains itself, its interface. A refusal throws.
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
  * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `concepts` skill yields
- * `spawnSync(CLI_BIN, ['concepts', …])`).
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `versionSkew` skill yields
+ * `spawnSync(CLI_BIN, ['versionSkew', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {
     readonly verbs: VerbFlags;
-    readonly run: (argv: string[], build: Build) => string;
+    readonly run: (argv: string[], build: Build) => Outcome;
     readonly explained: CapabilityInterface;
   };
 } = {
-  concepts: {
-    verbs: CONCEPTS,
-    // The contexts the installation reached delivers, shown apart from the project's own.
-    run: (argv) =>
-      JSON.stringify(
-        dispatchConcepts(argv, { delivered: deliveredContexts() }),
-        null,
-        2,
-      ),
-    explained: JOURNAL,
+  model: {
+    verbs: MODEL_VERBS,
+    run: (argv) => {
+      const report = dispatchModel(argv);
+      return { result: report, failed: !report.passed };
+    },
+    explained: MODEL_CHECK,
   },
   versionSkew: {
     verbs: VERSION_SKEW_VERBS,
-    run: (argv, build) =>
-      JSON.stringify(dispatchVersionSkew(argv, build), null, 2),
+    run: (argv, build) => ({
+      result: dispatchVersionSkew(argv, build),
+      failed: false,
+    }),
     explained: VERSION_SKEW,
   },
 };
+
+/** What a verb gives: its result, printed as JSON, and whether it is a failure. */
+interface Outcome {
+  readonly result: unknown;
+  readonly failed: boolean;
+}
 
 /** The build the commands are held in: the program's own declared version, which
  *  `versionSkew` reports as the command's. */
@@ -301,8 +304,9 @@ function capabilityCommand(capability: Capability, build: Build): Command {
               process.exitCode = 0;
               return;
             }
-            process.stdout.write(`${run([verb, ...tokens], build)}\n`);
-            process.exitCode = 0;
+            const { result, failed } = run([verb, ...tokens], build);
+            process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+            process.exitCode = failed ? 1 : 0;
           } catch (err) {
             refuse(err instanceof Error ? err.message : String(err));
           }

@@ -22,7 +22,6 @@ export {
 // The owned root: everything install places for a user on a harness, and the
 // references the harness's own surfaces hold into it.
 export {
-  type DeliveredDocument,
   holdsRenderTree,
   linkOwnedRoot,
   ownedRootIn,

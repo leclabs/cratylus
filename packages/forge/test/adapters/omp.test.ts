@@ -6,7 +6,6 @@
 // wrong, the wrong thing is named — a fixture pinned to a law outlives the
 // incident that produced it, and one pinned to the incident is a museum piece.
 
-import { spawnSync } from 'node:child_process';
 import {
   mkdirSync,
   mkdtempSync,
@@ -494,18 +493,36 @@ describe('omp launch', () => {
   });
 });
 
+/** The capabilities the stand-in module offers: `standIn`, which the version skew
+ *  does not stand for, then those the adapter offers. */
+const OFFERED: readonly string[] = ['standIn', ...OMP_CAPABILITY_TOOLS];
+
+/** The emitted CRATYLUS module's bytes, offering {@link OFFERED}: every capability
+ *  but the version skew is composed from the command's explanation alone, so a
+ *  stand-in capability exercises that composition whichever the adapter offers. */
+function withStandIn(): string {
+  const content = ompCapabilityExtensions()[0]?.content ?? '';
+  const declared = `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`;
+  expect(content).toContain(declared);
+  return content.replace(
+    declared,
+    `const CAPABILITIES: readonly string[] = ${JSON.stringify(OFFERED)};`,
+  );
+}
+
 describe('omp tool definitions', () => {
   const PATH = process.env.PATH;
   afterEach(() => {
     process.env.PATH = PATH;
   });
 
-  /** The emitted module's factory, written into an installation projected by
+  /** The emitted module's factory, offering the stand-in capability `standIn` first
+   *  (see {@link withStandIn}), written into an installation projected by
    *  `1.0.0`, beside a `cratylus` 1.0.0 on PATH that answers `<capability> --explain`
    *  with `explanation` under that capability's own name (`<name> <capability>`),
    *  each `<capability> <verb>` the JSON file `STAND_IN_ANSWERS` names, when it names
-   *  one, with its answer there, and any other call with its argv, directory and
-   *  acting agent as JSON (or, for a verb named `refuse`, a refusal on stderr). */
+   *  one, with its answer there, and any other call with its argv and directory as
+   *  JSON (or, for a verb named `refuse`, a refusal on stderr). */
   async function emitted(
     explanation: unknown,
   ): Promise<(pi: unknown) => Promise<void>> {
@@ -523,9 +540,9 @@ describe('omp tool definitions', () => {
         "const answers = process.env.STAND_IN_ANSWERS ? JSON.parse(require('node:fs').readFileSync(process.env.STAND_IN_ANSWERS, 'utf8')) : {};",
         "if (args[0] === '--version') process.stdout.write('1.0.0\\n');",
         `else if (args.includes('--explain')) { const said = JSON.parse(require('node:fs').readFileSync(${JSON.stringify(said)}, 'utf8')); process.stdout.write(JSON.stringify({ ...said, name: \`\${said.name} \${args[0]}\` })); }`,
-        "else if (args[1] === 'refuse') { process.stderr.write('cratylus concepts refuse: its own words\\n'); process.exit(1); }",
+        "else if (args[1] === 'refuse') { process.stderr.write('cratylus standIn refuse: its own words\\n'); process.exit(1); }",
         "else if (Object.hasOwn(answers, args.slice(0, 2).join(' '))) process.stdout.write(JSON.stringify(answers[args.slice(0, 2).join(' ')]));",
-        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd(), agent: process.env.CRATYLUS_AGENT }));',
+        'else process.stdout.write(JSON.stringify({ args, cwd: process.cwd() }));',
         '',
       ].join('\n'),
       { mode: 0o755 },
@@ -537,9 +554,8 @@ describe('omp tool definitions', () => {
       join(root, 'package.json'),
       JSON.stringify({ name: 'cratylus-omp', version: '1.0.0' }),
     );
-    const [module] = ompCapabilityExtensions();
     const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
-    writeFileSync(file, module?.content ?? '');
+    writeFileSync(file, withStandIn());
     // Dynamic: the module under test is the emitted bytes, written to disk here.
     return (await import(file)).default;
   }
@@ -563,16 +579,6 @@ describe('omp tool definitions', () => {
       `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
     );
     expect(content).toContain('[capability, "--explain"]');
-    // No verb, journal location or entry field of a capability is spelled here.
-    for (const word of [
-      'supersede',
-      'retire',
-      'decide',
-      'design/journal',
-      'concept journal',
-      'work-packages',
-    ])
-      expect(content).not.toContain(word);
   });
 
   describe('composed from a stand-in installed command', () => {
@@ -647,13 +653,13 @@ describe('omp tool definitions', () => {
     });
     const verb = (
       name: string,
-      effect: 'reads' | 'appends' | 'closes',
+      effect: 'reads' | 'appends',
       parameters: unknown[],
     ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
      *  order the adapter offers its capabilities; the version tool is the one the
      *  artifacts carry, whatever the command explains. */
-    const TOOLS = OMP_CAPABILITY_TOOLS.map((capability) =>
+    const TOOLS = OFFERED.map((capability) =>
       capability === 'versionSkew'
         ? 'version_skew'
         : `stand_in_${capability.toLowerCase()}`,
@@ -675,7 +681,6 @@ describe('omp tool definitions', () => {
           parameter('open', { type: 'boolean' }),
         ]),
         verb('refuse', 'appends', []),
-        verb('shut', 'closes', []),
       ],
     };
 
@@ -688,26 +693,18 @@ describe('omp tool definitions', () => {
         'look',
         'put',
         'refuse',
-        'shut',
       ]);
       expect(tool?.approval({ verb: 'look' })).toBe('read');
       expect(tool?.approval({ verb: 'put' })).toBe('write');
-      expect(tool?.approval({ verb: 'shut' })).toBe('write');
     });
 
     it('offers every capability as a device', async () => {
       const tools = await load(EXPLANATION);
       expect(
         Object.fromEntries(
-          OMP_CAPABILITY_TOOLS.map((capability, i) => [
-            capability,
-            tools[i]?.loadMode,
-          ]),
+          OFFERED.map((capability, i) => [capability, tools[i]?.loadMode]),
         ),
-      ).toEqual({
-        concepts: 'discoverable',
-        versionSkew: 'discoverable',
-      });
+      ).toEqual(Object.fromEntries(OFFERED.map((c) => [c, 'discoverable'])));
     });
 
     it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {
@@ -749,7 +746,7 @@ describe('omp tool definitions', () => {
       );
       expect(JSON.parse(result?.content[0]?.text ?? '')).toEqual({
         args: [
-          'concepts',
+          'standIn',
           'put',
           'w4',
           '--context=--explain',
@@ -776,15 +773,11 @@ describe('omp tool definitions', () => {
             )
           )?.content[0]?.text ?? '',
         ).args;
-      expect(await args('--help')).toEqual(['concepts', 'put', '--help=']);
-      expect(await args('--explain')).toEqual([
-        'concepts',
-        'put',
-        '--explain=',
-      ]);
-      expect(await args('-h')).toEqual(['concepts', 'put', '-h=']);
-      expect(await args('--x=y')).toEqual(['concepts', 'put', '--x=y']);
-      expect(await args('-')).toEqual(['concepts', 'put', '-']);
+      expect(await args('--help')).toEqual(['standIn', 'put', '--help=']);
+      expect(await args('--explain')).toEqual(['standIn', 'put', '--explain=']);
+      expect(await args('-h')).toEqual(['standIn', 'put', '-h=']);
+      expect(await args('--x=y')).toEqual(['standIn', 'put', '--x=y']);
+      expect(await args('-')).toEqual(['standIn', 'put', '-']);
     });
 
     it("fails a refused call as a tool error with the command's own message", async () => {
@@ -795,59 +788,13 @@ describe('omp tool definitions', () => {
         }),
       ).toEqual({
         content: [
-          { type: 'text', text: 'cratylus concepts refuse: its own words' },
+          { type: 'text', text: 'cratylus standIn refuse: its own words' },
         ],
         isError: true,
       });
     });
 
-    describe('names the acting agent on every capability call (F1)', () => {
-      afterEach(() => {
-        omp.agents = [];
-        Reflect.deleteProperty(process.env, 'CRATYLUS_AGENT');
-      });
-      const agentOf = async (
-        session: { flag?: string; sub?: string },
-        kind: 'main' | 'sub',
-      ) => {
-        const [tool] = await load(EXPLANATION, session);
-        const result = await tool?.execute(
-          'id',
-          { verb: 'look' },
-          undefined,
-          undefined,
-          {
-            cwd: tmpdir(),
-            agent: { kind, name: session.sub ?? 'main' },
-          } as { cwd: string },
-        );
-        return JSON.parse(result?.content[0]?.text ?? '').agent;
-      };
-
-      it('as the launched declaration, the dispatched agent, or no one', async () => {
-        omp.agents = [
-          {
-            name: 'tech-lead',
-            description: 'd',
-            systemPrompt: 'The tech lead body.',
-            source: 'user',
-          },
-        ];
-        expect(await agentOf({ flag: 'tech-lead' }, 'main')).toBe('tech-lead');
-        expect(await agentOf({ sub: 'software-engineer' }, 'sub')).toBe(
-          'software-engineer',
-        );
-        expect(await agentOf({}, 'main')).toBeUndefined();
-      });
-
-      it('never one the environment carries in', async () => {
-        process.env.CRATYLUS_AGENT = 'business-analyst';
-        expect(await agentOf({}, 'main')).toBeUndefined();
-        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
-      });
-    });
-
-    describe("names the session's agent on its shell calls, and refuses no call for what it would change (0143)", () => {
+    describe('refuses no call for what it would change (0143)', () => {
       afterEach(() => {
         omp.agents = [];
       });
@@ -894,50 +841,6 @@ describe('omp tool definitions', () => {
         };
       }
 
-      /** The command the handlers leave, run by a POSIX shell whose environment names
-       *  someone else: what each of its commands sees as the acting agent. */
-      const seen = (command: unknown) =>
-        spawnSync('/bin/sh', ['-c', String(command)], {
-          env: { ...process.env, CRATYLUS_AGENT: 'someone else' },
-          encoding: 'utf8',
-        }).stdout;
-      const PROBE =
-        'printf "%s" "${CRATYLUS_AGENT-none}" && printf " %s" "${CRATYLUS_AGENT-none}"';
-
-      it('as the dispatched agent or the launched declaration, in the command itself', async () => {
-        omp.agents = [
-          {
-            name: 'business-analyst',
-            description: 'd',
-            systemPrompt: 'The business analyst body.',
-            source: 'user',
-          },
-        ];
-        for (const [agent, named] of [
-          [{ sub: 'tech-lead' }, 'tech-lead'],
-          [{ sub: "o'brien" }, "o'brien"],
-          [{ flag: 'business-analyst' }, 'business-analyst'],
-        ] as const) {
-          const call = await session(agent);
-          const { answer, input } = await call('bash', {
-            command: PROBE,
-            cwd: 'src',
-          });
-          expect(answer).toBeUndefined();
-          expect(input).toEqual({ command: expect.any(String), cwd: 'src' });
-          expect(seen(input.command), named).toBe(`${named} ${named}`);
-        }
-      });
-
-      it('and no one for a session that is no agent', async () => {
-        process.env.CRATYLUS_AGENT = 'business-analyst';
-        const call = await session({});
-        expect(process.env.CRATYLUS_AGENT).toBeUndefined();
-        const { answer, input } = await call('bash', { command: PROBE });
-        expect(answer).toBeUndefined();
-        expect(seen(input.command)).toBe('none none');
-      });
-
       it('refuses no call for the files it would change, by any route', async () => {
         const call = await session({ sub: 'tech-lead' });
         for (const [tool, input] of [
@@ -948,17 +851,12 @@ describe('omp tool definitions', () => {
           ['edit', { input: '[checks/renewal.test.ts#1A2B]\nPUT 1.=1:\n+x' }],
           ['ast_edit', { paths: ['design/'] }],
           ['bash', { command: 'rm -r checks/renewal' }],
-          [
-            'bash',
-            {
-              command: 'CRATYLUS_AGENT=business-analyst git commit -am renewal',
-            },
-          ],
+          ['bash', { command: 'git commit -am renewal' }],
           ['eval', { code: 'open("checks/renewal.test.ts", "w")' }],
         ] as const) {
           const { answer, input: left } = await call(tool, { ...input });
           expect(answer, `${tool} ${JSON.stringify(input)}`).toBeUndefined();
-          if (tool !== 'bash') expect(left).toEqual(input);
+          expect(left).toEqual(input);
         }
       });
     });
@@ -983,7 +881,7 @@ describe('omp tool definitions', () => {
         const all = TOOLS.map((n) => [
           n,
           // The version tool explains one verb alone, so it takes no `verb`.
-          n === 'version_skew' ? undefined : ['look', 'put', 'refuse', 'shut'],
+          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
         ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),
@@ -1015,7 +913,7 @@ describe('omp tool definitions', () => {
           { cwd: tmpdir() },
         );
         expect(JSON.parse(result?.content[0]?.text ?? '').args).toEqual([
-          'concepts',
+          'standIn',
           'put',
           'w',
         ]);
@@ -1086,9 +984,8 @@ describe('omp tool definitions', () => {
         { mode: 0o755 },
       );
       process.env.PATH = `${bin}:${PATH}`;
-      const [module] = ompCapabilityExtensions();
       const file = join(root, 'extensions', OMP_CRATYLUS_MODULE);
-      writeFileSync(file, module?.content ?? '');
+      writeFileSync(file, withStandIn());
       const tools: string[] = [];
       let version:
         | ((...args: unknown[]) => Promise<{ content: { text: string }[] }>)
@@ -1145,7 +1042,7 @@ describe('omp tool definitions', () => {
         );
       return { warnings, tools, report, root, project };
     }
-    const ALL = OMP_CAPABILITY_TOOLS;
+    const ALL = OFFERED;
     const remedy =
       /Install again with the cratylus in use: cratylus install --harness omp --scope user$/;
     const projectRemedy = (project: string) =>
@@ -1265,7 +1162,7 @@ describe('omp tool definitions', () => {
       });
       expect(tools).toEqual(['version_skew']);
       expect(warnings[0]).toHaveLength(1);
-      expect(warnings[0]?.[0]).toMatch(/does not provide concepts /);
+      expect(warnings[0]?.[0]).toMatch(/does not provide standIn /);
     });
   });
 
@@ -1651,7 +1548,7 @@ describe('omp tool definitions', () => {
       omp.agents = [
         declare(
           { name: 'business-analyst', description: 'Holds the design.' },
-          '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the concept journal is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
+          '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the domain model is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
         ),
       ];
       const { fire } = await started('business-analyst');
@@ -1683,7 +1580,7 @@ describe('omp tool definitions', () => {
      *  what the session was told. */
     async function loadedAs(agent: string) {
       const factory = await emitted({
-        name: 'concept journal',
+        name: 'stand in',
         purpose: 'p',
         when: 'w',
         verbs: [
@@ -1735,8 +1632,8 @@ describe('omp tool definitions', () => {
       { toolName: 'task', input: { tasks: [{ agent: 'scout', task: 't' }] } },
       { toolName: 'write', input: { path: 'notes.md', content: 'x' } },
       { toolName: 'edit', input: { path: 'design/a.md' } },
-      { toolName: 'concept_journal_concepts', input: { verb: 'define' } },
-      { toolName: 'read', input: { path: 'design/journal' } },
+      { toolName: 'stand_in_standin', input: { verb: 'define' } },
+      { toolName: 'read', input: { path: 'design/model' } },
     ];
 
     it('holds no act of a reconstituting launch, before or after it speaks, and answers no reply (0142)', async () => {
