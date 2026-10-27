@@ -7,8 +7,7 @@ import { terminology } from '../factors/expertise/terminology.js';
 import { parsimony } from '../factors/objective/parsimony.js';
 import { satisfice } from '../factors/objective/satisfice.js';
 import { analytical } from '../factors/stance/analytical.js';
-import { coldDecodeOracle } from '../factors/stance/cold-decode-oracle.js';
-import { invokeTheCanonical } from '../factors/stance/invoke-the-canonical.js';
+import { coldReader } from '../factors/stance/cold-reader.js';
 import { zeroTrust } from '../factors/stance/zero-trust.js';
 import { architectRole } from '../roles/architect.js';
 
@@ -23,7 +22,7 @@ export const nico = persona(architectRole, {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [terminology],
-    stance: [analytical, zeroTrust, coldDecodeOracle, invokeTheCanonical],
+    stance: [analytical, zeroTrust, coldReader],
     communicationStyle: [{ value: maintenance, slot: 'density' }],
   },
 });
