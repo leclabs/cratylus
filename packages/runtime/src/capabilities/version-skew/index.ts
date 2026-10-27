@@ -22,7 +22,7 @@ import {
   installationRoot,
   installationScope,
 } from '../../runtime-config.js';
-import { type VerbFlags, readArgv } from '../../verb-flags.js';
+import type { Verbs } from '../../verb-flags.js';
 import { verbOf } from '../plan/argv.js';
 
 export const VERBS = {
@@ -32,10 +32,8 @@ export const VERBS = {
     purpose:
       'Report the version of cratylus that projected this installation (artifacts) and the version of the cratylus command its capabilities run (command), with the scope (user or project) and root of the installation; the versions differ where the installation was projected by another build',
     when: 'When a session starts warning of version skew, or to confirm which build projected the installation and which command it reaches',
-    positional: null,
-    flags: {},
   },
-} as const satisfies VerbFlags<string, ExplainedVerb>;
+} as const satisfies Verbs<string, ExplainedVerb>;
 
 export type VersionSkewVerb = keyof typeof VERBS;
 
@@ -65,7 +63,6 @@ export function dispatchVersionSkew(
   build: { readonly version?: string },
 ): VersionSkewReport {
   const verb: VersionSkewVerb = verbOf(argv, 'versionSkew', VERBS);
-  readArgv(argv.slice(1), 'versionSkew', verb, VERBS[verb]);
   const refuse = (message: string) =>
     new Error(`versionSkew ${verb}: ${message}`);
   if (build.version === undefined)

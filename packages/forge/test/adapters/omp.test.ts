@@ -589,7 +589,7 @@ describe('omp tool definitions', () => {
         required: string[];
       };
       loadMode: string;
-      approval(args: Record<string, unknown>): string;
+      approval: string;
       execute(
         id: string,
         args: Record<string, unknown>,
@@ -640,22 +640,13 @@ describe('omp tool definitions', () => {
       return registered;
     }
 
-    const parameter = (
-      name: string,
-      schema: Record<string, unknown>,
-      positional = false,
-    ) => ({
+    const verb = (name: string) => ({
       name,
-      description: `the ${name}`,
-      required: positional,
-      schema,
-      ...(positional ? { positional: true } : {}),
+      concept: 'c',
+      purpose: 'p',
+      when: 'w',
+      effect: 'reads',
     });
-    const verb = (
-      name: string,
-      effect: 'reads' | 'appends',
-      parameters: unknown[],
-    ) => ({ name, concept: 'c', purpose: 'p', when: 'w', effect, parameters });
     /** The tool the stand-in's explanation of each capability registers, in the
      *  order the adapter offers its capabilities; the version tool is the one the
      *  artifacts carry, whatever the command explains. */
@@ -668,34 +659,21 @@ describe('omp tool definitions', () => {
       name: 'stand in',
       purpose: 'p',
       when: 'w',
-      verbs: [
-        verb('look', 'reads', [
-          parameter('context', { type: 'string' }),
-          parameter('mode', { type: 'string' }),
-        ]),
-        verb('put', 'appends', [
-          parameter('word', { type: 'string' }, true),
-          parameter('context', { type: 'string' }),
-          parameter('mode', { type: 'string', enum: ['a', 'b'] }),
-          parameter('from', { type: 'array', items: { type: 'string' } }),
-          parameter('open', { type: 'boolean' }),
-        ]),
-        verb('refuse', 'appends', []),
-      ],
+      verbs: [verb('look'), verb('find'), verb('refuse')],
     };
 
-    it('registers one tool per capability, its verb required, approval by effect', async () => {
+    it('registers one tool per capability, its verb required, every one read-only', async () => {
       const tools = await load(EXPLANATION);
       expect(tools.map((t) => t.name)).toEqual(TOOLS);
       const [tool] = tools;
       expect(tool?.parameters.required).toEqual(['verb']);
+      expect(Object.keys(tool?.parameters.properties ?? {})).toEqual(['verb']);
       expect(tool?.parameters.properties.verb?.enum).toEqual([
         'look',
-        'put',
+        'find',
         'refuse',
       ]);
-      expect(tool?.approval({ verb: 'look' })).toBe('read');
-      expect(tool?.approval({ verb: 'put' })).toBe('write');
+      expect(tools.map((t) => t.approval)).toEqual(TOOLS.map(() => 'read'));
     });
 
     it('offers every capability as a device', async () => {
@@ -707,77 +685,37 @@ describe('omp tool definitions', () => {
       ).toEqual(Object.fromEntries(OFFERED.map((c) => [c, 'discoverable'])));
     });
 
-    it('keeps one schema where every verb declares it alike, and every distinct one under anyOf', async () => {
-      const [tool] = await load(EXPLANATION);
-      const { context, mode, from } = tool?.parameters.properties ?? {};
-      expect(context).toEqual({
-        type: 'string',
-        description:
-          'look (optional): the context\nput (optional): the context',
-      });
-      expect(from).toEqual({
-        type: 'array',
-        items: { type: 'string' },
-        description: 'put (optional): the from',
-      });
-      expect(mode).toEqual({
-        anyOf: [{ type: 'string' }, { type: 'string', enum: ['a', 'b'] }],
-        description: 'look (optional): the mode\nput (optional): the mode',
-      });
-    });
-
-    it('gives every value as one --flag=value token, so a dash-led value is never a flag', async () => {
+    it('runs the capability and the verb alone, whatever else the call carries', async () => {
       const [tool] = await load(EXPLANATION);
       const cwd = mkdtempSync(join(tmpdir(), 'omp-capability-cwd-'));
       tmp.push(cwd);
       const result = await tool?.execute(
         'id',
-        {
-          verb: 'put',
-          word: 'w4',
-          context: '--explain',
-          mode: '-- a dash-led value',
-          from: ['--a', 'b'],
-          open: true,
-        },
+        { verb: 'find', context: '--explain' },
         undefined,
         undefined,
         { cwd },
       );
       expect(JSON.parse(result?.content[0]?.text ?? '')).toEqual({
-        args: [
-          'standIn',
-          'put',
-          'w4',
-          '--context=--explain',
-          '--mode=-- a dash-led value',
-          '--from=--a',
-          '--from=b',
-          '--open',
-        ],
+        args: ['standIn', 'find'],
         cwd: realpathSync(cwd),
       });
     });
 
-    it('gives a dash-led positional as a flag-shaped token the command refuses, never as a request for help', async () => {
-      const [tool] = await load(EXPLANATION);
-      const args = async (word: string) =>
-        JSON.parse(
-          (
-            await tool?.execute(
-              'id',
-              { verb: 'put', word },
-              undefined,
-              undefined,
-              { cwd: tmpdir() },
-            )
-          )?.content[0]?.text ?? '',
-        ).args;
-      expect(await args('--help')).toEqual(['standIn', 'put', '--help=']);
-      expect(await args('--explain')).toEqual(['standIn', 'put', '--explain=']);
-      expect(await args('-h')).toEqual(['standIn', 'put', '-h=']);
-      expect(await args('--x=y')).toEqual(['standIn', 'put', '--x=y']);
-      expect(await args('-')).toEqual(['standIn', 'put', '-']);
+    it('runs the one verb of a capability that explains one alone, taking no `verb`', async () => {
+      const [tool] = await load({ ...EXPLANATION, verbs: [verb('look')] });
+      expect(tool?.parameters).toEqual({
+        type: 'object',
+        properties: {},
+        required: [],
+      });
+      const result = await tool?.execute('id', {}, undefined, undefined, {
+        cwd: tmpdir(),
+      });
+      expect(JSON.parse(result?.content[0]?.text ?? '').args).toEqual([
+        'standIn',
+        'look',
+      ]);
     });
 
     it("fails a refused call as a tool error with the command's own message", async () => {
@@ -881,7 +819,7 @@ describe('omp tool definitions', () => {
         const all = TOOLS.map((n) => [
           n,
           // The version tool explains one verb alone, so it takes no `verb`.
-          n === 'version_skew' ? undefined : ['look', 'put', 'refuse'],
+          n === 'version_skew' ? undefined : ['look', 'find', 'refuse'],
         ]);
         omp.agents = [
           discovered('assayer', ['read', 'grep']),
@@ -902,20 +840,19 @@ describe('omp tool definitions', () => {
         expect(verbsOf(await load(EXPLANATION))).toEqual(all);
       });
 
-      it('runs an appending verb for an agent whose declaration lists reading tools alone', async () => {
-        omp.agents = [discovered('assayer', ['read'])];
+      it('runs a verb for an agent whose declaration lists other tools alone', async () => {
+        omp.agents = [discovered('assayer', ['grep'])];
         const [tool] = await load(EXPLANATION, { sub: 'assayer' });
         const result = await tool?.execute(
           'id',
-          { verb: 'put', word: 'w' },
+          { verb: 'find' },
           undefined,
           undefined,
           { cwd: tmpdir() },
         );
         expect(JSON.parse(result?.content[0]?.text ?? '').args).toEqual([
           'standIn',
-          'put',
-          'w',
+          'find',
         ]);
       });
     });
@@ -966,7 +903,6 @@ describe('omp tool definitions', () => {
             purpose: 'p',
             when: 'w',
             effect: 'reads',
-            parameters: [],
           },
         ],
       };
@@ -1589,8 +1525,7 @@ describe('omp tool definitions', () => {
             concept: 'c',
             purpose: 'p',
             when: 'w',
-            effect: 'appends',
-            parameters: [],
+            effect: 'reads',
           },
         ],
       });

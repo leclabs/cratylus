@@ -258,27 +258,19 @@ describe('neither README restates the orientation the command prints', () => {
 
 describe('the README restates nothing a capability explains of itself', () => {
   it.each(CAPABILITIES)(
-    'holds no purpose, when or parameter description of %s or a verb',
+    'holds no purpose or when of %s or a verb',
     async (capability) => {
       const { code, out } = await run(capability, '--explain');
       expect(code).toBe(0);
       const explanation = JSON.parse(out) as {
         purpose: string;
         when: string;
-        verbs: {
-          purpose: string;
-          when: string;
-          parameters: { description: string }[];
-        }[];
+        verbs: { purpose: string; when: string }[];
       };
       const said = [
         explanation.purpose,
         explanation.when,
-        ...explanation.verbs.flatMap((v) => [
-          v.purpose,
-          v.when,
-          ...v.parameters.map((p) => p.description),
-        ]),
+        ...explanation.verbs.flatMap((v) => [v.purpose, v.when]),
       ];
       expect(said.filter((text) => readme.includes(text))).toEqual([]);
     },
