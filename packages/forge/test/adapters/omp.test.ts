@@ -325,7 +325,7 @@ describe('omp agent definition', () => {
     ]);
   });
 
-  it('names its own model role first, then its tier and effort, never a model (0111, 0112)', () => {
+  it('names its own model role first, then its tier and effort, never a model', () => {
     const routed = agent({ routing: { tier: 'frontier', effort: 'high' } });
     expect(frontMatter(agentToOmpMd(routed, CTX)).model).toBe(
       '["@mav", "@frontier:high"]',
@@ -360,7 +360,7 @@ describe('omp agent definition', () => {
     expect(front.mark).toBe('✈️');
   });
 
-  it('lets every agent dispatch any agent: `spawns` is `*`, never a list (0142)', () => {
+  it('lets every agent dispatch any agent: `spawns` is `*`, never a list', () => {
     expect(frontMatter(agentToOmpMd(AGENT, CTX)).spawns).toBe('*');
   });
 
@@ -751,7 +751,7 @@ describe('omp tool definitions', () => {
       });
     });
 
-    describe('refuses no call for what it would change (0143)', () => {
+    describe('refuses no call for what it would change', () => {
       afterEach(() => {
         omp.agents = [];
       });
@@ -818,7 +818,7 @@ describe('omp tool definitions', () => {
       });
     });
 
-    describe('offers every verb of every capability to every agent (open reach, 0081)', () => {
+    describe('offers every verb of every capability to every agent (open reach)', () => {
       afterEach(() => {
         omp.agents = [];
         omp.discovered.length = 0;
@@ -1590,7 +1590,7 @@ describe('omp tool definitions', () => {
       { toolName: 'read', input: { path: 'design/model' } },
     ];
 
-    it('holds no act of a reconstituting launch, before or after it speaks, and answers no reply (0142)', async () => {
+    it('holds no act of a reconstituting launch, before or after it speaks, and answers no reply', async () => {
       omp.agents = [BUSINESS_ANALYST()];
       const { fire, told } = await loadedAs('business-analyst');
       for (const call of acts)
@@ -1777,7 +1777,7 @@ describe('omp tool definitions', () => {
       }
     });
 
-    it('refuses no dispatch of a launched session, whatever whom its declaration names (0142)', async () => {
+    it('refuses no dispatch of a launched session, whatever whom its declaration names', async () => {
       omp.agents = [
         {
           ...declare(

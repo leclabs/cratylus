@@ -1,4 +1,5 @@
-// INSTALL IGNORES A CONFIGURATION FILE IN ITS WORKING DIRECTORY (decision 0331).
+// INSTALL IGNORES A CONFIGURATION FILE IN ITS WORKING DIRECTORY
+// (design/decisions/the-command-offers-only-using-cratylus.md).
 //
 // `cratylus install` always installs the canon the command is built with. A
 // `cratylus.config.ts` where it runs, naming another plugin, is read by nothing: the

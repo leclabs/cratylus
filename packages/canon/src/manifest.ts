@@ -142,7 +142,7 @@ export const MANIFEST = {
     projection: 'text',
   },
   // Reach — what a role sees and changes. Never text, and compiled to no setting:
-  // every agent starts with the harness's default tools (decision 0142).
+  // every agent starts with the harness's default tools.
   'perception-scope': {
     group: 'Reach',
     arity: 'set',

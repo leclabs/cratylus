@@ -548,7 +548,7 @@ export interface Agent {
   readonly description: string;
   /** The emoji·hue mark (drives color) — data, not a value. `null` ⇒ none. */
   readonly mark: Mark | null;
-  /** RESERVED for ipseic agents (decision 0048); always empty. */
+  /** RESERVED for ipseic agents; always empty. */
   readonly key: null;
   /**
    * OPTIONAL — the term of the role this agent HOLDS. Absent ⇒ the agent holds

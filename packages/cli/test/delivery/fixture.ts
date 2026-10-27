@@ -96,7 +96,8 @@ export function earlier(h: Host, fixture = 'earlier-installation.json') {
     Object.keys(modelRoles as object).length,
     'captured earlier bindings',
   ).toBeGreaterThan(0);
-  // Decision 0112: these answers became the host's own, not removable projection.
+  // These answers became the host's own, not removable projection
+  // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
   return { '.omp/agent/config.yml': JSON.stringify({ modelRoles }) };
 }
 export function settings(h: Host): Record<string, unknown> {

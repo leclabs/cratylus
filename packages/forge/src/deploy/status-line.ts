@@ -621,8 +621,7 @@ export function ensureStatusSegment(
   // A `statusLine:` block that is byte for byte the one this writes where the host had
   // none was written by an earlier install. Under `adopt` (a host installed before edits
   // were recorded) it is recorded as install's own, so an upgrade or uninstall takes it
-  // out (decision 0114); the same block written by hand is indistinguishable, and
-  // adopted alike.
+  // out; the same block written by hand is indistinguishable, and adopted alike.
   if (opts.adopt === true && at !== -1) {
     const block = [
       'statusLine:',

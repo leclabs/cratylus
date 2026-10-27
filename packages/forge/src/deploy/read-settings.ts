@@ -3,7 +3,7 @@
 // writers (`model-roles.ts`, `status-line.ts`) cannot safely extend is still read. It
 // never writes, so it carries none of the writers' restrictions. A project
 // installation reads the project's and the user's settings this way and writes
-// neither (decision 0313).
+// neither (design/decisions/a-project-installation.md).
 
 import { existsSync, readFileSync } from 'node:fs';
 import { load } from 'js-yaml';

@@ -121,7 +121,7 @@ export interface InstallationRecord {
   readonly references: readonly OwnedReference[];
   /** Set where a project installation created the project's harness directory
    *  (`<project>/.omp`): its uninstall removes that directory where it is left empty,
-   *  and never one that was there before (decision 0312). */
+   *  and never one that was there before (design/decisions/a-project-installation.md). */
   readonly createdHarnessDir?: true;
   /** The product owner's choices install has been answered, by flag or question: each
    *  answer is the host's own setting from then on, so no later install asks for it
@@ -150,7 +150,7 @@ function packageName(adapter: Pick<HarnessAdapter, 'name'>): string {
 
 /** The record in `root`, or `null` where nothing is installed there or the host has
  *  edited it past reading: the root is cratylus's, but nothing in it is trusted to
- *  find what lies outside it (decision 0114). */
+ *  find what lies outside it (design/decisions/one-owned-root-per-installation-scope.md). */
 export function readInstallationRecord(
   root: string,
 ): InstallationRecord | null {
@@ -171,7 +171,7 @@ export function readInstallationRecord(
 }
 
 /** Whether `dir` holds files but no installation record: an earlier render tree,
- *  which an installation never takes over (decision 0311). */
+ *  which an installation never takes over (design/decisions/a-project-installation.md). */
 export function holdsRenderTree(dir: string): boolean {
   return (
     existsSync(dir) &&
@@ -535,8 +535,9 @@ function pruneEmpty(dir: string, stop: string): void {
 /**
  * Take back every reference the harness's own surfaces hold into `root`, found from
  * where each points, never from the record: the root, or its record, may have been
- * edited or removed, and a reference into it is cratylus's by construction (decision
- * 0114). Where the harness loads extension packages (`adapter.packageDir`), that is
+ * edited or removed, and a reference into it is cratylus's by construction
+ * (design/decisions/one-owned-root-per-installation-scope.md). Where the harness loads
+ * extension packages (`adapter.packageDir`), that is
  * each link under `node_modules` whose target is the root or inside it, and each
  * dependency entry of the directory's manifest that names the root or a path inside
  * it. Whatever else those surfaces hold is the host's and stays. The record, where it
