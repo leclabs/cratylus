@@ -16,7 +16,7 @@ import canon from '../src/index.js';
 import { type Factor, MANIFEST, type Value } from '../src/manifest.js';
 import { architectRole } from '../src/roles/architect.js';
 
-/** A value `name ≜ body`, which renders as `- **name** … — body`. */
+/** A value `name ≜ body`, or its bare term, which renders as `- **name** … — body`, or `- **name**`. */
 function parts(value: Value<Factor>): { name: string; body: string } {
   const text: string = typeof value === 'string' ? value : value.body;
   const [name = '', body = ''] = text.split(' ≜ ');
@@ -45,7 +45,9 @@ const decided: Record<string, (line: string) => boolean> = {
         return [
           key,
           (l: string) =>
-            l.startsWith(`- **${name}**`) && l.endsWith(` — ${body}`),
+            body
+              ? l.startsWith(`- **${name}**`) && l.endsWith(` — ${body}`)
+              : l === `- **${name}**`,
         ];
       },
     ),
