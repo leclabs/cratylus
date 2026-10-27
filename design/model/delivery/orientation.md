@@ -8,4 +8,4 @@ What every session on a host with cratylus installed knows of it from its start,
 
 Given cratylus installed
 When the cratylus command is run with no arguments
-Then it says to start with omp --agent business-analyst
+Then it says to start by launching the business analyst as an agent
