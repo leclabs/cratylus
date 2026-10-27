@@ -82,7 +82,6 @@ import {
 } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import {
-  type DeliveredDocument,
   addModelRoles,
   capabilityConfiguration,
   ensureStatusSegment,
@@ -133,9 +132,6 @@ export interface InstallCmdOpts {
   /** The declared version of the build doing the install, recorded in the owned root
    *  as the version that projected it. */
   version?: string;
-  /** The documents the release delivers, handed in by the command that holds the
-   *  release and placed read-only in the owned root as given. */
-  delivered?: readonly DeliveredDocument[];
   /** Show what would be placed and stop; write nothing. */
   dryRun?: boolean;
   cwd?: string;
@@ -824,7 +820,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       root,
       files: rootFiles(adapter, placedTree.files),
       ...(opts.version === undefined ? {} : { version: opts.version }),
-      ...(opts.delivered === undefined ? {} : { delivered: opts.delivered }),
       configuration,
       record: {
         scope,

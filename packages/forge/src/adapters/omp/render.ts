@@ -55,7 +55,7 @@
 // rather than the literal. `forge → runtime` is a permitted edge; spelling the name
 // here instead would be a second home for it, which `bin-name-single-home` catches
 // and rightly refused.
-import { ACTING_AGENT_ENV, VERSION_SKEW, explain } from '@cratylus/runtime';
+import { VERSION_SKEW, explain } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Capability } from '@cratylus/runtime/capability';
 import {
@@ -124,11 +124,8 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
- *  (`<bin> <capability> --explain`), the concept journal and the version skew. */
-export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
-  'concepts',
-  'versionSkew',
-];
+ *  (`<bin> <capability> --explain`), the version skew. */
+export const OMP_CAPABILITY_TOOLS: readonly Capability[] = ['versionSkew'];
 
 /** The emitted CRATYLUS module's filename: the one omp extension that is
  *  cratylus's own, named for the bin, which offers every capability that explains
@@ -939,7 +936,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `verb` of the explained verbs and every explained parameter with its
  * descriptions and its schema (the distinct schemas as `anyOf` where verbs declare
  * one name differently, so none is dropped); approval `read` for a verb that reads
- * and `write` for one that appends or closes. A call runs `<bin> <capability> <verb>
+ * and `write` for one that appends. A call runs `<bin> <capability> <verb>
  * [positional] [--flag=value…]` in the session's directory and returns its output;
  * a refusal is a tool error carrying the command's own message. Every value is
  * one `--flag=value` token, so a value led by `-` reaches the command literally.
@@ -961,19 +958,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  * declaration, skills and assignment forms. The module restates no word of it; a
  * command that cannot explain itself adds nothing and fails nothing.
  *
- * THE ACTING AGENT (F1). Every capability call, a tool's and the module's own reads
- * alike, names the agent making it in `CRATYLUS_AGENT`: the
- * declaration a main session was launched as, the agent a dispatched session runs
- * as, and no one otherwise (unknown, never an architect). Every shell (`bash`) call
- * runs with that agent named the same way: its command is led by a line exporting
- * `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so a journal append made from
- * the architect's session records the architect and a lead's the lead (a commit
- * records the git user, as git does);
- * in a session that is no agent the line unsets it, and an ambient value is dropped
- * at load, so such a session names no one.
- *
  * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). What a call may change is
- * a rule held by review and by the record, which names the agent each call names.
+ * a rule held by review.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
  * When a main session starts (or the operator switches to a new one) with it, the
@@ -1094,8 +1080,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         `const COMMAND = ${JSON.stringify(CLI_BIN)};`,
         `const INSTALLATION_ENV = ${JSON.stringify(INSTALLATION_ENV)};`,
-        '// Where every capability call names the agent making it.',
-        `const ACTING_AGENT = ${JSON.stringify(ACTING_AGENT_ENV)};`,
         '// The version tool as the build that projected this installation explains it: carried here, so',
         '// it is offered whatever command the capabilities reach, one that predates it included.',
         `const SKEW = ${JSON.stringify('versionSkew' satisfies Capability)};`,
@@ -1121,7 +1105,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  concept: string;',
         '  purpose: string;',
         '  when: string;',
-        '  effect: "reads" | "appends" | "closes";',
+        '  effect: "reads" | "appends";',
         '  parameters: Parameter[];',
         '}',
         'interface Explanation {',
@@ -1141,14 +1125,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  return promise;',
         '}',
         "// The installed command's output; its own message, when it refuses. Every call names the",
-        '// installation this module was placed in, so the command can say which build projected it,',
-        '// and the agent making it, when one is known.',
-        'const run = (args: string[], cwd?: string, signal?: AbortSignal, agent?: string): Promise<string> =>',
-        '  execOf(COMMAND, args, cwd, signal, {',
-        '    ...process.env,',
-        '    [INSTALLATION_ENV]: INSTALLATION,',
-        '    ...(agent === undefined ? {} : { [ACTING_AGENT]: agent }),',
-        '  });',
+        '// installation this module was placed in, so the command can say which build projected it.',
+        'const run = (args: string[], cwd?: string, signal?: AbortSignal): Promise<string> =>',
+        '  execOf(COMMAND, args, cwd, signal, { ...process.env, [INSTALLATION_ENV]: INSTALLATION });',
         '',
         '// The capabilities this installation expects that the reached command does not provide,',
         '// each with its own refusal, as found at load.',
@@ -1432,9 +1411,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         'export default async function (pi: ExtensionAPI) {',
-        '  // The acting agent is only what this module names on each call: an ambient one is dropped,',
-        '  // so no shell command inherits a name.',
-        '  delete process.env[ACTING_AGENT];',
         '  pi.registerFlag(AGENT_FLAG, {',
         '    description: "Start the session as the agent definition omp discovers by this name",',
         '    type: "string",',
@@ -1445,28 +1421,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const orientation = await orientationOf();',
         '  // What puts back each setting the current launch holds, in the order it took them.',
         '  const undo: (() => void)[] = [];',
-        '',
-        '  // The agent making a call: the declaration a main session was launched as, the agent a',
-        '  // dispatched session runs as; unknown otherwise.',
-        '  function actor(session: Session | undefined): string | undefined {',
-        '    const kind = session?.agent?.kind;',
-        '    const name = kind === "sub" ? session?.agent?.name : kind === "main" ? launched?.declaration.name : undefined;',
-        '    return name === "" ? undefined : name;',
-        '  }',
-        '',
-        "  // THE ACTING AGENT ON SHELL CALLS: a `bash` call's command is led by a line naming the",
-        "  // session's agent in `CRATYLUS_AGENT` (omp's bash tool takes no `env`), so what the command",
-        "  // records in the journal is that agent's own (a commit records the git user, as git does); in",
-        '  // a session that is no agent the line unsets it, naming no one. No call is refused (0143).',
-        '  pi.on("tool_call", (event, ctx) => {',
-        '    if (event.toolName !== "bash" || typeof event.input !== "object" || event.input === null) return undefined;',
-        '    const input = event.input as Record<string, unknown>;',
-        '    if (typeof input.command !== "string") return undefined;',
-        '    const agent = actor(ctx as unknown as Session);',
-        "    const named = agent === undefined ? `unset ${ACTING_AGENT}` : `export ${ACTING_AGENT}='${agent.replaceAll(\"'\", \"'\\\\''\")}'`;",
-        '    input.command = `${named}\\n${input.command}`;',
-        '    return undefined;',
-        '  });',
         '',
         '  // A launch ends: its prompt and every setting it holds go with it.',
         '  function end(): void {',
@@ -1659,7 +1613,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        }',
         "        // A refusal is a tool error carrying the command's own message.",
         '        try {',
-        '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal, actor(ctx));',
+        '          const text = await run(argv(capability, verbOf(args), args), ctx.cwd, signal);',
         '          return { content: [{ type: "text" as const, text }] };',
         '        } catch (error) {',
         '          return { content: [{ type: "text" as const, text: messageOf(error) }], isError: true };',

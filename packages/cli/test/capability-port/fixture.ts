@@ -14,9 +14,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, inject } from 'vitest';
-import { repositoryRoot } from '../concept-journal/fixture.js';
 
 export const here = dirname(fileURLToPath(import.meta.url));
+/** The repository's own root, which an installed host must never reach into. */
+const repositoryRoot = fileURLToPath(new URL('../../../..', import.meta.url));
 export type Args = Record<string, unknown>;
 export interface ToolResult {
   isError?: boolean;
@@ -36,8 +37,6 @@ export interface Host {
   install: CommandResult;
   placed: Record<string, string>;
   command(args: string[], directory?: string): CommandResult;
-  concepts<T = Record<string, unknown>>(...args: string[]): T;
-  seed(): unknown;
   dispose(): void;
 }
 declare module 'vitest' {
@@ -135,7 +134,7 @@ function hostIn(root: string): Host {
   env.GIT_CONFIG_GLOBAL = '/dev/null';
   env.GIT_TERMINAL_PROMPT = '0';
   for (const args of [
-    ['init', '--initial-branch=journal'],
+    ['init', '--initial-branch=main'],
     ['config', 'user.name', 'Capability check'],
     ['config', 'user.email', 'capability@example.test'],
     ['config', 'core.hooksPath', '/dev/null'],
@@ -143,8 +142,6 @@ function hostIn(root: string): Host {
     success(run('git', args, cwd, env));
   const command = (args: string[], directory = cwd) =>
     run('cratylus', args, directory, env);
-  const concepts = <T = Record<string, unknown>>(...args: string[]): T =>
-    JSON.parse(success(command(['concepts', ...args])));
   const install = command([
     'install',
     '--harness',
@@ -156,8 +153,6 @@ function hostIn(root: string): Host {
     'default',
   ]);
   const placed = snapshot(home);
-  const seed = () =>
-    concepts('context', 'booking', '--subject', 'Scheduling deliveries.');
   return {
     root,
     prefix,
@@ -165,10 +160,8 @@ function hostIn(root: string): Host {
     cwd,
     env,
     command,
-    concepts,
     install,
     placed,
-    seed,
     dispose: () => rmSync(root, { recursive: true, force: true }),
   };
 }
@@ -181,42 +174,4 @@ export function toolText(result: ToolResult) {
 export function toolJSON(result: ToolResult) {
   expect(result.isError).not.toBe(true);
   return JSON.parse(toolText(result));
-}
-export function seedWindow(h: Host) {
-  h.seed();
-  h.concepts(
-    'define',
-    'delivery window',
-    '--context',
-    'booking',
-    '--wording',
-    'A two-hour interval.',
-    '--reason',
-    'Initial design.',
-  );
-}
-export function argv(args: Args): string[] {
-  const verb = String(args.verb);
-  const positional = ['history', 'define', 'supersede', 'retire'].includes(verb)
-    ? 'concept'
-    : verb === 'context'
-      ? 'context'
-      : ['decide', 'accept'].includes(verb)
-        ? 'id'
-        : undefined;
-  return [
-    verb,
-    ...(positional ? [String(args[positional])] : []),
-    ...Object.entries(args)
-      .filter(([k]) => k !== 'verb' && k !== positional)
-      .flatMap(([k, v]) =>
-        Array.isArray(v)
-          ? v.flatMap((item) => [`--${k}`, String(item)])
-          : typeof v === 'boolean'
-            ? v
-              ? [`--${k}`]
-              : []
-            : [`--${k}`, String(v)],
-      ),
-  ];
 }

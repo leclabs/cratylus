@@ -1,12 +1,10 @@
-// What the capability-command tests share: a temporary git repository to run in,
-// and what the concept journal holds.
+// What the capability-command tests share: a temporary git repository to run in.
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll } from 'vitest';
-import { JOURNAL_DIR } from '../src/capabilities/concepts/journal.js';
 
 // Every temp dir made here is removed when the importing test file ends: vitest
 // evaluates this module once per file, so the hook lands on that file's suite.
@@ -44,13 +42,4 @@ export function repository(): string {
   git(dir, 'init', '-q', '-b', 'main');
   git(dir, 'commit', '-q', '--allow-empty', '-m', 'root');
   return dir;
-}
-
-/** Every file of the concept journal of `repo`. */
-export function everyEntry(repo: string): string[] {
-  try {
-    return readdirSync(join(repo, JOURNAL_DIR)).sort();
-  } catch {
-    return [];
-  }
 }

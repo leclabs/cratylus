@@ -91,24 +91,6 @@ export function declaration(f: Fixture, role: string) {
     text,
   };
 }
-export function command(f: Fixture, ...args: string[]) {
-  const result = spawnSync('cratylus', args, {
-    cwd: f.cwd,
-    env: f.env,
-    encoding: 'utf8',
-    timeout: 30_000,
-  });
-  if (result.error) throw result.error;
-  return { code: result.status, stdout: result.stdout, stderr: result.stderr };
-}
-export function succeeds(f: Fixture, ...args: string[]) {
-  const result = command(f, ...args);
-  expect(
-    result.code,
-    `missing capability operation: cratylus ${args.join(' ')}\n${result.stderr}${result.stdout}`,
-  ).toBe(0);
-  return JSON.parse(result.stdout);
-}
 export function git(f: Fixture, ...args: string[]) {
   const result = spawnSync('git', args, {
     cwd: f.cwd,
@@ -133,26 +115,6 @@ export function bindingFixture() {
     f,
     'design/examples/film-production/film.md',
     '1. (approval) **Given** a finished film, **when** the creative approves, **then** its approval is recorded.\n',
-  );
-  succeeds(
-    f,
-    'concepts',
-    'context',
-    'film-production',
-    '--subject',
-    'Creative film approval',
-  );
-  succeeds(
-    f,
-    'concepts',
-    'define',
-    'approval',
-    '--context',
-    'film-production',
-    '--wording',
-    'The creative accepts a finished film.',
-    '--reason',
-    'Fixture Given',
   );
   git(f, 'add', '--', 'design');
   git(f, 'commit', '-qm', 'Fixture Given');
