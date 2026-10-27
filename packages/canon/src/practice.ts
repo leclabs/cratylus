@@ -21,9 +21,22 @@ interface PracticeRecords {
 
 const RENDERED = new URL('../generated/practices.json', import.meta.url);
 
-const RECORDS = JSON.parse(readFileSync(RENDERED, 'utf8')) as Readonly<
+const RECORDS = JSON.parse(rendered()) as Readonly<
   Record<string, PracticeRecords>
 >;
+
+/** The rendered practices' text, or a failure saying how to render them. */
+function rendered(): string {
+  try {
+    return readFileSync(RENDERED, 'utf8');
+  } catch (cause) {
+    if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause;
+    throw new Error(
+      `no rendered practices at ${RENDERED.pathname}: build @cratylus/canon to render them`,
+      { cause },
+    );
+  }
+}
 
 /** The practices rendered as skills, each by its context's directory name. */
 export const PRACTICES: readonly string[] = Object.keys(RECORDS);
