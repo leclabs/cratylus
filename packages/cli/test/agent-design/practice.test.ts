@@ -7,17 +7,9 @@ import {
   rmSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { afterEach, expect, it } from 'vitest';
-import { type Host, host } from '../capability-port/fixture.js';
-
-// The bounded contexts whose concepts are the practice, each the skill it reaches agents as.
-const PRACTICES = ['cratylic-context-design', 'behaviour-driven-development'];
-
-// cratylus's own domain model, read at test time so the check follows the model.
-const model = fileURLToPath(
-  new URL('../../../../design/model/', import.meta.url),
-);
+import { type Host, host, run } from '../capability-port/fixture.js';
+import { parseYaml } from '../yaml.js';
 
 let h: Host | undefined;
 afterEach(() => {
@@ -52,48 +44,77 @@ function offeredSkills(home: string): Map<string, string> {
   return skills;
 }
 
-interface Concept {
-  record: string;
-  term: string;
-  correction: string;
-}
-
-// Each concept record of a bounded context: its `# ` heading is the term, the
-// paragraph after it, up to its examples or the end, is the correction.
-function concepts(context: string): Concept[] {
-  const dir = join(model, context);
-  return entries(dir)
-    .filter((f) => f.endsWith('.md') && f !== 'context.md')
-    .map((f) => {
-      const record = `${context}/${f}`;
-      const text = readFileSync(join(dir, f), 'utf8');
-      const match = /^# (.+)\n([\s\S]*?)(?=\n## |$)/.exec(text);
-      expect(match, `${record} opens with its term`).not.toBeNull();
-      return {
-        record,
-        term: match![1]!.trim(),
-        correction: match![2]!.trim(),
-      };
-    });
-}
-
-it('agent-design/practice: the practice reaches every agent as skills', () => {
+// Binds design/model/agent-design/practice.md.
+it('agent-design/practice: a practice is named, never explained', () => {
   h = emptyHome();
   // Packed, user scope, no terminal: `run` hands the command an empty stdin pipe.
   const r = h.command(['install', '--harness', 'omp']);
   expect(r.code, `${r.stdout}\n${r.stderr}`).toBe(0);
 
-  const skills = offeredSkills(h.home);
-  expect([...skills.keys()]).toEqual(expect.arrayContaining(PRACTICES));
-
-  for (const context of PRACTICES) {
-    const records = concepts(context);
-    expect(records.length, `${context} records concepts`).toBeGreaterThan(0);
-    const skill = readFileSync(skills.get(context)!, 'utf8');
-    const missing = records.flatMap(({ record, term, correction }) => [
-      ...(skill.includes(term) ? [] : [`${record}: term ${term}`]),
-      ...(skill.includes(correction) ? [] : [`${record}: correction`]),
+  expect
+    .soft([...offeredSkills(h.home).keys()].sort())
+    .toEqual([
+      'conceptualize',
+      'elicit',
+      'exemplify',
+      'formalize',
+      'materialize',
+      'probe',
+      'signify',
     ]);
-    expect(missing, `${context} skill holds each concept exactly`).toEqual([]);
-  }
+
+  const statement =
+    "Each example lives in its concept's record in design/model/, written as given–when–then, and its acceptance test, in the project's own test framework, is titled `<context>/<concept>: <example name>`.";
+  const why =
+    'The domain model stays the one source of meaning, and the model check binds every example to its test.';
+
+  // Read the packed canon, not the workspace: a second rule must be caught even
+  // if install mistakenly places only the first rule of the practice's ruleset.
+  const declarations = run(
+    process.execPath,
+    [
+      '--input-type=module',
+      '--eval',
+      "import canon from '@cratylus/canon'; console.log(JSON.stringify(canon.practiceRulesets ?? []));",
+    ],
+    h.prefix,
+    h.env,
+  );
+  expect(declarations.code, declarations.stderr).toBe(0);
+  expect
+    .soft(
+      JSON.parse(declarations.stdout),
+      'the practice ruleset holds exactly its one departure, verbatim',
+    )
+    .toEqual([
+      expect.objectContaining({
+        name: 'behaviour-driven-development',
+        rules: [
+          expect.objectContaining({
+            name: 'behaviour-driven-development-examples',
+            statement,
+            why,
+          }),
+        ],
+      }),
+    ]);
+
+  const rule = join(
+    h.home,
+    '.cratylus/omp/rules/behaviour-driven-development-examples.md',
+  );
+  expect(
+    existsSync(rule),
+    'the practice rule reaches the installed agents',
+  ).toBe(true);
+  const text = readFileSync(rule, 'utf8');
+  const front = /^---\n([\s\S]*?)\n---\n/.exec(text);
+  expect(front, 'the practice rule opens with front-matter').not.toBeNull();
+  expect(parseYaml(front![1]!)).toEqual({
+    description: expect.stringMatching(/\S/),
+    alwaysApply: true,
+  });
+  expect(text.slice(front![0].length).trim()).toBe(
+    `${statement}\n\nWhy: ${why}`,
+  );
 });
