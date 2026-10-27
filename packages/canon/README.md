@@ -78,12 +78,12 @@ persona: one that states the role, names a factor or slot the catalog does not h
 value its role does not hold, or has no mark or its role's; the `CompositionRefusal` it throws names
 what it refused. A persona that removes or lowers a guardrail, or removes a value from a set other
 than its reach, is made, and composition warns (a `CompositionWarning`), naming what it changed: no
-harm from one is on record (decision 0142(2)).
+harm from one is on record.
 
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
 effort (`routing`), its typed handoff (`contract`) and the practice skills it loads (`skills`, below).
 Nothing narrows its tools or whom it may
-dispatch: every agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic
+dispatch: every agent keeps the agent harness's defaults. Its `key` is reserved for ipseic
 agents and is empty. `holder`, `persona`, `CompositionRefusal`, the five role profiles and `MANIFEST` are
 also named exports, for a plugin that composes agents of its own over these roles.
 
@@ -131,7 +131,7 @@ shows every session, each turn, the assignment form of each agent that takes one
 
 Every agent's behaviour is evaluated in real use, by the product owner working with it: its
 evaluation factor holds the one value `in-use`, and no guard, hook or model-judged check holds its
-acts or its replies (0142(1)). Persona drift is a concept of the agent design context, judged by the
+acts or its replies. Persona drift is a concept of the agent design context, judged by the
 product owner in real use; no agent carries countermeasure text against it.
 
 ## The first principle

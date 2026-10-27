@@ -1,5 +1,6 @@
 // Which model a tier or a persona's role runs on is the product owner's choice and the
-// host's own setting (decision 0112). An agent's declaration names its own role, then
+// host's own setting (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
+// An agent's declaration names its own role, then
 // its tier and effort, and never a model. Install binds what the product owner chooses in
 // the host's `modelRoles`, records none of it as its own, and so upgrade and uninstall
 // keep it; a role the host binds is never changed; told nothing and unable to ask, it
@@ -145,7 +146,7 @@ describe('install — model roles', () => {
       readFileSync(join(home, '.cratylus/omp/agents', `${name}.md`), 'utf8'),
     )?.[1];
 
-  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config (0111)', async () => {
+  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config', async () => {
     host(HOST);
     expect(await install()).toBe(0);
     expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');

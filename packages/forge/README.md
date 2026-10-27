@@ -64,8 +64,7 @@ description, then one section per factor group in catalog order, each value as i
 correction, marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and
 model are never text. On OMP the definition's front matter carries `model: "@<name>"`, the model
 role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
-any agent
-(decision 0142). `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
+any agent. `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
 its own role.
 
@@ -85,8 +84,9 @@ owned root is taken back by its deploy manifest (`removeEarlierInstallation`), w
 before digests were recorded included.
 
 Model routing is host configuration, not a placed artifact: a declaration names its own role first,
-then its tier and effort (decision 0111), and is never rendered with a model. Which model a tier or
-a persona's role runs on is the product owner's choice (decision 0112): `install` asks for each the host
+then its tier and effort, and is never rendered with a model. Which model a tier or a persona's
+role runs on is the product owner's choice
+(`design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md`): `install` asks for each the host
 does not bind and writes the answer into the host's `modelRoles` as the host's own entry, recorded
 in no installation record, so upgrade and uninstall keep it; an earlier installation's seeded
 entries stay the same way.

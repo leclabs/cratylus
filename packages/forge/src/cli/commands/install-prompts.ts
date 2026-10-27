@@ -15,7 +15,8 @@ import type { InstallScope } from '@cratylus/runtime/runtime-config';
 import type { OfferedRuleset } from '../../project/index.js';
 
 /** One model role the host binds no model to, which the product owner may bind: a tier the
- *  installed agents fall back to, or a persona's own role (decision 0112). */
+ *  installed agents fall back to, or a persona's own role
+ *  (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md). */
 export interface RoleQuestion {
   /** The model role, as the host's settings name it. */
   readonly role: string;

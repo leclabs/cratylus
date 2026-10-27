@@ -1,5 +1,5 @@
 // INSTALLATION SCOPES — where `install` places an installation and `uninstall` finds
-// it (decision 0311).
+// it (design/decisions/a-project-installation.md).
 //
 //   user     the owned root `<home>/.cratylus/<harness>`, referred to from the
 //            harness's own directory in the home (omp: `~/.omp/plugins`), every
