@@ -5,9 +5,10 @@
 '@cratylus/canon': minor
 ---
 
-The concept journal is removed, and the model check replaces it: the domain model is plain files in `design/model/`, checked by `cratylus model check`, in omp the tool `model_check`. `cratylus concepts` is gone and is refused as an unknown command, and the omp extension no longer offers the `concept_journal` tool. The runtime's capabilities (`CAPABILITIES`) and canon's `RUNTIME_CAPABILITIES` are `model` and `versionSkew`, and every capability tool only reads. Also gone:
+The domain model is plain files in `design/model/`, checked by the model check: `cratylus model check`, in omp the tool `model_check`. The command offers `install`, `uninstall` and exactly two capabilities, `model` and `versionSkew`; the runtime's `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` are `model` and `versionSkew`, and every capability tool only reads.
 
-- `@cratylus/runtime`: `JOURNAL`, `deliverContext`, `DeliveredContext`, `ACTING_AGENT_ENV` and `actingAgent` from `.`; `DELIVERED_DIR` and `deliveredContexts` from `./runtime-config`; the `./ulid` subpath; the record store; and the `closes` effect.
-- Delivered contexts: a build no longer projects cratylus's own contexts into `dist/delivered/`, and install no longer places `delivered/<origin>/<context>.json` in the owned root; `@cratylus/forge/cli` no longer takes `delivered` or exports `DeliveredDocument`.
-- The acting agent: the omp extension no longer names the session's agent in `CRATYLUS_AGENT` on capability or shell calls.
-- Capability prose: `HarnessAdapter.nativeCapabilities`, the projection report's `capabilities` and the `capabilities/<capability>.md` prose form are gone; the cratylus omp extension is emitted whenever the harness adapter has one (`HarnessAdapter.capabilitySurface`).
+- `@cratylus/runtime` exports from `.` the capabilities' explanations (`MODEL_CHECK`, `VERSION_SKEW`), `explain` and the command's self-description; `./runtime-config` holds the runtime configuration and the installation's root and scope. Its subpaths are `.`, `./main`, `./bin-name`, `./capability`, `./runtime-config` and `./package.json`.
+- A build projects the agents, skills and rules, and install places them, the extension and the installation record in the owned root, and nothing else.
+- The cratylus omp extension is emitted whenever the harness adapter has one (`HarnessAdapter.capabilitySurface`), and it alone carries the capabilities to the harness.
+
+BREAKING CHANGE: a script or import using a command, tool, export, subpath or installed file not listed above must drop it.
