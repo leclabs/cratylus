@@ -13,6 +13,8 @@ export {
   type DeliveredContext,
   deliverContext,
 } from './capabilities/concepts/delivered.js';
+// The model check as it explains itself, which the omp extension offers as a tool.
+export { MODEL_CHECK } from './capabilities/model/index.js';
 // The version skew capability as it explains itself, which the omp extension carries in the
 // artifacts it projects, so the version tool is offered whatever command they reach.
 export { VERSION_SKEW } from './capabilities/version-skew/index.js';

@@ -706,6 +706,7 @@ describe('omp tool definitions', () => {
         ),
       ).toEqual({
         concepts: 'discoverable',
+        model: 'discoverable',
         versionSkew: 'discoverable',
       });
     });
