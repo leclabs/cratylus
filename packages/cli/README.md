@@ -128,7 +128,7 @@ placed and the summary names choosing them as a next step.
 ### Which model each tier and persona runs on
 
 Which model runs an agent is yours to choose, and it is your agent harness's own setting, never
-cratylus's (decision 0112). Each agent's definition names its own model role first, then the tier
+cratylus's (`design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md`). Each agent's definition names its own model role first, then the tier
 and effort its design gives it: `business-analyst` declares `["@business-analyst", "@frontier:high"]`, and is never
 rewritten with a model. So two kinds of role decide the model: a tier the agents fall back to
 (`frontier`, `frontier-other-family`, …), and the role named for an agent, which wins over its tier
@@ -211,7 +211,7 @@ what install places), and it starts any agent definition omp discovers, not only
 agents. An `omp --agent` session starts with the full instructions of the skills its agent
 definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
 through omp's own skill discovery, as any omp session does. Nothing judges an agent's acts or
-replies: an agent's behaviour is evaluated in real use (decision 0142). Every turn shows the typed
+replies: an agent's behaviour is evaluated in real use. Every turn shows the typed
 assignment of each agent that takes one.
 
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
@@ -268,7 +268,7 @@ so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 ## The host's model routing on omp
 
-An agent's definition names its own model role first, then the tier and effort it holds (decision 0111): `business-analyst` declares `model: ["@business-analyst", "@frontier:high"]`. omp tries them in order, so a `modelRoles.business-analyst` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:high`, which is `modelRoles.frontier` at high effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (decision 0112), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
+An agent's definition names its own model role first, then the tier and effort it holds: `business-analyst` declares `model: ["@business-analyst", "@frontier:high"]`. omp tries them in order, so a `modelRoles.business-analyst` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:high`, which is `modelRoles.frontier` at high effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (`design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md`), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 
 ## The host runtime config
 

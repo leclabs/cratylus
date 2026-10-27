@@ -9,7 +9,8 @@
 // whole projection of an agent, and BOTH ways of reaching it read it through omp's own
 // discovery — dispatched as a subagent, omp runs it itself; started as a MAIN session
 // by `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
-// resolves the same declaration and carries it into the session (decision 0047).
+// resolves the same declaration and carries it into the session
+// (design/decisions/agent-launch-through-the-extension.md).
 // One declaration, nothing outside the harness wrapping it, nothing to drift.
 //
 // IDENTITY IS NOT THE PROFILE. omp's own `--profile <name>` silos AUTH, MCP,
@@ -43,8 +44,8 @@
 //
 // WHAT AN AGENT'S DELIVERABLE AND MODEL BECOME are omp's own declaration settings:
 // the deliverable as `output`, and the model as the model role named for the agent,
-// falling back to the tier and effort it holds (decision 0111). Every agent keeps
-// omp's default tools and may dispatch any agent (decision 0142).
+// falling back to the tier and effort it holds. Every agent keeps omp's default
+// tools and may dispatch any agent.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's factor sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -136,8 +137,8 @@ export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
 export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
 
 /** The omp flag the CRATYLUS module registers: `omp --agent <name>` starts the
- *  main session as the agent definition omp discovers by that name (decision
- *  0047). */
+ *  main session as the agent definition omp discovers by that name
+ *  (design/decisions/agent-launch-through-the-extension.md). */
 const OMP_AGENT_FLAG = 'agent';
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
@@ -153,14 +154,15 @@ const OMP_CONFIG_RELS = ['agent/config.yml', 'agent/config.yaml'] as const;
 
 /** A project's settings file omp reads beside the user's, relative to the project's
  *  `.omp`: `config.yml`. A project installation reads its model roles and status
- *  line there and writes neither (decision 0313). */
+ *  line there and writes neither (design/decisions/a-project-installation.md). */
 const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
 
 /** omp's model roles, as {@link HarnessAdapter.roleRouting} exposes them. A
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
  *  binds no such role: the role named for the tier, at that effort. Install binds a
- *  role only as the product owner answers, as the host's own setting (decision 0112). */
+ *  role only as the product owner answers, as the host's own setting
+ *  (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
   projectConfigRels: OMP_PROJECT_CONFIG_RELS,
@@ -253,16 +255,17 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * **FRONT-MATTER, in this order:** `name`, `description`, `mark` (only with one),
  * `key: null`, `model`, `spawns: "*"`, `output` and `assignment` (only with a typed
  * handoff), `autoloadSkills` (only with skills). No `tools`: every agent keeps omp's
- * default tools (decision 0081), and `spawns` says outright that it may dispatch
- * any agent (decision 0142), whatever omp would infer from its tools.
+ * default tools, and `spawns` says outright that it may dispatch any agent,
+ * whatever omp would infer from its tools.
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
  * and SKIPS the file — a persona that silently does not exist.
  *
- * **`key` IS RESERVED.** It is the slot of an ipseic agent's key (decision 0048), and
+ * **`key` IS RESERVED.** It is the slot of an ipseic agent's key, and
  * every agent this canon composes holds it empty.
  *
  * **`model` NAMES THE AGENT'S OWN ROLE, THEN ITS TIER AND EFFORT, NEVER A MODEL**
- * (decisions 0111, 0112). `model: ["@<name>", "@<tier>:<effort>"]` is tried in order
+ * (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
+ * `model: ["@<name>", "@<tier>:<effort>"]` is tried in order
  * by omp: the role named for the agent, which the host may bind in its own
  * `modelRoles`, and where it binds none, the tier and effort the agent holds. Which
  * model a role or tier runs on is the host's own setting, never this declaration's.
@@ -944,24 +947,27 @@ const SESSION_PLACEMENT: readonly string[] = [
  * capability says, so a newer installed package changes the tools in the next
  * session, these bytes unchanged.
  *
- * OPEN REACH (decision 0081). Every agent, main or dispatched, is offered every verb
+ * OPEN REACH. Every agent, main or dispatched, is offered every verb
  * of every capability: no verb is withheld and no declaration narrows the tools.
  *
- * TYPED HANDOFFS, SHOWN (decision 0142(3)). Every turn of every session carries the
+ * TYPED HANDOFFS, SHOWN (design/decisions/typed-contracts-are-warned-never-refused.md).
+ * Every turn of every session carries the
  * assignment form of each agent that declares an assignment schema
  * ({@link OMP_ASSIGNMENT_KEY}).
  *
- * THE COMMAND'S ORIENTATION, SHOWN (decision 0321). At load the module runs the
+ * THE COMMAND'S ORIENTATION, SHOWN
+ * (design/decisions/orientation-is-the-commands-self-description.md). At load the module runs the
  * reached `<bin> --explain` once, beside the capabilities' own, and keeps the
  * `orientation` it answers; every turn of every session, launched or not, main or
  * dispatched, carries it verbatim right after omp's own system prompt, before the
  * declaration, skills and assignment forms. The module restates no word of it; a
  * command that cannot explain itself adds nothing and fails nothing.
  *
- * NO CALL IS REFUSED FOR WHAT IT CHANGES (decision 0143). What a call may change is
+ * NO CALL IS REFUSED FOR WHAT IT CHANGES. What a call may change is
  * a rule held by review.
  *
- * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
+ * AGENT LAUNCH (design/decisions/agent-launch-through-the-extension.md). The module
+ * registers omp's `--agent <name>` flag.
  * When a main session starts (or the product owner switches to a new one) with it, the
  * name resolves through omp's OWN agent discovery — `discoverAgents` from omp's
  * task subsystem, the declarations task dispatch runs: the nearest project

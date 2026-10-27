@@ -10,7 +10,7 @@ import { digestFile } from './manifest.js';
 //
 // A file the host has changed since is the host's, and an uninstall leaves it. A file
 // with no recorded digest (placed before digests were kept) is cratylus's: the earlier
-// installation recorded placing it, and that record is what makes it so (decision 0114).
+// installation recorded placing it, and that record is what makes it so.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

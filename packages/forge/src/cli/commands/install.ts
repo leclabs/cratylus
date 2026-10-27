@@ -20,8 +20,9 @@
 // taken back by its own record as part of the run, leaving what the host placed or
 // changed.
 //
-// AT ONE OF TWO SCOPES (decision 0311). For the user, by default, as above. For a
-// project (`--scope project`), the root is `<project>/.cratylus/<harness>` and the
+// AT ONE OF TWO SCOPES (design/decisions/a-project-installation.md). For the user, by
+// default, as above. For a project (`--scope project`), the root is
+// `<project>/.cratylus/<harness>` and the
 // references are the project's own (omp: `<project>/.omp/plugins`), each relative, so
 // the project commits them for its team, and in that project omp loads the project's
 // installation in place of the user's. A project install writes nothing under the
@@ -45,9 +46,10 @@
 // report is what is shown — so the preview cannot describe something the placement
 // then does differently.
 //
-// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING (decision 0112). An agent
-// declaration names its own model role first, then the tier and effort it holds
-// (decision 0111), and is never re-rendered with a model. The model a tier or a
+// WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING
+// (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md). An agent
+// declaration names its own model role first, then the tier and effort it holds,
+// and is never re-rendered with a model. The model a tier or a
 // persona's role runs on is the product owner's to choose: install asks for it where the host
 // binds none and writes the answer into the host's own model roles, recording nothing of
 // it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
@@ -55,7 +57,7 @@
 // everything else and names, as the next step, each tier the agents fall back to that
 // the host does not bind.
 //
-// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT (decision 0113). It is asked
+// SO IS WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT. It is asked
 // only where the host hides the row an extension's status shows in, and was neither
 // told (`--agent-status`) nor answered at an earlier install of this root. The answer
 // is written as the host's own setting — shown, or left hidden as it is — and the record
@@ -344,7 +346,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
   // ── WHICH SCOPE ──────────────────────────────────────────────────────────────
   // Told by flag; else asked on a terminal where the project of the working directory
-  // is not the home, the user's preselected; else the user's (decision 0311).
+  // is not the home, the user's preselected; else the user's
+  // (design/decisions/a-project-installation.md).
   const home = resolve(opts.home ?? homedir());
   const project = projectOf(cwd, home);
   let scopeAsked = false;
@@ -361,7 +364,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const { harnessDir, root, base } = placement;
   // A project installation writes no product owner's own setting: a tier's model and how
   // the session shows its agent are each product owner's, and the project is shared with
-  // every product owner in it (decision 0313).
+  // every product owner in it (design/decisions/a-project-installation.md).
   if (scope === 'project' && opts.modelRoles !== undefined) {
     throw new Refusal(
       `--model-roles: a project installation binds no models, a model being each product owner's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
@@ -373,7 +376,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
-  // an earlier render tree, which no installation takes over (decision 0311).
+  // an earlier render tree, which no installation takes over
+  // (design/decisions/a-project-installation.md).
   if (scope === 'project' && holdsRenderTree(root)) {
     throw new Refusal(
       `${root} holds files but no ${INSTALLATION_RECORD_FILE}, so it is an earlier render tree, not an installation; move it away, and install again`,
@@ -455,10 +459,11 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
   // ── WHICH MODELS ─────────────────────────────────────────────────────────────
   // The model each tier the agents fall back to, and each persona's own role, runs on
-  // (decision 0112): told by flag, or asked where the host binds none, and bound as the
-  // host's own setting. A role the host binds is its own: never asked, never changed.
-  // A project installation binds none: it reads the project's settings and the user's,
-  // writing neither, and names each tier neither binds (decision 0312).
+  // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md): told by
+  // flag, or asked where the host binds none, and bound as the host's own setting. A
+  // role the host binds is its own: never asked, never changed. A project installation
+  // binds none: it reads the project's settings and the user's, writing neither, and
+  // names each tier neither binds (design/decisions/a-project-installation.md).
   const routing = adapter.roleRouting;
   const agentModels = tree.agentModels;
   const agentRoles = Object.keys(agentModels).sort();
@@ -553,11 +558,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     }
   }
   // ── WHETHER THE STATUS LINE SHOWS THE SESSION'S AGENT ───────────────────────
-  // Asked only where the host hides it and it was neither told nor answered before
-  // (decision 0113); the answer is the host's own setting from then on. A project
+  // Asked only where the host hides it and it was neither told nor answered before;
+  // the answer is the host's own setting from then on. A project
   // installation neither asks nor writes it: it reads the project's settings over the
   // user's, and where they hide the agent names showing it as a next step: in the
-  // project's file, where its own keys hide it, else at user scope (decision 0313).
+  // project's file, where its own keys hide it, else at user scope
+  // (design/decisions/a-project-installation.md).
   const statusHost =
     adapter.capabilitySurface === undefined ? undefined : adapter.statusSegment;
   const statusFile =
@@ -632,8 +638,9 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   );
 
   // Whether this project installation made the project's harness directory, which its
-  // uninstall then removes where it is left empty (decision 0312); an installation
-  // that replaces another keeps what that one recorded.
+  // uninstall then removes where it is left empty
+  // (design/decisions/a-project-installation.md); an installation that replaces another
+  // keeps what that one recorded.
   const createdHarnessDir =
     scope === 'project' &&
     (prior !== null
@@ -662,7 +669,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
     }
     // Whether the status line shows the session's agent: the product owner's answer, written
-    // as the host's own setting and recorded nowhere as cratylus's (decision 0113).
+    // as the host's own setting and recorded nowhere as cratylus's.
     if (agentStatus === 'show' && statusFile !== undefined)
       showAgentStatus(found, statusFile, adapter, dry);
     else if (agentStatus === 'hide')
@@ -671,7 +678,8 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       );
     found.displayOpen = displayOpen;
     // The models the product owner chose, bound in the host's own model roles and recorded
-    // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
+    // nowhere as cratylus's: upgrade and uninstall keep them
+    // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
     const bound = new Set<string>();
     const wanted = Object.entries(choices).map(([role, value]) => ({
       role,
@@ -932,7 +940,7 @@ function hostConfigPath(
 /**
  * Show the session's agent on the host's status line at `path`, which hides it, as the
  * product owner answered, and say what was done. The edit is the host's own setting from
- * then on: recorded nowhere as cratylus's (decision 0113).
+ * then on: recorded nowhere as cratylus's.
  *
  * omp's status line is a list of segments (`adapter.statusSegment`). An extension's
  * status — where the cratylus extension puts the name and mark of the agent a session

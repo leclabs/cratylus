@@ -499,9 +499,10 @@ export interface HarnessAdapter {
   /**
    * How this harness binds an agent's MODEL through host-configured model roles —
    * a projected definition names the role named for the agent first, which the host
-   * may bind, and then the tier and effort the agent holds (decision 0111). The
-   * projection names no model id: which model a role or tier runs on is the host's
-   * own setting, which install writes only as the product owner answers (decision 0112).
+   * may bind, and then the tier and effort the agent holds. The projection names no
+   * model id: which model a role or tier runs on is the host's own setting, which
+   * install writes only as the product owner answers
+   * (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
    *
    * Three facts, the harness's own: WHERE the host keeps its roles (`configRels`,
    * harness-home relative, in the order the harness READS them); the role a tier is
@@ -560,7 +561,8 @@ export interface StatusSegmentHost {
   readonly configRels: readonly string[];
   /** The project's config files that hold it, relative to the project's harness
    *  directory (`<project>/.omp`), in read order: what a project installation reads,
-   *  and never writes, since it writes no product owner's own setting (decision 0313). */
+   *  and never writes, since it writes no product owner's own setting
+   *  (design/decisions/a-project-installation.md). */
   readonly projectConfigRels: readonly string[];
   /** The segment an extension's status renders in. */
   readonly segment: string;
@@ -580,7 +582,7 @@ export interface RoleRouting {
   readonly configRels: readonly string[];
   /** The project's config files that hold them, relative to the project's harness
    *  directory (`<project>/.omp`), in read order: what a project installation reads,
-   *  and never writes, since it binds no models (decision 0312). */
+   *  and never writes, since it binds no models (design/decisions/a-project-installation.md). */
   readonly projectConfigRels: readonly string[];
   /** The model role a tier is bound by in the host's table. */
   tierRole(tier: string): string;

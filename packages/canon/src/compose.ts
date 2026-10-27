@@ -14,7 +14,7 @@
 // carries no mark of its own is never made, and the `CompositionRefusal` names what
 // it refused. A persona that weakens or removes a guardrail, or takes from a set
 // other than its reach, is made, and the composition warns, naming what it changed
-// (decision 0142(2)): no harm from it is on record.
+// (a `CompositionWarning`): no harm from it is on record.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {

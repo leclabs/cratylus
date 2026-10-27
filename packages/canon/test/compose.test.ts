@@ -1,8 +1,8 @@
 // Composition: a persona that removes `none` from action-scope or weakens a guardrail
-// is made, and warned of, never refused (0142(2)), while no composed agent is narrowed
-// to read-only (0068); each role's typed handoff rides its agent as `contract`; every
-// agent states it is evaluated in real use; no value of any agent is held by a guard
-// (0142(1)); an optional slot may be left unfilled, never another.
+// is made, and warned of, never refused, while no composed agent is narrowed to
+// read-only; each role's typed handoff rides its agent as `contract`; every agent
+// states it is evaluated in real use; no value of any agent is held by a guard; an
+// optional slot may be left unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
 import { type JsonSchema, enforcing, termOf } from '@cratylus/schema';
@@ -152,7 +152,7 @@ describe('the business analyst', () => {
 });
 
 describe('every agent', () => {
-  it('holds no value by a guard (0142(1))', () => {
+  it('holds no value by a guard', () => {
     for (const [name, agent] of Object.entries(agents))
       for (const [field, entries] of Object.entries(agent))
         if (Array.isArray(entries))
@@ -164,7 +164,7 @@ describe('every agent', () => {
               ).toBe(false);
   });
 
-  it('is evaluated in real use, and by nothing else (0142(1))', () => {
+  it('is evaluated in real use, and by nothing else', () => {
     for (const [name, agent] of Object.entries(agents))
       expect(
         agent.evaluation.map((e) => termOf(e.value)),

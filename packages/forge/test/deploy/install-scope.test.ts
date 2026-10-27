@@ -1,4 +1,5 @@
-// Installation scopes (decisions 0311, 0313): install and uninstall act for the user,
+// Installation scopes (design/decisions/a-project-installation.md): install and
+// uninstall act for the user,
 // by default, or inside one project. A project installation lives wholly in the
 // project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
