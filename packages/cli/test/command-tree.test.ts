@@ -112,6 +112,15 @@ describe('the top-level help lists every command and capability', () => {
     expect(out.split('\n').slice(0, -1)).not.toContain('');
   });
 
+  it('shows each capability’s usage as its verb alone', async () => {
+    const { out } = await run('--help');
+    for (const capability of CAPABILITIES)
+      expect(out, capability).toMatch(
+        new RegExp(`^ {2}${capability} <verb> {2,}\\S`, 'm'),
+      );
+    expect(out).not.toContain('[args...]');
+  });
+
   it('opens with what the command is for, ahead of the usage line', async () => {
     const { out } = await run('--help');
     const [first, second] = out.split('\n');

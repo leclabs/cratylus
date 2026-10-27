@@ -133,10 +133,12 @@ export function commandLine(): Command {
   for (const command of capabilityCommands({ version: VERSION }))
     program.addCommand(command.helpGroup('Capabilities:'));
   register(program);
-  // The program's help opens with its description, ahead of the usage line.
+  // The program's help opens with its description, ahead of the usage line, and
+  // names each command by its own usage: a capability as `<capability> <verb>`.
   program.configureHelp({
     ...program.configureHelp(),
     commandDescription: () => '',
+    subcommandTerm: (cmd) => `${cmd.name()} ${cmd.usage()}`,
     formatHelp: (cmd, helper) =>
       `${PURPOSE}\n${Help.prototype.formatHelp.call(helper, cmd, helper)}`,
   });
