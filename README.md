@@ -38,8 +38,11 @@ Every flag, refusal and default is in [packages/cli/README.md](./packages/cli/RE
 
 ## Contributing
 
-Start with [INTRODUCTION.md](./INTRODUCTION.md) and the concept journal, which holds the conceptual
-model per bounded context; [AGENTS.md](./AGENTS.md) holds the working conventions.
+Start with [INTRODUCTION.md](./INTRODUCTION.md) and the domain model in
+[design/model](./design/model): one plain file per concept, in a directory per bounded context,
+with version control as its history. Each example in it is bound to the acceptance test named
+`<context>/<concept>: <example name>`, and `cratylus model check`, part of `pnpm check`, holds the
+two together. [AGENTS.md](./AGENTS.md) holds the working conventions.
 
 ## License
 
