@@ -27,11 +27,7 @@ import {
 } from '../../src/deploy/manifest.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  fixtureAgentSource,
-  fixturePractices,
-} from './helpers.js';
+import { fixtureAgentSource } from './helpers.js';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -69,7 +65,6 @@ describe('the retired persona launch surface', () => {
       home,
       cwd,
       canon: plugin as never,
-      practices: FIXTURE_PRACTICE,
     });
 
   beforeEach(() => {
@@ -85,7 +80,6 @@ describe('the retired persona launch surface', () => {
       name: 'retired-launch-fixture',
       manifest: FIXTURE_MANIFEST,
       agents,
-      practices: fixturePractices(['alpha']),
     };
     for (const stream of [process.stdout, process.stderr])
       vi.spyOn(stream, 'write').mockImplementation(() => true);

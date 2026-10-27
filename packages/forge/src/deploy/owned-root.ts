@@ -23,7 +23,7 @@
 //   installation.json       what install did outside the root: its scope (user or
 //                           project; absent, user); the references it placed;
 //                           whether it created the project's harness directory; the
-//                           practices and the rules it installed, by name; and which
+//                           rules it installed, by name; and which
 //                           of the operator's choices it has been answered, never
 //                           their values, which are the host's own settings
 //
@@ -123,14 +123,11 @@ export type OwnedReference =
  *  whether the status line shows the session's agent. */
 export type OperatorChoice = 'agentStatus';
 
-/** What install did outside the root, and the practices and rules it installed. */
+/** What install did outside the root, and the rules it installed. */
 export interface InstallationRecord {
   /** Where the installation is: for the user, or inside one project. Absent in a
    *  record written before scopes, which is a user installation. */
   readonly scope?: InstallScope;
-  /** The practices installed, in the canon's order; absent where the canon
-   *  declares none. */
-  readonly practices?: readonly string[];
   /** The rules chosen, by name, in the canon's order, possibly none: the choice an
    *  upgrade keeps. Absent where the canon offered no rulesets, or the choice was
    *  never made. */

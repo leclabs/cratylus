@@ -12,7 +12,7 @@
 
 import * as clack from '@clack/prompts';
 import type { InstallScope } from '@cratylus/runtime/runtime-config';
-import type { OfferedPractice, OfferedRuleset } from '../../project/index.js';
+import type { OfferedRuleset } from '../../project/index.js';
 
 /** One model role the host binds no model to, which the operator may bind: a tier the
  *  installed agents fall back to, or a persona's own role (decision 0112). */
@@ -37,13 +37,6 @@ export interface InstallPrompts {
   /** Where to install: for the user, every project offered it (preselected), or
    *  inside `project` only, which then loads it in place of the user's. */
   scope(project: string): Promise<InstallScope | undefined>;
-  /** Which practices to install, each offered with its description; `initial` are
-   *  preselected: those already installed here, or on a fresh host the canon's own.
-   *  At least one is required. */
-  practices(
-    offered: readonly Pick<OfferedPractice, 'name' | 'description'>[],
-    initial: readonly string[],
-  ): Promise<string[] | undefined>;
   /** Which rules to place, each ruleset offered whole, rule by rule, or not at all;
    *  nothing is chosen unless the operator chooses it. The answer is the rules chosen,
    *  by name, possibly none. */
@@ -136,21 +129,6 @@ export const terminalPrompts: InstallPrompts = {
             ? 'Which harness should the canon be installed into?'
             : 'No harness found on this host. Which one should the canon be installed into?',
         options: options.map((value) => ({ value, label: value })),
-      }),
-    );
-  },
-
-  async practices(offered, initial) {
-    return answer(
-      await clack.multiselect({
-        message:
-          'Which practices should be installed? (space toggles, enter accepts)',
-        options: offered.map((p) => ({
-          value: p.name,
-          label: `${p.name} — ${p.description}`,
-        })),
-        initialValues: [...initial],
-        required: true,
       }),
     );
   },
