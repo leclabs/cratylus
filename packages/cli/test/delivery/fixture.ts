@@ -492,6 +492,18 @@ export function earlierCommand(h: Host) {
   ).not.toBe(0);
   return {
     version: value,
+    /** Install with the earlier command's own surface: 0.11.0 took no run without a practices choice. */
+    install: () =>
+      h.command([
+        'install',
+        '--harness',
+        'omp',
+        '--home',
+        h.home,
+        '--all',
+        '--model-roles',
+        'default',
+      ]),
     restore: () => {
       h.env.PATH = currentPath;
     },
