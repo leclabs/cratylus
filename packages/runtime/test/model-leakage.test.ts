@@ -12,8 +12,8 @@ import {
 describe('leaks', () => {
   it.each([
     [
-      'The plan is kept in design/journal/.',
-      'design/journal/',
+      'The plan is kept in design/model/.',
+      'design/model/',
       'names a file location',
     ],
     [
@@ -38,18 +38,14 @@ describe('leaks', () => {
       'readArgv',
       'names a code identifier',
     ],
-    [
-      'It is offered as concept_journal.',
-      'concept_journal',
-      'names a code identifier',
-    ],
+    ['It is offered as model_check.', 'model_check', 'names a code identifier'],
     ['It calls dispatch() once.', 'dispatch()', 'names a code identifier'],
     ['It is validated with zod.', 'zod', 'names a tool or library'],
     ['It is hosted on GitHub.', 'GitHub', 'names a tool or library'],
     ['It merges into `main` first.', '`main`', 'quotes code'],
     [
-      'The journal is design/journal in the repository.',
-      'design/journal',
+      'The model is design/model in the repository.',
+      'design/model',
       'names a file location',
     ],
     [
@@ -102,7 +98,7 @@ describe('leaks', () => {
     'a check accepts a recording that satisfies its example',
     'The node in the dependency graph waits for its inputs, and/or its peers.',
     'An example is read/written by whoever holds the meaning.',
-    'Cratylus keeps its design in one journal, e.g. for every context.',
+    'Cratylus keeps its design in one model, e.g. for every context.',
     'It names a `green-field realization` in plain words.',
     'Version 0.10.0 holds: — the words stay plain.',
     'The tests are kept prettier, and a jest is no tool.',

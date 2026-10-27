@@ -1548,7 +1548,7 @@ describe('omp tool definitions', () => {
       omp.agents = [
         declare(
           { name: 'business-analyst', description: 'Holds the design.' },
-          '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the concept journal is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
+          '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the domain model is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
         ),
       ];
       const { fire } = await started('business-analyst');
