@@ -46,7 +46,7 @@ import type { Ruleset } from './rule.js';
  * factor, which is an ATTRIBUTE of every value an agent holds rather than a value
  * of its own (see {@link Entry.level}).
  * - `advisory` — guidance the agent weighs and may depart from.
- * - `firm`     — holds unless the operator overrides it.
+ * - `firm`     — holds unless the product owner overrides it.
  * - `fixed`    — holds without exception; only the design changes it.
  */
 export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';

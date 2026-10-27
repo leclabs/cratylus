@@ -2,7 +2,7 @@
 // by default, or inside one project. A project installation lives wholly in the
 // project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
-// writes no operator's own setting (a tier's model, how the session shows its agent),
+// writes no product owner's own setting (a tier's model, how the session shows its agent),
 // and leaves the user's installation as it is, as the user's leaves it.
 
 import { execFileSync, spawnSync } from 'node:child_process';

@@ -1,6 +1,6 @@
-// Which model a tier or a persona's role runs on is the operator's choice and the
+// Which model a tier or a persona's role runs on is the product owner's choice and the
 // host's own setting (decision 0112). An agent's declaration names its own role, then
-// its tier and effort, and never a model. Install binds what the operator chooses in
+// its tier and effort, and never a model. Install binds what the product owner chooses in
 // the host's `modelRoles`, records none of it as its own, and so upgrade and uninstall
 // keep it; a role the host binds is never changed; told nothing and unable to ask, it
 // names each tier no model is bound to as the next step. An upgrade from the earlier

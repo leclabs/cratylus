@@ -26,7 +26,7 @@ export function fixture(): Fixture {
     recursive: true,
     verbatimSymlinks: true,
   });
-  // An allowlist, not credential-variable guessing: no operator configuration
+  // An allowlist, not credential-variable guessing: no product owner's configuration
   // or environment reaches the installation.
   const env = {
     HOME: home,

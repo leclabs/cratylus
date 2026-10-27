@@ -4,7 +4,7 @@ The build core for [cratylus](../../README.md): it resolves a plugin set into on
 agents, skills, values and hooks, renders that set into the files a harness reads, and installs
 them.
 
-This README is for whoever works on the library, or on an adapter for a harness. What an operator
+This README is for whoever works on the library, or on an adapter for a harness. What the product owner
 does with the `cratylus` command — install and its flags, starting a session as an
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
@@ -86,7 +86,7 @@ before digests were recorded included.
 
 Model routing is host configuration, not a placed artifact: a declaration names its own role first,
 then its tier and effort (decision 0111), and is never rendered with a model. Which model a tier or
-a persona's role runs on is the operator's choice (decision 0112): `install` asks for each the host
+a persona's role runs on is the product owner's choice (decision 0112): `install` asks for each the host
 does not bind and writes the answer into the host's `modelRoles` as the host's own entry, recorded
 in no installation record, so upgrade and uninstall keep it; an earlier installation's seeded
 entries stay the same way.

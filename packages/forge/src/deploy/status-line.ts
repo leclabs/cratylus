@@ -9,7 +9,7 @@
 //
 // THE FILE IS HOST-OWNED, so it is added to and never re-emitted. The YAML is edited as
 // text — whole lines inserted, no library reading it and none writing it — for the
-// reason `model-roles.ts` gives: a serializer would rewrite the operator's comments,
+// reason `model-roles.ts` gives: a serializer would rewrite the product owner's comments,
 // quoting, key order and unrelated keys, and every byte that is not the new entry must
 // survive. What an insertion cannot safely extend is left untouched and reported.
 //

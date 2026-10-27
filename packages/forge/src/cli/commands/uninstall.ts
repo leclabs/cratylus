@@ -8,7 +8,7 @@
 // (`~/.cratylus/<harness>`) is cratylus's alone, so it goes whole, edits and additions
 // inside it included; and every reference the harness's own surfaces hold into it is
 // found from where it points, so exactly those go, even where the root or its record
-// (`installation.json`) was edited or removed. The operator's answers
+// (`installation.json`) was edited or removed. The product owner's answers
 // install wrote into the host's settings (models, whether the status line shows the
 // session's agent) are the host's, and stay. Nothing else of the host's is looked at.
 //
@@ -27,7 +27,7 @@
 // digests were kept is cratylus's by that record, and taken back (decision 0114). A reference the
 // host has pointed elsewhere, a hook registration in an entry that now runs a command
 // of the host's, a config line the host has rewritten: each is left, and NAMED, so the
-// operator sees what remains and why. The report is two lists — removed, and left.
+// product owner sees what remains and why. The report is two lists — removed, and left.
 //
 // THE ORDER makes a half-finished run recoverable: the references first, then the root
 // with its record LAST; for an earlier installation, its persona commands, settings,
@@ -656,7 +656,7 @@ export function removeEarlierInstallation(
 /**
  * Take back the installation of `adapter` at `placement`: every reference into the
  * root, found from where it points, so a root or record the host edited or removed
- * leaves none dangling; then the root, whole. The operator's answers install wrote
+ * leaves none dangling; then the root, whole. The product owner's answers install wrote
  * into the host's settings are the host's, and stay. `undefined` where there is
  * neither a root nor a reference into one.
  */
@@ -689,7 +689,7 @@ export function removeOwnedInstallation(
 }
 
 /** The report: what was removed, by area unless `--verbose` lists each, and what was
- *  left always (the host's, so the operator sees what remains and why). */
+ *  left always (the host's, so the product owner sees what remains and why). */
 function print(tally: Tally, run: { dry: boolean; verbose: boolean }): void {
   const verb = run.dry ? 'would remove' : 'removed';
   if (run.verbose) {
