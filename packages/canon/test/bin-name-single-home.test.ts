@@ -290,13 +290,13 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
 // "returns NOTHING: the forge CLI's own executable name has no home in any TypeScript
 // module." The first half was false. The name had no AUTHORED HOME, which is what the
 // derivation now supplies — and it also had TWENTY-SIX occurrences across ten modules,
-// fifteen of them in live operator-facing strings: every `cratylus <verb>: <error>`
+// fifteen of them in live product-owner-facing strings: every `cratylus <verb>: <error>`
 // prefix, the `run \`forge init\` first` hints (naming a program that never existed),
 // the copy-pasteable `ship it with: …` line, and `cac('forge')`, which branded every
 // line of `--help` with a name no host installs.
 //
-// None of that fails a compiler and none of it fails at build; it fails when an
-// operator types what they were told to type. So the census is a gate at ZERO rather
+// None of that fails a compiler and none of it fails at build; it fails when the
+// product owner types what they were told to type. So the census is a gate at ZERO rather
 // than a ratchet: the derivation exists now, so a spelling is never the cheaper option.
 //
 // COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus install` is

@@ -32,7 +32,7 @@
 // WHAT REPLACED IT is not a tool vocabulary. Tool sets are OPEN-WORLD (MCP servers
 // add tools at run time, users add their own, two harnesses overlap only in
 // shell/file primitives), so a closed enum over them is permanently incomplete. The
-// declaration names the ACT instead — `operator.consult.pre`, `subagent.dispatch.pre` —
+// declaration names the ACT instead — `product-owner.consult.pre`, `subagent.dispatch.pre` —
 // which is an ordinary member of the lifecycle vocabulary, and the adapter COMPUTES
 // the native pair ⟨event, selector⟩ from it ({@link NativeBinding}). Declaration-level
 // harness-neutrality is structural after that: there is no field left for a vendor
@@ -96,8 +96,8 @@ export interface Hook {
  * native SELECTOR that event needs there — the pair an adapter emits.
  *
  * THE SELECTOR IS COMPUTED, NEVER DECLARED. A canonical event like
- * `operator.consult.pre` names an ACT (about to put a question or a menu to the
- * operator); on claude that act is `PreToolUse` narrowed to the tool that performs
+ * `product-owner.consult.pre` names an ACT (about to put a question or a menu to the
+ * product owner); on claude that act is `PreToolUse` narrowed to the tool that performs
  * it, and the tool's NAME is a vendor fact the adapter holds. A declaration that spelled it
  * would have chosen a face — which is exactly what one hook did, with
  * `matcher: 'AskUserQuestion|Agent|SendMessage'` sitting on a harness-agnostic shape.
@@ -116,7 +116,7 @@ export interface NativeBinding {
    * adapter's own words, routed to the projection's `warnings`.
    *
    * IT IS A FIELD, not a convention, because SILENCE IS THE DEFECT. A harness whose
-   * selector cannot express the act's narrowing can FIRE `operator.consult.pre`
+   * selector cannot express the act's narrowing can FIRE `product-owner.consult.pre`
    * and cannot NARROW it; an adapter used to drop the narrowing without a word and the hook
    * ran on every tool call there. Declaring the loss beside the binding makes the
    * report structural: the serializer has the sentence in hand at the only moment

@@ -14,8 +14,8 @@
 //
 // IDENTITY IS NOT THE PROFILE. omp's own `--profile <name>` silos AUTH, MCP,
 // MODELS, SESSIONS and `agent.db` — an ENVIRONMENT, and a property of the HOST
-// an operator is running on, not of the agent this module composes. A profile
-// and an agent are ORTHOGONAL facts about one session; an operator who wants both
+// the product owner is running on, not of the agent this module composes. A profile
+// and an agent are ORTHOGONAL facts about one session; a product owner who wants both
 // passes both flags, and forge asserts neither for them.
 //
 // THE LAYOUT IS AN OMP EXTENSION PACKAGE, the owned root install places
@@ -160,7 +160,7 @@ const OMP_PROJECT_CONFIG_RELS = ['config.yml'] as const;
  *  declaration's `model` names the role named for its agent first, which the host may
  *  bind in its `modelRoles`, and then `@<tier>:<effort>`, which omp tries when the host
  *  binds no such role: the role named for the tier, at that effort. Install binds a
- *  role only as the operator answers, as the host's own setting (decision 0112). */
+ *  role only as the product owner answers, as the host's own setting (decision 0112). */
 export const ompRoleRouting: RoleRouting = {
   configRels: OMP_CONFIG_RELS,
   projectConfigRels: OMP_PROJECT_CONFIG_RELS,
@@ -965,7 +965,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * a rule held by review.
  *
  * AGENT LAUNCH (decision 0047). The module registers omp's `--agent <name>` flag.
- * When a main session starts (or the operator switches to a new one) with it, the
+ * When a main session starts (or the product owner switches to a new one) with it, the
  * name resolves through omp's OWN agent discovery — `discoverAgents` from omp's
  * task subsystem, the declarations task dispatch runs: the nearest project
  * `.omp/agents/`, then the user's `<agentDir>/agents/`, then extension packages,
@@ -982,7 +982,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * (`provider/model:high`, directly or in the configured value of a role alias)
  * wins over the declaration's `thinking-level`, which wins over the level the
  * resolved selector implies. `ctx.models.resolve` is not used: it drops the level.
- * The operator's explicit `--model` and `--thinking`, read with omp's own
+ * The product owner's explicit `--model` and `--thinking`, read with omp's own
  * `parseArgs`, win over the declaration's — each for its own setting — and the
  * declaration's body is carried either way.
  *
@@ -1014,7 +1014,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * disarming or arming omp's default target `@smol`: it is turned off first, so a
  * hand-off configuration already armed is dropped, then on, a declared target
  * standing in that role only while omp arms it. Configuration files are defaults
- * the declaration overrides, as for a child; the operator's explicit `--advisor` and
+ * the declaration overrides, as for a child; the product owner's explicit `--advisor` and
  * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own setting.
  *
  * ONE KNOWN omp LIMITATION, where launch holds what the declaration says and omp's
@@ -1023,7 +1023,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * value, launch holds what omp's dispatch gives a child.
  *
  * The active tools are never touched: the session holds exactly what omp grants for
- * the operator's selection, and nothing here limits whom it dispatches. An unknown
+ * the product owner's selection, and nothing here limits whom it dispatches. An unknown
  * name ends startup with a non-zero exit before any turn. A subagent session, or a
  * session without the flag, gets nothing of this.
  */
@@ -1039,7 +1039,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// command on every call; and starts the main session as an agent definition omp',
         '// discovers, by `omp --agent <name>`, holding the whole definition as a dispatched child',
         '// holds it: its text, model, effort, skills loaded at start, read summarisation, advisor',
-        "// and pre-planning, and no default personality; the operator's own flags win. One value",
+        "// and pre-planning, and no default personality; the product owner's own flags win. One value",
         "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
         '//',
         '// Nothing here describes a capability: its name, purpose, verbs and parameters are the',
@@ -1432,9 +1432,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '',
         "  // The rest of the declaration, as omp's task dispatch resolves it for a child, each held",
-        "  // only where the operator's own command line says nothing of that setting. Configuration",
+        "  // only where the product owner's own command line says nothing of that setting. Configuration",
         '  // files are defaults the declaration overrides, as they are for a dispatched child.',
-        '  async function settle(scope: Settings, declaration: AgentDefinition, operator: Args): Promise<void> {',
+        '  async function settle(scope: Settings, declaration: AgentDefinition, productOwner: Args): Promise<void> {',
         '    const keep = <T>(setting: Overridable<T>, value: T) => undo.push(hold(scope, setting, value));',
         '    // No default personality, as every dispatched child runs.',
         '    keep(cfgPersonality, "none");',
@@ -1444,7 +1444,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "    // The advisor: `task.agentAdvisor` first, then the declaration's `advisor`; none without",
         "    // either, as for a child. A pattern is that advisor's model, expanded against the",
         "    // session's roles; the live session starts or stops its advisor as `advisor.enabled` moves.",
-        '    if (operator.advisor !== true) {',
+        '    if (productOwner.advisor !== true) {',
         '      const advisor = resolveAgentAdvisorSelection({',
         '        settingsOverride: cfgTaskAgentAdvisor.get(scope)[declaration.name],',
         '        agentAdvisor: declaration.advisor,',
@@ -1458,7 +1458,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    // as it turns on, but only when nothing is armed; so it is turned off first, dropping a',
         '    // hand-off the configuration armed, and a declared target stands in `@smol` only while',
         '    // omp resolves the arm. Its listener runs a microtask after each change: hence `settled`.',
-        '    if (operator.prewalk !== true && operator.noPrewalk !== true && operator.prewalkInto === undefined) {',
+        '    if (productOwner.prewalk !== true && productOwner.noPrewalk !== true && productOwner.prewalkInto === undefined) {',
         '      const target = resolveAgentPrewalkPattern({',
         '        settingsOverride: cfgTaskAgentPrewalk.get(scope)[declaration.name],',
         '        agentPrewalk: resolveAgentPrewalkDefault(declaration, cfgTaskPrewalk.get(scope)),',
@@ -1503,17 +1503,17 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const { declaration } = found;',
         "    // The session's own settings: every resolution reads them and every override lands there.",
         '    const scope = findScopedSettings() ?? settings;',
-        "    // The operator's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
-        '    // omp reads its command line, win; the declaration applies where the operator gave none.',
-        '    const operator = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
+        "    // The product owner's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
+        '    // omp reads its command line, win; the declaration applies where the product owner gave none.',
+        '    const productOwner = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
         '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
         "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
         '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
         "    // the session's own model; then the effort a selector's `:level` carries, else the",
         "    // declaration's `thinking-level`, else the level the resolved selector implies.",
         '    const patterns =',
-        '      operator.model !== undefined',
-        '        ? [operator.model]',
+        '      productOwner.model !== undefined',
+        '        ? [productOwner.model]',
         '        : resolveAgentModelSelection({',
         '            settingsOverride: cfgTaskAgentModelOverrides.get(scope)[name],',
         '            agentModel: declaration.model,',
@@ -1522,7 +1522,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '          }).patterns;',
         '    const resolved = await resolveModelOverrideWithAuthFallback(patterns, current, ctx.modelRegistry, scope);',
         '    const model = resolved.model;',
-        '    if (operator.model === undefined) {',
+        '    if (productOwner.model === undefined) {',
         '      if (model === undefined) {',
         '        if (patterns.length > 0)',
         '          ctx.ui.notify(`Agent "${name}": no available model matches ${patterns.join(", ")}`, "warning");',
@@ -1533,8 +1533,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const level = resolved.explicitThinkingLevel',
         '      ? resolved.thinkingLevel',
         '      : (declaration.thinkingLevel ?? resolved.thinkingLevel);',
-        '    if (operator.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
-        '    await settle(scope, declaration, operator);',
+        '    if (productOwner.thinking === undefined && level !== undefined) pi.setThinkingLevel(level as Level);',
+        '    await settle(scope, declaration, productOwner);',
         '    ctx.ui.setStatus(AGENT_STATUS, found.mark === undefined ? name : `${found.mark} ${name}`);',
         '    launched = found;',
         '  }',

@@ -5,7 +5,7 @@
 // RECORD, not by a rule: the candidates are the paths an earlier run recorded laying
 // down, relative to the root it wrote them under, and NOTHING else. Attribution by
 // naming convention ("looks like one of ours") is explicitly refused — a convention
-// cannot distinguish an artifact the operator put there from one we shipped.
+// cannot distinguish an artifact the product owner put there from one we shipped.
 //
 // What is generic — the containment guard and the removal — lives here and has ONE
 // home; the deploy record's own shape stays in `deploy/manifest.ts`.

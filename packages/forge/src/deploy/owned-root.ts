@@ -21,7 +21,7 @@
 //                           project; absent, user); the references it placed;
 //                           whether it created the project's harness directory; the
 //                           rules it installed, by name; and which
-//                           of the operator's choices it has been answered, never
+//                           of the product owner's choices it has been answered, never
 //                           their values, which are the host's own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
@@ -105,9 +105,9 @@ export type OwnedReference =
       readonly terminated: boolean;
     };
 
-/** An operator's choice install asks for and writes as the host's own setting:
+/** A product owner's choice install asks for and writes as the host's own setting:
  *  whether the status line shows the session's agent. */
-export type OperatorChoice = 'agentStatus';
+export type ProductOwnerChoice = 'agentStatus';
 
 /** What install did outside the root, and the rules it installed. */
 export interface InstallationRecord {
@@ -123,10 +123,10 @@ export interface InstallationRecord {
    *  (`<project>/.omp`): its uninstall removes that directory where it is left empty,
    *  and never one that was there before (decision 0312). */
   readonly createdHarnessDir?: true;
-  /** The operator's choices install has been answered, by flag or question: each
+  /** The product owner's choices install has been answered, by flag or question: each
    *  answer is the host's own setting from then on, so no later install asks for it
    *  or applies it again. Absent where none has been. */
-  readonly answered?: readonly OperatorChoice[];
+  readonly answered?: readonly ProductOwnerChoice[];
 }
 
 /** The owned root of `adapter`'s harness under `base` (the process's home when none
@@ -412,7 +412,7 @@ function ignoreLink(opts: {
  * directory holds is the host's and stays. A reference location the host holds
  * otherwise — a path that is not a link, a link pointing elsewhere, an entry naming
  * something else — is the host's: left as it is, claimed in no record, and reported
- * with what the operator must do. `prior` is the record of the installation this one
+ * with what the product owner must do. `prior` is the record of the installation this one
  * replaces, which says whether install made the manifest.
  *
  * At user scope the references name the root absolutely, as `plugin link` does. At

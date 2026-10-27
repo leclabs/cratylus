@@ -183,11 +183,11 @@ export interface ProjectedTree extends ProjectReport {
   >;
   /** The sorted names of the rendered agents that state a model routing and hold a
    *  role not named for them (a persona over its role): the agents, besides the tiers,
-   *  whose model role an install asks the operator to bind. */
+   *  whose model role an install asks the product owner to bind. */
   readonly personas: readonly string[];
   /** The sorted names of the rendered agents that declare a worktree of their own
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
-   *  the loss an install tells the operator of, beside the projection's warning. */
+   *  the loss an install tells the product owner of, beside the projection's warning. */
   readonly unisolated: readonly string[];
   /** The rulesets the plugin set declares, in declaration order, each with its
    *  rules: what an install offers, whole or rule by rule. Empty when the set
@@ -492,7 +492,7 @@ export async function projectPluginSet(
   // means (`dispatchIsolation`), in the copy that isolation makes. The declaration is
   // not carried as a worktree, and the shortfall is reported once per agent it
   // costs, beside the skill-preload shortfall above, and named in the tree for a
-  // consumer that tells the operator what the harness lacks.
+  // consumer that tells the product owner what the harness lacks.
   const unisolated: string[] = [];
   if (!opts.adapter.startsInWorktree) {
     const { dispatchIsolation } = opts.adapter;
@@ -724,7 +724,7 @@ export async function projectPluginSet(
   // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A hook bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
   // since bytes beside no registration read as coverage and deliver none, and the
-  // operator is told once per moment. A hook with a moment the harness does fire keeps
+  // product owner is told once per moment. A hook with a moment the harness does fire keeps
   // the registrations it can make and is told of the ones it cannot.
   const unfired = new Set<string>();
   for (const hook of discoveredHooks) {
@@ -751,7 +751,7 @@ export async function projectPluginSet(
     const renderScopeActivated = opts.adapter.scopeActivatedSurface;
     if (!renderHooks && !renderScopeActivated) {
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
-      // surface loses these hooks' MECHANISM, not the build — and the operator is
+      // surface loses these hooks' MECHANISM, not the build — and the product owner is
       // told, because an absent guardrail that announced nothing is the failure this
       // whole design removes. Refusing here would delete canon's hooks dir from a
       // plugin set, so agents ran ungoverned and silent.

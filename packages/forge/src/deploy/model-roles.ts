@@ -8,7 +8,7 @@
 //
 // THE FILE IS HOST-OWNED, so it is EDITED, never re-emitted. The write is a text
 // insertion of whole lines: no YAML library reads the file and no serializer writes
-// it, because either would rewrite the operator's comments, quoting, key order and
+// it, because either would rewrite the product owner's comments, quoting, key order and
 // unrelated keys — every byte that is not the new entry must survive. What the
 // insertion cannot safely extend (a flow mapping, a scalar, an anchor, an alias, a
 // tag, a block scalar, a mapping whose entries are not `key: value` lines) is left

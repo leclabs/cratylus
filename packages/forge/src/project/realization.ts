@@ -80,7 +80,7 @@ export interface Loss {
   /** `unrealizable` — the harness has no peer for this event at all.
    *  `unscopable` — it fires the event but cannot narrow it to the composed agents. */
   readonly reason: 'unrealizable' | 'unscopable';
-  /** The operator-facing sentence. Names f · e · adapter · a and what was lost. */
+  /** The product-owner-facing sentence. Names f · e · adapter · a and what was lost. */
   readonly warning: string;
 }
 
@@ -112,7 +112,7 @@ export function routes(f: Realizable, adapter: HarnessAdapter): boolean {
  * The decision. ONE site — a second one elsewhere is a second place for the law
  * to drift from itself, which has already happened once (see the header).
  *
- * Returns rather than throws: a shortfall is a degradation the operator is told
+ * Returns rather than throws: a shortfall is a degradation the product owner is told
  * about, never a build they cannot complete. Emitting the mechanism is the
  * caller's job, and it is conditioned on `mode === 'bound'`.
  */

@@ -1,5 +1,5 @@
-// `cratylus install [--harness <name>]` — placing the canon on this machine, for an
-// operator who wants their agents here and has no repository in hand at all.
+// `cratylus install [--harness <name>]` — placing the canon on this machine, for a
+// product owner who wants their agents here and has no repository in hand at all.
 //
 // IT INSTALLS THE CANON IT IS HANDED. The canon is not INVENTED by the projector — it
 // is handed in by the hub package that mounts this verb, the canon the command is
@@ -25,12 +25,12 @@
 // references are the project's own (omp: `<project>/.omp/plugins`), each relative, so
 // the project commits them for its team, and in that project omp loads the project's
 // installation in place of the user's. A project install writes nothing under the
-// home: no earlier installation is taken back, and the operator's choices are read
+// home: no earlier installation is taken back, and the product owner's choices are read
 // from and written to the project's settings (omp: `<project>/.omp/config.yml`). On a
 // terminal the scope is asked where it was not told and the project is not the home,
 // the user's preselected; `--yes`, or no terminal, takes the user's.
 //
-// THE RUN IS GUIDED, and it is the operator's decisions that it guides. There are three:
+// THE RUN IS GUIDED, and it is the product owner's decisions that it guides. There are three:
 // which harness, which of the canon's rules, and which model each tier the agents fall
 // back to, and each persona's own role, runs on. What is placed is no decision: every
 // agent and skill of the canon is installed. Each decision has a flag; a decision given
@@ -48,7 +48,7 @@
 // WHICH MODEL RUNS A ROLE IS THE HOST'S OWN SETTING (decision 0112). An agent
 // declaration names its own model role first, then the tier and effort it holds
 // (decision 0111), and is never re-rendered with a model. The model a tier or a
-// persona's role runs on is the operator's to choose: install asks for it where the host
+// persona's role runs on is the product owner's to choose: install asks for it where the host
 // binds none and writes the answer into the host's own model roles, recording nothing of
 // it as cratylus's, so upgrade and uninstall keep it. A role the host already binds is
 // never asked and never changed. Where install is neither told nor can ask, it places
@@ -113,7 +113,7 @@ import {
 } from './install-prompts.js';
 import { removeEarlierInstallation } from './uninstall.js';
 
-/** The operator's answer to whether the status line shows the session's agent. */
+/** The product owner's answer to whether the status line shows the session's agent. */
 type AgentStatus = 'show' | 'hide';
 
 export interface InstallCmdOpts {
@@ -173,7 +173,7 @@ export function detectHarnesses(home?: string): string[] {
   );
 }
 
-/** A run that stops before writing, for a reason the operator can act on. */
+/** A run that stops before writing, for a reason the product owner can act on. */
 class Refusal extends Error {}
 
 /** A model value as omp writes in its `modelRoles`: an alias or selector. */
@@ -191,7 +191,7 @@ interface Findings {
   references: string[];
   /** How many items of an earlier installation were taken back. */
   earlier: number;
-  /** The model roles bound for the operator in the host's settings, as `role → model`. */
+  /** The model roles bound for the product owner in the host's settings, as `role → model`. */
   routes: string[];
   /** The tiers the agents fall back to that the host binds no model to. */
   unbound: string[];
@@ -317,7 +317,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // ── WHICH HARNESS ────────────────────────────────────────────────────────────
   // Decided by flag, or by the host having exactly one, or asked; a host with none or
   // two and no terminal to ask on is refused, because picking silently would install
-  // into a harness the operator was not thinking about.
+  // into a harness the product owner was not thinking about.
   let harness = opts.harness;
   if (harness === undefined) {
     const found = detectHarnesses(opts.home);
@@ -359,17 +359,17 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   });
   if ('refused' in placement) throw new Refusal(placement.refused);
   const { harnessDir, root, base } = placement;
-  // A project installation writes no operator's own setting: a tier's model and how
-  // the session shows its agent are each operator's, and the project is shared with
-  // every operator in it (decision 0313).
+  // A project installation writes no product owner's own setting: a tier's model and how
+  // the session shows its agent are each product owner's, and the project is shared with
+  // every product owner in it (decision 0313).
   if (scope === 'project' && opts.modelRoles !== undefined) {
     throw new Refusal(
-      `--model-roles: a project installation binds no models, a model being each operator's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
+      `--model-roles: a project installation binds no models, a model being each product owner's own setting; drop --model-roles, and bind them for yourself with \`${CLI_BIN} install --scope user --model-roles <role=model,…>\``,
     );
   }
   if (scope === 'project' && opts.agentStatus !== undefined) {
     throw new Refusal(
-      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each operator's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
+      `--agent-status: a project installation writes no status line choice, how the session shows its agent being each product owner's own setting; drop --agent-status, and settle it for yourself with \`${CLI_BIN} install --scope user --agent-status <show|hide>\``,
     );
   }
   // A project's `.cratylus/<harness>` that holds files and no installation record is
@@ -661,7 +661,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
     }
-    // Whether the status line shows the session's agent: the operator's answer, written
+    // Whether the status line shows the session's agent: the product owner's answer, written
     // as the host's own setting and recorded nowhere as cratylus's (decision 0113).
     if (agentStatus === 'show' && statusFile !== undefined)
       showAgentStatus(found, statusFile, adapter, dry);
@@ -670,7 +670,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         `  statusLine: ${statusFile} — the session's agent stays hidden, as answered`,
       );
     found.displayOpen = displayOpen;
-    // The models the operator chose, bound in the host's own model roles and recorded
+    // The models the product owner chose, bound in the host's own model roles and recorded
     // nowhere as cratylus's: upgrade and uninstall keep them (decision 0112).
     const bound = new Set<string>();
     const wanted = Object.entries(choices).map(([role, value]) => ({
@@ -770,10 +770,10 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 }
 
 /**
- * What a run shows an operator, before it places (`dry`) and after: the root and the
+ * What a run shows the product owner, before it places (`dry`) and after: the root and the
  * harness; the rules; the counts; the references into the root; an
  * earlier installation taken back; each host file edited and what changed in it; the
- * models bound for the operator; what the host had set and was left alone — and, once
+ * models bound for the product owner; what the host had set and was left alone — and, once
  * placed, what to do next, the tiers no model is bound to among it.
  */
 function describe(
@@ -845,7 +845,7 @@ function describe(
       `  ${dry ? 'would bind' : 'bound'} in ${ctx.config}, as your own setting (upgrade and uninstall keep it): ${list(found.routes)}`,
     );
   }
-  // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the operator reads what the run
+  // A LOSS THE HARNESS CANNOT MAKE GOOD is said where the product owner reads what the run
   // does, not only in the warning under it: an agent declaring a worktree of its own
   // that this harness cannot start builds in its dispatcher's checkout — or, where the
   // harness isolates a dispatched agent another way, in the copy that makes, which
@@ -931,7 +931,7 @@ function hostConfigPath(
 
 /**
  * Show the session's agent on the host's status line at `path`, which hides it, as the
- * operator answered, and say what was done. The edit is the host's own setting from
+ * product owner answered, and say what was done. The edit is the host's own setting from
  * then on: recorded nowhere as cratylus's (decision 0113).
  *
  * omp's status line is a list of segments (`adapter.statusSegment`). An extension's
