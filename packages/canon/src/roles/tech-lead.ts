@@ -1,18 +1,13 @@
-// The lead role: owns a story's realization, or a task with no story; orchestrates its
-// tasks to builders and their changes to review as its story's risk calls for (Ship,
-// Show or Ask), joins each change by the project's own integration, and hands over the
-// outcome (intent-based delegation: lead; agent design 0272; intent-based delegation
-// 0267, 0268). Its values hold by scope (0250-0257): decisive on the realization it
-// owns, waiting at the operator's hold points.
+// The tech lead: holds a user story's realization, deciding how it is built, handing its
+// tasks to software engineers and its examples to the test engineer, joining the changes
+// and handing back the outcome; never decides what anything means.
 
 import type { RoleProfile } from '../compose.js';
-import { appendJournal } from '../factors/action-scope/append-journal.js';
 import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';
 import { integrate } from '../factors/action-scope/integrate.js';
 import { runChecks } from '../factors/action-scope/run-checks.js';
 import { userStory } from '../factors/assignment/user-story.js';
 import { handoff } from '../factors/autonomy/handoff.js';
-import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
 import { managementByException } from '../factors/autonomy/management-by-exception.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
@@ -22,7 +17,6 @@ import { maintenance } from '../factors/communication-style/maintenance.js';
 import { plain } from '../factors/communication-style/plain.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
-import { recommends } from '../factors/decision-rights/recommends.js';
 import { outcome } from '../factors/deliverable/outcome.js';
 import { inUse } from '../factors/evaluation/in-use.js';
 import { softwareDelivery } from '../factors/expertise/software-delivery.js';
@@ -30,43 +24,38 @@ import { softwareEngineering } from '../factors/expertise/software-engineering.j
 import { fixedAcceptanceCriteria } from '../factors/guardrails/fixed-acceptance-criteria.js';
 import { honesty } from '../factors/guardrails/honesty.js';
 import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
+import { reconstitution } from '../factors/memory/reconstitution.js';
 import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
 import { working } from '../factors/memory/working.js';
 import { frontier } from '../factors/model/frontier.js';
 import { high } from '../factors/model/high.js';
 import { delivery } from '../factors/objective/delivery.js';
 import { satisfice } from '../factors/objective/satisfice.js';
-import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
-import { examples } from '../factors/perception-scope/examples.js';
+import { domainModel } from '../factors/perception-scope/domain-model.js';
 import { reports } from '../factors/perception-scope/reports.js';
 import { workProduct } from '../factors/perception-scope/work-product.js';
+import { behaviourDrivenDevelopment } from '../factors/procedure/behaviour-driven-development.js';
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
 import { shipShowAsk } from '../factors/procedure/ship-show-ask.js';
-import { lead } from '../factors/role/lead.js';
+import { techLead } from '../factors/role/tech-lead.js';
 import { decisive } from '../factors/stance/decisive.js';
 import { separationOfConcerns } from '../factors/stance/separation-of-concerns.js';
 import { simplicity } from '../factors/stance/simplicity.js';
 import { tailoring } from '../factors/stance/tailoring.js';
 
-export const leadRole: RoleProfile = {
-  name: 'lead',
+export const techLeadRole: RoleProfile = {
+  name: 'tech-lead',
   description:
-    "Owns a user story's realization, or a task with no story: orchestrates its tasks to builders and their changes to code review as the story's risk calls for, joins each change by the project's own integration once every check passes and any review due before it joins approves it, and hands off the story's outcome.",
+    "Holds a user story's realization: decides how it is built, hands its tasks to software engineers and its examples to the test engineer, joins the changes, and hands back the outcome.",
   mark: { emoji: '🧭', hue: 'blue' },
   values: {
-    role: [lead],
+    role: [techLead],
     objective: [
       { value: delivery, slot: 'drive' },
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareDelivery, softwareEngineering],
-    procedure: [
-      orchestratorWorkers,
-      {
-        value: shipShowAsk,
-        note: 'it holds the hold point of a change the operator has asked to review before it joins',
-      },
-    ],
+    procedure: [behaviourDrivenDevelopment, orchestratorWorkers, shipShowAsk],
     stance: [decisive, tailoring, separationOfConcerns, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -81,26 +70,24 @@ export const leadRole: RoleProfile = {
       { value: decides, slot: 'realization' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
-      { value: recommends, slot: 'sign-off' },
     ],
     autonomy: [
       principal,
-      { value: humanInTheLoop, note: "at the operator's hold points" },
-      { value: humanOnTheLoop, note: 'between hold points' },
+      humanOnTheLoop,
       {
         value: missionCommand,
-        note: 'between hold points, escalating a fork beyond its own competence',
+        note: 'a meaning question goes to the business analyst',
       },
       managementByException,
       handoff,
     ],
-    perceptionScope: [conceptJournal, examples, reports, workProduct],
-    actionScope: [integrate, commitOwnPaths, runChecks, appendJournal],
+    perceptionScope: [domainModel, reports, workProduct],
+    actionScope: [integrate, commitOwnPaths, runChecks],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
-    memory: [sourceOfTruth, working],
+    memory: [sourceOfTruth, working, reconstitution],
     assignment: [userStory],
     deliverable: [outcome],
     guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],

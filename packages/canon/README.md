@@ -9,8 +9,8 @@ therefore not a prompt. It is a **vector of values** over the catalog's factors,
 markdown an agent harness reads is a projection of these modules.
 
 Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
-_means_, never how either is carried. Installing the canon on a machine, and choosing among
-its practices, is [the `cratylus` README](../cli/README.md)'s. This README is for whoever works on
+_means_, never how either is carried. Installing the canon on a machine is
+[the `cratylus` README](../cli/README.md)'s. This README is for whoever works on
 the canon.
 
 ## What it is to the command
@@ -24,14 +24,14 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field       | what it is                                                                                           |
-| ----------- | ---------------------------------------------------------------------------------------------------- |
-| `manifest`  | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value        |
-| `events`    | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary                     |
-| `factors`   | the factors' values, filed one directory per factor                                                  |
-| `agents`    | the composed agents: six generic holders of their roles, and three personas                          |
-| `skills`    | the skills — each a self-sufficient formal block plus the siblings it composes                       |
-| `practices` | **which ways of working exist** — each an installable choice, declared as data in `src/practices.ts` |
+| field      | what it is                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
+| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
+| `rulesets` | **which rulesets exist** — the standard conventions an install offers (`src/rulesets.ts`)     |
+| `factors`  | the factors' values, filed one directory per factor                                           |
+| `agents`   | the composed agents: five generic holders of their roles, and three personas                  |
+| `skills`   | the skills — each a self-sufficient formal block plus the siblings it composes                |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
 canon's agent design. The manifest rides the plugin rather than living in the projector, so the
@@ -40,42 +40,37 @@ are [`@cratylus/schema`](../schema/README.md)'s.
 
 ## The agents
 
-The plugin carries nine agents, all in the practice `intent-based-delegation`, which delivers
-intent-based delegation. `architect`, `lead`, `builder` and `reviewer` are the generic holders of
-their roles, with `illustrator` and `check-writer` as specialists called in when a user story's risk
-warrants them. Each role is defined by what it receives and what it hands off, never by steps:
+The plugin carries eight agents: the industry roles of behaviour-driven development, each a generic
+holder of its role, and three personas over the business analyst. An install places every one. Each
+role is defined by what it receives and what it hands back, never by steps, and its profile states
+only where cratylus departs from the industry's reading of the role:
 
-- **architect** — the operator's principal architect, owning the domain model: receives intent,
-  hands off user stories, answers to meaning questions and read-backs; decides meaning only.
-- **lead** — owns a user story's realization, or a task with no story: orchestrates its tasks to
-  builders (orchestrator-workers) and their changes to code review as the story's risk calls for
-  (Ship, Show or Ask), joins each change by the project's own integration once every check passes
-  and any review due before it joins approves it, and hands off the outcome. Where the operator has
-  asked to review a change before it joins, the operator's review is its code review, and it joins
-  on the operator's sign-off, a hold point.
-- **builder** — receives one task and hands off one change that passes every check.
-- **reviewer** — reviews one change it did not write, before or after it joins as its user story's
-  risk calls for, against the change and, where they apply, the story's acceptance criteria and
-  examples, held-out ones included; hands off one code review naming each finding, leaving building
-  and repairing the work to the builders. A change the operator has asked to review is the
-  operator's to review; the operator takes that change's held-out examples directly from the design.
-- **illustrator** — writes a user story's examples cold from its concepts alone, flagging unclear
-  terms.
-- **check-writer** — writes the checks binding a user story's examples, each seen failing before the
-  build.
+- **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
+  into concepts, user stories and examples, answers meaning questions, and confirms a realization
+  means what was intended; decides meaning only.
+- **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
+  software engineers and its examples to the test engineer, joins the changes as the story's risk
+  calls for (Ship, Show or Ask), and hands back the outcome.
+- **software-engineer** — realizes one task and hands back one change; never writes the acceptance
+  tests its work is judged by.
+- **test-engineer** — writes an acceptance test for each example before the build, sees it fail,
+  and gives the verdict whether the realization passes.
+- **code-reviewer** — reviews one change it did not write against its user story's acceptance
+  criteria and examples, and hands back one code review naming each finding, leaving building and
+  repairing the work to the software engineers.
 
-The reviewer, the illustrator and the check-writer run on another model family than the builders
+The test engineer and the code reviewer run on another model family than the software engineers
 where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an
 explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
 named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a profile missing
 a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
 
-kino, nico and mav are personas over the architect role, each named for its expertise (kino film
-production and generative video, nico terminology work as cratylic context design practises
-it, mav software engineering). The architect role owns the domain model of every context it is
-given; a persona brings its expertise and owns nothing its role does not.
-Each is `persona(architectRole, overrides)`, stating only its overrides and extensions of the role:
-an agent named as an individual, with a description and a mark of its own beside the values it
+kino, nico and mav are personas over the business analyst role, each named for its expertise (kino
+film production and generative video, nico terminology work as cratylic context design practises
+it, mav software engineering). The business analyst role holds the domain model of every context it
+is given; a persona brings its expertise and owns nothing its role does not.
+Each is `persona(businessAnalystRole, overrides)`, stating only its overrides and extensions of the
+role: an agent named as an individual, with a description and a mark of its own beside the values it
 states. A single value it states replaces the role's, a slot only its own slot; a set value is added
 after the role's, and restating one the role holds changes only its enforcement level or note. It
 never states the role itself, since the contract is the role's. Composition refuses a malformed
@@ -88,7 +83,7 @@ harm from one is on record (decision 0142(2)).
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
 effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
 dispatch: every agent keeps the agent harness's defaults (0142). Its `key` is reserved for ipseic
-agents and is empty. `holder`, `persona`, `CompositionRefusal`, the six role profiles and `MANIFEST` are
+agents and is empty. `holder`, `persona`, `CompositionRefusal`, the five role profiles and `MANIFEST` are
 also named exports, for a plugin that composes agents of its own over these roles.
 
 ## Typed handoffs
@@ -98,30 +93,31 @@ Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVER
 the value's term). Composition copies the pair onto the agent as `contract`. Each handoff states
 what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
-| Role         | Assignment                                                                                                                                                     | Deliverable                                                        |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, path, review, cost, examples?, decisions?, contexts?}`, or a task with no story (as below) | outcome `{story, criteria[≥1], meaningQuestions, followUps, cost}` |
-| builder      | task `{task, story?, goal, changes, decisions, done}`                                                                                                          | change `{change, tests, verified}`                                 |
-| reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                                                              | code review `{verdict, findings, meaningQuestions}`                |
-| check-writer | examples `{story, examples[≥1]}`                                                                                                                               | checks seen red `{story, checks}`                                  |
-| illustrator  | concepts `{story, concepts[≥1]}`                                                                                                                               | examples with flagged terms `{examples, flaggedTerms}`             |
+| Role              | Assignment                                                                                                       | Deliverable                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| tech-lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, examples?}`, or a task with no story (below) | outcome `{story, joined, criteria[≥1], meaningQuestions, followUps}`       |
+| software-engineer | task `{task, story?, goal, changes, done}`                                                                       | change `{change, tests, verified}`                                         |
+| test-engineer     | examples `{story, examples[≥1]}`                                                                                 | acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}` |
+| code-reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                | code review `{verdict, findings, meaningQuestions}`                        |
 
-The lead's assignment takes either form, stated as alternatives (`anyOf`); it fits when it fits any
-one. Its outcome names the user story, or for a task with no story the task, and holds each
-acceptance criterion (or, for a task, what done means) with whether it holds and its evidence, and
-the cost in agent runs by role, tokens and elapsed time. A code review's `verdict` is `approve` or
-`changes`. The architect's handoffs are a person's — free-text intent in, a read-back to the
-operator out (where things stand, and what it recommends) — so it carries no contract. An agent
-harness binds the deliverable as its own output schema and shows every session, each turn, the
-assignment form of each agent that takes one: one fenced `assignment` JSON block in the dispatch
-text.
+An example is named `<context>/<concept>`, standing for all the examples of a concept file of
+`design/model/`, or `<context>/<concept>: <example name>` for one, such as
+`delivery/install: installs the industry roles`. The tech lead's assignment takes either form,
+stated as alternatives (`anyOf`); it fits when it fits any one. Its outcome names the user story, or
+for a task with no story the task, says whether the work was `merged` or `dropped`, and holds each
+acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
+acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
+`changes`. The business analyst's handoffs are the product owner's — free-text intent in, a report
+out — so it carries no contract. An agent harness binds the deliverable as its own output schema and
+shows every session, each turn, the assignment form of each agent that takes one: one fenced
+`assignment` JSON block in the dispatch text.
 
 ## Evaluation and persona drift
 
-Every agent's behaviour is evaluated in real use, by the operator working with it: its evaluation
-factor holds the one value `in-use`, and no guard, hook or model-judged check holds its acts or its
-replies (0142(1)). Persona drift is a concept of the agent design context, judged by the operator in
-real use; no agent carries countermeasure text against it.
+Every agent's behaviour is evaluated in real use, by the product owner working with it: its
+evaluation factor holds the one value `in-use`, and no guard, hook or model-judged check holds its
+acts or its replies (0142(1)). Persona drift is a concept of the agent design context, judged by the
+product owner in real use; no agent carries countermeasure text against it.
 
 ## The first principle
 

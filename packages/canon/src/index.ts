@@ -23,7 +23,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
-import { PRACTICES } from './practices.js';
 import { RULESETS } from './rulesets.js';
 
 export {
@@ -36,12 +35,11 @@ export {
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 export { MANIFEST, RULESETS };
-export { architectRole } from './roles/architect.js';
-export { builderRole } from './roles/builder.js';
-export { checkWriterRole } from './roles/check-writer.js';
-export { illustratorRole } from './roles/illustrator.js';
-export { leadRole } from './roles/lead.js';
-export { reviewerRole } from './roles/reviewer.js';
+export { businessAnalystRole } from './roles/business-analyst.js';
+export { codeReviewerRole } from './roles/code-reviewer.js';
+export { softwareEngineerRole } from './roles/software-engineer.js';
+export { techLeadRole } from './roles/tech-lead.js';
+export { testEngineerRole } from './roles/test-engineer.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>
@@ -57,9 +55,6 @@ export default defineAgentPlugin({
   // The projector needs the members to emit a host's runtime configuration and
   // receives them here as DATA on the plugin, never as an import of this package.
   events: CANONICAL_EVENTS,
-  // WHICH practices exist — carried the same way, so an install offers what the
-  // canon declares and no more (`practices.ts`).
-  practices: PRACTICES,
   // WHICH rulesets exist — carried the same way, so an install offers the standard
   // conventions the canon declares (`rulesets.ts`).
   rulesets: RULESETS,

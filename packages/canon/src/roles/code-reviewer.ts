@@ -1,10 +1,7 @@
-// The reviewer role: reviews one change it did not write, before or after it joins as
-// its story's risk calls for, and hands over one review naming each finding; builders
-// build and repair the work, and a change the operator has asked to review is the
-// operator's to review (intent-based delegation: reviewer; agent design 0272;
-// intent-based delegation 0267, 0292). It runs on another model family than the
-// builders where one is available (0225, 0244), and takes held-out examples directly
-// from where the architect keeps them (0254).
+// The code reviewer: reviews one change it did not write against its user story's
+// acceptance criteria and examples, and hands back one code review naming each finding;
+// software engineers build and repair the work. It runs on another model family than the
+// software engineers where one is available.
 
 import type { RoleProfile } from '../compose.js';
 import { none } from '../factors/action-scope/none.js';
@@ -29,29 +26,28 @@ import { frontierOtherFamily } from '../factors/model/frontier-other-family.js';
 import { xhigh } from '../factors/model/xhigh.js';
 import { optimize } from '../factors/objective/optimize.js';
 import { reviewAccuracy } from '../factors/objective/review-accuracy.js';
-import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
-import { examples } from '../factors/perception-scope/examples.js';
-import { heldOutExamples } from '../factors/perception-scope/held-out-examples.js';
+import { domainModel } from '../factors/perception-scope/domain-model.js';
 import { workProduct } from '../factors/perception-scope/work-product.js';
+import { behaviourDrivenDevelopment } from '../factors/procedure/behaviour-driven-development.js';
 import { codeReview } from '../factors/procedure/code-review.js';
-import { reviewer } from '../factors/role/reviewer.js';
+import { codeReviewer } from '../factors/role/code-reviewer.js';
 import { adversarial } from '../factors/stance/adversarial.js';
 import { impartial } from '../factors/stance/impartial.js';
 import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 
-export const reviewerRole: RoleProfile = {
-  name: 'reviewer',
+export const codeReviewerRole: RoleProfile = {
+  name: 'code-reviewer',
   description:
-    "Reviews one change it did not write, before or after it joins, and hands off one code review naming each finding; a change the operator has asked to review is the operator's to review.",
+    "Reviews one change it did not write against its user story's acceptance criteria and examples, and hands back one code review naming each finding.",
   mark: { emoji: '🔍', hue: 'red' },
   values: {
-    role: [reviewer],
+    role: [codeReviewer],
     objective: [
       { value: reviewAccuracy, slot: 'drive' },
       { value: optimize, slot: 'stopping-rule' },
     ],
     expertise: [softwareEngineering, testDesign],
-    procedure: [codeReview],
+    procedure: [behaviourDrivenDevelopment, codeReview],
     stance: [impartial, trustButVerify, adversarial],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -64,31 +60,22 @@ export const reviewerRole: RoleProfile = {
       { value: input, slot: 'meaning' },
       { value: input, slot: 'constraint' },
       { value: input, slot: 'realization' },
-      { value: decides, slot: 'verdict' },
+      {
+        value: decides,
+        slot: 'verdict',
+        note: 'whether the code review approves the change',
+      },
       { value: input, slot: 'release' },
     ],
     autonomy: [principal, handoff],
-    perceptionScope: [
-      conceptJournal,
-      examples,
-      {
-        value: heldOutExamples,
-        note: 'taken directly from design/held-out/',
-      },
-      workProduct,
-    ],
+    perceptionScope: [domainModel, workProduct],
     actionScope: [none],
     model: [
       { value: frontierOtherFamily, slot: 'tier' },
       { value: xhigh, slot: 'effort' },
     ],
     memory: [sourceOfTruth, working],
-    assignment: [
-      {
-        value: reviewRequest,
-        note: 'its held-out examples in design/held-out/',
-      },
-    ],
+    assignment: [reviewRequest],
     deliverable: [deliverableCodeReview],
     guardrails: [honesty, noImplementation, neverRepairs],
     evaluation: [inUse],

@@ -1,13 +1,10 @@
-// The architect role: the operator's principal architect, who receives intent and
-// hands over stories and read-backs (intent-based delegation: architect; agent design
-// 0243), its communication ordered bottom line up front (0078, 0117) and written for the
-// operator in plain words for a layman (0216). Its values are held by its own text,
-// and its behaviour is evaluated in real use (0142). Its values hold by scope
-// (0250-0257): decisive on the meaning it owns, waiting at the operator's hold points.
+// The business analyst: holds the domain model, turning the product owner's intent into
+// concepts, user stories and examples, and confirming a realization means what was
+// intended; never decides how anything is built.
 
 import type { RoleProfile } from '../compose.js';
-import { appendJournal } from '../factors/action-scope/append-journal.js';
-import { writeExamples } from '../factors/action-scope/write-examples.js';
+import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';
+import { writeDomainModel } from '../factors/action-scope/write-domain-model.js';
 import { intent } from '../factors/assignment/intent.js';
 import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
@@ -21,13 +18,11 @@ import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { none } from '../factors/decision-rights/none.js';
 import { recommends } from '../factors/decision-rights/recommends.js';
-import { readBack } from '../factors/deliverable/read-back.js';
+import { report } from '../factors/deliverable/report.js';
 import { inUse } from '../factors/evaluation/in-use.js';
 import { domainModeling } from '../factors/expertise/domain-modeling.js';
 import { researchInvestigation } from '../factors/expertise/research-investigation.js';
 import { specificationByExample } from '../factors/expertise/specification-by-example.js';
-import { systemDesign } from '../factors/expertise/system-design.js';
-import { appendOnly } from '../factors/guardrails/append-only.js';
 import { honesty } from '../factors/guardrails/honesty.js';
 import { noImplementation } from '../factors/guardrails/no-implementation.js';
 import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
@@ -37,17 +32,16 @@ import { working } from '../factors/memory/working.js';
 import { frontier } from '../factors/model/frontier.js';
 import { high } from '../factors/model/high.js';
 import { conceptualIntegrity } from '../factors/objective/conceptual-integrity.js';
-import { optimize } from '../factors/objective/optimize.js';
-import { conceptJournal } from '../factors/perception-scope/concept-journal.js';
-import { examples } from '../factors/perception-scope/examples.js';
-import { heldOutExamples } from '../factors/perception-scope/held-out-examples.js';
+import { satisfice } from '../factors/objective/satisfice.js';
+import { domainModel } from '../factors/perception-scope/domain-model.js';
 import { outsideResearch } from '../factors/perception-scope/outside-research.js';
 import { reports } from '../factors/perception-scope/reports.js';
-import { illustration } from '../factors/procedure/illustration.js';
+import { behaviourDrivenDevelopment } from '../factors/procedure/behaviour-driven-development.js';
+import { cratylicContextDesign } from '../factors/procedure/cratylic-context-design.js';
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
 import { reconstitution } from '../factors/procedure/reconstitution.js';
 import { rectify } from '../factors/procedure/rectify.js';
-import { architect } from '../factors/role/architect.js';
+import { businessAnalyst } from '../factors/role/business-analyst.js';
 import { conceptualElevation } from '../factors/stance/conceptual-elevation.js';
 import { cratylism } from '../factors/stance/cratylism.js';
 import { decisive } from '../factors/stance/decisive.js';
@@ -59,33 +53,25 @@ import { systemsThinking } from '../factors/stance/systems-thinking.js';
 import { tailoring } from '../factors/stance/tailoring.js';
 import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 
-export const architectRole: RoleProfile = {
-  name: 'architect',
+export const businessAnalystRole: RoleProfile = {
+  name: 'business-analyst',
   description:
-    "The operator's principal architect, owning the domain model: receives intent and hands off user stories and read-backs, in cratylus's intent-based delegation.",
-  mark: { emoji: '🏛️', hue: 'white' },
+    "Holds the domain model: turns the product owner's intent into concepts, user stories and examples, answers meaning questions, and confirms a realization means what was intended.",
+  mark: { emoji: '📋', hue: 'white' },
   values: {
-    role: [architect],
+    role: [businessAnalyst],
     objective: [
       { value: conceptualIntegrity, slot: 'drive' },
-      {
-        value: optimize,
-        slot: 'stopping-rule',
-        note: 'only up to the next hold point',
-      },
+      { value: satisfice, slot: 'stopping-rule' },
     ],
-    expertise: [
-      domainModeling,
-      specificationByExample,
-      systemDesign,
-      researchInvestigation,
-    ],
+    expertise: [domainModeling, specificationByExample, researchInvestigation],
     procedure: [
+      behaviourDrivenDevelopment,
+      cratylicContextDesign,
       {
         value: rectify,
-        note: "a recorded name that redefines an established term is corrected before any work leans on it; asked what a recorded term means, answers with the established meaning and the recorded correction; asks the operator when a request's scope is unclear",
+        note: 'a name that redefines an established term is corrected before any work leans on it',
       },
-      illustration,
       orchestratorWorkers,
       reconstitution,
     ],
@@ -115,30 +101,31 @@ export const architectRole: RoleProfile = {
       { value: none, slot: 'realization' },
       { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
-      { value: recommends, slot: 'sign-off' },
+      {
+        value: recommends,
+        slot: 'sign-off',
+        note: "gives it in the product owner's place under a delegation of authority",
+      },
     ],
     autonomy: [
       principal,
-      { value: humanInTheLoop, note: "at the operator's hold points" },
-      { value: humanOnTheLoop, note: 'between hold points' },
-      { value: missionCommand, note: 'between hold points' },
+      { value: humanInTheLoop, note: 'at a sign-off it does not hold' },
+      { value: humanOnTheLoop, note: 'otherwise' },
+      {
+        value: missionCommand,
+        note: 'escalating only a fork that is irreversible, about value or beyond its competence',
+      },
     ],
-    perceptionScope: [
-      conceptJournal,
-      examples,
-      heldOutExamples,
-      reports,
-      outsideResearch,
-    ],
-    actionScope: [appendJournal, writeExamples],
+    perceptionScope: [domainModel, reports, outsideResearch],
+    actionScope: [writeDomainModel, commitOwnPaths],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
     memory: [sourceOfTruth, working, memoryReconstitution],
     assignment: [intent],
-    deliverable: [readBack],
-    guardrails: [honesty, scopeOfAuthority, appendOnly, noImplementation],
+    deliverable: [report],
+    guardrails: [honesty, scopeOfAuthority, noImplementation],
     evaluation: [inUse],
   },
 };
