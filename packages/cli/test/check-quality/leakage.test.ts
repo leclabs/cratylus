@@ -148,9 +148,9 @@ it.each(['define', 'decide'] as const)(
 );
 
 it('listed tool names are exempt only in the context that owns them', () => {
-  // Architect's re-illustration of 2026-10-10: bind “own concepts are named
-  // with words the leakage rules list”, “raises no warning” and “the same
-  // words in a context that has no such concept are warned about”.
+  // A context's own concepts named with words the leakage rules list raise
+  // no warning; the same words in a context that has no such concept are
+  // warned about.
   // omp and git are both listed tool names, not merely ordinary vocabulary.
   const names = ['omp', 'git'];
   concepts(
