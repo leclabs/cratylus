@@ -22,7 +22,7 @@ import {
   installationRoot,
   installationScope,
 } from '../../runtime-config.js';
-import type { Verbs } from '../../verb-flags.js';
+import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
 
 export const VERBS = {

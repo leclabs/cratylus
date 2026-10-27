@@ -23,7 +23,7 @@ import {
   type Capability,
 } from '../src/capability.js';
 import { capabilityCommands } from '../src/main.js';
-import type { Verbs } from '../src/verb-flags.js';
+import type { Verbs } from '../src/verbs.js';
 import { repository } from './verb-surface.js';
 
 const repo = repository();

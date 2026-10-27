@@ -26,7 +26,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path';
 import { CLI_BIN } from '../../bin-name.js';
 import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
-import type { Verbs } from '../../verb-flags.js';
+import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
 import { type Leak, leaks, recounts, vocabulary } from './leakage.js';
 

@@ -30,10 +30,6 @@
     "./runtime-config": {
       "types": "./dist/runtime-config.d.ts",
       "import": "./dist/runtime-config.js"
-    },
-    "./verb-flags": {
-      "types": "./dist/verb-flags.d.ts",
-      "import": "./dist/verb-flags.js"
     }
   },
   "files": ["dist"],

@@ -58,7 +58,6 @@ the command's own self-description (`EXPLANATION`, `ORIENTATION`, `PURPOSE`, `ST
 | `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                      |
 | `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                     |
 | `./ulid`           | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID                                                                                         |
-| `./verb-flags`     | `Verbs`, `Verb` — each verb's purpose, declared beside it                                                                                                      |
 | `./package.json`   | the manifest                                                                                                                                                   |
 
 ## Verbs

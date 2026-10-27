@@ -6,7 +6,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { CLI_BIN } from '../../bin-name.js';
-import type { Verbs } from '../../verb-flags.js';
+import type { Verbs } from '../../verbs.js';
 
 /** The verb `argv` opens with, refusing one `verbs` does not declare, and any
  *  token after it: a verb takes no arguments. These refusals have this ONE

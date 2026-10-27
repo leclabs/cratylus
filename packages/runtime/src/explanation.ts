@@ -11,7 +11,7 @@
 // apart.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Verb, Verbs } from './verb-flags.js';
+import type { Verb, Verbs } from './verbs.js';
 
 /** A verb that explains itself: beyond its purpose, the term of the concept it
  *  acts on, when to reach for it, and that it only reads what its capability

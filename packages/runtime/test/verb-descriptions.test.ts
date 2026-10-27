@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { VERBS as MODEL } from '../src/capabilities/model/index.js';
 import { VERBS as VERSION_SKEW } from '../src/capabilities/version-skew/index.js';
 import { CAPABILITIES, CAPABILITY_SUMMARIES } from '../src/capability.js';
-import type { Verbs } from '../src/verb-flags.js';
+import type { Verbs } from '../src/verbs.js';
 
 const SURFACES: Record<(typeof CAPABILITIES)[number], Verbs> = {
   model: MODEL,
