@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE76",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "concept",
+  "wording": "a meaning that must hold in one bounded context, addressed by its Cratylic name with its correction; a product word used for two things is a flaw in the product, never a name to copy",
+  "builtFrom": [],
+  "reason": "How a concept is named is cratylic context design's, stated there once as Cratylic name; the workflow refers to it instead of restating it.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

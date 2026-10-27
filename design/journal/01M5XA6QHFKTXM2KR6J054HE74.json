@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE74",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "supersession",
+  "wording": "the only change to a concept, its name included, to a context's description or to the purpose: a new version restating it whole, never edited in place or extended; a concept renamed stays one concept, its earlier names in its history; its reason is why; two versions superseding one compete until a later one supersedes both",
+  "builtFrom": [],
+  "reason": "The lead found that correcting a name, as a redefined term is corrected, had no form: a concept keeps its identity when it takes its Cratylic name, so a rename is a new version of it, never a retirement and a new concept.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

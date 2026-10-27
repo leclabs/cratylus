@@ -1,9 +1,10 @@
 // The reviewer role: reviews one change it did not write, before or after it joins as
 // its story's risk calls for, and hands over one review naming each finding; builders
 // build and repair the work, and a change the operator has asked to review is the
-// operator's to review (workflow: reviewer; agents 0272; workflow 0267, 0292). It
-// runs on another model family than the builders where one is available (0225, 0244),
-// and takes held-out examples directly from where the architect keeps them (0254).
+// operator's to review (intent-based delegation: reviewer; agent design 0272;
+// intent-based delegation 0267, 0292). It runs on another model family than the
+// builders where one is available (0225, 0244), and takes held-out examples directly
+// from where the architect keeps them (0254).
 
 import type { RoleProfile } from '../compose.js';
 import { none } from '../factors/action-scope/none.js';

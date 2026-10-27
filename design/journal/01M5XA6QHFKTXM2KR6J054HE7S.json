@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7S",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "Ship/Show/Ask",
+  "wording": "picked per change by its user story's risk, or by the lead for a task with no story; the operator's review before a change joins is Ask, the operator its reviewer; no other mode",
+  "builtFrom": [],
+  "reason": "There being one reviewer belongs to code review and is stated there once.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

@@ -204,10 +204,12 @@ describe('visibleExamples', () => {
 
   it('reads each numbered example by file, number and context', () => {
     top = mkdtempSync(join(tmpdir(), 'examples-'));
-    mkdirSync(join(top, 'design/examples/workflow'), { recursive: true });
+    mkdirSync(join(top, 'design/examples/intent-based delegation'), {
+      recursive: true,
+    });
     mkdirSync(join(top, 'design/examples/booking'), { recursive: true });
     writeFileSync(
-      join(top, 'design/examples/workflow/a.md'),
+      join(top, 'design/examples/intent-based delegation/a.md'),
       '# Examples\n\nContext: delivery. Concepts: window.\n\n1. **Given** one,\n   continued.\n2. Two.\n\n## Notes\n\n3 lines.\n',
     );
     writeFileSync(join(top, 'design/examples/booking/b.md'), '1. Booked.\n');
@@ -220,13 +222,13 @@ describe('visibleExamples', () => {
         text: 'Booked.',
       },
       {
-        file: 'design/examples/workflow/a.md',
+        file: 'design/examples/intent-based delegation/a.md',
         number: 1,
         context: 'delivery',
         text: '**Given** one,\n   continued.',
       },
       {
-        file: 'design/examples/workflow/a.md',
+        file: 'design/examples/intent-based delegation/a.md',
         number: 2,
         context: 'delivery',
         text: 'Two.',

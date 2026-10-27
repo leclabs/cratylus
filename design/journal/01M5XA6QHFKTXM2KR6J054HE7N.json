@@ -1,0 +1,13 @@
+{
+  "id": "01M5XA6QHFKTXM2KR6J054HE7N",
+  "at": "2026-10-26T23:54:49.263Z",
+  "by": "architect",
+  "kind": "define",
+  "context": "intent-based delegation",
+  "name": "domain model",
+  "wording": "what its users observe or rely on, never how the project is built or works inside, nor its expression in code; in its current state: the purpose, the bounded contexts with their context map, each live concept as its Cratylic name and correction; what work is accepted against; the project's source of truth for its concepts, never for what an established name means: a recorded name that redefines an established term is a defect, corrected by a new version",
+  "builtFrom": [],
+  "reason": "Restated whole rather than extended, so the correction states only what the term domain model leaves missing or makes spurious.",
+  "supersedes": [],
+  "broughtForward": "4eacecbcf0328fbe61c859d812a871286987adb7"
+}

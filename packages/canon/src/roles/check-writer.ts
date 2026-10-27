@@ -1,5 +1,6 @@
 // The check-writer role: a specialist called in for a story's risk, writing the checks
-// that bind its examples before the build (workflow: check-writer; agents 0243, 0244).
+// that bind its examples before the build (intent-based delegation: check-writer; agent
+// design 0243, 0244).
 
 import type { RoleProfile } from '../compose.js';
 import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';

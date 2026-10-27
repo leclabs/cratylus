@@ -7,9 +7,11 @@
 // acting agent, else git's user. The project's purpose (`purpose`), what the
 // project is for, and a context's description (`context`) change like a
 // concept does: a later one with its reason supersedes the current ones, the
-// earlier kept in the journal until its books close. A context's retirement
-// (`retire-context`) supersedes its current descriptions, and a later
-// description with its reason brings it back. A concept
+// earlier kept in the journal until its books close. A `rename-context` is a
+// description that gives its context a new name, carrying the name it renames
+// (`was`), the context staying one through its names, its identity kept. A
+// context's retirement (`retire-context`) supersedes its current descriptions,
+// and a later description with its reason brings it back. A concept
 // version (`define`, `supersede`, `rename`, `retire`) belongs to one bounded
 // context and names the versions it supersedes; a `rename` is a supersession
 // that gives its concept a new name, carrying the name it renames (`was`), the
@@ -43,8 +45,8 @@ interface Stamped {
 }
 
 /** A description of a bounded context: its full subject, and its place in the
- *  context map. A context is its name: the first entry of a name records it,
- *  with no reason; a later one changes it, with the `reason` it was written,
+ *  context map. The first entry of a name records a context, with no reason;
+ *  a later one changes it, with the `reason` it was written,
  *  naming the current entries it supersedes (one when settled, all when
  *  competing). Entries written before contexts could change carry no reason,
  *  and those written before descriptions could compete no `supersedes`. An
@@ -117,6 +119,22 @@ export interface RetireContextEntry extends Stamped {
   readonly supersedes: readonly string[];
   readonly broughtForward?: string;
 }
+
+/** A description superseding the current ones that gives the bounded context
+ *  a new name from then on, `name`; `was` is the name it renames. The context
+ *  stays one through its names, its concepts, decisions and identity kept. */
+export interface RenameContextEntry extends Stamped {
+  readonly kind: 'rename-context';
+  readonly name: string;
+  readonly was: string;
+  readonly subject: string;
+  readonly relation: string;
+  readonly reason: string;
+  readonly supersedes: readonly string[];
+}
+
+/** A description of a bounded context: a `context`, or a `rename-context`. */
+export type DescriptionEntry = ContextEntry | RenameContextEntry;
 
 /** A version of a concept: what `history` lists. */
 export type VersionEntry = WordedEntry | RetireEntry;
@@ -202,6 +220,7 @@ export interface EfficiencyEntry extends Stamped {
 export type Entry =
   | PurposeEntry
   | ContextEntry
+  | RenameContextEntry
   | RetireContextEntry
   | VersionEntry
   | DecideEntry
@@ -271,6 +290,15 @@ export const SHAPES: { readonly [K in Entry['kind']]: Shape<K> } = {
     reason: text,
     supersedes: texts,
     broughtForward: optional(text),
+  },
+  'rename-context': {
+    at: text,
+    name: text,
+    was: text,
+    subject: text,
+    relation: text,
+    reason: text,
+    supersedes: texts,
   },
   'retire-context': {
     at: text,

@@ -1,4 +1,4 @@
-// workflow-delivery, decision 0207: projection over fixture journals, not a summary.
+// Delivering the practice, decision 0207: projection over fixture journals, not a summary.
 import { execFileSync } from 'node:child_process';
 import {
   existsSync,
@@ -51,7 +51,7 @@ function project() {
   ).toBeTypeOf('function');
   return fn!({
     from: join(root, 'nested'),
-    context: 'workflow',
+    context: 'intent-based delegation',
     origin: 'cratylus',
     version: '3.2.1',
     position: 1,
@@ -60,7 +60,7 @@ function project() {
 function seed() {
   const first = command(
     'context',
-    'workflow',
+    'intent-based delegation',
     '--subject',
     'Earlier subject.',
     '--relation',
@@ -68,7 +68,7 @@ function seed() {
   ) as { id: string };
   command(
     'context',
-    'workflow',
+    'intent-based delegation',
     '--subject',
     'Current subject.',
     '--relation',
@@ -80,7 +80,7 @@ function seed() {
     'define',
     'part',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'A current part.',
     '--reason',
@@ -90,7 +90,7 @@ function seed() {
     'define',
     'whole',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'Earlier whole.',
     '--reason',
@@ -100,7 +100,7 @@ function seed() {
     'supersede',
     'whole',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'The current whole.',
     '--reason',
@@ -112,7 +112,7 @@ function seed() {
     'define',
     'obsolete',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'A retired meaning.',
     '--reason',
@@ -122,7 +122,7 @@ function seed() {
     'retire',
     'obsolete',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--reason',
     'No longer needed.',
   );
@@ -130,7 +130,7 @@ function seed() {
     'decide',
     'choice',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--title',
     'A private source decision',
     '--situation',
@@ -164,7 +164,7 @@ it('delivery/1 — projects exactly the current source design, first context ide
   }).toEqual({
     origin: 'cratylus',
     version: '3.2.1',
-    context: 'workflow',
+    context: 'intent-based delegation',
     identity,
     position: 1,
     subject: 'Current subject.',
@@ -186,7 +186,7 @@ it('delivery/4 — identical source and version serialize identically and a late
     'supersede',
     'whole',
     '--context',
-    'workflow',
+    'intent-based delegation',
     '--wording',
     'Unreleased later whole.',
     '--reason',
@@ -199,16 +199,16 @@ it('delivery/4 — identical source and version serialize identically and a late
   expect(a.version).toBe('3.2.1');
 });
 
-it('workflow/1 — a library caller without delivered documents sees none and creates no journal', () => {
+it('intent-based delegation/1 — a library caller without delivered documents sees none and creates no journal', () => {
   const installation = join(root, 'home/.cratylus/omp');
   const documents = join(installation, 'delivered/cratylus');
   mkdirSync(documents, { recursive: true });
   writeFileSync(
-    join(documents, 'workflow.json'),
+    join(documents, 'intent-based delegation.json'),
     JSON.stringify({
       origin: 'cratylus',
       version: '3.2.1',
-      context: 'workflow',
+      context: 'intent-based delegation',
       identity: '01ARZ3NDEKTSV4RRFFQ69G5F00',
       position: 1,
       subject: 'Installed only.',
@@ -226,7 +226,10 @@ it('workflow/1 — a library caller without delivered documents sees none and cr
     noDelivery(command(verb), existsSync(join(root, 'design/journal')));
   // Prove both absence assertions reject the prohibited observations.
   expect(() =>
-    noDelivery({ contexts: [{ name: 'cratylus:workflow' }] }, false),
+    noDelivery(
+      { contexts: [{ name: 'cratylus:intent-based delegation' }] },
+      false,
+    ),
   ).toThrow();
   expect(() => noDelivery({ contexts: [] }, true)).toThrow();
 });

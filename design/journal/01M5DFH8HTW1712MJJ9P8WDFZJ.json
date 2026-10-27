@@ -1,9 +1,0 @@
-{
-  "id": "01M5DFH8HTW1712MJJ9P8WDFZJ",
-  "at": "2026-10-20T20:20:06.330Z",
-  "by": "architect",
-  "kind": "purpose",
-  "statement": "Cratylus lets a person settle what they mean once and have AI agents build exactly that, across sessions and tools, without the meaning drifting. The meaning lives in a durable record that any fresh session reads to pick up where the last left off; the agents are written in words a model already understands; and the work is judged against examples agreed before it is built, with effort kept in proportion to the change.",
-  "supersedes": [],
-  "broughtForward": "e574bfdf5467e47b61a5e5d2826eb4d38dc9192c"
-}

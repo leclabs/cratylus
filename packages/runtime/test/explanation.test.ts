@@ -78,7 +78,7 @@ const PARAMETERS: Record<string, string[]> = {
   decisions: ['context', 'open', 'history'],
   leakage: ['context'],
   purpose: ['statement', 'reason'],
-  context: ['context', 'subject', 'relation', 'reason'],
+  context: ['context', 'subject', 'relation', 'reason', 'rename'],
   define: ['concept', 'context', 'wording', 'reason', 'built-from'],
   supersede: [
     'concept',
@@ -224,17 +224,17 @@ describe('concepts --explain', () => {
       .filter((v) => !live.includes(v.concept))
       .map((v) => v.name);
 
-  it('acts on live concepts of cratylus’s own conceptual model', () => {
+  it('acts on live concepts of cratylus’s own domain model', () => {
     const concepts = Object.fromEntries(
       explain(JOURNAL).verbs.map((v) => [v.name, v.concept]),
     );
     expect(concepts).toEqual({
-      state: 'conceptual model',
-      design: 'conceptual model',
+      state: 'domain model',
+      design: 'domain model',
       history: 'concept',
       decisions: 'decision',
-      leakage: 'event-sourced conceptual model',
-      purpose: 'event-sourced conceptual model',
+      leakage: 'event-sourced domain model',
+      purpose: 'event-sourced domain model',
       context: 'bounded context',
       define: 'concept',
       supersede: 'supersession',
@@ -255,14 +255,19 @@ describe('concepts --explain', () => {
       execFileSync('git', ['init', '-q'], { cwd: repo });
       const concepts = (...argv: string[]) =>
         dispatchConcepts(argv, { from: repo });
-      concepts('context', 'workflow', '--subject', 'The practice.');
+      concepts(
+        'context',
+        'intent-based delegation',
+        '--subject',
+        'The practice.',
+      );
       for (const verb of explain(JOURNAL).verbs)
         if (designAt(repo).live.every((name) => name !== verb.concept))
           concepts(
             'define',
             verb.concept,
             '--context',
-            'workflow',
+            'intent-based delegation',
             '--wording',
             `What ${verb.concept} means.`,
             '--reason',
@@ -273,7 +278,7 @@ describe('concepts --explain', () => {
         'retire',
         'supersession',
         '--context',
-        'workflow',
+        'intent-based delegation',
         '--reason',
         'Fixture.',
       );
