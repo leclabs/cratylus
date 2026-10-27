@@ -132,9 +132,7 @@ it('delivery/install: asks nothing about practices', () => {
   // No terminal: `run` hands the command an empty stdin pipe and pipes its output.
   const r = h.command(['install', '--harness', 'omp']);
   expect(r.code, said(r)).toBe(0);
-  expect(said(r), 'install neither asks nor demands practices').not.toMatch(
-    /--practices|which practices|no practice/i,
-  );
+  expect(said(r), 'install says nothing of practices').not.toMatch(/practice/i);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
   const skills = canonSkills();
   expect(skills.length, 'the canon ships skills').toBeGreaterThan(0);

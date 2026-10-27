@@ -8,6 +8,7 @@ import { integrate } from '../factors/action-scope/integrate.js';
 import { runChecks } from '../factors/action-scope/run-checks.js';
 import { userStory } from '../factors/assignment/user-story.js';
 import { handoff } from '../factors/autonomy/handoff.js';
+import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
 import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
 import { managementByException } from '../factors/autonomy/management-by-exception.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
@@ -55,7 +56,14 @@ export const techLeadRole: RoleProfile = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [softwareDelivery, softwareEngineering],
-    procedure: [behaviourDrivenDevelopment, orchestratorWorkers, shipShowAsk],
+    procedure: [
+      behaviourDrivenDevelopment,
+      orchestratorWorkers,
+      {
+        value: shipShowAsk,
+        note: 'the product owner reviewing a change before it joins is Ask',
+      },
+    ],
     stance: [decisive, tailoring, separationOfConcerns, simplicity],
     communicationStyle: [
       { value: plain, slot: 'register' },
@@ -73,7 +81,8 @@ export const techLeadRole: RoleProfile = {
     ],
     autonomy: [
       principal,
-      humanOnTheLoop,
+      { value: humanInTheLoop, note: 'at a sign-off it does not hold' },
+      { value: humanOnTheLoop, note: 'otherwise' },
       {
         value: missionCommand,
         note: 'a meaning question goes to the business analyst',
