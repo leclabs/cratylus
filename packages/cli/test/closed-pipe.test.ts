@@ -64,7 +64,6 @@ describe('a reader that closes the pipe after the first line ends the command qu
         '--verbose',
         '--harness',
         'omp',
-        '--all',
         '--home',
         scratch,
       ],

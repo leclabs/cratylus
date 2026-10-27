@@ -49,7 +49,6 @@ function installFrom(cwd: string, name: string) {
       'install',
       '--harness',
       'omp',
-      '--all',
       '--home',
       home,
       '--model-roles',

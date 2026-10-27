@@ -20,8 +20,6 @@ import {
   type Enforcing,
   type FactorManifest,
   type HookDeclaration,
-  type Plumbing,
-  type Practice,
   type ProjectionFacts,
   type Rule,
   type Ruleset,
@@ -91,10 +89,6 @@ export interface ProjectablePlugin {
   readonly hooks?: string;
   /** WHICH factors this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
   readonly manifest?: FactorManifest;
-  /** WHICH practices this plugin offers (`AgentPlugin.practices`). */
-  readonly practices?: readonly Practice[];
-  /** What every practice is installed with and none is offered as (`AgentPlugin.plumbing`). */
-  readonly plumbing?: Plumbing;
   /** WHICH rulesets this plugin offers (`AgentPlugin.rulesets`). */
   readonly rulesets?: readonly Ruleset[];
 }
@@ -133,19 +127,6 @@ export interface ProjectOpts {
    * the weighing is a lower bound.
    */
   readonly hostHome?: string;
-  /**
-   * The practices to render, by name. ABSENT ⇒ every agent, skill and hook is rendered, as a plugin
-   * set declaring no practices renders: this is what keeps every whole-canon
-   * render byte-for-byte what it was. EMPTY ⇒ refused, before anything is
-   * rendered: no practice chosen is not every practice, and a caller
-   * that means the whole canon leaves this absent.
-   *
-   * Given names, exactly the union of those practices' agents and skills is
-   * rendered, with the skills those compose and the plumbing. A set that is not
-   * CLOSED under skill composition is refused before anything is rendered, and so is
-   * a name that is no declared practice.
-   */
-  readonly practices?: readonly string[];
   /**
    * The rules to render, by name, each to `rules/<file>` as the adapter writes it
    * (`HarnessAdapter.ruleDef`). ABSENT or EMPTY ⇒ none: a rule is placed only where
@@ -209,10 +190,6 @@ export interface ProjectedTree extends ProjectReport {
    *  which the adapter cannot start ({@link HarnessAdapter.startsInWorktree} false):
    *  the loss an install tells the operator of, beside the projection's warning. */
   readonly unisolated: readonly string[];
-  /** The practices the plugin set declares, in declaration order: what an install
-   *  offers. Empty when the set declares none. Reported whether or not a render
-   *  named any. */
-  readonly practices: readonly OfferedPractice[];
   /** The rulesets the plugin set declares, in declaration order, each with its
    *  rules: what an install offers, whole or rule by rule. Empty when the set
    *  declares none. Reported whether or not a render named any rule. */
@@ -229,17 +206,6 @@ export interface ProjectedCapability {
   readonly form: 'native' | 'extension' | 'prose';
   /** The harness's own facility holding it, for the native form. */
   readonly facility?: string;
-}
-
-/** A declared practice as an install offers it. */
-export interface OfferedPractice {
-  readonly name: string;
-  readonly description: string;
-  /** A fresh install selects it unless the operator declines. */
-  readonly preselected: boolean;
-  /** The names it was offered under before; an earlier install that recorded one
-   *  installed it. Empty when it was never renamed. */
-  readonly formerNames: readonly string[];
 }
 
 /** A declared ruleset as an install offers it: whole, rule by rule, or not at all. */
@@ -470,117 +436,8 @@ function resolvedSkillOf(skill: Skill): ResolvedSkill {
 }
 
 /**
- * The practices a plugin set declares, in declaration order. A later plugin's practice
- * of the same name REPLACES an earlier one's (and is logged), exactly as a later
- * plugin's same-name agent or skill does: the winner is the one that is offered.
- */
-function declaredPractices(
-  plugins: readonly ProjectablePlugin[],
-  log: (line: string) => void,
-): Practice[] {
-  const byName = new Map<string, { practice: Practice; plugin: string }>();
-  for (const p of plugins) {
-    for (const practice of p.practices ?? []) {
-      const prev = byName.get(practice.name);
-      if (prev) {
-        log(`  override practice ${practice.name}: ${prev.plugin} → ${p.name}`);
-      }
-      byName.set(practice.name, { practice, plugin: p.name });
-    }
-  }
-  return [...byName.values()].map((e) => e.practice);
-}
-
-/** What a practice selection places, by name: the agents, the skills (closed under
- *  composition), the plumbing hooks and the hooks the chosen practices name. */
-interface PracticeSelection {
-  readonly agents: ReadonlySet<string>;
-  readonly skills: ReadonlySet<string>;
-  readonly hooks: ReadonlySet<string>;
-}
-
-/**
- * Resolve the practices NAMED into what they place, refusing a set that is not
- * closed. Runs before anything is rendered, so a refusal leaves nothing behind.
- *
- * CLOSED means: every agent the set places finds every skill it is given. Each
- * refusal names the practice that placed the agent, the agent, and the skill that
- * is missing.
- */
-function selectPractices(
-  names: readonly string[],
-  plugins: readonly ProjectablePlugin[],
-  declared: readonly Practice[],
-  agentSrc: ReadonlyMap<string, AgentSrc>,
-  roster: ReadonlyMap<string, Skill>,
-): PracticeSelection {
-  const chosen: Practice[] = [];
-  for (const name of names) {
-    const practice = declared.find((p) => p.name === name);
-    if (!practice) {
-      throw new Error(
-        `'${name}' is no declared practice (declared: ${declared.length === 0 ? 'none' : declared.map((p) => p.name).join(', ')})`,
-      );
-    }
-    if (!chosen.includes(practice)) chosen.push(practice);
-  }
-
-  // The first chosen practice to place an agent is the one a refusal names.
-  const placedBy = new Map<string, string>();
-  for (const practice of chosen) {
-    for (const agent of practice.agents) {
-      if (!placedBy.has(agent)) placedBy.set(agent, practice.name);
-    }
-  }
-  const authored = new Map<string, Agent>();
-  for (const [name, practice] of placedBy) {
-    const src = agentSrc.get(name);
-    if (!src) {
-      throw new Error(
-        `practice '${practice}' names the agent '${name}', which is no agent of the plugin set (agents: ${[...agentSrc.keys()].sort().join(', ')})`,
-      );
-    }
-    authored.set(name, src.agent);
-  }
-
-  const plumbing = plugins.flatMap((p) => (p.plumbing ? [p.plumbing] : []));
-  const skills = new Set<string>();
-  const place = (given: readonly string[], who: string): void => {
-    for (const skill of skillClosure(given, roster)) {
-      if (!roster.has(skill)) {
-        throw new Error(
-          `${who} composes the skill '${skill}', which the plugin set does not carry`,
-        );
-      }
-      skills.add(skill);
-    }
-  };
-  for (const [name, agent] of authored) {
-    place(
-      agent.skills ?? [],
-      `practice '${placedBy.get(name)}' is not closed: agent '${name}'`,
-    );
-  }
-  for (const practice of chosen) {
-    place(practice.skills ?? [], `practice '${practice.name}'`);
-  }
-  place(
-    plumbing.flatMap((p) => p.skills ?? []),
-    'the plumbing',
-  );
-  return {
-    agents: new Set(placedBy.keys()),
-    skills,
-    hooks: new Set([
-      ...plumbing.flatMap((p) => p.hooks ?? []),
-      ...chosen.flatMap((practice) => practice.hooks ?? []),
-    ]),
-  };
-}
-
-/**
  * The rulesets a plugin set declares, in declaration order. A later plugin's ruleset
- * of the same name REPLACES an earlier one's (and is logged), as a practice does. A
+ * of the same name REPLACES an earlier one's (and is logged), as an agent does. A
  * rule name two rulesets both carry is refused, naming both: a rule is loaded by its
  * name, so the second would replace the first on the harness.
  */
@@ -661,13 +518,6 @@ function selectRules(
 export async function projectPluginSet(
   opts: ProjectOpts,
 ): Promise<ProjectedTree> {
-  // NO PRACTICE IS NOT EVERY PRACTICE. An empty choice is refused before a byte is
-  // rendered; only an ABSENT one renders the whole canon.
-  if (opts.practices?.length === 0) {
-    throw new Error(
-      'no practice was chosen: name at least one, or leave practices absent to render every agent, skill and hook',
-    );
-  }
   const log = opts.log ?? (() => {});
   const warn =
     opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
@@ -685,18 +535,6 @@ export async function projectPluginSet(
   // The roster an agent's skill closure is read against: the skills that DEPLOY,
   // so a later plugin's same-name override changes the closure too.
   const roster = new Map(allSkills.map((s) => [s.name, s.skill]));
-
-  // PRACTICES. Naming none renders everything. Naming some places exactly what they
-  // place (agents, the skills those are given and compose, the plumbing), after the
-  // chosen set is proven closed — before an agent is composed or a byte rendered.
-  const offered = declaredPractices(opts.plugins, log);
-  const selection =
-    opts.practices !== undefined
-      ? selectPractices(opts.practices, opts.plugins, offered, agentSrc, roster)
-      : undefined;
-  const contributedSkills = selection
-    ? allSkills.filter((s) => selection.skills.has(s.name))
-    : allSkills;
 
   // RULES. None is the default: a rule is rendered only where it is named, and a
   // name that is no declared rule is refused here, before a byte is rendered.
@@ -718,7 +556,6 @@ export async function projectPluginSet(
   for (const [name, { agent: bodied }] of [...agentSrc].sort(([a], [b]) =>
     a < b ? -1 : a > b ? 1 : 0,
   )) {
-    if (selection && !selection.agents.has(name)) continue;
     // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
     // with everything they compose, and every adapter renders the list it is
     // handed rather than computing its own.
@@ -770,7 +607,7 @@ export async function projectPluginSet(
   const mainSessionHook = opts.adapter.mainSessionSkillHook;
   if (mainSessionHook) {
     const given = new Set(composed.flatMap((c) => c.agent.skills ?? []));
-    for (const { name, skill } of contributedSkills) {
+    for (const { name, skill } of allSkills) {
       if (!given.has(name)) continue;
       const size = mainSessionHook.size(
         name,
@@ -973,7 +810,7 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  for (const { name, skill } of contributedSkills) {
+  for (const { name, skill } of allSkills) {
     const resolved = resolvedSkillOf(skill);
     const skillOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
@@ -1015,28 +852,13 @@ export async function projectPluginSet(
         (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
   );
 
-  // A CHOSEN SET REGISTERS ITS PLUMBING, and no other hook. A plumbing hook naming
-  // no hook declaration is refused: it would read as installed while registering nothing.
-  if (selection) {
-    for (const id of selection.hooks) {
-      if (!discoveredHooks.some((hook) => hook.id === id)) {
-        throw new Error(
-          `the plumbing or a chosen practice names the hook '${id}', which is no harness hook declaration of the plugin set (hooks: ${discoveredHooks.map((h) => h.id).join(', ')})`,
-        );
-      }
-    }
-  }
-  const hookDeclarations = selection
-    ? discoveredHooks.filter((hook) => selection.hooks.has(hook.id))
-    : discoveredHooks;
-
   // A MOMENT THE HARNESS DOES NOT FIRE is a registration it cannot make. A hook bound
   // to such a moment alone is carried as a declaration only: its worker is not staged,
   // since bytes beside no registration read as coverage and deliver none, and the
   // operator is told once per moment. A hook with a moment the harness does fire keeps
   // the registrations it can make and is told of the ones it cannot.
   const unfired = new Set<string>();
-  for (const hook of hookDeclarations) {
+  for (const hook of discoveredHooks) {
     const lost = hook.events.filter((event) => !opts.adapter.realizes(event));
     if (lost.length === hook.events.length) unfired.add(hook.id);
     for (const event of lost) {
@@ -1045,7 +867,7 @@ export async function projectPluginSet(
       );
     }
   }
-  const carried = hookDeclarations.filter((hook) => !unfired.has(hook.id));
+  const carried = discoveredHooks.filter((hook) => !unfired.has(hook.id));
 
   let hooks = 0;
   if (carried.length > 0) {
@@ -1176,12 +998,6 @@ export async function projectPluginSet(
     agentModels,
     personas: [...personas].sort(),
     unisolated: [...unisolated].sort(),
-    practices: offered.map((p) => ({
-      name: p.name,
-      description: p.description,
-      preselected: p.preselected === true,
-      formerNames: p.formerNames ?? [],
-    })),
     rulesets: rulesets.map((r) => ({
       name: r.name,
       description: r.description,

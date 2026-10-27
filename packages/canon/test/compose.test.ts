@@ -7,30 +7,28 @@
 import { setImmediate } from 'node:timers/promises';
 import { type JsonSchema, enforcing, termOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import { architect } from '../src/agents/architect.js';
-import { builder } from '../src/agents/builder.js';
-import { checkWriter } from '../src/agents/check-writer.js';
-import { illustrator } from '../src/agents/illustrator.js';
+import { businessAnalyst } from '../src/agents/business-analyst.js';
+import { codeReviewer } from '../src/agents/code-reviewer.js';
 import { kino } from '../src/agents/kino.js';
-import { lead } from '../src/agents/lead.js';
 import { mav } from '../src/agents/mav.js';
 import { nico } from '../src/agents/nico.js';
-import { reviewer } from '../src/agents/reviewer.js';
+import { softwareEngineer } from '../src/agents/software-engineer.js';
+import { techLead } from '../src/agents/tech-lead.js';
+import { testEngineer } from '../src/agents/test-engineer.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/factors/action-scope/none.js';
 import { bottomLineUpFront } from '../src/factors/communication-style/bottom-line-up-front.js';
 import { honesty } from '../src/factors/guardrails/honesty.js';
-import { builderRole } from '../src/roles/builder.js';
-import { reviewerRole } from '../src/roles/reviewer.js';
+import { codeReviewerRole } from '../src/roles/code-reviewer.js';
+import { softwareEngineerRole } from '../src/roles/software-engineer.js';
 
 const mark = { emoji: '🧷', hue: 'cyan' } as const;
 const holders = {
-  architect,
-  builder,
-  checkWriter,
-  illustrator,
-  lead,
-  reviewer,
+  businessAnalyst,
+  techLead,
+  softwareEngineer,
+  testEngineer,
+  codeReviewer,
 };
 const agents = { ...holders, kino, mav, nico };
 
@@ -39,9 +37,9 @@ describe('composition over action-scope', () => {
     const warned: string[] = [];
     const listen = (w: Error) => warned.push(w.message);
     process.on('warning', listen);
-    const widened = persona(reviewerRole, {
+    const widened = persona(codeReviewerRole, {
       name: 'widener',
-      description: 'A reviewer that would act.',
+      description: 'A code reviewer that would act.',
       mark,
       removes: { actionScope: [none] },
       values: { guardrails: [{ value: honesty, level: 'advisory' }] },
@@ -57,16 +55,16 @@ describe('composition over action-scope', () => {
 
   it('still refuses a persona removing a value its role does not hold', () => {
     expect(() =>
-      persona(builderRole, {
+      persona(softwareEngineerRole, {
         name: 'remover',
-        description: 'A builder removing what it lacks.',
+        description: 'A software engineer removing what it lacks.',
         mark,
         removes: { actionScope: [none] },
       }),
     ).toThrow(CompositionRefusal);
   });
 
-  it('narrows no composed agent to read-only, the reviewer included', () => {
+  it('narrows no composed agent to read-only, the code reviewer included', () => {
     for (const [name, agent] of Object.entries(agents))
       expect(agent, name).not.toHaveProperty('readOnly');
   });
@@ -78,47 +76,34 @@ describe('typed handoffs', () => {
       assignment: holders[name].contract?.assignment?.required,
       deliverable: holders[name].contract?.deliverable?.required,
     });
-    expect(required('lead')).toEqual({
+    expect(required('techLead')).toEqual({
       assignment: undefined,
       deliverable: [
         'story',
+        'joined',
         'criteria',
         'meaningQuestions',
         'followUps',
-        'cost',
       ],
     });
     expect(
-      lead.contract?.assignment?.anyOf?.map((form) => form.required),
-      'the lead takes a story, or a task with no story',
+      techLead.contract?.assignment?.anyOf?.map((form) => form.required),
+      'the tech lead takes a story, or a task with no story',
     ).toEqual([
-      [
-        'story',
-        'slice',
-        'why',
-        'acceptanceCriteria',
-        'outOfScope',
-        'path',
-        'review',
-        'cost',
-      ],
-      builder.contract?.assignment?.required,
+      ['story', 'slice', 'why', 'acceptanceCriteria', 'outOfScope'],
+      softwareEngineer.contract?.assignment?.required,
     ]);
-    expect(required('builder')).toEqual({
-      assignment: ['task', 'goal', 'changes', 'decisions', 'done'],
+    expect(required('softwareEngineer')).toEqual({
+      assignment: ['task', 'goal', 'changes', 'done'],
       deliverable: ['change', 'tests', 'verified'],
     });
-    expect(required('reviewer')).toEqual({
+    expect(required('codeReviewer')).toEqual({
       assignment: ['change'],
       deliverable: ['verdict', 'findings', 'meaningQuestions'],
     });
-    expect(required('checkWriter')).toEqual({
+    expect(required('testEngineer')).toEqual({
       assignment: ['story', 'examples'],
-      deliverable: ['story', 'checks'],
-    });
-    expect(required('illustrator')).toEqual({
-      assignment: ['story', 'concepts'],
-      deliverable: ['examples', 'flaggedTerms'],
+      deliverable: ['story', 'tests'],
     });
   });
 
@@ -127,39 +112,42 @@ describe('typed handoffs', () => {
       Object.keys(schema?.properties ?? {}).filter(
         (field) => !schema?.required?.includes(field),
       );
-    const [story, task] = lead.contract?.assignment?.anyOf ?? [];
-    expect(optional(story)).toEqual(['examples', 'decisions', 'contexts']);
+    const [story, task] = techLead.contract?.assignment?.anyOf ?? [];
+    expect(optional(story)).toEqual(['examples']);
     expect(optional(task)).toEqual(['story']);
-    expect(optional(builder.contract?.assignment)).toEqual(['story']);
-    expect(optional(reviewer.contract?.assignment)).toEqual([
+    expect(optional(softwareEngineer.contract?.assignment)).toEqual(['story']);
+    expect(optional(codeReviewer.contract?.assignment)).toEqual([
       'story',
       'acceptanceCriteria',
       'examples',
     ]);
+    expect(
+      optional(testEngineer.contract?.deliverable?.properties?.tests?.items),
+    ).toEqual(['passes']);
   });
 
-  it("gives the architect, whose handovers are a person's, no contract", () => {
-    expect(architect).not.toHaveProperty('contract');
+  it("gives the business analyst, whose handovers are the product owner's, no contract", () => {
+    expect(businessAnalyst).not.toHaveProperty('contract');
   });
 });
 
-describe('the architect', () => {
+describe('the business analyst', () => {
   it("composes its ordering, decisiveness and elevation as plain values at their factor's default level", () => {
-    const ordering = architect.communicationStyle.find(
+    const ordering = businessAnalyst.communicationStyle.find(
       (e) => e.slot === 'ordering',
     );
     expect(ordering?.level).toBe('firm');
     expect(ordering && termOf(ordering.value)).toBe(termOf(bottomLineUpFront));
-    const decisive = architect.stance.find(
+    const decisive = businessAnalyst.stance.find(
       (e) => termOf(e.value) === 'decisive',
     );
     expect(decisive?.level).toBe('firm');
-    const elevation = architect.stance.find(
+    const elevation = businessAnalyst.stance.find(
       (e) => termOf(e.value) === 'conceptual-elevation',
     );
     expect(elevation?.level).toBe('firm');
-    const [deliverable] = architect.deliverable;
-    expect(deliverable && termOf(deliverable.value)).toBe('read-back');
+    const [deliverable] = businessAnalyst.deliverable;
+    expect(deliverable && termOf(deliverable.value)).toBe('report');
   });
 });
 
@@ -189,12 +177,11 @@ describe('every agent', () => {
       Object.entries(agents).map(([name, agent]) => [name, agent.mark]),
     );
     expect(marks).toEqual({
-      architect: { emoji: '🏛️', hue: 'white' },
-      lead: { emoji: '🧭', hue: 'blue' },
-      builder: { emoji: '🔨', hue: 'yellow' },
-      reviewer: { emoji: '🔍', hue: 'red' },
-      checkWriter: { emoji: '🧪', hue: 'green' },
-      illustrator: { emoji: '🖍️', hue: 'magenta' },
+      businessAnalyst: { emoji: '📋', hue: 'white' },
+      techLead: { emoji: '🧭', hue: 'blue' },
+      softwareEngineer: { emoji: '🔨', hue: 'yellow' },
+      testEngineer: { emoji: '🧪', hue: 'green' },
+      codeReviewer: { emoji: '🔍', hue: 'red' },
       kino: { emoji: '🎬', hue: 'magenta' },
       mav: { emoji: '✈️', hue: 'green' },
       nico: { emoji: '📐', hue: 'cyan' },
@@ -206,14 +193,14 @@ describe('every agent', () => {
 
 describe('optional slots', () => {
   it('leaves an unfilled optional slot out, and a persona may fill it', () => {
-    expect(builder.communicationStyle.map((e) => e.slot)).toEqual([
+    expect(softwareEngineer.communicationStyle.map((e) => e.slot)).toEqual([
       'register',
       'density',
       'rationale',
     ]);
-    const ordered = persona(builderRole, {
+    const ordered = persona(softwareEngineerRole, {
       name: 'brief',
-      description: 'A builder that leads with its conclusion.',
+      description: 'A software engineer that leads with its conclusion.',
       mark,
       values: {
         communicationStyle: [{ value: bottomLineUpFront, slot: 'ordering' }],
@@ -230,13 +217,14 @@ describe('optional slots', () => {
   it('still refuses a role that leaves a required slot unfilled', () => {
     expect(() =>
       holder({
-        ...builderRole,
+        ...softwareEngineerRole,
         values: {
-          ...builderRole.values,
-          communicationStyle: builderRole.values.communicationStyle.filter(
-            (s) =>
-              typeof s !== 'object' || !('slot' in s) || s.slot !== 'density',
-          ),
+          ...softwareEngineerRole.values,
+          communicationStyle:
+            softwareEngineerRole.values.communicationStyle.filter(
+              (s) =>
+                typeof s !== 'object' || !('slot' in s) || s.slot !== 'density',
+            ),
         },
       }),
     ).toThrow(/slot density 0 times/);

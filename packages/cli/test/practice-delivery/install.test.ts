@@ -25,7 +25,7 @@ afterEach(() => h.dispose());
 
 it('the built release installs its complete source design read-only with provenance', () => {
   const actual = expectReleased(h, 'intent-based delegation', 1);
-  expect(existsSync(join(owned(h), 'agents/architect.md'))).toBe(true);
+  expect(existsSync(join(owned(h), 'agents/business-analyst.md'))).toBe(true);
   expect(snapshot(h.cwd)).toEqual({});
   assertDelivered(
     views(h, 'design').practice.find((c) => c.name === qualified),
@@ -58,7 +58,6 @@ it('upgrading replaces an earlier release completely without touching booking', 
       'omp',
       '--home',
       h.home,
-      '--all',
       '--model-roles',
       'default',
     ]),

@@ -4,7 +4,7 @@
  * same principle in plain words for an agent; this dense statement is read only by the
  * prime principle below.
  */
-export const cratylism = `cratylism ⟨names natural ¬conventional⟩ · universe of discourse ≜ the model's semantic space ⟨its concepts ∪ the names it gives them in each domain⟩ · ∀ c ⟨Cratylic name(c) ≜ the term of smallest semantic gap ⟨missing meaning ∪ spurious meaning⟩ read in the bounded context of c @ cratylic context design · intuition proposes ∧ cold read confirms · FOUND ¬coined ⟨¬author · ¬operator⟩ · coined ⇔ ∄ established term covering c⟩ · c enters a text as ⟨Cratylic name(c) , correction(c)⟩ ⟨beside its term · each side of the gap once⟩ · a kept name short of Cratylic name(c) ⇒ recorded as such`;
+export const cratylism = `cratylism ⟨names natural ¬conventional⟩ · universe of discourse ≜ the model's semantic space ⟨its concepts ∪ the names it gives them in each domain⟩ · ∀ c ⟨Cratylic name(c) ≜ the term of smallest semantic gap ⟨missing meaning ∪ spurious meaning⟩ read in the bounded context of c @ cratylic context design · intuition proposes ∧ cold read confirms · FOUND ¬coined ⟨¬author · ¬product owner⟩ · coined ⇔ ∄ established term covering c⟩ · c enters a text as ⟨Cratylic name(c) , correction(c)⟩ ⟨beside its term · each side of the gap once⟩ · a kept name short of Cratylic name(c) ⇒ recorded as such`;
 
 /**
  * The prime principle, as a leading `## Prime Principle` block emitted VERBATIM
