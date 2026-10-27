@@ -1,0 +1,14 @@
+{
+  "id": "01M5YW2ZYSE9XQSWP3JZ0JKB2P",
+  "at": "2026-10-27T14:26:35.609Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "agent design",
+  "name": "rule",
+  "wording": "a working convention, in force in every project once installed, stated once as the convention and why it holds; never a prohibition against a failure not seen in real use; a project's own conventions stay in its own files, never a rule",
+  "builtFrom": [],
+  "reason": "Cut to its departures: a cold read on two model families already carries that an agent follows a rule.",
+  "supersedes": [
+    "01M5XA6QHFKTXM2KR6J054HE8W"
+  ]
+}

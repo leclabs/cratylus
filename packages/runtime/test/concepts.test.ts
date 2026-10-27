@@ -1,5 +1,5 @@
 // The concepts capability as a library: `dispatchConcepts` over a scratch git
-// repository's journal. The command-line examples (cli `test/concept-journal`)
+// repository's journal. The command-line tests (cli `test/concept-journal`)
 // bind the contract end to end; these hold what they do not reach: ids minted
 // past the journal's last, a retirement among competing versions, flags given
 // twice, a journal entry that is not one, and a working directory outside git.

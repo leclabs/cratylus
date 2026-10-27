@@ -61,13 +61,10 @@ export const leadRole: RoleProfile = {
     ],
     expertise: [softwareDelivery, softwareEngineering],
     procedure: [
-      {
-        value: orchestratorWorkers,
-        note: 'how a user story is split into tasks and how many builders it takes being its own; its plan read-back a hold point, which a task with no story skips unless the operator calls it',
-      },
+      orchestratorWorkers,
       {
         value: shipShowAsk,
-        note: "the user story states which its risk picks, and for a task with no story it picks by risk; where the operator has asked to review a change before it joins, the operator's review is that change's code review, and the change joins on the operator's sign-off, a hold point it holds",
+        note: 'it holds the hold point of a change the operator has asked to review before it joins',
       },
     ],
     stance: [decisive, tailoring, separationOfConcerns, simplicity],
@@ -84,20 +81,16 @@ export const leadRole: RoleProfile = {
       { value: decides, slot: 'realization' },
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
-      {
-        value: recommends,
-        slot: 'sign-off',
-        note: 'puts its handoffs up for it; takes it only where delegation of authority grants it',
-      },
+      { value: recommends, slot: 'sign-off' },
     ],
     autonomy: [
-      { value: principal, note: 'in realization' },
+      principal,
       { value: humanInTheLoop, note: "at the operator's hold points" },
+      { value: humanOnTheLoop, note: 'between hold points' },
       {
-        value: humanOnTheLoop,
-        note: 'between hold points, and at one whose sign-off delegation of authority grants it',
+        value: missionCommand,
+        note: 'between hold points, escalating a fork beyond its own competence',
       },
-      { value: missionCommand, note: 'between hold points' },
       managementByException,
       handoff,
     ],

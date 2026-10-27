@@ -1,4 +1,4 @@
-// Black-box fixtures for the concept-journal examples. No runtime implementation is imported.
+// Black-box fixtures for the concept-journal tests. No runtime implementation is imported.
 import { spawnSync } from 'node:child_process';
 import {
   existsSync,

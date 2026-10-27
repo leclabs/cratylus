@@ -1,4 +1,4 @@
-// Binds structural examples 1–7 and 9 through the built command, in consumer-owned repositories.
+// Checks the concept journal through the built command, in consumer-owned repositories.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -58,8 +58,8 @@ function twoVersions(root: string): History {
   return first;
 }
 
-describe('concept journal structural examples', () => {
-  it('1 — binds a concept to exactly one recorded context, and refuses incomplete definitions without a write', () => {
+describe('concept journal', () => {
+  it('binds a concept to exactly one recorded context, and refuses incomplete definitions without a write', () => {
     const { root } = fixture;
     context(root);
     append(
@@ -160,7 +160,7 @@ describe('concept journal structural examples', () => {
     for (const args of invalid) refuse(root, ...args);
   });
 
-  it('2 — supersedes by appending, preserves both reasons and refuses unreasoned or unknown replacements', () => {
+  it('supersedes by appending, preserves both reasons and refuses unreasoned or unknown replacements', () => {
     const { root } = fixture;
     const first = twoVersions(root);
     expect(query(root, 'design', '--history').contexts[0]).toMatchObject({
@@ -214,7 +214,7 @@ describe('concept journal structural examples', () => {
     );
   });
 
-  it('3 — retirement removes the live concept, records its reason and retains every earlier version', () => {
+  it('retirement removes the live concept, records its reason and retains every earlier version', () => {
     const { root } = fixture;
     twoVersions(root);
     const before = history(root);
@@ -245,7 +245,7 @@ describe('concept journal structural examples', () => {
     expect(after.versions[2]).not.toHaveProperty('builtFrom');
   });
 
-  it('4 — records an open decision with all three parts and refuses missing parts or an invalid status', () => {
+  it('records an open decision with all three parts and refuses missing parts or an invalid status', () => {
     const { root } = fixture;
     context(root);
     append(root, ...decisionArgs('deposit'));
@@ -265,7 +265,7 @@ describe('concept journal structural examples', () => {
     refuse(root, ...decisionArgs('invalid-status', 'settled'));
   });
 
-  it('5 — appends acceptance then named supersession without changing the original decision record', () => {
+  it('appends acceptance then named supersession without changing the original decision record', () => {
     const { root } = fixture;
     context(root);
     append(root, ...decisionArgs('deposit'));
@@ -307,7 +307,7 @@ describe('concept journal structural examples', () => {
     refuse(root, ...decisionArgs('orphan', 'accepted', 'absent'));
   });
 
-  it('6 — repeats all four questions byte-identically and reads latest design, history, accepted and open decisions without appending', () => {
+  it('repeats all four questions byte-identically and reads latest design, history, accepted and open decisions without appending', () => {
     const { root } = fixture;
     twoVersions(root);
     define(
@@ -403,7 +403,7 @@ describe('concept journal structural examples', () => {
     expect(snapshot(root)).toEqual(before);
   });
 
-  it('7 — ignores legacy records in the working tree, main, and a plan branch held by another worktree', () => {
+  it('ignores legacy records in the working tree, main, and a plan branch held by another worktree', () => {
     const { root, sandbox } = fixture;
     // These are the old store's envelope + design payload, not invented journal entries.
     const plant = (cwd: string, id: string, anchor: string): void => {
@@ -473,7 +473,7 @@ describe('concept journal structural examples', () => {
     });
   });
 
-  it('9 — git merges both append sets, reports competing versions and resolves them only with a later supersession', () => {
+  it('git merges both append sets, reports competing versions and resolves them only with a later supersession', () => {
     const { root } = fixture;
     context(root);
     define(root);

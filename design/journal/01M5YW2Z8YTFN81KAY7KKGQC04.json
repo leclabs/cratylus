@@ -1,0 +1,14 @@
+{
+  "id": "01M5YW2Z8YTFN81KAY7KKGQC04",
+  "at": "2026-10-27T14:26:34.910Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "intent-based delegation",
+  "name": "illustration",
+  "wording": "written cold, never as a diagram or visual, by someone who didn't write the concepts, flagging each term neither in the domain model nor plain industry usage; so it also tests that the concepts carry their meaning",
+  "builtFrom": [],
+  "reason": "A cold read on two model families reads it as a diagram or mockup, which would mislead an agent in use; excluded once.",
+  "supersedes": [
+    "01M5XA6QHFKTXM2KR6J054HE6Z"
+  ]
+}

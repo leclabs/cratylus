@@ -1,0 +1,14 @@
+{
+  "id": "01M5YW2ZB3VD4CYB2S28GX5N7B",
+  "at": "2026-10-27T14:26:34.979Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "intent-based delegation",
+  "name": "outcome",
+  "wording": "the lead's handoff when a user story or a task with no story ends, never the end state the work aims at: merged or dropped, each criterion with its evidence, meaning questions raised, follow-ups, cost against the rough cost; the architect accepts the story done once it has experienced the realization of the story's meaning, the outcome guiding it there, never standing in for it; anything unfinished is a follow-up, never an open state",
+  "builtFrom": [],
+  "reason": "A cold read on two model families reads it as the end state the work aims at, which here is the intent, which would mislead an agent in use; excluded once.",
+  "supersedes": [
+    "01M5XA6QHFKTXM2KR6J054HE7D"
+  ]
+}

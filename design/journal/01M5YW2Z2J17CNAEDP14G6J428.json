@@ -1,0 +1,14 @@
+{
+  "id": "01M5YW2Z2J17CNAEDP14G6J428",
+  "at": "2026-10-27T14:26:34.706Z",
+  "by": "Lance Caraccioli",
+  "kind": "supersede",
+  "context": "intent-based delegation",
+  "name": "architect",
+  "wording": "the operator's principal, holding the meaning of the bounded contexts it is given, never how they are built, which is the lead's: receives the operator's intent, hands user stories to the lead, accepts each story done on its outcome",
+  "builtFrom": [],
+  "reason": "A cold read on two model families reads it as the technical planner who sets system boundaries and the approach, which would mislead an agent in use; excluded once.",
+  "supersedes": [
+    "01M5XA6QHFKTXM2KR6J054HE6M"
+  ]
+}

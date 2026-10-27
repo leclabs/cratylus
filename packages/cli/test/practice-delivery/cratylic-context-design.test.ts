@@ -1,9 +1,8 @@
-// architect-conforms-to-the-pattern (design/examples/delivery/
-// architect-conforms-to-the-pattern.md, delivery/1–6): every installation
-// delivers cratylic context design beside intent-based delegation, read-only, shown before it in
-// the practice apart from the project's own contexts and outside its context map;
-// a write aimed at it is refused; a project holding it reads its own. delivery/7,
-// how the architect reads a project's record, is agent behaviour judged in review.
+// Every installation delivers cratylic context design beside intent-based
+// delegation, read-only, shown before it in the practice apart from the
+// project's own contexts and outside its context map; a write aimed at it is
+// refused; a project holding it reads its own. How the architect reads a
+// project's record is agent behaviour judged in review.
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
@@ -51,13 +50,13 @@ function expectPractice(practice: ContextView[]): void {
     });
 }
 
-it('delivery/1 — the release ships cratylic context design read-only beside intent-based delegation, at its upstream position', () => {
+it('the release ships cratylic context design read-only beside intent-based delegation, at its upstream position', () => {
   expectReleased(h, ccd, 0);
   expect(readDocument(h).position).toBe(1);
 });
 
 it.each(verbs)(
-  'delivery/1 — %s in a project with no recorded context shows cratylic context design then intent-based delegation, recording nothing',
+  '%s in a project with no recorded context shows cratylic context design then intent-based delegation, recording nothing',
   (verb) => {
     const answer = views(h, verb);
     expectPractice(answer.practice);
@@ -72,7 +71,7 @@ it.each([
   ['user', 'cratylic-context-design'],
   ['project', 'intent-based-delegation'],
 ])(
-  'delivery/2 — a %s install declining every ruleset still delivers cratylic context design beside intent-based delegation',
+  'a %s install declining every ruleset still delivers cratylic context design beside intent-based delegation',
   (scope, practice) => {
     success(h.command(['uninstall', '--harness', 'omp', '--home', h.home]));
     expect(existsSync(owned(h))).toBe(false);
@@ -123,7 +122,7 @@ it.each([
 );
 
 it.each(verbs)(
-  'delivery/3 — %s reads cratylic context design first, then intent-based delegation, then the booking context, the practice named apart',
+  '%s reads cratylic context design first, then intent-based delegation, then the booking context, the practice named apart',
   (verb) => {
     h.seed();
     const answer = h.concepts<{
@@ -141,7 +140,7 @@ it.each(verbs)(
 );
 
 it.each(verbs)(
-  'delivery/4 — %s keeps cratylic context design and intent-based delegation out of the booking–payments context map',
+  '%s keeps cratylic context design and intent-based delegation out of the booking–payments context map',
   (verb) => {
     h.concepts(
       'context',
@@ -216,7 +215,7 @@ it.each(
     ),
   ),
 )(
-  'delivery/5 — refuses %s aimed at cratylic context design in a %s journal, changing nothing and copying nothing',
+  'refuses %s aimed at cratylic context design in a %s journal, changing nothing and copying nothing',
   (_verb, _journal, args, booking) => {
     if (booking) h.seed();
     const before = snapshot(h.cwd);
@@ -240,7 +239,7 @@ it.each(
   },
 );
 
-it('delivery/5 — the correction lands as a new version of booking’s own refund, the delivered practice untouched', () => {
+it('the correction lands as a new version of booking’s own refund, the delivered practice untouched', () => {
   h.seed();
   h.concepts(
     'define',
@@ -308,7 +307,7 @@ function ownContext(name: string): string {
   return id;
 }
 
-it('delivery/6 — a project holding both reads its own copies in the practice place, cratylic context design then intent-based delegation, then the rest in record order', () => {
+it('a project holding both reads its own copies in the practice place, cratylic context design then intent-based delegation, then the rest in record order', () => {
   // Record order (booking, intent-based delegation, cratylic context design) and name order
   // (booking, cratylic context design, intent-based delegation) each differ from the order shown.
   h.seed();
@@ -348,7 +347,7 @@ function expectHeldAlone(answer: {
   expectMeaning(own, `The project’s own ${ccd} term.`);
 }
 
-it('delivery/6 — a project holding cratylic context design alone reads its own copy first, then the delivered intent-based delegation, then its other contexts', () => {
+it('a project holding cratylic context design alone reads its own copy first, then the delivered intent-based delegation, then its other contexts', () => {
   h.seed();
   const ccdId = ownContext(ccd);
   putDocument(h, { ...upstream, identity: ccdId });
@@ -383,7 +382,7 @@ it('delivery/6 — a project holding cratylic context design alone reads its own
   }
 });
 
-it('delivery/6 — cratylus’s own repository reads its cratylic context design, then intent-based delegation, in the practice place, then its other contexts', () => {
+it('cratylus’s own repository reads its cratylic context design, then intent-based delegation, in the practice place, then its other contexts', () => {
   // Read with no installation, the repository's contexts in record order.
   const recorded = query(repositoryRoot, 'design').contexts.map((c) => c.name);
   expect(recorded).toContain(ccd);

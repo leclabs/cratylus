@@ -26,7 +26,7 @@ beforeEach(() => {
 afterEach(() => h.dispose());
 
 it.each(['design', 'state'])(
-  'intent-based delegation/1 — %s shows the release apart from the project, in a journal-less project without writing',
+  '%s shows the release apart from the project, in a journal-less project without writing',
   (verb) => {
     const answer = views(h, verb);
     expect(existsSync(join(h.cwd, 'design/journal'))).toBe(false);
@@ -44,7 +44,7 @@ it.each(['design', 'state'])(
 );
 
 it.each(['design', 'state'])(
-  'intent-based delegation/2 — %s keeps unrelated same-name contexts separate, the release apart from the project',
+  '%s keeps unrelated same-name contexts separate, the release apart from the project',
   (verb) => {
     h.seed();
     h.concepts(
@@ -83,7 +83,7 @@ it.each(['design', 'state'])(
 );
 
 it.each(['intent-based delegation', 'branch-practice'])(
-  'intent-based delegation/3 — identity suppresses the release under the project name %s',
+  'identity suppresses the release under the project name %s',
   (name) => {
     // The baseline binds inclusion too: silently ignoring all delivery is not suppression.
     expect
@@ -168,7 +168,7 @@ it.each(
     ),
   ),
 )(
-  'intent-based delegation/4 — refuses %s on a delivered context in a %s journal without a substitute',
+  'refuses %s on a delivered context in a %s journal without a substitute',
   (_verb, _journal, args, booking) => {
     if (booking) h.seed();
     const before = snapshot(h.cwd);
@@ -183,7 +183,7 @@ it.each(
   },
 );
 
-it('intent-based delegation/5 — appends to the unrelated project intent-based delegation while preserving delivery and provenance', () => {
+it('appends to the unrelated project intent-based delegation while preserving delivery and provenance', () => {
   h.concepts(
     'context',
     'intent-based delegation',
@@ -240,7 +240,7 @@ it('intent-based delegation/5 — appends to the unrelated project intent-based 
   expect(readFileSync(deliveredPath(h), 'utf8')).toBe(release);
 });
 
-it('intent-based delegation/6 — delivered history has only a current meaning and no invented version or decision', () => {
+it('delivered history has only a current meaning and no invented version or decision', () => {
   h.seed();
   const before = snapshot(h.cwd);
   const concept = h.command([
@@ -276,7 +276,7 @@ it('intent-based delegation/6 — delivered history has only a current meaning a
   expect(snapshot(h.cwd)).toEqual(before);
 });
 
-it('intent-based delegation/9 — suppression follows each checked-out branch rather than a prior read', () => {
+it('suppression follows each checked-out branch rather than a prior read', () => {
   h.seed();
   git(h.cwd, 'add', 'design');
   git(h.cwd, 'commit', '-m', 'Booking only');
@@ -301,7 +301,7 @@ it('intent-based delegation/9 — suppression follows each checked-out branch ra
   held();
 });
 
-it('intent-based delegation/10 — the first project context records only itself and retains the delivered view', () => {
+it('the first project context records only itself and retains the delivered view', () => {
   views(h, 'state');
   h.seed();
   const journal = snapshot(h.cwd);
@@ -321,7 +321,7 @@ it('intent-based delegation/10 — the first project context records only itself
   expect(snapshot(h.cwd)).toEqual(journal);
 });
 
-it('delivery/2 — one installation supplies multiple projects', () => {
+it('one installation supplies multiple projects', () => {
   const other = temporaryRepository();
   try {
     const result = h.command(['concepts', 'design'], other.root);
@@ -338,7 +338,7 @@ it('delivery/2 — one installation supplies multiple projects', () => {
   }
 });
 
-it('delivery/2 — explicit installation selection wins over other roots in HOME', () => {
+it('explicit installation selection wins over other roots in HOME', () => {
   const selected = join(h.home, '.cratylus/other');
   mkdirSync(selected, { recursive: true });
   const alternate = {

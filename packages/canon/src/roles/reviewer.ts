@@ -67,7 +67,7 @@ export const reviewerRole: RoleProfile = {
       { value: decides, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
-    autonomy: [{ value: principal, note: 'in its code review' }, handoff],
+    autonomy: [principal, handoff],
     perceptionScope: [
       conceptJournal,
       examples,
@@ -86,7 +86,7 @@ export const reviewerRole: RoleProfile = {
     assignment: [
       {
         value: reviewRequest,
-        note: 'its held-out examples taken directly from design/held-out/',
+        note: 'its held-out examples in design/held-out/',
       },
     ],
     deliverable: [deliverableCodeReview],

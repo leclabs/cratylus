@@ -30,7 +30,7 @@ afterEach(() => {
   h = undefined;
 });
 
-it('delivery/21 — supplied models and display answer are placed for omp, not owned or asked again', async () => {
+it('supplied models and display answer are placed for omp, not owned or asked again', async () => {
   h = fresh();
   configure(h);
   const result = await guided(h, { modelRoles: choices, agentStatus: 'show' });
@@ -39,7 +39,7 @@ it('delivery/21 — supplied models and display answer are placed for omp, not o
   hostOwned(h);
 });
 
-it('delivery/22 — interactive install asks only the unbound tier, never a settled model or visible display', async () => {
+it('interactive install asks only the unbound tier, never a settled model or visible display', async () => {
   h = fresh();
   const visible = { ...hiddenStatus, showHookStatus: true };
   configure(
@@ -62,7 +62,7 @@ it('delivery/22 — interactive install asks only the unbound tier, never a sett
   hostOwned(h);
 });
 
-it('delivery/23 — interactive consent precedes enabling the display', async () => {
+it('interactive consent precedes enabling the display', async () => {
   h = fresh();
   configure(h, chosen);
   const result = await guided(h, {}, { show: true });
@@ -74,7 +74,7 @@ it('delivery/23 — interactive consent precedes enabling the display', async ()
 });
 
 it.each(['interactive', 'supplied'] as const)(
-  'delivery/24 — %s refusal stays hidden and is not treated as an unanswered choice',
+  '%s refusal stays hidden and is not treated as an unanswered choice',
   async (mode) => {
     h = fresh();
     configure(h, chosen);
@@ -94,7 +94,7 @@ it.each(['interactive', 'supplied'] as const)(
   },
 );
 
-it('delivery/25 — noninteractive install names precisely the missing tiers and display, and places the rest', async () => {
+it('noninteractive install names precisely the missing tiers and display, and places the rest', async () => {
   h = fresh();
   configure(h, { frontier: chosen.frontier });
   const result = await guided(
@@ -121,7 +121,7 @@ it('delivery/25 — noninteractive install names precisely the missing tiers and
   hostOwned(h);
 });
 
-it('delivery/26 — same-version reinstall never reapplies original model or display answers', async () => {
+it('same-version reinstall never reapplies original model or display answers', async () => {
   h = fresh();
   configure(h);
   await guided(h, { modelRoles: choices, agentStatus: 'show' });
@@ -133,7 +133,7 @@ it('delivery/26 — same-version reinstall never reapplies original model or dis
   hostOwned(h);
 });
 
-it('delivery/27 — upgrade replaces projection while keeping edited and unedited host answers', async () => {
+it('upgrade replaces projection while keeping edited and unedited host answers', async () => {
   h = fresh();
   configure(h);
   await guided(h, { modelRoles: choices, agentStatus: 'show' });
@@ -153,7 +153,7 @@ it('delivery/27 — upgrade replaces projection while keeping edited and unedite
   hostOwned(h);
 });
 
-it('delivery/28 — uninstall keeps every model and display answer, including unedited ones', async () => {
+it('uninstall keeps every model and display answer, including unedited ones', async () => {
   h = fresh();
   configure(h);
   await guided(h, { modelRoles: choices, agentStatus: 'show' });
@@ -169,7 +169,7 @@ it('delivery/28 — uninstall keeps every model and display answer, including un
   expect(settings(h)).toEqual(before);
 });
 
-it('delivery/29 — upgrading a real earlier installation keeps all seeded models and the edited binding but removes old projection', () => {
+it('upgrading a real earlier installation keeps all seeded models and the edited binding but removes old projection', () => {
   h = fresh();
   configure(h, { smol: 'fixture/fast', alternate: 'other/model' });
   const old = earlierCommand(h);

@@ -67,7 +67,7 @@ afterEach(() => {
   repository.dispose();
 });
 
-it('example 8: inspection locates leakage in concepts and visible examples, never a decision', () => {
+it('inspection locates leakage in concepts and visible examples, never a decision', () => {
   // Binds “a concept that names a file location”, “an example that requires a
   // named library” and “each ... warning naming its passage”; a decision
   // records realization and is never inspected.
@@ -101,7 +101,7 @@ it('example 8: inspection locates leakage in concepts and visible examples, neve
 });
 
 it.each(['define', 'decide'] as const)(
-  'example 9: %s records leakage and shows its warning without refusing it',
+  '%s records leakage and shows its warning without refusing it',
   (verb) => {
     // Binds “it is recorded”, “the warning is shown to whoever recorded it” and “nothing is refused”.
     const answer = (
@@ -147,10 +147,10 @@ it.each(['define', 'decide'] as const)(
   },
 );
 
-it('example 10: listed tool names are exempt only in the context that owns them', () => {
-  // Architect's re-illustration of 2026-10-10: bind “own concepts are named
-  // with words the leakage rules list”, “raises no warning” and “the same
-  // words in a context that has no such concept are warned about”.
+it('listed tool names are exempt only in the context that owns them', () => {
+  // A context's own concepts named with words the leakage rules list raise
+  // no warning; the same words in a context that has no such concept are
+  // warned about.
   // omp and git are both listed tool names, not merely ordinary vocabulary.
   const names = ['omp', 'git'];
   concepts(

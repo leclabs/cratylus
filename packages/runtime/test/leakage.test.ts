@@ -1,7 +1,7 @@
 // The implementation-leakage detector: each rule finds the narrowest span that
 // leaks and nothing in plain meaning, a context's own words raise nothing, and
 // visible examples are read by file, number and context. The command-line
-// examples (cli `test/check-quality/leakage.test.ts`) bind the verb end to end.
+// tests (cli `test/check-quality/leakage.test.ts`) bind the verb end to end.
 
 import { execFileSync } from 'node:child_process';
 import {

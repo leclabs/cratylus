@@ -23,7 +23,7 @@ beforeEach(() => {
 });
 afterEach(() => h.dispose());
 
-it('delivery/1, delivery/2 — the built release installs its complete source design read-only with provenance', () => {
+it('the built release installs its complete source design read-only with provenance', () => {
   const actual = expectReleased(h, 'intent-based delegation', 1);
   expect(existsSync(join(owned(h), 'agents/architect.md'))).toBe(true);
   expect(snapshot(h.cwd)).toEqual({});
@@ -34,7 +34,7 @@ it('delivery/1, delivery/2 — the built release installs its complete source de
   );
 });
 
-it('delivery/3 — upgrading replaces an earlier release completely without touching booking', () => {
+it('upgrading replaces an earlier release completely without touching booking', () => {
   h.seed();
   const before = snapshot(h.cwd);
   // A is an older installed release; B is the packed release under test.
@@ -81,7 +81,7 @@ it('delivery/3 — upgrading replaces an earlier release completely without touc
   );
 });
 
-it('delivery/4 — later development journal wording does not mutate the installed release', () => {
+it('later development journal wording does not mutate the installed release', () => {
   expect(
     existsSync(deliveredPath(h)),
     'an installed projection exists independently of the project journal',
@@ -113,7 +113,7 @@ it('delivery/4 — later development journal wording does not mutate the install
   expect(readDocument(h).version).toBe(release.version);
 });
 
-it('delivery/5 — uninstall removes delivered material with the root and leaves the project journal untouched', () => {
+it('uninstall removes delivered material with the root and leaves the project journal untouched', () => {
   h.seed();
   const before = snapshot(h.cwd);
   // Isolate removal from production of the projection: the fixture supplies an installed document.

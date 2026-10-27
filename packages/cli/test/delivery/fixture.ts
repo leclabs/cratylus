@@ -323,7 +323,7 @@ export async function load(h: Host, cwd = h.cwd): Promise<Loaded> {
   };
   const extension = join(owned(h), 'extensions/cratylus.ts');
   // The old location is loaded only to measure the pre-cut extension's behavior,
-  // not to grant an alternative layout: delivery/2 separately requires the new root.
+  // not to grant an alternative layout: the projection is separately required to use the new root.
   const path = existsSync(extension)
     ? extension
     : join(h.home, '.omp/agent/extensions/cratylus.ts');

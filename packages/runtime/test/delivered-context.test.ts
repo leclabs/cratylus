@@ -154,7 +154,7 @@ const journal = () =>
       ]),
   );
 
-it('delivery/1 — projects exactly the current source design, first context identity, no history or decisions', () => {
+it('projects exactly the current source design, first context identity, no history or decisions', () => {
   const identity = seed();
   const before = journal();
   const actual = project();
@@ -177,7 +177,7 @@ it('delivery/1 — projects exactly the current source design, first context ide
   expect(journal()).toEqual(before);
 });
 
-it('delivery/4 — identical source and version serialize identically and a later source cannot change earlier values', () => {
+it('identical source and version serialize identically and a later source cannot change earlier values', () => {
   seed();
   const a = project();
   const saved = JSON.stringify(a);
@@ -199,7 +199,7 @@ it('delivery/4 — identical source and version serialize identically and a late
   expect(a.version).toBe('3.2.1');
 });
 
-it('intent-based delegation/1 — a library caller without delivered documents sees none and creates no journal', () => {
+it('a library caller without delivered documents sees none and creates no journal', () => {
   const installation = join(root, 'home/.cratylus/omp');
   const documents = join(installation, 'delivered/cratylus');
   mkdirSync(documents, { recursive: true });
