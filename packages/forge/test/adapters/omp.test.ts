@@ -1503,7 +1503,7 @@ describe('omp tool definitions', () => {
       omp.agents = [
         declare(
           { name: 'business-analyst', description: 'Holds the design.' },
-          '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the domain model is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
+          '# business-analyst\n\n### procedure\n\n- **cratylic-context-design**\n\n### decision-rights\n\n- meaning (concepts and examples): **D** — decides\n\n### memory\n\n- **source-of-truth** — the domain model is the one record\n\n### guardrails\n\n- **honesty** — reports what it observed',
         ),
       ];
       const { fire } = await started('business-analyst');
@@ -1527,7 +1527,7 @@ describe('omp tool definitions', () => {
     const BUSINESS_ANALYST = () =>
       declare(
         { name: 'business-analyst', description: 'Holds the design.' },
-        '# business-analyst\n\n### procedure\n\n- **reconstitution** — at every start, read back before acting\n\n### stance\n\n- **decisive** — decides',
+        '# business-analyst\n\n### procedure\n\n- **cratylic-context-design**\n\n### stance\n\n- **decisive** — decides',
       );
 
     /** The CRATYLUS module loaded into a stand-in omp started with `--agent <agent>`, every
@@ -1590,7 +1590,7 @@ describe('omp tool definitions', () => {
       { toolName: 'read', input: { path: 'design/model' } },
     ];
 
-    it('holds no act of a reconstituting launch, before or after it speaks, and answers no reply', async () => {
+    it("holds no act of a business analyst's launch, before or after it speaks, and answers no reply", async () => {
       omp.agents = [BUSINESS_ANALYST()];
       const { fire, told } = await loadedAs('business-analyst');
       for (const call of acts)

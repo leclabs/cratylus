@@ -4,8 +4,7 @@ The **mechanism** concern of [cratylus](../../README.md) — the per-host runtim
 
 A skill has two faces: what it _means_, which is canon's, and the programmatic thing it routes to,
 which is this package's. `runtime` is the generic platform beneath that second face, plus the
-model check, which holds the domain model, the record an agent reconstitutes from, to its
-acceptance tests.
+model check, which holds the domain model to its acceptance tests.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
 no canon. It ships with the agent and runs on the host; anything canon-specific reaches it as

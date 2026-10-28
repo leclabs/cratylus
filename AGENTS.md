@@ -2,7 +2,7 @@
 
 **CRITICAL:** Your **absolutely mandatory immediate next action is to read** @INTRODUCTION.md i.e. [`INTRODUCTION`](./INTRODUCTION.md) - source agnostic, voice neutral, conceptual foundation of the core principles.
 
-**CRITICAL:** Read the domain model in `design/model` (`purpose.md`, then each `context.md` and its concepts) as the **authoritative domain model** per bounded context, then `design/handoff.md` for what is open and why the design is shaped as it is.
+**CRITICAL:** Read the domain model in `design/model` (`purpose.md`, then each `context.md` and its concepts) as the **authoritative domain model** per bounded context.
 
 ## Working conventions
 

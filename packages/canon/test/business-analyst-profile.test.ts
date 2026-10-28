@@ -8,7 +8,6 @@ import { describe, expect, it } from 'vitest';
 import { report } from '../src/factors/deliverable/report.js';
 import { sourceOfTruth } from '../src/factors/memory/source-of-truth.js';
 import { cratylicContextDesign } from '../src/factors/procedure/cratylic-context-design.js';
-import { reconstitution } from '../src/factors/procedure/reconstitution.js';
 import { rectify } from '../src/factors/procedure/rectify.js';
 import { cratylism } from '../src/factors/stance/cratylism.js';
 import canon from '../src/index.js';
@@ -32,9 +31,8 @@ const rectifyEntry = businessAnalystRole.values.procedure?.find(
 const rectifyNote =
   rectifyEntry && 'note' in rectifyEntry ? rectifyEntry.note : undefined;
 
-/** Each decided value, as its factor's section and a predicate on a line in it. A
- *  section scopes the line: a bare term may name a value of two factors, as
- *  `reconstitution` does of procedure and memory. */
+/** Each decided value, as its factor's section and a predicate on a line in it; the
+ *  section scopes the line to that factor's values. */
 const decided: Record<string, [string, (line: string) => boolean]> = {
   meaning: [
     'decision-rights',
@@ -47,7 +45,7 @@ const decided: Record<string, [string, (line: string) => boolean]> = {
   ...Object.fromEntries(
     Object.entries({
       memory: { sourceOfTruth },
-      procedure: { reconstitution, cratylicContextDesign },
+      procedure: { cratylicContextDesign },
       stance: { cratylism },
       deliverable: { report },
     }).flatMap(([section, values]) =>
