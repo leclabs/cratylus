@@ -1,3 +1,3 @@
 # acceptance test
 
-Binds one example by the example's name
+Binds one example, titled by its name

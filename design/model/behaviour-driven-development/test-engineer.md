@@ -1,3 +1,3 @@
 # test engineer
 
-Writes each acceptance test before the build and sees it fail
+Automates each example as its acceptance test

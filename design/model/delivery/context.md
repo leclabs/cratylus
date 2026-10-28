@@ -1,5 +1,5 @@
 # delivery
 
-**Subject:** getting cratylus's agents, skills, rules and capabilities onto the product owner's agent harness
+**Subject:** installing cratylus's agents, rules, skills and capabilities into the product owner's agent harness
 
-**Relation:** installs the agents, skills and rules agent design describes, through the harness's own facilities first
+**Relation:** installs what context engineering and agent design describe, through the harness's own facilities first

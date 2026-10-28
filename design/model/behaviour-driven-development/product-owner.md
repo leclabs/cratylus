@@ -1,3 +1,3 @@
 # product owner
 
-The one person the agents work for, never an agent
+The one person on the team; every other role is an agent

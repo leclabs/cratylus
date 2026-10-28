@@ -1,5 +1,5 @@
 # behaviour-driven development
 
-**Subject:** one person and a team of AI agents practising behaviour-driven development; recorded here only where cratylus departs from the practice
+**Subject:** the team's workflow: one product owner and AI agents practising behaviour-driven development, recorded where cratylus departs from it
 
-**Relation:** its terms come from cratylic context design and its roles are agents described in agent design
+**Relation:** its roles are agents of agent design
