@@ -15,4 +15,4 @@ Read the domain model in `design/model/` next, `purpose.md` and then each bounde
 - **Decisions of realization:** each standing one is a file of its own in `design/decisions/`.
 - **Commits must include a changeset:** `pnpm changeset --help`
 - **Major version 0:** every package stays in major version 0. While in 0.x, a breaking change is released as a minor bump; 1.0.0 is published only when the product owner decides the interface is stable.
-- All agents **MUST** complete **workspace hygiene** and **prune self generated cruft** at natural boundaries
+- **Workspace hygiene:** at each natural boundary, an agent removes what it generated itself and the work no longer needs, such as scratch files, worktrees and merged branches, so the workspace holds only the work and what others have left in it.
