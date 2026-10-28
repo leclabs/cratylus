@@ -1,5 +1,0 @@
----
-'@cratylus/canon': minor
----
-
-Canon's agents are the industry roles of behaviour-driven development: `business-analyst`, `tech-lead`, `software-engineer`, `test-engineer` and `code-reviewer`, with the personas mav, nico and kino over the business analyst. They are the canon's only agents, and its role profiles are exactly `businessAnalystRole`, `techLeadRole`, `softwareEngineerRole`, `testEngineerRole` and `codeReviewerRole`. Each profile states only its departures from the industry's reading of the role; every agent reads the domain model, `design/model/`, and names the person it serves the product owner. The handoffs are shorter: a user story is `{story, slice, why, acceptanceCriteria, outOfScope, examples?}`, a task `{task, story?, goal, changes, done}`, the outcome `{story, joined, criteria, meaningQuestions, followUps}` with no cost, and the test engineer hands back acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}`; an example is named `<context>/<concept>` or `<context>/<concept>: <example name>`. The plugin carries agents, skills and rules.

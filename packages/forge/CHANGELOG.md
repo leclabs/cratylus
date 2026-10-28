@@ -1,5 +1,84 @@
 # @cratylus/forge
 
+## 0.20.0
+
+### Minor Changes
+
+- 41c216f: An agent's text states only its departures: a factor the agent holds no value of renders no section, where it rendered `- (none)`, and a factor group none of whose factors holds a value renders no heading.
+- a59e469: forge no longer carries the consumer-patch fold or value provenance, which only the removed configuration file and `explain` reached. `install` still discovers the canon's values, and discovery still refuses a shared namespace and a reference graph that dangles or cycles. The schema package's README now addresses cratylus's contributors rather than a canon's author.
+
+  BREAKING CHANGE: forge's `./resolve` subpath is removed, with `resolve`, `ResolveConfig`, `ResolvedAgentSet`, `ResolvedFragment`, `FragmentContribution`, `ContributionSource`, `LoadedPlugin`, `PatchEntry`, `PatchOp`, `MissingExtendsTargetError`, `IllegalOpForValueShapeError`, `ForcePriorityTieError` and its re-export of `AgentPlugin` and `defineAgentPlugin` (import those from `@cratylus/schema`). `@cratylus/forge/project` loses `resolveFragmentBodies`, `AmbiguousFragmentBodyError` and `ProjectOpts.resolvedBodies`. `@cratylus/schema` loses `withBody`, which only the fold used.
+
+- 87a0501: The `cratylus` command offers using cratylus only: `install`, `uninstall` and the capabilities (`model`, `versionSkew`). Its help, its no-argument output and its README list nothing else, and `install` always installs the canon the command is built with.
+
+  BREAKING CHANGE: the commands `init`, `add`, `compose`, `project`, `deploy` (with `deploy --check`), `explain` and `catalog` are removed, and with them the `Corpus authoring:` help group; each is now refused as an unknown command. `cratylus.config.ts` is read by nothing: `install` no longer reads one from the working directory and always installs the bundled canon, refusing only when mounted with no canon at all. The `cratylus` package has no library entry any more, so `defineConfig` (and `CratylusConfig`) are gone from `cratylus` and from `@cratylus/forge`, together with forge's `./config`, `./deploy` and `./validate` subpaths (the config loader and scaffold, render-tree deploy and its drift check, `scaffoldProject`, `writeRenderTree`, the cold-read driver), and `@cratylus/forge/catalog` loses `enumerateCatalog`, `shortlex` and `CatalogEntry`. `projectorCommands` returns the two commands as one list and takes the canon as `canon`; `usageExitCode` is removed. `@cratylus/schema` drops the `deploy-bin` and `deploy-check-drift-code` projection facts and `SkillDeploy.assets`, which only the removed deploy read. `@cratylus/canon` no longer carries the `create-agent` and `create-skill` skills: the `cratylic-context-design` practice keeps its other skills, and an install no longer places those two. A project installation over an earlier render tree in `.cratylus/<harness>` is still refused: move that tree away, and install again.
+
+- 9a8582e: `cratylus install` offers the `behaviour-driven-development` ruleset, first among the canon's rulesets and taken or left like every other. It holds one rule, `behaviour-driven-development-adopted`: "This project practises behaviour-driven development.", because the practice's name carries it whole, each role's participation included. Taken with `--rules behaviour-driven-development`, install places `rules/behaviour-driven-development-adopted.md`; without a terminal and without `--rules`, it places no rule and lists the six rulesets offered. `Rule.convention` is renamed `Rule.statement`.
+- b023712: A capability's verb only reads and takes no arguments, which is all the two remaining capabilities use; the machinery for anything more is removed.
+
+  - `@cratylus/runtime`: a verb's `effect` is `reads` alone (the `appends` effect is gone), and a verb's explanation is its `name`, `concept`, `purpose`, `when` and `effect`, with no `parameters` (`ParameterExplanation` and `ParameterSchema` are gone). The `./verb-flags` subpath is gone, and with it `Positional`, `Flags`, `Flag`, `ValueShape`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused` and `nearest`; a verb's declaration is its purpose, beside the concept, when and effect it explains. Any token after a verb is refused by `verbOf`, in one line naming each token and the verb's `--help`; `--help`, `-h` and `--explain` are read as any token after the verb. A verb's help lists no arguments or flags.
+  - `@cratylus/forge`: the omp extension's capability tools are all read-only (approval `read`); a tool takes a required `verb` of the capability's verbs, or nothing where the capability explains one verb alone, and a call runs `<bin> <capability> <verb>`.
+  - `cratylus`: the README says a capability verb takes no arguments.
+
+- 0df8f19: The domain model is plain files in `design/model/`, checked by the model check: `cratylus model check`, in omp the tool `model_check`. The command offers `install`, `uninstall` and exactly two capabilities, `model` and `versionSkew`; the runtime's `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` are `model` and `versionSkew`, and every capability tool only reads.
+
+  - `@cratylus/runtime` exports from `.` the capabilities' explanations (`MODEL_CHECK`, `VERSION_SKEW`), `explain` and the command's self-description; `./runtime-config` holds the runtime configuration and the installation's root and scope. Its subpaths are `.`, `./main`, `./bin-name`, `./capability`, `./runtime-config` and `./package.json`.
+  - A build projects the agents, skills and rules, and install places them, the extension and the installation record in the owned root, and nothing else.
+  - The cratylus omp extension is emitted whenever the harness adapter has one (`HarnessAdapter.capabilitySurface`), and it alone carries the capabilities to the harness.
+
+  BREAKING CHANGE: a script or import using a command, tool, export, subpath or installed file not listed above must drop it.
+
+- 9b36a76: forge names what it projects in the design's terms. Renamed exports: the catalog's `PluginFragmentRoot` → `PluginValueRoot` (`fragmentsDir` → `factorsDir`), `FragmentEntry` → `ValueEntry` (`dimension` → `factor`), `PluginFragmentCatalogs` → `PluginValueCatalogs`, `enumeratePluginFragmentCatalogs` → `enumeratePluginValueCatalogs`, `DuplicateNamespaceError.fragmentsDirs` → `factorsDirs`; resolve's `Fragment` → `ValueNode`; `scanCellDirNames` → `scanDeclarationDirNames`; `dimensionField` → `factorField`; `core/exemplify/dimension-fields` → `core/exemplify/factor-fields` (`dimensionFieldsOf` → `factorFieldsOf`) and `core/exemplify/skill-cell` → `core/exemplify/skill-body` (`renderSkillCellBody` → `renderSkillBody`); `discoverFragments` → `discoverValues`; `ProjectablePlugin.fragments` → `factors`; `Realizable.anchor` and `Loss.anchor` → `term`; `HarnessAdapter.hookCommand`'s first parameter is the hook's id. The `install` option `corpus` (of `runInstall` and `projectorCommands`) is now `canon`. `cratylus install` describes itself as installing the bundled canon, and its refusals, prompts and the omp extension speak of the canon, its factors, values, terms and corrections.
+- ff7723e: `cratylus install` installs every agent and skill of the canon, and offers the rulesets, whole or rule by rule. Run with no terminal and naming only the harness, it installs everything and is never refused for want of a choice. A completed install ends with how using cratylus starts where the business analyst is installed.
+
+  BREAKING CHANGE: `InstallPrompts` asks for the harness, the scope, the rules, the model roles and the agent status, and nothing else. A plugin, `@cratylus/schema`'s `AgentPlugin` and `@cratylus/forge/project`'s `ProjectablePlugin` alike, is its name, its agents, skills, factors and hooks, its factor manifest and its rulesets (an `AgentPlugin` also its lifecycle events); the projection, the installation record and the deploy record carry agents, skills and rules.
+
+- 42049b7: The model check: `cratylus model check` checks the domain model, plain files in `design/model` of the repository holding the working directory, and binds each of its examples to the acceptance test that names it. A concept record is `<context>/<concept>.md`, its `# term`, its correction and optionally `## Examples` of `### <name>` (or `### <name> (judged in review)`) over Given, When and Then lines; an acceptance test is an `it(`/`test(` whose title is exactly `<context>/<concept>: <example name>`. It prints its report as JSON on stdout, `{model, passed, failures, warnings}`, and exits 1 when anything fails: a malformed record or context, an example no acceptance test names and not judged in review, or an acceptance test naming an example the model does not have. Implementation leakage in a record and history recounted in its correction are warnings, never failures. With no `design/model` it refuses on stderr. `cratylus model --explain` explains it, and the omp extension offers it as the tool `model_check`.
+
+  `@cratylus/runtime`: `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` gain `model`; `@cratylus/runtime` exports `MODEL_CHECK`. The orientation starts with the business analyst (`omp --agent business-analyst`), and its theory points at the domain model of cratylic context design. The repository's `pnpm check` ends with the model check.
+
+- c18354e: The command describes itself, and every omp session knows from its start what cratylus is for and how using it starts. `@cratylus/runtime` holds the one text, `ORIENTATION` (of `PURPOSE`, `START` and `THEORY`): what cratylus is for, that using it starts by launching the business analyst with `omp --agent business-analyst` and saying what you want, and that its theory is cratylic context design, whose domain model is in cratylus's repository at `design/model/cratylic-context-design`.
+
+  `cratylus --help` opens with what the command is for. `cratylus` with no arguments prints the three-line orientation and a line naming `cratylus --help` for everything else, on stdout, exit 0 (it printed the help on stderr and exited 1). `cratylus --explain` prints `{name, purpose, orientation}` as JSON.
+
+  The cratylus omp extension runs the reached command's `--explain` once at load and appends its orientation, verbatim, right after omp's own system prompt in every session, launched or not, main or dispatched; a command that cannot explain itself adds nothing. The READMEs name the business analyst, by its command, as the way in.
+
+- 4958b21: The person cratylus serves is called the product owner everywhere, never the operator: in the elicit skill, the `install` help and refusals, the READMEs and the code's comments.
+
+  **Breaking.** The canon's lifecycle moment `operator.consult.pre` is now `product-owner.consult.pre`, and `@cratylus/forge`'s exported omp bindings (`canonicalActToOmp`, `ompBindingOf`) know it only by the new name. A hook bound to `operator.consult.pre` must now name `product-owner.consult.pre`.
+
+### Patch Changes
+
+- 7fd4af9: READMEs and source comments cite the standing decisions by their records in `design/decisions/`, by file name.
+- 53f1bba: nico's expertise is terminology work as cratylic context design practises it, finding each concept's Cratylic name, its correction beside it, in the bounded contexts it is given. The canon README names the discipline cratylic context design, and the package keywords say `cratylic-context-design`.
+- 81e83bc: Profiles name the practice's concepts by their bare terms: a factor value or note naming a concept of `behaviour-driven-development` keeps only cratylus's departure from it. The tech lead, software engineer, test engineer and code reviewer roles and the `integrate` action scope are their bare terms; the business analyst's role keeps that its domain model is `design/model/`, the `domain-model` perception scope and `write-domain-model` action scope keep only `design/model/`, and the `outcome` deliverable keeps only that its evidence is in the design's own terms. The tech lead's Ship/Show/Ask and mission-command notes, and the business analyst's sign-off note, are gone.
+
+  omp's SKILL.md front matter writes the skill's `name` and `description` as quoted YAML, as agent definitions already do, so a description holding `: ` parses back to itself.
+
+- b8158fc: A term's precising definition is called by its name. `Slot.correction` becomes `Slot.precisingDefinition` and `HookDeclaration.correction` becomes `HookDeclaration.precisingDefinition`; the canon's manifest gives each decision-rights slot its precising definition under the new field. Rendered agents are unchanged.
+- Updated dependencies [86b9f42]
+- Updated dependencies [a59e469]
+- Updated dependencies [87a0501]
+- Updated dependencies [9a8582e]
+- Updated dependencies [b023712]
+- Updated dependencies [0df8f19]
+- Updated dependencies [7fd4af9]
+- Updated dependencies [23826e9]
+- Updated dependencies [ff7723e]
+- Updated dependencies [6af2a28]
+- Updated dependencies [42049b7]
+- Updated dependencies [5c312bd]
+- Updated dependencies [c18354e]
+- Updated dependencies [53f1bba]
+- Updated dependencies [b8158fc]
+- Updated dependencies [4958b21]
+- Updated dependencies [a1abdda]
+- Updated dependencies [e8c2123]
+- Updated dependencies [d2c0e9d]
+- Updated dependencies [5405787]
+  - @cratylus/runtime@0.20.0
+  - @cratylus/schema@0.13.0
+
 ## 0.19.0
 
 ### Minor Changes

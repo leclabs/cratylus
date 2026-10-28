@@ -1,5 +1,46 @@
 # @cratylus/runtime
 
+## 0.20.0
+
+### Minor Changes
+
+- b023712: A capability's verb only reads and takes no arguments, which is all the two remaining capabilities use; the machinery for anything more is removed.
+
+  - `@cratylus/runtime`: a verb's `effect` is `reads` alone (the `appends` effect is gone), and a verb's explanation is its `name`, `concept`, `purpose`, `when` and `effect`, with no `parameters` (`ParameterExplanation` and `ParameterSchema` are gone). The `./verb-flags` subpath is gone, and with it `Positional`, `Flags`, `Flag`, `ValueShape`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused` and `nearest`; a verb's declaration is its purpose, beside the concept, when and effect it explains. Any token after a verb is refused by `verbOf`, in one line naming each token and the verb's `--help`; `--help`, `-h` and `--explain` are read as any token after the verb. A verb's help lists no arguments or flags.
+  - `@cratylus/forge`: the omp extension's capability tools are all read-only (approval `read`); a tool takes a required `verb` of the capability's verbs, or nothing where the capability explains one verb alone, and a call runs `<bin> <capability> <verb>`.
+  - `cratylus`: the README says a capability verb takes no arguments.
+
+- 0df8f19: The domain model is plain files in `design/model/`, checked by the model check: `cratylus model check`, in omp the tool `model_check`. The command offers `install`, `uninstall` and exactly two capabilities, `model` and `versionSkew`; the runtime's `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` are `model` and `versionSkew`, and every capability tool only reads.
+
+  - `@cratylus/runtime` exports from `.` the capabilities' explanations (`MODEL_CHECK`, `VERSION_SKEW`), `explain` and the command's self-description; `./runtime-config` holds the runtime configuration and the installation's root and scope. Its subpaths are `.`, `./main`, `./bin-name`, `./capability`, `./runtime-config` and `./package.json`.
+  - A build projects the agents, skills and rules, and install places them, the extension and the installation record in the owned root, and nothing else.
+  - The cratylus omp extension is emitted whenever the harness adapter has one (`HarnessAdapter.capabilitySurface`), and it alone carries the capabilities to the harness.
+
+  BREAKING CHANGE: a script or import using a command, tool, export, subpath or installed file not listed above must drop it.
+
+- 6af2a28: The model check binds an example only to a test that can run, and refuses records it used to pass over. A test title only in a `//` or `/* */` comment binds nothing and names nothing missing (comments are blanked by a small scanner that keeps string, template and regular-expression literals whole, so `'http://x'` survives). A `.md` file in `design/model` other than `purpose.md`, a `<context>/context.md` or a `<context>/<concept>.md` — another file at the root, any file in a nested directory, an extension not in lower case — fails as a misplaced record, naming the file. An example's lines must be Given lines, then When lines, then Then lines, each run optionally going on in `And` lines, and nothing else; otherwise it fails, naming the concept and the example.
+- 42049b7: The model check: `cratylus model check` checks the domain model, plain files in `design/model` of the repository holding the working directory, and binds each of its examples to the acceptance test that names it. A concept record is `<context>/<concept>.md`, its `# term`, its correction and optionally `## Examples` of `### <name>` (or `### <name> (judged in review)`) over Given, When and Then lines; an acceptance test is an `it(`/`test(` whose title is exactly `<context>/<concept>: <example name>`. It prints its report as JSON on stdout, `{model, passed, failures, warnings}`, and exits 1 when anything fails: a malformed record or context, an example no acceptance test names and not judged in review, or an acceptance test naming an example the model does not have. Implementation leakage in a record and history recounted in its correction are warnings, never failures. With no `design/model` it refuses on stderr. `cratylus model --explain` explains it, and the omp extension offers it as the tool `model_check`.
+
+  `@cratylus/runtime`: `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` gain `model`; `@cratylus/runtime` exports `MODEL_CHECK`. The orientation starts with the business analyst (`omp --agent business-analyst`), and its theory points at the domain model of cratylic context design. The repository's `pnpm check` ends with the model check.
+
+- 5c312bd: The model check holds each concept record to its form and each example to its acceptance test, and nothing more: its report is `{ "model", "passed", "failures" }`, its word-list warnings gone. A record's failures speak of its Cratylic name and precising definition (`has no # Cratylic name`, `has no precising definition`). Its explanation says where each example lives, in its concept's record in `design/model/`, written as given–when–then, and how its acceptance test, in the project's own test framework, is titled, `<context>/<concept>: <example name>`, unless it is marked judged in review. The command's orientation states the domain model's purpose: a team of AI agents in industry roles, installed into the agent harness you already use, holding your meaning in a living domain model written by Cratylic context design and realizing it by behaviour-driven development; its theory points at the context-engineering context.
+- c18354e: The command describes itself, and every omp session knows from its start what cratylus is for and how using it starts. `@cratylus/runtime` holds the one text, `ORIENTATION` (of `PURPOSE`, `START` and `THEORY`): what cratylus is for, that using it starts by launching the business analyst with `omp --agent business-analyst` and saying what you want, and that its theory is cratylic context design, whose domain model is in cratylus's repository at `design/model/cratylic-context-design`.
+
+  `cratylus --help` opens with what the command is for. `cratylus` with no arguments prints the three-line orientation and a line naming `cratylus --help` for everything else, on stdout, exit 0 (it printed the help on stderr and exited 1). `cratylus --explain` prints `{name, purpose, orientation}` as JSON.
+
+  The cratylus omp extension runs the reached command's `--explain` once at load and appends its orientation, verbatim, right after omp's own system prompt in every session, launched or not, main or dispatched; a command that cannot explain itself adds nothing. The READMEs name the business analyst, by its command, as the way in.
+
+### Patch Changes
+
+- 86b9f42: Canon's agents carry no `reconstitution` procedure or memory: the business analyst and the tech lead keep `source-of-truth` and `working` memory. The runtime's README describes the model check as holding the domain model to its acceptance tests.
+- 23826e9: The READMEs document the domain model as plain files in `design/model`, one per concept, and the model check (`cratylus model check`, the tool `model_check`) that binds every example to its acceptance test.
+- 53f1bba: nico's expertise is terminology work as cratylic context design practises it, finding each concept's Cratylic name, its correction beside it, in the bounded contexts it is given. The canon README names the discipline cratylic context design, and the package keywords say `cratylic-context-design`.
+- 4958b21: The person cratylus serves is called the product owner everywhere, never the operator: in the elicit skill, the `install` help and refusals, the READMEs and the code's comments.
+
+  **Breaking.** The canon's lifecycle moment `operator.consult.pre` is now `product-owner.consult.pre`, and `@cratylus/forge`'s exported omp bindings (`canonicalActToOmp`, `ompBindingOf`) know it only by the new name. A hook bound to `operator.consult.pre` must now name `product-owner.consult.pre`.
+
+- a1abdda: The runtime's README and source comments speak the design's terms: the canon whose skills route to the runtime, where they said corpus, and a concept's term, where they said its anchor.
+
 ## 0.19.0
 
 ### Minor Changes
