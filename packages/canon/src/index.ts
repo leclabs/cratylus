@@ -23,7 +23,7 @@
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
-import { PRACTICE_RULESETS, RULESETS } from './rulesets.js';
+import { RULESETS } from './rulesets.js';
 
 export {
   CompositionRefusal,
@@ -34,7 +34,7 @@ export {
   type Stated,
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
-export { MANIFEST, PRACTICE_RULESETS, RULESETS };
+export { MANIFEST, RULESETS };
 export { businessAnalystRole } from './roles/business-analyst.js';
 export { codeReviewerRole } from './roles/code-reviewer.js';
 export { softwareEngineerRole } from './roles/software-engineer.js';
@@ -58,9 +58,6 @@ export default defineAgentPlugin({
   // WHICH rulesets exist — carried the same way, so an install offers the rulesets
   // the canon declares (`rulesets.ts`).
   rulesets: RULESETS,
-  // The rulesets the agents' practice departs by, which every install places with
-  // the agents.
-  practiceRulesets: PRACTICE_RULESETS,
   factors: dir('./factors'),
   agents: dir('./agents'),
   skills: dir('./skills'),

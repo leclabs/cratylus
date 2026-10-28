@@ -6,6 +6,7 @@
 
 ## Working conventions
 
+- **Practice:** this project practises behaviour-driven development.
 - **Branching:** feature branches branch from `develop`, are short-lived, and merge into `develop` locally, without a pull request. A release is a pull request from `develop` into `main`, and it is the product owner's.
 - **One check:** `pnpm check` builds, lints, typechecks, runs the deterministic tests and runs the model check (`cratylus model check`), and fails when any of them fails. The `pre-push` hook runs it, and CI runs exactly it after checkout and `pnpm install`, with nothing before or after. Every dependency it needs is declared in the workspace's manifests; nothing checks what else is installed.
 - **Tests cover cratylus's own deterministic code only:** the check tests cratylus's code and the files it produces, never by starting omp, an agent or a model. Agent behaviour is judged in real use. The supported omp version is >=18.12.0; the check neither needs nor starts omp, and after an omp upgrade the product owner or the business analyst tries one real session by hand.

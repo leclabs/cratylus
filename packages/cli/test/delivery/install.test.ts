@@ -127,39 +127,13 @@ it('delivery/install: installs the industry roles', () => {
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
 });
 
-it('delivery/install: asks nothing about practices', () => {
+it('delivery/install: installs every agent and skill unattended', () => {
   h = emptyHome();
   // No terminal: `run` hands the command an empty stdin pipe and pipes its output.
   const r = h.command(['install', '--harness', 'omp']);
   expect(r.code, said(r)).toBe(0);
-  expect(said(r), 'install says nothing of practices').not.toMatch(/practice/i);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
   const skills = canonSkills();
   expect(skills.length, 'the canon ships skills').toBeGreaterThan(0);
   expect(offeredSkills(h.home)).toEqual(skills);
-});
-
-// Binds design/model/delivery/install.md.
-it("delivery/install: installs the practice's rules with the agents", () => {
-  h = emptyHome();
-  // No terminal and no --rules: the practice's departure is not a choice.
-  const r = h.command(['install', '--harness', 'omp', '--scope', 'user']);
-  expect(r.code, said(r)).toBe(0);
-  expect(
-    entries(join(h.home, '.cratylus/omp/rules')),
-    'only the practice rule is placed without a choice of rulesets',
-  ).toEqual(['behaviour-driven-development-examples.md']);
-  expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
-
-  // Other conventions remain offered, rather than becoming defaults; the
-  // practice's ruleset must not appear among the choices.
-  const offered = /rulesets: ([^)]+)\)/.exec(said(r));
-  expect(offered, 'install still offers the optional rulesets').not.toBeNull();
-  expect(offered![1]!.split(', ').sort()).toEqual([
-    'commit-discipline',
-    'conventional-commits',
-    'established-libraries',
-    'gitflow',
-    'green-field',
-  ]);
 });

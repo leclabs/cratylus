@@ -153,41 +153,6 @@ describe('projecting rules', () => {
   });
 });
 
-describe('projecting the practice rulesets', () => {
-  const withPractice = (practiceRulesets: readonly Ruleset[]) => ({
-    ...plugin([branching]),
-    practiceRulesets,
-  });
-
-  it('renders every practice rule whatever the rules named, and reports it apart from the rulesets offered', async () => {
-    const none = await project([withPractice([commits])]);
-    expect(ruleFiles(none.files)).toEqual(['rules/commits-small.md']);
-    expect(none.practiceRules).toEqual(['commits-small']);
-    expect(none.rulesets.map((r) => r.name)).toEqual(['branching']);
-    const chosen = await project(
-      [withPractice([commits])],
-      ['branching-short'],
-    );
-    expect(ruleFiles(chosen.files)).toEqual([
-      'rules/commits-small.md',
-      'rules/branching-short.md',
-    ]);
-  });
-
-  it('refuses a practice rule named among the offered ones', async () => {
-    await expect(
-      project([withPractice([commits])], ['commits-small']),
-    ).rejects.toThrow(/'commits-small' is no rule of the plugin set/);
-  });
-
-  it('refuses a rule name a practice ruleset and an offered one both carry', async () => {
-    const twin: Ruleset = { ...commits, rules: [...branching.rules] };
-    await expect(project([withPractice([twin])])).rejects.toThrow(
-      /'branching-trunk' is in both the 'commits' and the 'branching' rulesets/,
-    );
-  });
-});
-
 describe('placing rules in the owned root', () => {
   it('places each rendered rule at rules/<name>.md under the root', async () => {
     const tree = await project(

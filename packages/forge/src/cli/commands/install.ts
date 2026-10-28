@@ -34,11 +34,10 @@
 // THE RUN IS GUIDED, and it is the product owner's decisions that it guides. There are three:
 // which harness, which of the rules the canon offers, and which model each tier the agents
 // fall back to, and each persona's own role, runs on. What is placed is no decision: every
-// agent and skill of the canon is installed, with the rules its agents' practice departs
-// by. Each decision has a flag; a decision given by flag is never asked, and a run with no
-// terminal (or `--yes`) takes the default. The offered rules default to none, and the
-// choice, once made, is recorded by name and kept by every later install that is not
-// told otherwise. Before anything is written the run
+// agent and skill of the canon is installed. Each decision has a flag; a decision given by
+// flag is never asked, and a run with no terminal (or `--yes`) takes the default. The
+// rules default to none, and the choice, once made, is recorded by name and kept by every
+// later install that is not told otherwise. Before anything is written the run
 // shows what it would place, and on a terminal that is not fully decided it asks once to
 // go ahead: declining writes nothing. What it places is then summarised in a few lines;
 // the per-file detail is `--verbose`'s.
@@ -398,8 +397,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
   // ── RENDER ───────────────────────────────────────────────────────────────────
   // Which rulesets the canon offers is only known from a render: so render the whole
-  // canon once to learn them, and again with the rules chosen. Every render places the
-  // rules the agents' practice departs by.
+  // canon once to learn them, and again with the rules chosen.
   // Discovery refuses a canon whose values share a namespace or whose
   // reference graph dangles or cycles, before anything is rendered.
   await discoverValues(plugins);
@@ -795,8 +793,8 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The offered rules placed, those of an earlier choice no longer offered, and
-     *  whether the choice is still open: offered, but neither told, recorded nor asked. */
+    /** The rules placed, those of an earlier choice no longer offered, and whether the
+     *  choice is still open: offered, but neither told, recorded nor asked. */
     rules: {
       chosen: readonly string[];
       dropped: readonly string[];
@@ -826,14 +824,13 @@ function describe(
       : `${CLI_BIN} is installed in ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
-  // The rules placed: those every install places with the agents, then those chosen.
-  const placedRules = [...tree.practiceRules, ...ctx.rules.chosen];
-  if (placedRules.length > 0 || ctx.rules.dropped.length > 0) {
+  if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
     const dropped =
       ctx.rules.dropped.length > 0
         ? `; ${dry ? 'would drop' : 'dropped'} ${list(ctx.rules.dropped)}, no longer offered`
         : '';
-    const placed = placedRules.length > 0 ? list(placedRules) : 'none';
+    const placed =
+      ctx.rules.chosen.length > 0 ? list(ctx.rules.chosen) : 'none';
     lines.push(`  rules: ${placed}${dropped}`);
   }
   if (found.references.length > 0) {

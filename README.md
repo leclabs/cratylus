@@ -18,8 +18,9 @@ omp --agent business-analyst # start here: the business analyst
 `cratylus` with no arguments prints how to start, and `cratylus --help` lists everything else.
 
 `cratylus install` installs every agent and skill cratylus ships, and asks only what you have not
-said: which harness, which rules your agents follow in every project (rulesets such as `gitflow`,
-`conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`), and which
+said: which harness, which rules your agents follow in every project (rulesets such as
+`behaviour-driven-development`, `gitflow`, `conventional-commits`, `commit-discipline`,
+`established-libraries`, `green-field`), and which
 model each agent falls back to. It shows what it will place and places it once you confirm, under
 one root cratylus owns, `~/.cratylus/omp/`, which omp loads in every project.
 
