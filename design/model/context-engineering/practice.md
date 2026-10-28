@@ -1,12 +1,11 @@
 # practice
 
-A project convention adopted by its name alone; cratylus's departures from it, where it has any, complete its ruleset
+A project convention adopted by its name alone, each role's participation included
 
 ## Examples
 
 ### a practice is adopted by its name
 
 Given cratylus installed
-When a session lists the rules cratylus installed
-Then the behaviour-driven-development ruleset adopts behaviour-driven development by name
-And its one other rule is its departure: each example lives in its concept's record, its acceptance test titled by the example's name
+When a session starts
+Then its context adopts behaviour-driven development by that name alone

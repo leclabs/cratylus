@@ -1,6 +1,6 @@
 # install
 
-At user scope by default, or project scope; places every agent and skill and the practice's ruleset, and offers the other rulesets, each taken whole or rule by rule; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
+At user scope by default, or project scope; places every agent and skill, and offers the rulesets, each taken whole or rule by rule; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
 
 ## Examples
 
@@ -15,10 +15,3 @@ Then the harness offers exactly business-analyst, tech-lead, software-engineer, 
 Given no terminal
 When install runs at user scope naming only the harness
 Then it installs every agent and skill and completes
-
-### installs the practice's ruleset
-
-Given no terminal and no rules named
-When install runs at user scope
-Then the behaviour-driven-development ruleset is installed
-And it is the only ruleset installed
