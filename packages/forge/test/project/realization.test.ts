@@ -10,7 +10,7 @@ import { SHORTFALL, shortfallAdapter } from './shortfall-adapter.js';
 describe('bound — the harness realizes every event at the composed scope', () => {
   // Composed by no agent, so session-wide: omp realizes it at that scope.
   const constraint = {
-    anchor: 'example-constraint',
+    term: 'example-constraint',
     substrate: 'harness',
     events: ['tool.use.pre'],
     agents: [],
@@ -26,7 +26,7 @@ describe('bound — the harness realizes every event at the composed scope', () 
 describe('steer — no peer for the event at all: degrade, do not fail', () => {
   // `file.read.pre` has no peer on omp.
   const orphan = {
-    anchor: 'example-constraint',
+    term: 'example-constraint',
     substrate: 'harness',
     events: ['file.read.pre'],
     agents: [],
@@ -50,7 +50,7 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
   // `turn.end` is realizable on the shortfall adapter, but cannot be narrowed to
   // an agent, so the composed constraint cannot be emitted selectively.
   const composed = {
-    anchor: 'example-constraint',
+    term: 'example-constraint',
     substrate: 'harness',
     events: ['turn.end'],
     agents: ['example-agent-a', 'example-agent-b'],
@@ -73,10 +73,10 @@ describe('steer — fires it but cannot NAME the agent: degrade, do not widen', 
     expect(loss?.warning).toContain('example-agent-b'); // a
   });
 
-  it('tells the operator the rule SURVIVES — the whole reason this is not fatal', () => {
+  it('tells the product owner the rule SURVIVES — the whole reason this is not fatal', () => {
     // A warning that only announced a loss would read as silent non-enforcement.
     // What makes it safe to continue is that the declaration still governs, and
-    // the message has to say so or the operator cannot judge the risk.
+    // the message has to say so or the product owner cannot judge the risk.
     const [loss] = realizationOf(composed, shortfallAdapter).losses;
     expect(loss?.warning).toMatch(/declaration/i);
     expect(loss?.warning).toMatch(/steer, not a bound/i);
@@ -115,7 +115,7 @@ describe('one loss degrades the WHOLE constraint, never a subset of its events',
     // so scope is not in question and the one loss is the unrealizable event.
     const r = realizationOf(
       {
-        anchor: 'example-constraint',
+        term: 'example-constraint',
         substrate: 'harness',
         events: ['tool.use.pre', 'file.read.pre'],
         agents: [],
@@ -132,7 +132,7 @@ describe('one loss degrades the WHOLE constraint, never a subset of its events',
 describe('routed — another substrate: not this adapter’s concern, and not a loss', () => {
   // A git-substrate constraint belongs to git, not the harness adapter.
   const gitConstraint = {
-    anchor: 'repo-continuity',
+    term: 'repo-continuity',
     substrate: 'git',
     events: ['vcs.commit.post'],
     agents: ['example-agent'],
@@ -167,7 +167,7 @@ describe('routed — another substrate: not this adapter’s concern, and not a 
   });
 });
 
-describe('what the corpus actually faces — measured per predicate, not assumed', () => {
+describe('what the canon actually faces — measured per predicate, not assumed', () => {
   const CANON_EVENTS = [
     'session.start',
     'tool.use.pre',
@@ -175,7 +175,7 @@ describe('what the corpus actually faces — measured per predicate, not assumed
     'subagent.dispatch.pre',
   ] as const;
 
-  it('every harness event the canon cells declare is realizable on omp, none scoped to an agent', () => {
+  it('every harness event the canon declares is realizable on omp, none scoped to an agent', () => {
     for (const event of CANON_EVENTS) {
       expect(ompHarnessAdapter.realizes(event)).toBe(true);
       expect(ompHarnessAdapter.scopes(event)).toBe(false);

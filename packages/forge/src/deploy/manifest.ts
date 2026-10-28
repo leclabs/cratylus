@@ -1,46 +1,29 @@
-// Deploy's manifest — the DEPLOY-SPECIFIC half of prune-to-manifest.
+// The DEPLOY RECORD an earlier installation kept — the layout before the owned root,
+// on the harness's own surfaces — read so an upgrade or uninstall takes back exactly
+// what it recorded placing and editing, and nothing else.
 //
-// The mechanism itself (record → stale → contained → remove, and the bootstrap
-// bound that makes an unexpected root safe) lives in `../prune`, because
-// `project` converges its `--out` render tree by exactly the same means one
-// stage upstream. Read that module's header for WHY the prune is bounded by a
-// record rather than by a naming convention; this file holds only what is
-// deploy's own and would be meaningless to a projector:
-//
-//   - the record's LOCATION and shape in a `.claude/` root, partitioned by KIND
-//     (a projector has no kinds — its render tree is one unit);
-//   - `KIND_ROOT` / `unattributable`, the report over a root SHARED with the
-//     operator, the harness, and plugin installs (an `--out` dir is not shared);
-//   - the settings.json hook REGISTRATIONS, which only a deploy ever writes.
-//
-// Deploy's three further bounds on candidacy — a warned skip carries forward, a
-// `--only` run prunes inside its subset, and no prior manifest prunes nothing —
-// are enforced by `staleFiles`/`nextKindRecord` in `../prune` and consumed here.
+// The removal itself (contained → remove) lives in `../prune`; read that module's
+// header for WHY a removal is bounded by a record rather than by a naming convention.
+// This file holds the record's LOCATION and shape in the harness root, partitioned by
+// KIND; the host edits it recorded and how each is undone; and the settings.json hook
+// REGISTRATIONS it recorded writing.
 
 import { createHash } from 'node:crypto';
 import {
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, relative, resolve as resolvePath } from 'node:path';
-import { type KindRecord, recordPath } from '../prune/index.js';
-import { settingsJson } from './settings-json.js';
+import { dirname, resolve as resolvePath } from 'node:path';
+import type { KindRecord } from '../prune/index.js';
 import { splitLines } from './yaml-lines.js';
 
-// Re-exported so deploy's callers keep reading the prune vocabulary off deploy's
-// own module — the lift moved the HOME of the mechanism, not deploy's surface.
-// Exactly what `deploy.ts` consumes and no more: `contained` is the escape guard
-// INSIDE `applyPrune` and stays addressable only where it lives.
-export {
-  type KindRecord,
-  applyPrune,
-  nextKindRecord,
-  staleFiles,
-} from '../prune/index.js';
+// Re-exported so the uninstall reads the prune it applies off deploy's own module:
+// `contained` is the escape guard INSIDE `applyPrune` and stays addressable only
+// where it lives.
+export { applyPrune } from '../prune/index.js';
 
 /** Where the record lives, relative to the deployed `.claude/` root. */
 export const MANIFEST_REL = '.forge/deploy-manifest.json';
@@ -64,27 +47,23 @@ export interface DeployManifest {
   // host's edit. It is what deploy would write, never what the host chose.
   agentModels: Record<string, string | null>;
   // The agents whose `model:` line is the host's, whatever its value against the
-  // rendering: one the operator chose at install, or one the host edited afterwards.
+  // rendering: one the product owner chose at install, or one the host edited afterwards.
   // A deploy places such a def carrying the line the host has, or none where the host
   // removed it, and never renders one over it — a value cannot say this, since a
   // chosen line can equal the rendered one and a removed line equals "none". A manifest
   // written before this list reads as `[]`: `agentModels` alone then decides.
   hostModels: string[];
-  // The model roles whose `modelRoles` entry in the host's config is the operator's
+  // The model roles whose `modelRoles` entry in the host's config is the product owner's
   // choice (omp), whatever its value against the one install seeds the entry with: a
   // value cannot say this, since a choice can equal the seed. Such an entry is the
   // host's from then on. A manifest written before this list reads as `[]`.
   hostRoutes: string[];
   // model role -> the value install seeded its `modelRoles` entry with (omp). An entry
   // that still holds that value and is not in `hostRoutes` is install's own seed, which
-  // a later install moves to the value it would seed now, or to the model the operator
+  // a later install moves to the value it would seed now, or to the model the product owner
   // chooses. A manifest written before this record reads as `{}`; an entry recorded in
   // `hostEdits` as an inserted line, standing byte for byte, is then install's own.
   modelRoleSeeds: Record<string, string>;
-  // The practices the last install chose, by name, for the next to preselect. `null` ⇒
-  // none recorded (a host installed before practices, or a deploy that is not an install),
-  // which an install reads as a fresh host.
-  practices: string[] | null;
   // The claude `statusLine` install placed in the host's settings.json: `placed` is the
   // `command` it wrote (a later run that finds another there knows the host changed it),
   // `host` the command the host ran before — the badge worker carries it verbatim — or
@@ -95,7 +74,7 @@ export interface DeployManifest {
   // WROTE there, for every path in `kinds`. A placed file whose bytes still hash to this
   // is untouched since; one that does not is the host's own edit, and an uninstall
   // leaves it. A path with no digest (recorded before digests were kept) is taken back:
-  // the record of placing it is what makes it cratylus's (decision 0114).
+  // the record of placing it is what makes it cratylus's.
   digests: Record<string, string>;
   // rel path (from the deploy root, POSIX) of a host-owned TEXT file install edited
   // (omp's config.yml) -> the lines it put in. The bytes around them are the host's and
@@ -154,7 +133,6 @@ export function emptyManifest(): DeployManifest {
     hostModels: [],
     hostRoutes: [],
     modelRoleSeeds: {},
-    practices: null,
     statusLine: null,
     digests: {},
     hostEdits: {},
@@ -186,7 +164,6 @@ export function readManifest(harnessDir: string): DeployManifest {
       hostModels: parsed.hostModels ?? [],
       hostRoutes: parsed.hostRoutes ?? [],
       modelRoleSeeds: parsed.modelRoleSeeds ?? {},
-      practices: parsed.practices ?? null,
       statusLine: parsed.statusLine ?? null,
       digests: parsed.digests ?? {},
       hostEdits: parsed.hostEdits ?? {},
@@ -195,12 +172,6 @@ export function readManifest(harnessDir: string): DeployManifest {
   } catch {
     return emptyManifest();
   }
-}
-
-/** Does this root carry a prior record at all? (No record ⇒ nothing is
- *  attributable ⇒ this deploy only establishes one.) */
-export function hasManifest(harnessDir: string): boolean {
-  return existsSync(resolvePath(harnessDir, MANIFEST_REL));
 }
 
 export function writeManifest(harnessDir: string, m: DeployManifest): void {
@@ -225,39 +196,6 @@ export function digestFile(abs: string): string | undefined {
   } catch {
     return undefined;
   }
-}
-
-/** The digests of the files a placer just wrote, read back from the root. Called
- *  straight after placing, so the bytes hashed are the bytes the placer laid down. */
-export function digestWritten(
-  harnessDir: string,
-  written: KindRecord,
-): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const rel of Object.values(written).flat()) {
-    const digest = digestFile(resolvePath(harnessDir, rel));
-    if (digest !== undefined) out[rel] = digest;
-  }
-  return out;
-}
-
-/** The digests to keep once a run has written `fresh`: one per path the new `kinds`
- *  record, `fresh`'s where this run wrote it and the recorded one where it did not
- *  (a warned skip, a name outside a `--only` subset) — carried, never re-read, so a
- *  file the host has edited is not blessed by a run that did not write it. */
-export function nextDigests(
-  prior: Readonly<Record<string, string>>,
-  kinds: Readonly<Record<string, KindRecord>>,
-  fresh: Readonly<Record<string, string>>,
-): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const record of Object.values(kinds)) {
-    for (const rel of Object.values(record).flat()) {
-      const digest = fresh[rel] ?? prior[rel];
-      if (digest !== undefined) out[rel] = digest;
-    }
-  }
-  return out;
 }
 
 /** A file's lines with their terminators, so joining them gives the file back. */
@@ -526,56 +464,6 @@ export function undoHunks(
   return { text: lines.join(''), results: results.reverse() };
 }
 
-/** What install did to one host-owned text file, merged into what was recorded for it
- *  before (`prior`), and never twice: a hunk already recorded is not recorded again,
- *  and neither is an insertion whose every line an earlier insertion already covers (a
- *  re-install that finds its own lines there). `undefined` where nothing is new. */
-export function mergeHostEdit(
-  prior: HostEdit | undefined,
-  edit: HostEdit,
-): HostEdit | undefined {
-  if (edit.hunks.length === 0) return undefined;
-  const hunks = [...(prior?.hunks ?? [])];
-  const covered = new Map<string, number>();
-  for (const h of hunks) {
-    if (h.before.length > 0) continue;
-    for (const line of h.after) covered.set(line, (covered.get(line) ?? 0) + 1);
-  }
-  let added = 0;
-  for (const hunk of edit.hunks) {
-    if (hunks.some((h) => JSON.stringify(h) === JSON.stringify(hunk))) continue;
-    if (hunk.before.length === 0) {
-      const left = new Map(covered);
-      const already = hunk.after.every((line) => {
-        const n = left.get(line) ?? 0;
-        left.set(line, n - 1);
-        return n > 0;
-      });
-      if (already) continue;
-    }
-    hunks.push(hunk);
-    added += 1;
-  }
-  if (added === 0 && prior !== undefined) return undefined;
-  return {
-    ...prior,
-    created: (prior?.created ?? false) || edit.created,
-    hunks,
-  };
-}
-
-/** Every line install recorded as its own insertion into `file`, with its terminator:
- *  what an entry there must equal, byte for byte, to still be what install wrote. */
-export function recordedLines(harnessDir: string, file: string): Set<string> {
-  const edit =
-    readManifest(harnessDir).hostEdits[recordPath(relative(harnessDir, file))];
-  const lines = new Set<string>();
-  for (const hunk of edit?.hunks ?? []) {
-    if (hunk.before.length === 0) for (const l of hunk.after) lines.add(l);
-  }
-  return lines;
-}
-
 /** A hunk that records `count` lines ALREADY in `text`, from line `from`, as install's:
  *  what an install from before edits were recorded put there. */
 export function adoptedHunk(
@@ -606,53 +494,7 @@ export function recordsHostEdits(harnessDir: string): boolean {
   }
 }
 
-/** The kind's top-level dir under the deploy root, and how a name reads out of
- *  an entry there. An agent entry is `<name><agentExt>`, and the extension is the
- *  HARNESS's — it is not a constant of this table, so the table only records THAT
- *  the entry is extended, never with what. Naming `.md` here would make prune
- *  blind to a harness whose agents carry another extension: a tree filtered by
- *  `.md` matches nothing, and nothing reads as "no orphans". */
-const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
-  agent: { dir: 'agents', extended: true },
-  skill: { dir: 'skills' },
-  hooks: { dir: 'hooks' },
-};
-
-/**
- * REPORT-ONLY. Names sitting in the kind's dir that this tool cannot account
- * for: neither in the render tree nor in the manifest. Two populations are mixed
- * in here and NOTHING can separate them — an operator's own artifact, and an
- * orphan a pre-manifest deploy left behind. Because they cannot be separated,
- * they are never deleted; the dry run merely SHOWS them so the operator can
- * judge. Deriving ownership from what a dir happens to contain is exactly the
- * inference `applyPrune` refuses, and it stays refused: this returns a list, and
- * no caller may pass it to a delete.
- */
-export function unattributable(
-  harnessDir: string,
-  kind: string,
-  treeNames: string[],
-  manifestNames: string[],
-  agentExt = '.md',
-): string[] {
-  const spec = KIND_ROOT[kind];
-  if (!spec) {
-    return [];
-  }
-  const dir = resolvePath(harnessDir, spec.dir);
-  if (!existsSync(dir)) {
-    return [];
-  }
-  const suffix = spec.extended ? agentExt : undefined;
-  const known = new Set([...treeNames, ...manifestNames]);
-  return readdirSync(dir)
-    .filter((e) => (suffix ? e.endsWith(suffix) : true))
-    .map((e) => (suffix ? e.slice(0, -suffix.length) : e))
-    .filter((n) => !known.has(n))
-    .sort();
-}
-
-/** One Claude `settings.json` command-hook entry (mirrors `hooks.ts`). */
+/** One Claude `settings.json` command-hook entry. */
 interface HookCmd {
   type?: string;
   command?: string;
@@ -702,27 +544,4 @@ export function unregisterHookCommands(
   }
   settings.hooks = hooks;
   return { settings, removed };
-}
-
-/** Apply `unregisterHookCommands` to a settings file on disk. */
-export function unregisterHookCommandsAt(
-  settingsFile: string,
-  commands: string[],
-  dry: boolean,
-): number {
-  if (commands.length === 0 || !existsSync(settingsFile)) {
-    return 0;
-  }
-  const text = readFileSync(settingsFile, 'utf-8');
-  let existing: Record<string, unknown>;
-  try {
-    existing = JSON.parse(text) as Record<string, unknown>;
-  } catch {
-    return 0; // never rewrite a file we could not parse
-  }
-  const { settings, removed } = unregisterHookCommands(existing, commands);
-  if (removed > 0 && !dry) {
-    writeFileSync(settingsFile, settingsJson(settings, text), 'utf-8');
-  }
-  return removed;
 }

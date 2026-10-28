@@ -9,8 +9,10 @@
 import { Command } from 'commander';
 import { describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
-import { VERBS as CONCEPTS } from '../src/capabilities/concepts/dispatch.js';
-import { dispatchConcepts } from '../src/capabilities/concepts/index.js';
+import {
+  VERBS as MODEL,
+  dispatchModel,
+} from '../src/capabilities/model/index.js';
 import {
   VERBS as VERSION_SKEW,
   dispatchVersionSkew,
@@ -21,8 +23,8 @@ import {
   type Capability,
 } from '../src/capability.js';
 import { capabilityCommands } from '../src/main.js';
-import { type VerbFlags, refused } from '../src/verb-flags.js';
-import { everyEntry, repository } from './verb-surface.js';
+import type { Verbs } from '../src/verbs.js';
+import { repository } from './verb-surface.js';
 
 const repo = repository();
 
@@ -67,8 +69,8 @@ async function run(
   return { code, out: out.join(''), err: err.join('') };
 }
 
-const SURFACES: { readonly [C in Capability]: VerbFlags } = {
-  concepts: CONCEPTS,
+const SURFACES: { readonly [C in Capability]: Verbs } = {
+  model: MODEL,
   versionSkew: VERSION_SKEW,
 };
 
@@ -87,55 +89,31 @@ describe('the capability commands print their help from the declarations', () =>
     },
   );
 
-  it.each([['concepts', 'define', '<concept>']] as const)(
-    '%s %s --help documents its positional and every flag',
-    async (c, verb, positional) => {
-      const declared = SURFACES[c][
-        verb as keyof (typeof SURFACES)[typeof c]
-      ] as VerbFlags[string];
-      const { code, out, err } = await run([c, verb, '--help']);
-      expect(err).toBe('');
-      expect(code).toBe(0);
-      expect(out).toContain(declared.purpose);
-      if (positional !== null) {
-        expect(out).toContain(positional);
-        expect(out).toContain(declared.positional?.description);
-      }
-      expect(Object.keys(declared.flags).length).toBeGreaterThan(0);
-      for (const [flag, { description, takes }] of Object.entries(
-        declared.flags,
-      )) {
-        const line = out.split('\n').find((l) => l.includes(`--${flag}`));
-        expect(line, flag).toContain(description);
-        expect(line?.includes('<value>'), flag).toBe(takes === 'value');
-      }
-    },
-  );
-
-  it('`-h` after a verb asks for the same help as `--help`', async () => {
-    const asked = await run(['concepts', 'define', '--help']);
-    expect((await run(['concepts', 'define', '-h'])).out).toBe(asked.out);
-    expect((await run(['concepts', '-h'])).out).toBe(
-      (await run(['concepts', '--help'])).out,
+  it('`-h` asks for the same help as `--help`', async () => {
+    const asked = await run(['versionSkew', 'report', '--help']);
+    expect(asked.out).toContain(VERSION_SKEW.report.purpose);
+    expect((await run(['versionSkew', 'report', '-h'])).out).toBe(asked.out);
+    expect((await run(['versionSkew', '-h'])).out).toBe(
+      (await run(['versionSkew', '--help'])).out,
     );
   });
 });
 
 describe('the capability commands answer an undeclared verb with what to do', () => {
-  it('names the declared verbs and help for an unknown concepts verb', async () => {
-    const { code, out, err } = await run(['concepts', 'frob']);
+  it('names the declared verbs and help for an unknown verb', async () => {
+    const { code, out, err } = await run(['versionSkew', 'frob']);
     expect(out).toBe('');
     expect(code).toBe(1);
     expect(err.trimEnd().split('\n')).toHaveLength(1);
     expect(err).toContain("'frob'");
-    for (const verb of Object.keys(CONCEPTS)) expect(err).toContain(verb);
-    expect(err).toContain('cratylus concepts --help');
+    for (const verb of Object.keys(VERSION_SKEW)) expect(err).toContain(verb);
+    expect(err).toContain('cratylus versionSkew --help');
   });
 
   const DISPATCHERS: {
     readonly [C in Capability]: (argv: string[]) => unknown;
   } = {
-    concepts: dispatchConcepts,
+    model: (argv) => dispatchModel(argv),
     versionSkew: (argv) => dispatchVersionSkew(argv, {}),
   };
 
@@ -155,104 +133,46 @@ describe('the capability commands answer an undeclared verb with what to do', ()
   );
 });
 
-describe('the capability commands leave a verb’s flags to the verb’s own reader', () => {
-  it('a flag the verb does not take is refused as `refused` words it, and nothing is written', async () => {
-    const before = everyEntry(repo);
-    const { code, out, err } = await run([
-      'concepts',
-      'context',
-      'x',
-      '--subjec',
-      'y',
-    ]);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toBe(
-      `cratylus ${refused('concepts', 'context', ['--subjec'], CONCEPTS.context)}\n`,
-    );
-    expect(everyEntry(repo)).toEqual(before);
-  });
-
-  it('`-h` that is a flag’s value is that value, not a request for help', async () => {
-    const recorded = await run([
-      'concepts',
-      'context',
-      'dash-h',
-      '--subject',
-      '-h',
-    ]);
-    expect(recorded.err).toBe('');
-    expect(recorded.code).toBe(0);
-    const shown = await run(['concepts', 'design', '--context', 'dash-h']);
-    expect(shown.code).toBe(0);
-    expect(JSON.parse(shown.out).contexts[0].subject).toBe('-h');
-  });
-
-  it('`--help` after a flag that takes a value but is missing it is still a request for help', async () => {
-    const { code, out } = await run([
-      'concepts',
-      'define',
-      '--wording',
-      '--help',
-    ]);
-    expect(code).toBe(0);
-    expect(out).toContain('Usage: cratylus concepts define');
-  });
-});
-
-describe('the capability commands refuse a word the verb does not take', () => {
-  const cases: [Capability, string, string[]][] = [
-    ['concepts', 'history', ['c', 'extra']],
-  ];
-
-  it.each(cases)(
-    '%s %s given a surplus word exits 1 with one line naming it and the verb’s --help',
-    async (capability, verb, words) => {
-      const { code, out, err } = await run([capability, verb, ...words]);
+describe('the capability commands refuse any token after the verb', () => {
+  it.each([[['extra']], [['--bogus']], [['extra', '--bogus']]])(
+    'versionSkew report %j exits 1 with one line naming each token and the verb’s --help',
+    async (tokens) => {
+      const { code, out, err } = await run([
+        'versionSkew',
+        'report',
+        ...tokens,
+      ]);
       expect(out).toBe('');
       expect(code).toBe(1);
       expect(err.trimEnd().split('\n')).toHaveLength(1);
-      expect(err).toMatch(new RegExp(`^cratylus ${capability} ${verb}: `));
-      expect(err).toContain("'extra'");
-      expect(err.trimEnd()).toMatch(
-        new RegExp(`cratylus ${capability} ${verb} --help\\.$`),
+      expect(err).toMatch(
+        /^cratylus versionSkew report: it takes no arguments/,
       );
+      for (const token of tokens) expect(err).toContain(`'${token}'`);
+      expect(err.trimEnd()).toMatch(/cratylus versionSkew report --help$/);
     },
   );
 
-  it('a write given a surplus word writes nothing', async () => {
-    const before = everyEntry(repo);
-    const { code, out, err } = await run([
-      'concepts',
-      'context',
-      'a',
-      'b',
-      '--subject',
-      's',
-    ]);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err).toBe(
-      `cratylus ${refused('concepts', 'context', [], CONCEPTS.context, ['b'])}\n`,
+  it('refuses in the very words its dispatcher throws when called as a library', async () => {
+    expect(() => dispatchVersionSkew(['report', 'extra'], {})).toThrow(
+      (await run(['versionSkew', 'report', 'extra'])).err
+        .trimEnd()
+        .replace(`${CLI_BIN} `, ''),
     );
-    expect(everyEntry(repo)).toEqual(before);
   });
 
-  it('an untaken flag and a surplus word are refused together in the one line', async () => {
-    const { code, out, err } = await run([
-      'concepts',
-      'history',
-      't',
-      'extra',
-      '--bogus',
-    ]);
-    expect(out).toBe('');
-    expect(code).toBe(1);
-    expect(err.trimEnd().split('\n')).toHaveLength(1);
-    expect(err).toContain('--bogus');
-    expect(err).toContain("'extra'");
-    expect(err).toBe(
-      `cratylus ${refused('concepts', 'history', ['--bogus'], CONCEPTS.history, ['extra'])}\n`,
+  it('reads `--help`, `-h` or `--explain` as any token after the verb', async () => {
+    const help = (await run(['versionSkew', 'report', '--help'])).out;
+    expect((await run(['versionSkew', 'report', 'extra', '-h'])).out).toBe(
+      help,
     );
+    const explained = await run([
+      'versionSkew',
+      'report',
+      '--bogus',
+      '--explain',
+    ]);
+    expect(explained.code).toBe(0);
+    expect(JSON.parse(explained.out)).toMatchObject({ name: 'report' });
   });
 });

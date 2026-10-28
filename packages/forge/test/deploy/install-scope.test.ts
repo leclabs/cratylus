@@ -1,8 +1,9 @@
-// Installation scopes (decisions 0311, 0313): install and uninstall act for the user,
+// Installation scopes (design/decisions/a-project-installation.md): install and
+// uninstall act for the user,
 // by default, or inside one project. A project installation lives wholly in the
 // project — its owned root `<project>/.cratylus/omp`, and relative references in
 // `<project>/.omp/plugins` a clone elsewhere resolves — writes nothing under the home,
-// writes no operator's own setting (a tier's model, how the session shows its agent),
+// writes no product owner's own setting (a tier's model, how the session shows its agent),
 // and leaves the user's installation as it is, as the user's leaves it.
 
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -21,19 +22,12 @@ import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ompHarnessAdapter } from '../../src/adapters/omp/index.js';
 import { runInstall } from '../../src/cli/commands/install.js';
-import { runProject } from '../../src/cli/commands/project.js';
 import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { projectOf } from '../../src/deploy/install-scope.js';
 import { sessionAgentHiding } from '../../src/deploy/read-settings.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  answers,
-  fixtureAgentSource,
-  fixturePractices,
-  tmp,
-} from './helpers.js';
+import { answers, fixtureAgentSource, tmp } from './helpers.js';
 
 /** The block a project installation keeps in `.omp/plugins/.gitignore`. */
 const BLOCK =
@@ -50,11 +44,10 @@ for (const [name, tier] of [
     join(agents, `${name}.ts`),
     fixtureAgentSource(name, { routing: { tier, effort: 'high' } }),
   );
-const corpus: ProjectablePlugin = {
+const canon: ProjectablePlugin = {
   name: 'scope-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
-  practices: fixturePractices(['alpha', 'beta', 'gamma']),
 };
 
 let home: string;
@@ -85,8 +78,7 @@ const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     harness: 'omp',
     home,
     cwd,
-    corpus: corpus as never,
-    practices: FIXTURE_PRACTICE,
+    canon: canon as never,
     interactive: false,
     version: '1.0.0',
     ...extra,
@@ -624,25 +616,16 @@ describe('uninstall at project scope', () => {
   });
 });
 
-describe('a project installation and an author’s render tree never share a directory', () => {
+describe('a project installation never takes over an earlier render tree', () => {
   it('install refuses a project root over a render tree, writing nothing', async () => {
     mkdirSync(join(projectRoot(), 'agents'), { recursive: true });
     writeFileSync(join(projectRoot(), 'agents', 'alpha.md'), '# rendered\n');
     const before = snapshot(repo);
     expect(await install({ scope: 'project' })).toBe(1);
-    expect(out).toContain("it is an author's render tree");
+    expect(out).toContain('it is an earlier render tree');
     expect(snapshot(repo)).toEqual(before);
     expect(uninstall({ scope: 'project' })).toBe(1);
     expect(snapshot(repo)).toEqual(before);
-  });
-
-  it('project refuses to render into a directory holding an installation record', async () => {
-    expect(await install({ scope: 'project' })).toBe(0);
-    writeFileSync(join(repo, 'cratylus.config.ts'), 'export default {};\n');
-    const before = snapshot(projectRoot());
-    expect(await runProject({ cwd: repo })).toBe(1);
-    expect(out).toContain('holds an installation (installation.json)');
-    expect(snapshot(projectRoot())).toEqual(before);
   });
 });
 

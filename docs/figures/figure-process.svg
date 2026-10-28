@@ -53,8 +53,8 @@
   <path d="M320,380 L320,414 L610,414 L610,390 L668,390" fill="none" stroke="#065f46" stroke-width="2.2" marker-end="url(#arrow)"/>
   <text x="332" y="406" font-size="12" font-weight="700" fill="#065f46">6 · one candidate means exactly what you mean</text>
 
-  <!-- Panel B: confirm the term, cold -->
-  <text x="640" y="48" font-size="24" font-weight="700" fill="#111">Confirm the term, cold</text>
+  <!-- Panel B: confirm the term with a fresh model -->
+  <text x="640" y="48" font-size="24" font-weight="700" fill="#111">Confirm the term with a fresh model</text>
   <text x="640" y="76" font-size="15" fill="#555">a fresh model must read the term back as its meaning</text>
   <rect x="640" y="100" width="520" height="340" rx="14" fill="#fff" stroke="#ddd"/>
 
@@ -90,7 +90,7 @@
   <rect x="1038" y="356" width="112" height="68" rx="34" fill="#d1fae5" stroke="#065f46" stroke-width="2"/>
   <text x="1094" y="377" font-size="13" font-weight="700" fill="#065f46" text-anchor="middle">settled</text>
   <text x="1094" y="394" font-size="11" fill="#065f46" text-anchor="middle">term · domain</text>
-  <text x="1094" y="410" font-size="11" fill="#065f46" text-anchor="middle">missing / spurious</text>
+  <text x="1094" y="410" font-size="11" fill="#065f46" text-anchor="middle">precising definition</text>
 
   <g fill="none" stroke="#6b7280" stroke-width="1.8" marker-end="url(#arrow)">
     <path d="M830,390 L863,390"/>

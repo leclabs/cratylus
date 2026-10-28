@@ -2,7 +2,7 @@
 // The HOST RUNTIME CONFIG — what a capability is configured with, and the EARLIER
 // layout's host config.
 //
-// The corpus's capability configuration — what each skill's runtime face declares
+// The canon's capability configuration — what each skill's runtime face declares
 // under `runtime.configuration`, keyed by its capability — is data on the plugin set,
 // and install writes it into the owned root (`runtime.json`), where the runtime reads
 // it (`@cratylus/runtime/runtime-config`). Nothing else is written there.
@@ -43,7 +43,7 @@ export function runtimeConfigTarget(
  *
  * Two skills configuring ONE capability is refused rather than merged or
  * last-wins: either choice would be the projector deciding which half of the
- * corpus's meaning the runtime receives.
+ * canon's meaning the runtime receives.
  */
 export function capabilityConfiguration(
   skills: readonly Pick<Skill, 'name' | 'runtime'>[],
@@ -120,7 +120,7 @@ export function unreadableRuntimeConfig(path: string): string | undefined {
 
 /** What an uninstall of one harness does to a runtime config. */
 export interface RuntimeConfigRemoval {
-  /** Whether no other installed harness has a stanza in the file, so that the corpus's
+  /** Whether no other installed harness has a stanza in the file, so that the canon's
    *  parts went with this one's. */
   readonly last: boolean;
   /** The document once cratylus's parts are out; `null` when nothing is left in it. */
@@ -141,9 +141,9 @@ export interface RuntimeConfigRemoval {
  * and — when no other harness of `installed` still has a stanza in the file — the
  * vocabulary and the configuration of each capability the deploy wrote. A part the host
  * has changed since stands and is named. Where `record` is `null`, a deploy from before
- * it was kept, every one of those parts is cratylus's by that deploy, and goes
- * (decision 0114). `undefined` when the config holds no stanza of this harness, so
- * there is nothing of its to remove.
+ * it was kept, every one of those parts is cratylus's by that deploy, and goes.
+ * `undefined` when the config holds no stanza of this harness, so there is nothing
+ * of its to remove.
  */
 export function withoutRuntimeParts(
   doc: Plain,

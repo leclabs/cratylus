@@ -32,13 +32,13 @@ const branching: Ruleset = {
     {
       name: 'branching-trunk',
       description: 'one trunk: "main"',
-      convention: 'Integrate on one trunk.',
+      statement: 'Integrate on one trunk.',
       why: 'One line to integrate on.',
     },
     {
       name: 'branching-short',
       description: 'short branches',
-      convention: 'Keep branches short-lived.',
+      statement: 'Keep branches short-lived.',
       why: 'Short branches merge cleanly.',
     },
   ],
@@ -50,7 +50,7 @@ const commits: Ruleset = {
     {
       name: 'commits-small',
       description: 'small commits',
-      convention: 'Commit small steps.',
+      statement: 'Commit small steps.',
       why: 'Small steps review and revert cleanly.',
     },
   ],

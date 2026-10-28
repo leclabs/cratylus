@@ -1,4 +1,4 @@
-// Projection stability (.ts is the sole source): surviving fragments and skills
+// Projection stability (.ts is the sole source): surviving factor values and skills
 // project through forge's omp adapter.
 
 import { readdirSync } from 'node:fs';
@@ -11,8 +11,8 @@ import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import canon from '../src/index.js';
 import { formalize } from '../src/skills/formalize/skill.js';
-import { fragmentToMarkdown } from '../tooling/project.js';
-import { firstExport } from './support/cell-module.js';
+import { valueToMarkdown } from '../tooling/project.js';
+import { firstExport } from './support/first-export.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(canonRoot, 'src');
@@ -31,26 +31,26 @@ async function project() {
 }
 
 describe('projection stability (.ts is the sole source)', () => {
-  it('every dimension fragment projects non-empty and carries its own text', async () => {
-    const modules = await collect('dimensions/**/*.ts');
+  it('every value of a factor projects non-empty and carries its own text', async () => {
+    const modules = await collect('factors/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
-      const f = await firstExport<string>(join(srcRoot, rel));
-      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(
+      const value = await firstExport<string>(join(srcRoot, rel));
+      expect(value.trim().length, `${rel}: value is non-empty`).toBeGreaterThan(
         0,
       );
-      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(
-        f,
+      expect(valueToMarkdown(value), `${rel}: projection carries it`).toContain(
+        value,
       );
     }
   });
 
-  it('is non-vacuous — the strengthened predicate fails an empty fragment', () => {
-    const real = 'a real fragment';
+  it('is non-vacuous — the strengthened predicate fails an empty value', () => {
+    const real = 'a real value';
     expect(real.trim().length).toBeGreaterThan(0);
-    expect(fragmentToMarkdown(real)).toContain(real);
+    expect(valueToMarkdown(real)).toContain(real);
     expect(''.trim().length).toBe(0);
-    expect(fragmentToMarkdown('').length).toBeGreaterThan(0);
+    expect(valueToMarkdown('').length).toBeGreaterThan(0);
   });
 
   it('every skill projects non-empty through omp', async () => {
@@ -85,6 +85,6 @@ describe('projection stability (.ts is the sole source)', () => {
       .filter((e) => e.isDirectory())
       .map((e) => e.name)
       .sort();
-    expect(built, 'stale cells in dist/ still project').toEqual(src);
+    expect(built, 'stale skills in dist/ still project').toEqual(src);
   });
 });

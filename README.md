@@ -1,7 +1,8 @@
 # Cratylus
 
-Cratylus installs a team of named agents and skills into omp, the coding-agent harness,
-each defined in the terms the model already understands. The idea behind it, on one page, is in
+Cratylus installs the industry roles of behaviour-driven development — business analyst, tech lead,
+software engineer, test engineer and code reviewer — with their skills into omp, the coding-agent
+harness, each defined in the terms the model already understands. The idea behind it, on one page, is in
 **[INTRODUCTION.md](./INTRODUCTION.md)**.
 
 ## Install and use
@@ -9,14 +10,17 @@ each defined in the terms the model already understands. The idea behind it, on 
 You need Node 22 or later, and omp run at least once on this machine.
 
 ```sh
-npm install -g cratylus   # the command
-cratylus install          # put the agents on this machine
-omp --agent mav           # start a session as an installed agent
+npm install -g cratylus      # the command
+cratylus install             # put the agents on this machine
+omp --agent business-analyst # start here: the business analyst
 ```
 
-`cratylus install` asks only what you have not said: which harness, which practices (the ways of
-working it offers), which rules your agents follow in every project (rulesets such as `gitflow`,
-`conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`), and which
+`cratylus` with no arguments prints how to start, and `cratylus --help` lists everything else.
+
+`cratylus install` installs every agent and skill cratylus ships, and asks only what you have not
+said: which harness, which rules your agents follow in every project (rulesets such as
+`behaviour-driven-development`, `gitflow`, `conventional-commits`, `commit-discipline`,
+`established-libraries`, `green-field`), and which
 model each agent falls back to. It shows what it will place and places it once you confirm, under
 one root cratylus owns, `~/.cratylus/omp/`, which omp loads in every project.
 
@@ -36,8 +40,11 @@ Every flag, refusal and default is in [packages/cli/README.md](./packages/cli/RE
 
 ## Contributing
 
-Start with [INTRODUCTION.md](./INTRODUCTION.md) and the concept journal, which holds the conceptual
-model per bounded context; [AGENTS.md](./AGENTS.md) holds the working conventions.
+Start with [INTRODUCTION.md](./INTRODUCTION.md) and the domain model in
+[design/model](./design/model): one plain file per concept, in a directory per bounded context,
+with version control as its history. Each example in it is bound to the acceptance test named
+`<context>/<concept>: <example name>`, and `cratylus model check`, part of `pnpm check`, holds the
+two together. [AGENTS.md](./AGENTS.md) holds the working conventions.
 
 ## License
 

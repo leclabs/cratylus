@@ -5,27 +5,10 @@
     "ignore": [
       "dist",
       "node_modules",
-      // canon now has TS source under src/ (lint it) + test/ alongside the Python
-      // toolkit and the markdown corpus. Narrowed from a blanket packages/canon/**
-      // ignore when the corpus inverted to TS modules (T1.1/T1.3); the non-TS
-      // trees (Python toolkit, markdown cells, pipeline manifests) stay ignored.
-      "packages/canon/toolkit/**",
+      // canon's TS source under src/ and test/ is linted; its markdown (the
+      // references and the canon's prose) is not.
       "packages/canon/references/**",
-      "packages/canon/docs/**",
-      "packages/canon/ideas/**",
-      "packages/canon/.manifests/**",
-      "packages/canon/**/*.md",
-      "**/*.generated.ts",
-      "**/generated.ts",
-      // emit_ir.py output (a generated IR artifact, not hand-authored source)
-      "**/ir-bridge/canon.forge.json",
-      // the record store's records root (`RECORDS_ROOT`, runtime
-      // `record-store/store.ts`): machine-written, immutable bytes a formatter must
-      // never own
-      "records/**",
-      // the concept journal (runtime `capabilities/concepts/journal.ts`): one
-      // machine-written entry per file, never edited, which no formatter owns
-      "design/journal/**"
+      "packages/canon/**/*.md"
     ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
@@ -48,12 +31,12 @@
       "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
     },
     {
-      // Generated canon fragment / skill modules: their definiens / verbatim body
+      // Generated canon value / skill modules: their definiens / verbatim body
       // are emitted as backtick template literals UNIFORMLY (codegen policy —
       // handles multi-line + any embedded quote without per-string analysis), so
       // the "unused template literal" style rule does not apply to them.
       "include": [
-        "packages/canon/src/dimensions/**",
+        "packages/canon/src/factors/**",
         "packages/canon/src/skills/**"
       ],
       "linter": { "rules": { "style": { "noUnusedTemplateLiteral": "off" } } }

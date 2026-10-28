@@ -13,7 +13,7 @@ import { defineConfig } from 'tsup';
 // barrel was deleted with the IR-intake lineage it `export *`ed — it had no
 // remaining source consumer, and a barrel over a lineage turns even a type-only
 // import into a full-lineage edge (invisible to grep). Every entry below names
-// a defining module or a real surface index, never a residue barrel.
+// a defining module or a real surface index, never a leftover barrel.
 const adapters = readdirSync('./src/adapters', { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);
@@ -29,12 +29,8 @@ const libEntry: Record<string, string> = {
   // written with, and copying those strings into the reader is exactly the second
   // home this subpath prevents.
   'core/harness-adapter': 'src/core/harness-adapter.ts',
-  'deploy/index': 'src/deploy/index.ts',
   'project/index': 'src/project/index.ts',
   'catalog/index': 'src/catalog/index.ts',
-  'validate/index': 'src/validate/index.ts',
-  'resolve/index': 'src/resolve/index.ts',
-  'config/index': 'src/config/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;

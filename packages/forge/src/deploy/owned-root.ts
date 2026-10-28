@@ -8,23 +8,20 @@
 // and an uninstall removes it whole, and a change the host makes inside it is not kept.
 // For omp the root is an extension package, laid out as omp reads one:
 //
-//   agents/<name>.md        the corpus's agent declarations
-//   skills/<name>/…         the corpus's skills
+//   agents/<name>.md        the canon's agent declarations
+//   skills/<name>/…         the canon's skills
 //   rules/<name>.md         the rules chosen at install, each applied in every session
 //   extensions/<module>.ts  the harness's adapters (the capability tools, the session
 //                           hooks, the dispatch isolation)
 //   hooks/<id>/<worker>     the workers the session hooks run
 //   package.json            the package: its name, the VERSION of cratylus that
 //                           projected it, and the modules omp loads (`omp.extensions`)
-//   runtime.json            each capability's configuration, where the corpus has any
-//   delivered/<origin>/<context>.json
-//                           each context the release delivers, read-only: handed in
-//                           by the command that holds the release and placed as given
+//   runtime.json            each capability's configuration, where the canon has any
 //   installation.json       what install did outside the root: its scope (user or
 //                           project; absent, user); the references it placed;
 //                           whether it created the project's harness directory; the
-//                           practices and the rules it installed, by name; and which
-//                           of the operator's choices it has been answered, never
+//                           rules it installed, by name; and which
+//                           of the product owner's choices it has been answered, never
 //                           their values, which are the host's own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
@@ -57,7 +54,6 @@ import { homedir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  DELIVERED_DIR,
   INSTALLATIONS_DIR,
   INSTALLATION_RECORD_FILE,
   type InstallScope,
@@ -69,7 +65,6 @@ import {
   type HarnessAdapter,
 } from '../core/harness-adapter.js';
 import { settingsJson } from './settings-json.js';
-import type { RenderTree } from './types.js';
 
 /** One file of a render tree, or of the root: its path, its bytes, and whether it is
  *  executable. */
@@ -80,16 +75,6 @@ export interface RenderedFile {
   /** Set on a scoped artifact that is a module the harness loads: the package names
    *  it among its extensions. */
   readonly module?: true;
-  /** Set on a file placed read-only: no one's write bit. */
-  readonly readOnly?: true;
-}
-
-/** A document the release delivers, handed in by the command that holds the release:
- *  its path under the root's delivered directory (`<origin>/<context>.json`) and its
- *  bytes, placed as given, read-only. */
-export interface DeliveredDocument {
-  readonly path: string;
-  readonly content: string;
 }
 
 /** The package manifest the harness reads the root as a package by. */
@@ -120,31 +105,28 @@ export type OwnedReference =
       readonly terminated: boolean;
     };
 
-/** An operator's choice install asks for and writes as the host's own setting:
+/** A product owner's choice install asks for and writes as the host's own setting:
  *  whether the status line shows the session's agent. */
-export type OperatorChoice = 'agentStatus';
+export type ProductOwnerChoice = 'agentStatus';
 
-/** What install did outside the root, and the practices and rules it installed. */
+/** What install did outside the root, and the rules it installed. */
 export interface InstallationRecord {
   /** Where the installation is: for the user, or inside one project. Absent in a
    *  record written before scopes, which is a user installation. */
   readonly scope?: InstallScope;
-  /** The practices installed, in the corpus's order; absent where the corpus
-   *  declares none. */
-  readonly practices?: readonly string[];
-  /** The rules chosen, by name, in the corpus's order, possibly none: the choice an
-   *  upgrade keeps. Absent where the corpus offered no rulesets, or the choice was
+  /** The rules chosen, by name, in the canon's order, possibly none: the choice an
+   *  upgrade keeps. Absent where the canon offered no rulesets, or the choice was
    *  never made. */
   readonly rules?: readonly string[];
   readonly references: readonly OwnedReference[];
   /** Set where a project installation created the project's harness directory
    *  (`<project>/.omp`): its uninstall removes that directory where it is left empty,
-   *  and never one that was there before (decision 0312). */
+   *  and never one that was there before (design/decisions/a-project-installation.md). */
   readonly createdHarnessDir?: true;
-  /** The operator's choices install has been answered, by flag or question: each
+  /** The product owner's choices install has been answered, by flag or question: each
    *  answer is the host's own setting from then on, so no later install asks for it
    *  or applies it again. Absent where none has been. */
-  readonly answered?: readonly OperatorChoice[];
+  readonly answered?: readonly ProductOwnerChoice[];
 }
 
 /** The owned root of `adapter`'s harness under `base` (the process's home when none
@@ -168,7 +150,7 @@ function packageName(adapter: Pick<HarnessAdapter, 'name'>): string {
 
 /** The record in `root`, or `null` where nothing is installed there or the host has
  *  edited it past reading: the root is cratylus's, but nothing in it is trusted to
- *  find what lies outside it (decision 0114). */
+ *  find what lies outside it (design/decisions/one-owned-root-per-installation-scope.md). */
 export function readInstallationRecord(
   root: string,
 ): InstallationRecord | null {
@@ -188,9 +170,8 @@ export function readInstallationRecord(
   }
 }
 
-/** Whether `dir` holds files but no installation record: an author's render tree
- *  (`cratylus project` writes one to `.cratylus/<harness>`), which an installation
- *  never takes over (decision 0311). */
+/** Whether `dir` holds files but no installation record: an earlier render tree,
+ *  which an installation never takes over (design/decisions/a-project-installation.md). */
 export function holdsRenderTree(dir: string): boolean {
   return (
     existsSync(dir) &&
@@ -237,33 +218,6 @@ export function rootFiles(
   );
 }
 
-/** A render tree on disk, read back as files: its agents, its skills, and under its
- *  hooks root the scoped artifacts and the hook workers. */
-export function readRenderTree(tree: RenderTree): RenderedFile[] {
-  const files: RenderedFile[] = [];
-  const walk = (dir: string, under: string): void => {
-    if (!existsSync(dir)) return;
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const abs = join(dir, entry.name);
-      const path = join(under, entry.name);
-      if (entry.isDirectory()) walk(abs, path);
-      else if (entry.isFile())
-        files.push({
-          path,
-          content: readFileSync(abs, 'utf8'),
-          ...((statSync(abs).mode & 0o111) !== 0 ? { executable: true } : {}),
-        });
-    }
-  };
-  walk(tree.agentsDir, 'agents');
-  walk(tree.skillsDir, 'skills');
-  if (tree.hooksDir !== undefined) {
-    walk(join(tree.hooksDir, ENFORCING_STAGE_DIR), ENFORCING_STAGE_DIR);
-    walk(join(tree.hooksDir, 'hooks'), 'hooks');
-  }
-  return files;
-}
-
 /** What placing the root did, or would do. */
 export interface PlaceRootResult {
   readonly root: string;
@@ -276,8 +230,7 @@ export interface PlaceRootResult {
 /**
  * Place `files` (already in the root's layout) as the WHOLE of `root`, with the
  * package manifest (the `version` that projected it, and the extension modules the
- * harness loads), the capability configuration where there is any, each document the
- * release delivers, read-only, and the record.
+ * harness loads), the capability configuration where there is any, and the record.
  * Whatever the root held before is gone, edits and additions alike: the new root is
  * built beside it and moved into its place. Under `dry`, nothing is written.
  */
@@ -286,7 +239,6 @@ export function placeOwnedRoot(opts: {
   readonly root: string;
   readonly files: readonly RenderedFile[];
   readonly version?: string;
-  readonly delivered?: readonly DeliveredDocument[];
   readonly configuration: Readonly<Record<string, unknown>>;
   readonly record: InstallationRecord;
   readonly dry: boolean;
@@ -317,11 +269,6 @@ export function placeOwnedRoot(opts: {
           },
         ]
       : []),
-    ...(opts.delivered ?? []).map((d) => ({
-      path: join(DELIVERED_DIR, d.path),
-      content: d.content,
-      readOnly: true as const,
-    })),
     {
       path: INSTALLATION_RECORD_FILE,
       // The record names the version that projected this root too, beside what it did.
@@ -336,12 +283,7 @@ export function placeOwnedRoot(opts: {
     const abs = join(next, file.path);
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, file.content, {
-      mode:
-        file.readOnly === true
-          ? 0o444
-          : file.executable === true
-            ? 0o755
-            : 0o644,
+      mode: file.executable === true ? 0o755 : 0o644,
     });
   }
   rmSync(root, { recursive: true, force: true });
@@ -470,7 +412,7 @@ function ignoreLink(opts: {
  * directory holds is the host's and stays. A reference location the host holds
  * otherwise — a path that is not a link, a link pointing elsewhere, an entry naming
  * something else — is the host's: left as it is, claimed in no record, and reported
- * with what the operator must do. `prior` is the record of the installation this one
+ * with what the product owner must do. `prior` is the record of the installation this one
  * replaces, which says whether install made the manifest.
  *
  * At user scope the references name the root absolutely, as `plugin link` does. At
@@ -593,8 +535,9 @@ function pruneEmpty(dir: string, stop: string): void {
 /**
  * Take back every reference the harness's own surfaces hold into `root`, found from
  * where each points, never from the record: the root, or its record, may have been
- * edited or removed, and a reference into it is cratylus's by construction (decision
- * 0114). Where the harness loads extension packages (`adapter.packageDir`), that is
+ * edited or removed, and a reference into it is cratylus's by construction
+ * (design/decisions/one-owned-root-per-installation-scope.md). Where the harness loads
+ * extension packages (`adapter.packageDir`), that is
  * each link under `node_modules` whose target is the root or inside it, and each
  * dependency entry of the directory's manifest that names the root or a path inside
  * it. Whatever else those surfaces hold is the host's and stays. The record, where it

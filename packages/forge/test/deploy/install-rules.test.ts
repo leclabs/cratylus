@@ -1,4 +1,4 @@
-// Rules at install: each ruleset the corpus offers is taken whole, rule by rule, or not
+// Rules at install: each ruleset the canon offers is taken whole, rule by rule, or not
 // at all, none by default. A flag tells install the choice, a terminal is asked it, and
 // the choice is recorded by rule name, kept by every later install not told otherwise;
 // a rule no longer offered is dropped from it and named. Uninstall takes the rules out
@@ -21,18 +21,12 @@ import type {
   ProjectablePlugin,
 } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  answers,
-  fixtureAgentSource,
-  fixturePractices,
-  tmp,
-} from './helpers.js';
+import { answers, fixtureAgentSource, tmp } from './helpers.js';
 
 const rule = (name: string) => ({
   name,
   description: `the ${name} rule`,
-  convention: `Follow ${name}.`,
+  statement: `Follow ${name}.`,
   why: `${name} holds.`,
 });
 const branching: Ruleset = {
@@ -76,7 +70,6 @@ const plugin = (
   name: 'rules-fixture',
   manifest: FIXTURE_MANIFEST,
   agents,
-  practices: fixturePractices(['alpha']),
   rulesets,
 });
 const install = (
@@ -87,8 +80,7 @@ const install = (
     harness: 'omp',
     home,
     cwd,
-    corpus: plugin(rulesets) as never,
-    practices: FIXTURE_PRACTICE,
+    canon: plugin(rulesets) as never,
     interactive: false,
     ...extra,
   });
@@ -150,7 +142,7 @@ describe('install — rules', () => {
   it('refuses a name that is no ruleset or rule, and an empty list, writing nothing', async () => {
     expect(await install({ rules: 'branching,nope' })).toBe(1);
     expect(out).toContain(
-      "--rules: 'nope' is no ruleset or rule of this corpus (branching: branching-trunk, branching-short; commits: commits-small)",
+      "--rules: 'nope' is no ruleset or rule of this canon (branching: branching-trunk, branching-short; commits: commits-small)",
     );
     expect(await install({ rules: ' , ' })).toBe(1);
     expect(out).toContain('--rules: no rule was named');

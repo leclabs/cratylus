@@ -1,8 +1,0 @@
-{
-  "id": "01M4KR1TMZ7BT1CCFX6F3M26VR",
-  "at": "2026-10-10T20:28:42.527Z",
-  "kind": "accept",
-  "decisionId": "0043",
-  "entry": "01M4JQS2DMR0WRGPPAJBEASGDH",
-  "reason": "Realized by cut 5: offline proof binds each assertion to its example's words, excludes unnamed host reads, and gates the freeze; the sweep brought all six earlier behavioral checks under it."
-}

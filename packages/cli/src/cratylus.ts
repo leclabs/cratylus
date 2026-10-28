@@ -2,17 +2,14 @@
 //
 // THIS IS THE ONLY FILE IN THE REPOSITORY WITH AN EXECUTABLE SHAPE. The program is
 // built here from what its dependencies export: `@cratylus/forge/cli` the projector's
-// commands (`init` … `catalog`), `@cratylus/runtime/main` one command per capability
-// (`concepts`, `versionSkew`), and `@cratylus/canon` the corpus `install`
-// falls back to. All three are declared dependencies and all three are imported
+// commands (`install`, `uninstall`), `@cratylus/runtime/main` one command per
+// capability (`model`, `versionSkew`), and `@cratylus/canon` the canon `install`
+// installs. All three are declared dependencies and all three are imported
 // statically — there is nothing to defer, nothing to resolve at run time, and no side
 // channel to configure anything through. Both the projector's and the capabilities'
 // commands are handed this build's version, the commit beside it for a build that is
 // no release: `install` records it in what it places, and `versionSkew` reports it as
-// the command's. The projector's are also
-// handed the documents this release delivers, which its build wrote beside the bin
-// (`delivered/<origin>/<context>.json`): `install` and `deploy` place them read-only in
-// the owned root as given.
+// the command's.
 //
 // ONE PROGRAM, so `--help` at every level lists everything it has, and one place
 // answers a word it does not know. The surface used to be two programs — the
@@ -26,25 +23,20 @@
 // <what went wrong>; <what to do>`, with exit code 1, and no stack trace. The refusal
 // of a verb a capability does not declare is the capability's own, from `verbOf`.
 //
-// A READER THAT CLOSES STDOUT EARLY ends any command quietly. `cratylus project
-// --verbose | head -1` has taken all it wants, which is not a failure: the handler is
-// installed once, before any command runs.
+// A READER THAT CLOSES STDOUT EARLY ends any command quietly. `cratylus install
+// --dry-run --verbose | head -1` has taken all it wants, which is not a failure: the
+// handler is installed once, before any command runs.
 
-import { existsSync, readFileSync, readdirSync, realpathSync } from 'node:fs';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import canon from '@cratylus/canon';
-import {
-  type DeliveredDocument,
-  fail,
-  projectorCommands,
-  usageExitCode,
-} from '@cratylus/forge/cli';
+import { fail, projectorCommands } from '@cratylus/forge/cli';
+import { EXPLANATION, ORIENTATION, PURPOSE } from '@cratylus/runtime';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { capabilityCommands } from '@cratylus/runtime/main';
-import { DELIVERED_DIR } from '@cratylus/runtime/runtime-config';
-import { Command, type CommanderError } from 'commander';
+import { Command, type CommanderError, Help } from 'commander';
 
 /**
  * THIS build's version — the claim `--version` makes about THIS artifact.
@@ -53,7 +45,7 @@ import { Command, type CommanderError } from 'commander';
  * already uses: tsup inlines this module into `dist/cratylus.js`, so a relative
  * `../package.json` would resolve from the wrong depth once bundled. It is the
  * manifest's, never forge's or the runtime's, because the version a command reports
- * is a claim about the artifact the operator installed.
+ * is a claim about the artifact the product owner installed.
  *
  * A build that is no release says which commit it is from, as the version's build
  * metadata (`0.13.0+62c7b190`, `.modified` when built from uncommitted changes), so a
@@ -77,23 +69,6 @@ const VERSION: string = (() => {
     ? declared
     : `${declared}+${commit}${modified === true ? '.modified' : ''}`;
 })();
-
-/** The documents this release delivers, as its build wrote them beside the bin, each
- *  by its path under the delivered directory; none where no build wrote any, as in a
- *  source tree. */
-function deliveredDocuments(): DeliveredDocument[] {
-  const dir = fileURLToPath(new URL(`./${DELIVERED_DIR}/`, import.meta.url));
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((origin) => origin.isDirectory())
-    .flatMap((origin) =>
-      readdirSync(join(dir, origin.name))
-        .filter((name) => name.endsWith('.json'))
-        .map((name) => join(origin.name, name)),
-    )
-    .sort()
-    .map((path) => ({ path, content: readFileSync(join(dir, path), 'utf8') }));
-}
 
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
@@ -141,29 +116,32 @@ function register(command: Command): void {
 /**
  * The command line: the projector's commands and the capabilities under one
  * program, which stops reading options at its first command so each command's flags
- * are its own. The help lists the consumer's commands first, then the capabilities,
- * then the corpus author's commands in a group of their own; which commands are whose
- * is forge's to say, not this file's.
+ * are its own. The help opens with what the command is for, then lists the
+ * projector's commands, then the capabilities.
  */
 export function commandLine(): Command {
   const program = new Command(CLI_BIN)
-    .description(
-      'Project a corpus of agent semantics onto omp, and run the capabilities it installs',
-    )
+    .description(PURPOSE)
     .version(VERSION, '-v, --version', 'Print the version and exit')
+    .option(
+      '--explain',
+      'Print what the command is for and how to start, as JSON',
+    )
     .enablePositionalOptions();
-  const { consumer, author } = projectorCommands({
-    defaultCorpus: canon,
-    version: VERSION,
-    delivered: deliveredDocuments(),
-  });
-  for (const command of consumer)
+  for (const command of projectorCommands({ canon, version: VERSION }))
     program.addCommand(command.helpGroup('Commands:'));
   for (const command of capabilityCommands({ version: VERSION }))
     program.addCommand(command.helpGroup('Capabilities:'));
-  for (const command of author)
-    program.addCommand(command.helpGroup('Corpus authoring:'));
   register(program);
+  // The program's help opens with its description, ahead of the usage line, and
+  // names each command by its own usage: a capability as `<capability> <verb>`.
+  program.configureHelp({
+    ...program.configureHelp(),
+    commandDescription: () => '',
+    subcommandTerm: (cmd) => `${cmd.name()} ${cmd.usage()}`,
+    formatHelp: (cmd, helper) =>
+      `${PURPOSE}\n${Help.prototype.formatHelp.call(helper, cmd, helper)}`,
+  });
   return program;
 }
 
@@ -197,17 +175,37 @@ function endOnClosedStdout(error: NodeJS.ErrnoException): void {
 }
 
 /** Run the command line on `argv`, the words after the program's name. A call that
- *  names no command prints the help on stderr and fails, as a capability with no
- *  verb does. */
+ *  names no command prints the orientation and where to find everything else;
+ *  `--explain` alone prints the command's explanation as JSON, and with any other
+ *  word is refused, running nothing. */
 export async function main(argv: readonly string[]): Promise<void> {
   if (!process.stdout.listeners('error').includes(endOnClosedStdout))
     process.stdout.on('error', endOnClosedStdout);
-  const program = commandLine();
   if (argv.length === 0) {
-    program.outputHelp({ error: true });
+    process.stdout.write(
+      `${ORIENTATION}\nRun \`${CLI_BIN} --help\` for everything else.\n`,
+    );
+    return;
+  }
+  // The program's own `--explain` is one given before any command word.
+  const explainAt = argv.indexOf('--explain');
+  if (
+    explainAt !== -1 &&
+    argv.slice(0, explainAt).every((word) => word.startsWith('-'))
+  ) {
+    if (argv.length === 1) {
+      process.stdout.write(`${JSON.stringify(EXPLANATION)}\n`);
+      return;
+    }
+    const others = argv.filter((_, i) => i !== explainAt);
+    fail(
+      '',
+      `--explain takes no other word, given ${others.map((word) => `'${word}'`).join(', ')}; run ${CLI_BIN} --help`,
+    );
     process.exitCode = 1;
     return;
   }
+  const program = commandLine();
   // A first word that names no command is refused as one, even with `--help` after
   // it: Commander answers the program's help before it refuses the word, which
   // would read as though the program had it.
@@ -225,7 +223,7 @@ export async function main(argv: readonly string[]): Promise<void> {
     if (error instanceof UsageError && error.refusal.exitCode === 0) return;
     if (!(error instanceof UsageError)) throw error;
     fail(error.command, usageLine(error));
-    process.exitCode = usageExitCode(error.command, argv);
+    process.exitCode = 1;
   }
 }
 

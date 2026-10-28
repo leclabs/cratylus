@@ -1,9 +1,0 @@
-{
-  "id": "01M52JVSP0KS1X4BRAGY1ETYYN",
-  "at": "2026-10-16T14:46:38.528Z",
-  "by": "architect",
-  "kind": "deprecate",
-  "decisionId": "0289",
-  "entry": "01M52H0X1GPNMWVGM2KY4YT78J",
-  "reason": "The retire-ledger story ended merged, accepted done on its outcome, every criterion holding; the ledger-as-view story ended dropped. A decision about one story is history once it ends."
-}

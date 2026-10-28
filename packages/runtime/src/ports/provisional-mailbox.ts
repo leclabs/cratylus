@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚠ PROVISIONAL PATH — `provisional-mailbox` is a PLACEHOLDER, not a name.
 //
-// The mechanism is real and tested; its ANCHOR is not derived. Under `cratylism` a name is
-// found by cold verification, never coined, so the prefix stands until a derivation lands —
-// and `capability-keyspace.test.ts` reads that prefix as "no anchor yet", which is why this
+// The mechanism is real and tested; its TERM is not derived. Under `cratylism` a name is
+// found by a fresh reading, never coined, so the prefix stands until a derivation lands —
+// and `capability-keyspace.test.ts` reads that prefix as "no term yet", which is why this
 // port is deliberately absent from `CAPABILITIES`.
 //
 // WHAT IT IS: a durable single-consumer inbox. A producer DEPOSITS an envelope; a consumer

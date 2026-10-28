@@ -26,7 +26,7 @@ export function fixture(): Fixture {
     recursive: true,
     verbatimSymlinks: true,
   });
-  // An allowlist, not credential-variable guessing: no operator configuration
+  // An allowlist, not credential-variable guessing: no product owner's configuration
   // or environment reaches the installation.
   const env = {
     HOME: home,
@@ -39,16 +39,7 @@ export function fixture(): Fixture {
   };
   const installed = spawnSync(
     'cratylus',
-    [
-      'install',
-      '--harness',
-      'omp',
-      '--home',
-      home,
-      '--all',
-      '--model-roles',
-      'default',
-    ],
+    ['install', '--harness', 'omp', '--home', home, '--model-roles', 'default'],
     { cwd, env, encoding: 'utf8', timeout: 60_000 },
   );
   if (installed.error) throw installed.error;

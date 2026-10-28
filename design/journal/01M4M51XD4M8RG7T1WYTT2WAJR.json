@@ -1,8 +1,0 @@
-{
-  "id": "01M4M51XD4M8RG7T1WYTT2WAJR",
-  "at": "2026-10-11T00:15:56.836Z",
-  "kind": "accept",
-  "decisionId": "0065",
-  "entry": "01M4KXXAXAMCV05DP328Y282AP",
-  "reason": "Realized and integrated 2026-10-10 (dev 96aeaaf6); fifteen realization decisions classified; leakage fell from 71 warnings to 28, the rest on meaning decisions' historical references to the retired design files and on delivery's examples."
-}

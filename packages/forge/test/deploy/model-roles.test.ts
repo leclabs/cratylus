@@ -1,6 +1,7 @@
-// Which model a tier or a persona's role runs on is the operator's choice and the
-// host's own setting (decision 0112). An agent's declaration names its own role, then
-// its tier and effort, and never a model. Install binds what the operator chooses in
+// Which model a tier or a persona's role runs on is the product owner's choice and the
+// host's own setting (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
+// An agent's declaration names its own role, then
+// its tier and effort, and never a model. Install binds what the product owner chooses in
 // the host's `modelRoles`, records none of it as its own, and so upgrade and uninstall
 // keep it; a role the host binds is never changed; told nothing and unable to ask, it
 // names each tier no model is bound to as the next step. An upgrade from the earlier
@@ -21,11 +22,7 @@ import { runUninstall } from '../../src/cli/commands/uninstall.js';
 import { addModelRoles } from '../../src/deploy/model-roles.js';
 import type { ProjectablePlugin } from '../../src/project/index.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
-import {
-  FIXTURE_PRACTICE,
-  fixtureAgentSource,
-  fixturePractices,
-} from './helpers.js';
+import { fixtureAgentSource } from './helpers.js';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -83,7 +80,7 @@ describe('install — model roles', () => {
   let agents: string;
   let out: string;
   const config = () => join(home, '.omp', 'agent', 'config.yml');
-  /** The corpus at `efforts`, each version in a directory of its own: a module once
+  /** The canon at `efforts`, each version in a directory of its own: a module once
    *  imported is not read again in this process. */
   const design = (efforts: Record<string, string> = {}) => {
     agents = mkdtempSync(join(root, 'agents-'));
@@ -104,15 +101,13 @@ describe('install — model roles', () => {
     name: 'model-roles-fixture',
     manifest: FIXTURE_MANIFEST,
     agents,
-    practices: fixturePractices(['alpha', 'beta', 'gamma']),
   });
   const install = (extra: Partial<Parameters<typeof runInstall>[0]> = {}) =>
     runInstall({
       harness: 'omp',
       home,
       cwd,
-      corpus: plugin() as never,
-      practices: FIXTURE_PRACTICE,
+      canon: plugin() as never,
       ...extra,
     });
   const host = (text: string) => {
@@ -151,7 +146,7 @@ describe('install — model roles', () => {
       readFileSync(join(home, '.cratylus/omp/agents', `${name}.md`), 'utf8'),
     )?.[1];
 
-  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config (0111)', async () => {
+  it('names each agent’s own role, then its tier and effort, and writes no role into the host’s config', async () => {
     host(HOST);
     expect(await install()).toBe(0);
     expect(declared('alpha')).toBe('["@alpha", "@frontier:high"]');
@@ -201,9 +196,9 @@ describe('install — model roles', () => {
     expect(runUninstall({ harness: 'omp', home })).toBe(0);
     expect(readFileSync(config(), 'utf8')).toBe(bound);
     out = '';
-    expect(await install({ modelRoles: 'builder=x/y' })).toBe(1);
+    expect(await install({ modelRoles: 'software-engineer=x/y' })).toBe(1);
     expect(out).toContain(
-      "'builder' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
+      "'software-engineer' is no tier or agent of this install (tiers: fast, frontier, frontier-other-family; agents: alpha, beta, gamma)",
     );
   });
 
@@ -217,7 +212,6 @@ describe('install — model roles', () => {
         prompts: {
           harness: async () => 'omp',
           scope: async () => 'user',
-          practices: async (offered) => offered.map((p) => p.name),
           rules: async () => [],
           routes: async (questions) => {
             asked = questions.map((q) => `${q.roleOf}:${q.role}`);

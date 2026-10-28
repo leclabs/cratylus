@@ -1,4 +1,4 @@
-import '../reconstitution/binding/omp-mocks.js';
+import '../typed-handoff/binding/omp-mocks.js';
 import {
   chmodSync,
   cpSync,
@@ -19,9 +19,9 @@ import { isDeepStrictEqual } from 'node:util';
 import { expect, vi } from 'vitest';
 import type { Host, ToolResult } from '../capability-port/fixture.js';
 import { host, run, success, toolJSON } from '../capability-port/fixture.js';
-import { omp } from '../reconstitution/binding/omp-mocks.js';
+import { omp } from '../typed-handoff/binding/omp-mocks.js';
 import { parseYaml } from '../yaml.js';
-export { success, toolJSON };
+export { success };
 export const here = dirname(fileURLToPath(import.meta.url));
 export function put(path: string, text: string) {
   mkdirSync(dirname(path), { recursive: true });
@@ -63,16 +63,7 @@ export function fresh() {
 export const owned = (h: Host) => join(h.home, '.cratylus/omp');
 export function install(h: Host, home = h.home, cwd = h.cwd) {
   return h.command(
-    [
-      'install',
-      '--harness',
-      'omp',
-      '--home',
-      home,
-      '--all',
-      '--model-roles',
-      'default',
-    ],
+    ['install', '--harness', 'omp', '--home', home, '--model-roles', 'default'],
     cwd,
   );
 }
@@ -105,7 +96,8 @@ export function earlier(h: Host, fixture = 'earlier-installation.json') {
     Object.keys(modelRoles as object).length,
     'captured earlier bindings',
   ).toBeGreaterThan(0);
-  // Decision 0112: these answers became the host's own, not removable projection.
+  // These answers became the host's own, not removable projection
+  // (design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md).
   return { '.omp/agent/config.yml': JSON.stringify({ modelRoles }) };
 }
 export function settings(h: Host): Record<string, unknown> {
@@ -127,8 +119,8 @@ export function treeWithoutBindings(h: Host): Tree {
 }
 export function hostMaterial(h: Host, inherited: Record<string, string> = {}) {
   const material = {
-    '.omp/agent/agents/architect.md':
-      '---\nname: architect\ndescription: Host architect\n---\nMira owns this declaration.\n',
+    '.omp/agent/agents/business-analyst.md':
+      '---\nname: business-analyst\ndescription: Host business analyst\n---\nMira owns this declaration.\n',
     '.agents/skills/host-skill/SKILL.md':
       '---\nname: host-skill\ndescription: Host skill\n---\nMira owns this skill.\n',
     '.omp/agent/extensions/host.ts': 'export default function host() {}\n',
@@ -323,7 +315,7 @@ export async function load(h: Host, cwd = h.cwd): Promise<Loaded> {
   };
   const extension = join(owned(h), 'extensions/cratylus.ts');
   // The old location is loaded only to measure the pre-cut extension's behavior,
-  // not to grant an alternative layout: delivery/2 separately requires the new root.
+  // not to grant an alternative layout: the projection is separately required to use the new root.
   const path = existsSync(extension)
     ? extension
     : join(h.home, '.omp/agent/extensions/cratylus.ts');
@@ -434,32 +426,6 @@ export function noTap(h: Host) {
   ).not.toMatch(/event[-_ ]?tap/i);
 }
 
-// Observe the real installed entry point without replacing its implementation.
-// The observer reads the declared package version on every process invocation.
-export function traceCommand(h: Host) {
-  const pkg = join(h.prefix, 'node_modules/cratylus/package.json');
-  const bin = JSON.parse(readFileSync(pkg, 'utf8')).bin.cratylus as string;
-  const file = join(dirname(pkg), bin);
-  const log = join(h.root, 'command-invocations.jsonl');
-  const original = readFileSync(file, 'utf8');
-  const first = original.startsWith('#!') ? original.indexOf('\n') + 1 : 0;
-  const observation = `import {appendFileSync as deliveryAppend,readFileSync as deliveryRead} from 'node:fs';deliveryAppend(${JSON.stringify(log)},JSON.stringify({version:JSON.parse(deliveryRead(${JSON.stringify(pkg)},'utf8')).version,args:process.argv.slice(2)})+'\\n');\n`;
-  writeFileSync(
-    file,
-    original.slice(0, first) + observation + original.slice(first),
-  );
-  return () =>
-    existsSync(log)
-      ? readFileSync(log, 'utf8')
-          .trim()
-          .split('\n')
-          .filter(Boolean)
-          .map(
-            (line) => JSON.parse(line) as { version: string; args: string[] },
-          )
-      : [];
-}
-
 // These are the actual pre-delivery packages, not today's code with another label.
 export function earlierCommand(h: Host) {
   const prefix = join(h.root, 'earlier-command');
@@ -501,6 +467,18 @@ export function earlierCommand(h: Host) {
   ).not.toBe(0);
   return {
     version: value,
+    /** Install with the earlier command's own surface: 0.11.0 took no run without a practices choice. */
+    install: () =>
+      h.command([
+        'install',
+        '--harness',
+        'omp',
+        '--home',
+        h.home,
+        '--all',
+        '--model-roles',
+        'default',
+      ]),
     restore: () => {
       h.env.PATH = currentPath;
     },

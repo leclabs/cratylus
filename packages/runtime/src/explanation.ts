@@ -1,31 +1,29 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // THE CAPABILITY INTERFACE — what a capability says of itself when asked to
 // explain itself: its name, its purpose and when to reach for it, and for each
-// verb the concept it acts on, its purpose, when to reach for it, whether it
-// reads, appends or closes, and each parameter with its description and JSON
-// schema.
+// verb the concept it acts on, its purpose, when to reach for it, and that it
+// only reads. A verb takes no arguments.
 //
 // Nothing here is worded. The capability declares its name and when beside its
 // verbs; each verb declares its concept, when and effect beside its purpose,
-// positional and flags, which its help and its reading of a call already use.
-// This module only reads those declarations out as data, so the explanation, the
-// help and what a verb takes are one declaration and cannot drift apart.
+// which its help already prints. This module only reads those declarations out
+// as data, so the explanation and the help are one declaration and cannot drift
+// apart.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Flag, Verb, VerbFlags } from './verb-flags.js';
+import type { Verb, Verbs } from './verbs.js';
 
-/** A verb that explains itself: beyond its purpose, positional and flags, the
- *  anchor of the concept it acts on, when to reach for it, and whether it only
- *  reads, appends, or closes what it holds. */
+/** A verb that explains itself: beyond its purpose, the term of the concept it
+ *  acts on, when to reach for it, and that it only reads what its capability
+ *  holds. */
 export interface ExplainedVerb extends Verb {
   readonly concept: string;
   readonly when: string;
   readonly effect: Effect;
 }
 
-/** What a verb does to what its capability holds: only reads it, appends to
- *  it, or closes it, carrying what stands forward and removing the rest. */
-export type Effect = 'reads' | 'appends' | 'closes';
+/** What a verb does to what its capability holds: it only reads it. */
+export type Effect = 'reads';
 
 /** A capability that explains itself: its name, its purpose, when to reach for
  *  it, and its verbs, in the order it declares them. */
@@ -33,23 +31,7 @@ export interface CapabilityInterface {
   readonly name: string;
   readonly purpose: string;
   readonly when: string;
-  readonly verbs: VerbFlags<string, ExplainedVerb>;
-}
-
-/** A parameter's JSON Schema. */
-export type ParameterSchema =
-  | { readonly type: 'string' }
-  | { readonly type: 'string'; readonly enum: readonly string[] }
-  | { readonly type: 'boolean' }
-  | { readonly type: 'array'; readonly items: { readonly type: 'string' } };
-
-/** One parameter of a verb, as explained. */
-export interface ParameterExplanation {
-  readonly name: string;
-  readonly description: string;
-  readonly required: boolean;
-  readonly schema: ParameterSchema;
-  readonly positional?: true;
+  readonly verbs: Verbs<string, ExplainedVerb>;
 }
 
 /** One verb, as explained. */
@@ -59,7 +41,6 @@ export interface VerbExplanation {
   readonly purpose: string;
   readonly when: string;
   readonly effect: Effect;
-  readonly parameters: readonly ParameterExplanation[];
 }
 
 /** A capability, as explained. */
@@ -70,45 +51,17 @@ export interface Explanation {
   readonly verbs: readonly VerbExplanation[];
 }
 
-/** The schema of the values `flag` is given. */
-function schemaOf(flag: Flag): ParameterSchema {
-  if (flag.takes === 'switch') return { type: 'boolean' };
-  if (flag.repeats === true)
-    return { type: 'array', items: { type: 'string' } };
-  if (flag.values !== undefined)
-    return { type: 'string', enum: [...flag.values] };
-  return { type: 'string' };
-}
-
-/** Verb `name`, declared as `verb`, as explained: its positional first, then
- *  its flags in the order it declares them. */
+/** Verb `name`, declared as `verb`, as explained. */
 export function explainVerb(
   name: string,
   verb: ExplainedVerb,
 ): VerbExplanation {
-  const parameters: ParameterExplanation[] = [];
-  if (verb.positional !== null)
-    parameters.push({
-      name: verb.positional.name,
-      description: verb.positional.description,
-      required: verb.positional.optional !== true,
-      schema: { type: 'string' },
-      positional: true,
-    });
-  for (const [flag, spec] of Object.entries(verb.flags))
-    parameters.push({
-      name: flag,
-      description: spec.description,
-      required: spec.required === true,
-      schema: schemaOf(spec),
-    });
   return {
     name,
     concept: verb.concept,
     purpose: verb.purpose,
     when: verb.when,
     effect: verb.effect,
-    parameters,
   };
 }
 

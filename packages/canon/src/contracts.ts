@@ -10,26 +10,22 @@
 // Each handover states what it must contain, so one passed without a part shows
 // what is missing: its required fields are its contents. An array takes `[]` unless
 // it is marked `minItems: 1`. An assignment taking alternative forms states each
-// under `anyOf`, and fits when it fits any one. The architect's handovers are a
-// person's: free-text intent in, a read-back to the operator out, neither of them
-// JSON, so neither carries a contract.
+// under `anyOf`, and fits when it fits any one. The business analyst's handovers are
+// the product owner's: free-text intent in, a backbrief out, neither carrying a contract.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { type JsonSchema, anchorOf } from '@cratylus/schema';
-import { concepts } from './dimensions/assignment/concepts.js';
-import { examples } from './dimensions/assignment/examples.js';
-import { reviewRequest } from './dimensions/assignment/review-request.js';
-import { task } from './dimensions/assignment/task.js';
-import { userStory } from './dimensions/assignment/user-story.js';
-import { change } from './dimensions/deliverable/change.js';
-import { checksSeenRed } from './dimensions/deliverable/checks-seen-red.js';
-import { codeReview } from './dimensions/deliverable/code-review.js';
-import { examplesWithFlaggedTerms } from './dimensions/deliverable/examples-with-flagged-terms.js';
-import { outcome } from './dimensions/deliverable/outcome.js';
+import { type JsonSchema, termOf } from '@cratylus/schema';
+import { examples } from './factors/assignment/examples.js';
+import { reviewRequest } from './factors/assignment/review-request.js';
+import { task } from './factors/assignment/task.js';
+import { userStory } from './factors/assignment/user-story.js';
+import { acceptanceTests } from './factors/deliverable/acceptance-tests.js';
+import { change } from './factors/deliverable/change.js';
+import { codeReview } from './factors/deliverable/code-review.js';
+import { outcome } from './factors/deliverable/outcome.js';
 import type { Assignment, Deliverable } from './manifest.js';
 
 const text: JsonSchema = { type: 'string' };
-const count: JsonSchema = { type: 'integer' };
 const texts: JsonSchema = { type: 'array', items: text };
 const someTexts: JsonSchema = { type: 'array', items: text, minItems: 1 };
 const flag: JsonSchema = { type: 'boolean' };
@@ -54,20 +50,21 @@ const storyField = said(text, 'The user story, by its name (a kebab-case id).');
 const exampleRefs = (schema: JsonSchema, whose: string): JsonSchema =>
   said(
     schema,
-    `${whose}, each as \`<context>/<number>\` (e.g. \`booking/1\`).`,
+    `${whose}, each as \`<context>/<concept>\` for all of a concept's examples or \`<context>/<concept>: <example name>\` for one (e.g. \`delivery/install: installs the industry roles\`).`,
   );
 const meaningQuestions = said(
   texts,
-  'Each question whose answer would change a concept or an example, for the architect to settle; empty when there is none.',
+  'Each question whose answer would change a concept or an example, for the business analyst to settle; empty when there is none.',
 );
 
-// The story and the task, each a form of its own: the lead takes either, a builder a task.
+// The story and the task, each a form of its own: the tech lead takes either, a
+// software engineer a task.
 const storyForm = record(
   {
     story: storyField,
     slice: said(
       text,
-      "The thin slice of behaviour a user can rely on, in the design's own terms.",
+      "The thin slice of behaviour a user can rely on, in the domain model's terms.",
     ),
     why: said(text, 'Why the slice is wanted.'),
     acceptanceCriteria: said(
@@ -78,29 +75,12 @@ const storyForm = record(
       texts,
       'What the story does not cover; empty when nothing needs saying.',
     ),
-    path: said(
-      { type: 'string', enum: ['plain', 'scaled-up'] },
-      'The path the story takes: plain, broken into tasks each built by one builder, or scaled up with specialists for its risk.',
-    ),
-    review: said(
-      text,
-      "How the story's changes are reviewed, as its risk picks: Ship (joined with no code review), Show (joined, then reviewed) or Ask (reviewed before it joins); and, where the operator has asked to review a change before it joins, that hold point: the operator's review is that change's code review, under Ask, and no agent reviews it.",
-    ),
-    cost: said(
-      text,
-      'Roughly what the story will cost, which its effort is weighed against.',
-    ),
     examples: exampleRefs(
       texts,
-      "The story's visible examples, where misunderstanding is likely",
+      'The concepts and examples the story adds or changes',
     ),
-    decisions: said(
-      texts,
-      'The decisions in force for the story, by their ids (e.g. `0081`).',
-    ),
-    contexts: said(texts, 'The bounded contexts the story touches.'),
   },
-  ['examples', 'decisions', 'contexts'],
+  ['examples'],
 );
 const taskForm = record(
   {
@@ -111,10 +91,6 @@ const taskForm = record(
     ),
     goal: said(text, "What the task is for, in its user story's terms."),
     changes: said(text, 'What the task changes.'),
-    decisions: said(
-      texts,
-      'The technical decisions that bind the task; empty when there are none.',
-    ),
     done: said(text, 'What done means for the task.'),
   },
   ['story'],
@@ -159,16 +135,9 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
     examples,
     record({
       story: storyField,
-      examples: exampleRefs(someTexts, 'The examples to bind checks to'),
-    }),
-  ],
-  [
-    concepts,
-    record({
-      story: storyField,
-      concepts: said(
+      examples: exampleRefs(
         someTexts,
-        'The concepts to illustrate with examples, by name.',
+        'The examples to write acceptance tests for',
       ),
     }),
   ],
@@ -183,6 +152,10 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
           text,
           'The user story, or for a task with no story the task, by name.',
         ),
+        joined: said(
+          { type: 'string', enum: ['merged', 'dropped'] },
+          'Whether the work was merged or dropped.',
+        ),
         criteria: said(
           {
             type: 'array',
@@ -195,7 +168,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
               holds: said(flag, 'Whether the criterion holds in merged work.'),
               evidence: said(
                 text,
-                "Why it holds or does not, in the design's own terms: what the code review and the checks showed of the concept, each file, function, path or command translated into the concept it bears on.",
+                "Why it holds or does not, in the domain model's terms: what the code review and the acceptance tests showed, each file, function, path or command translated into the concept it bears on.",
               ),
             }),
           },
@@ -206,28 +179,8 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
           texts,
           'What the story leaves unfinished, each as work to take up later; empty when there is none.',
         ),
-        cost: said(
-          record({
-            agentRuns: said(
-              record({
-                total: said(count, 'Every agent run the story took.'),
-                byRole: said(
-                  { type: 'object', additionalProperties: count },
-                  'The agent runs by role.',
-                ),
-              }),
-              'The agent runs the harness reports for the story.',
-            ),
-            tokens: said(count, 'The tokens the runs reported, summed.'),
-            elapsed: said(
-              text,
-              'The time the story took, from its start to its end.',
-            ),
-          }),
-          'What the story cost, as the agent harness records it.',
-        ),
       }),
-      "The lead's outcome of the user story to the architect, in the design's own terms: which acceptance criteria hold with their evidence, the meaning questions it raised, the follow-ups it leaves and what it cost.",
+      "The tech lead's outcome to the business analyst: whether the work was merged or dropped, each acceptance criterion with its evidence in the domain model's terms, the meaning questions raised and the follow-ups.",
     ),
   ],
   [
@@ -253,26 +206,39 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     }),
   ],
   [
-    checksSeenRed,
+    acceptanceTests,
     record({
       story: storyField,
-      checks: {
+      tests: {
         type: 'array',
-        items: record({ example: text, check: text, seenRed: flag }),
+        items: record(
+          {
+            example: exampleRefs(text, 'The example the test binds'),
+            test: said(text, 'The acceptance test, by its file and title.'),
+            seenFailing: said(
+              flag,
+              'Whether it was seen failing before the build.',
+            ),
+            passes: said(
+              flag,
+              'Whether the realization passes it; absent before the build.',
+            ),
+          },
+          ['passes'],
+        ),
       },
     }),
   ],
-  [examplesWithFlaggedTerms, record({ examples: texts, flaggedTerms: texts })],
 ];
 
-/** Each assignment value's contract, by the value's anchor. */
+/** Each assignment value's contract, by the value's term. */
 export const ASSIGNMENT_CONTRACTS: Readonly<Record<string, JsonSchema>> =
   Object.fromEntries(
-    assignments.map(([value, schema]) => [anchorOf(value), schema]),
+    assignments.map(([value, schema]) => [termOf(value), schema]),
   );
 
-/** Each deliverable value's contract, by the value's anchor. */
+/** Each deliverable value's contract, by the value's term. */
 export const DELIVERABLE_CONTRACTS: Readonly<Record<string, JsonSchema>> =
   Object.fromEntries(
-    deliverables.map(([value, schema]) => [anchorOf(value), schema]),
+    deliverables.map(([value, schema]) => [termOf(value), schema]),
   );

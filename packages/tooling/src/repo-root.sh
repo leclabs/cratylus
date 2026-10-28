@@ -30,7 +30,7 @@ repo_root() {
 	fi
 
 	# 2. WALK UP FOR THE MARKER. Required, not decorative: a published tarball has no
-	#    `.git`, and every fixture this corpus builds in `mktemp -d` starts without one.
+	#    `.git`, and every fixture these suites build in `mktemp -d` starts without one.
 	_rr_dir=$(CDPATH= cd -- "$_rr_from" 2>/dev/null && pwd) || return 1
 	while [ -n "$_rr_dir" ]; do
 		if [ -f "$_rr_dir/$ROOT_MARKER" ]; then

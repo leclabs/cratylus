@@ -1,11 +1,11 @@
-// A minimal harness-substrate hook cell + one worker byte-anchor, so the fixture
+// A minimal harness-substrate hook declaration + one byte-identity-pinned worker, so the fixture
 // covers OMP's session module + shared `hooks/<id>/<worker>` artifact legs.
 
-import type { HookCell } from '@cratylus/schema';
+import type { HookDeclaration } from '@cratylus/schema';
 
-export const ping: HookCell = {
+export const ping: HookDeclaration = {
   id: 'ping',
-  residue: 'a fixture hook',
+  precisingDefinition: 'a fixture hook',
   substrate: 'harness',
   order: 10,
   events: ['session.start'],

@@ -10,7 +10,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEPLOY_CHECK_EXIT } from '@cratylus/forge/deploy';
+import { ORIENTATION, PURPOSE } from '@cratylus/runtime';
 import { CAPABILITIES } from '@cratylus/runtime/capability';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { commandLine, main } from '../src/cratylus.js';
@@ -18,22 +18,15 @@ import { commandLine, main } from '../src/cratylus.js';
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(
   readFileSync(join(packageRoot, 'package.json'), 'utf8'),
-) as { version: string };
+) as { version: string; description: string };
 const readme = readFileSync(join(packageRoot, 'README.md'), 'utf8');
+const rootReadme = readFileSync(
+  join(packageRoot, '..', '..', 'README.md'),
+  'utf8',
+);
 
-/** The consumer's commands, which the help lists first. */
-const CONSUMER_COMMANDS = ['install', 'uninstall'] as const;
-
-/** The corpus author's commands, which the help lists last, apart. */
-const AUTHOR_COMMANDS = [
-  'init',
-  'add',
-  'compose',
-  'project',
-  'deploy',
-  'explain',
-  'catalog',
-] as const;
+/** The projector's commands, which the help lists first. */
+const COMMANDS = ['install', 'uninstall'] as const;
 
 interface Ran {
   readonly code: number;
@@ -99,23 +92,19 @@ describe('the top-level help lists every command and capability', () => {
     expect(code).toBe(0);
     expect(err).toBe('');
     const program = commandLine();
-    expect(listed(out, 'Commands')).toEqual([...CONSUMER_COMMANDS]);
+    expect(listed(out, 'Commands')).toEqual([...COMMANDS]);
     expect(listed(out, 'Capabilities')).toEqual([...CAPABILITIES]);
-    expect(listed(out, 'Corpus authoring')).toEqual([...AUTHOR_COMMANDS]);
     for (const command of program.commands)
       expect(out, command.name()).toContain(command.description());
   });
 
-  it('lists the consumer’s commands, then the capabilities, then the corpus author’s', async () => {
+  it('lists the commands, then the capabilities, and nothing else', async () => {
     const { out } = await run('--help');
     const at = (heading: string) => out.indexOf(`\n${heading}:\n`);
     expect(at('Commands')).toBeGreaterThan(-1);
     expect(at('Commands')).toBeLessThan(at('Capabilities'));
-    expect(at('Capabilities')).toBeLessThan(at('Corpus authoring'));
-    expect(listed(out, 'Commands').slice(0, 2)).toEqual([
-      'install',
-      'uninstall',
-    ]);
+    const headings = out.split('\n').filter((line) => /^\S.*:$/.test(line));
+    expect(headings).toEqual(['Options:', 'Commands:', 'Capabilities:']);
   });
 
   it('holds no blank spacer line and wraps no line', async () => {
@@ -123,14 +112,69 @@ describe('the top-level help lists every command and capability', () => {
     expect(out.split('\n').slice(0, -1)).not.toContain('');
   });
 
-  it('is what a call naming no command prints, on stderr, as a failure', async () => {
-    const asked = await run('--help');
-    const bare = await run();
-    expect(bare.code).toBe(1);
-    expect(bare.out).toBe('');
-    expect(bare.err).toBe(asked.out);
+  it('shows each capability’s usage as its verb alone', async () => {
+    const { out } = await run('--help');
+    for (const capability of CAPABILITIES)
+      expect(out, capability).toMatch(
+        new RegExp(`^ {2}${capability} <verb> {2,}\\S`, 'm'),
+      );
+    expect(out).not.toContain('[args...]');
   });
 
+  it('opens with what the command is for, ahead of the usage line', async () => {
+    const { out } = await run('--help');
+    const [first, second] = out.split('\n');
+    expect(first).toBe(PURPOSE);
+    expect(second).toMatch(/^Usage: cratylus /);
+    expect(out.split(PURPOSE)).toHaveLength(2);
+  });
+});
+
+describe('the command describes itself', () => {
+  it('prints the orientation and where everything else is, on stdout, for a call naming no command', async () => {
+    const { code, out, err } = await run();
+    expect(code).toBe(0);
+    expect(err).toBe('');
+    expect(out).toBe(
+      `${ORIENTATION}\nRun \`cratylus --help\` for everything else.\n`,
+    );
+  });
+
+  it('explains itself as data under --explain', async () => {
+    const { code, out, err } = await run('--explain');
+    expect(code).toBe(0);
+    expect(err).toBe('');
+    expect(JSON.parse(out)).toEqual({
+      name: 'cratylus',
+      purpose: PURPOSE,
+      orientation: ORIENTATION,
+    });
+  });
+
+  it.each([
+    [['--explain', 'install']],
+    [['--explain', '--version']],
+    [['--version', '--explain']],
+  ])(
+    'refuses --explain with any other word, running nothing: %j',
+    async (words) => {
+      const { code, out, err } = await run(...words);
+      expect(code).toBe(1);
+      expect(out).toBe('');
+      const lines = err.trimEnd().split('\n');
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toMatch(/^cratylus/);
+      expect(lines[0]).toContain('--explain');
+      expect(lines[0]).toContain('cratylus --help');
+    },
+  );
+
+  it('describes the package as what the command is for', () => {
+    expect(manifest.description).toBe(PURPOSE);
+  });
+});
+
+describe('the command answers its version', () => {
   it('answers --version and -v with the manifest version', async () => {
     for (const flag of ['--version', '-v']) {
       const { code, out, err } = await run(flag);
@@ -171,22 +215,24 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
       ['--harnes', '--harness'],
     ],
     [['install', '--plugin', 'x'], ['--plugin']],
-    [['compose', '--bogus'], ['--bogus']],
+    [['install', '--bogus'], ['--bogus']],
     [['--versoin'], ['--versoin', '--version']],
     [
-      ['deploy', '--scope', 'porject'],
+      ['install', '--scope', 'porject'],
       ['porject', 'user', 'project'],
     ],
     [
-      ['deploy', '--kind', 'bogus'],
-      ['bogus', 'agent', 'skill', 'hooks', 'all'],
+      ['install', '--agent-status', 'bogus'],
+      ['bogus', 'show', 'hide'],
     ],
     [
-      ['deploy', '--harness', 'nope'],
+      ['uninstall', '--harness', 'nope'],
       ['nope', 'omp'],
     ],
     [['uninstall'], ['--harness']],
-    [['compose', 'extra'], ['extra']],
+    [['install', 'extra'], ['extra']],
+    [['project'], ['project']],
+    [['deploy'], ['deploy']],
   ] as const)('%j', async (words, names) => {
     const { code, out, err } = await run(...words);
     expect(code).toBe(1);
@@ -204,112 +250,40 @@ describe('a usage error is one stderr line, exit 1, and nothing on stdout', () =
     const { err } = await run('install', '--harnes', 'omp');
     expect(err).toContain('cratylus install --help');
   });
+});
 
-  it('under deploy --check ends with no verdict, never with drift', async () => {
-    const { code, out, err } = await run(
-      'deploy',
-      '--check',
-      '--kind',
-      'bogus',
-    );
-    expect(code).toBe(DEPLOY_CHECK_EXIT.noVerdict);
-    expect(out).toBe('');
-    expect(err).toContain('bogus');
+describe('neither README restates the orientation the command prints', () => {
+  it('holds no line of it verbatim', () => {
+    for (const [name, text] of [
+      ['README.md', rootReadme],
+      ['packages/cli/README.md', readme],
+    ] as const)
+      expect(
+        ORIENTATION.split('\n').filter((line) => text.includes(line)),
+        name,
+      ).toEqual([]);
   });
 });
 
-describe('a deploy flag that would take no effect is refused, never accepted and dropped', () => {
-  it.each([
-    [
-      ['--scope', 'project', '--home', '/h'],
-      ['--home', '--scope user'],
-    ],
-    [
-      [
-        '--from',
-        '/missing',
-        '--agents-dir',
-        '/a',
-        '--skills-dir',
-        '/s',
-        '--hooks-dir',
-        '/k',
-      ],
-      ['--from', '--agents-dir', '--skills-dir', '--hooks-dir'],
-    ],
-    [
-      ['--check', '--dry-run'],
-      ['--check', '--dry-run'],
-    ],
-    [
-      ['--check', '--verbose'],
-      ['--check', '--verbose'],
-    ],
-    [
-      ['--check', '--config', '/c.ts'],
-      ['--check', '--config'],
-    ],
-    [
-      ['--check', '--project', '/p'],
-      ['--project', '--check'],
-    ],
-    [
-      ['--config', '/c.ts', '--project', '/p'],
-      ['--project', '--config'],
-    ],
-    [
-      ['--kind', 'agent', '--skills-dir', '/s'],
-      ['--kind agent', '--skills-dir'],
-    ],
-    [
-      ['--kind', 'agent', '--assets', 's=x'],
-      ['--kind agent', '--assets'],
-    ],
-    [
-      ['--kind', 'hooks', '--agents-dir', '/a'],
-      ['--kind hooks', '--agents-dir'],
-    ],
-    [
-      ['--kind', 'skill', '--hooks-dir', '/k'],
-      ['--kind skill', '--hooks-dir'],
-    ],
-  ] as const)('deploy %j', async (flags, names) => {
-    const { code, out, err } = await run('deploy', ...flags);
-    expect(code).toBe(
-      flags.includes('--check' as never) ? DEPLOY_CHECK_EXIT.noVerdict : 1,
-    );
-    expect(out).toBe('');
-    const lines = err.trimEnd().split('\n');
-    expect(lines).toHaveLength(1);
-    expect(lines[0]).toMatch(/^cratylus deploy: /);
-    for (const name of names) expect(lines[0], name).toContain(name);
-  });
-});
-
-describe('the README restates nothing the concept journal explains of itself', () => {
-  it('holds no purpose, when or parameter description of the journal or a verb', async () => {
-    const { code, out } = await run('concepts', '--explain');
-    expect(code).toBe(0);
-    const explanation = JSON.parse(out) as {
-      purpose: string;
-      when: string;
-      verbs: {
+describe('the README restates nothing a capability explains of itself', () => {
+  it.each(CAPABILITIES)(
+    'holds no purpose or when of %s or a verb',
+    async (capability) => {
+      const { code, out } = await run(capability, '--explain');
+      expect(code).toBe(0);
+      const explanation = JSON.parse(out) as {
         purpose: string;
         when: string;
-        parameters: { description: string }[];
-      }[];
-    };
-    const said = [
-      explanation.purpose,
-      explanation.when,
-      ...explanation.verbs.flatMap((v) => [
-        v.purpose,
-        v.when,
-        ...v.parameters.map((p) => p.description),
-      ]),
-    ];
-    expect(said.filter((text) => readme.includes(text))).toEqual([]);
-  });
+        verbs: { purpose: string; when: string }[];
+      };
+      const said = [
+        explanation.purpose,
+        explanation.when,
+        ...explanation.verbs.flatMap((v) => [v.purpose, v.when]),
+      ];
+      expect(said.filter((text) => readme.includes(text))).toEqual([]);
+    },
+  );
 });
 
 describe('the README reference names exactly what the help lists, each once', () => {
@@ -320,7 +294,7 @@ describe('the README reference names exactly what the help lists, each once', ()
     const pages: { name: string; help: string }[] = [];
     const top = (await run('--help')).out;
     const capabilities = listed(top, 'Capabilities');
-    for (const heading of ['Commands', 'Capabilities', 'Corpus authoring'])
+    for (const heading of ['Commands', 'Capabilities'])
       for (const name of listed(top, heading)) {
         const help = (await run(name, '--help')).out;
         pages.push({ name, help });
@@ -438,22 +412,28 @@ describe('the README reference names exactly what the help lists, each once', ()
   it('convicts a reference with an entry missing, one twice, and one it should not have', () => {
     expect(
       discrepancies(
-        ['init', 'plan show', 'note'],
+        ['versionSkew', 'plan show', 'note'],
         ['plan show', 'plan show', 'frob', 'note'],
       ),
     ).toEqual({
-      missing: ['init'],
+      missing: ['versionSkew'],
       twice: ['plan show'],
       unlisted: ['frob'],
       misplaced: [],
     });
   });
 
-  it('convicts a reference with init moved ahead of install', () => {
-    const listing = ['install', 'uninstall', 'plan', 'plan show', 'init'];
+  it('convicts a reference with a capability moved ahead of install', () => {
+    const listing = [
+      'install',
+      'uninstall',
+      'plan',
+      'plan show',
+      'versionSkew',
+    ];
     expect(
       discrepancies(listing, [
-        'init',
+        'versionSkew',
         'install',
         'uninstall',
         'plan',
@@ -463,7 +443,7 @@ describe('the README reference names exactly what the help lists, each once', ()
       missing: [],
       twice: [],
       unlisted: [],
-      misplaced: ['init', 'install', 'uninstall', 'plan', 'plan show'],
+      misplaced: ['versionSkew', 'install', 'uninstall', 'plan', 'plan show'],
     });
   });
 
@@ -484,7 +464,7 @@ describe('the README reference names exactly what the help lists, each once', ()
   it('convicts an entry lacking a flag its help lists, and one naming a flag its help does not', () => {
     const help = [
       'Usage: cratylus install [options]',
-      'Install the bundled corpus',
+      'Install the bundled canon, its agents, skills and rules, into an agent harness on this machine, asking what you have not said',
       'Options:',
       '  --harness <name>            The harness to install into',
       '  --model-roles <roles>       The model each role routes to',

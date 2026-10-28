@@ -1,4 +1,4 @@
-// The HARNESS-NEUTRAL dimension→markdown-body machinery: the shared helpers that map
+// The HARNESS-NEUTRAL factor→markdown-body machinery: the shared helpers that map
 // a typed `Agent` vector / `ResolvedSkill` to its composed markdown BODY, before
 // any harness-specific framing (a claude or omp front-matter) wraps it.
 //
@@ -9,29 +9,29 @@
 
 import type {
   Agent,
-  DimensionManifest,
-  DimensionMeta,
   Entry,
+  FactorManifest,
+  FactorMeta,
   JsonSchema,
   Slot,
 } from '@cratylus/schema';
-import { anchorOf, bodyOf, dimensionValueOf } from '@cratylus/schema';
-import { renderSkillCellBody } from './exemplify/skill-cell.js';
+import { bodyOf, factorValueOf, termOf } from '@cratylus/schema';
+import { renderSkillBody } from './exemplify/skill-body.js';
 
-// ── Dimension → markdown helpers ─────────────────────────────────────────────────
+// ── Factor → markdown helpers ────────────────────────────────────────────────────
 
-/** dimension kebab name → its `Agent` camelCase field. */
-export function dimensionField(dimension: string): string {
-  return dimension.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
+/** factor kebab name → its `Agent` camelCase field. */
+export function factorField(factor: string): string {
+  return factor.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 }
 
 /**
- * The entries an agent holds for one dimension FIELD. The completeness law makes
- * every non-attribute field a list; anything else is a vector the corpus did not
+ * The entries an agent holds for one factor FIELD. The completeness law makes
+ * every non-attribute field a list; anything else is a vector the canon did not
  * compose, refused here rather than rendered as a silently empty section.
  */
 export function entriesOf(a: Agent, field: string): readonly Entry[] {
-  const held = dimensionValueOf(a, field);
+  const held = factorValueOf(a, field);
   if (!Array.isArray(held)) {
     throw new Error(
       `agent '${a.name}': its '${field}' field is not a list of entries`,
@@ -41,60 +41,64 @@ export function entriesOf(a: Agent, field: string): readonly Entry[] {
 }
 
 /**
- * One entry line: `- ` + (`<slot>: ` or `<slot> (<slot gloss>): `) + `**<anchor>**` +
- * (` (<note>)`) + ` — <gloss>` + (` (fixed)` when the level is fixed). A value whose
- * residue is ∅ is its anchor alone, so it carries no ` — <gloss>`.
+ * One entry line: `- ` + (`<slot>: ` or `<slot> (<slot precising definition>): `) +
+ * `**<term>**` + (` (<note>)`) + ` — <precising definition>` + (` (fixed)` when the level
+ * is fixed). A value whose precising definition is empty is its term alone, so it carries
+ * no ` — <precising definition>`.
  */
 function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
   const body = bodyOf(entry.value);
-  const anchor = anchorOf(entry.value);
-  const gloss = body.slice(anchor.length + ' ≜ '.length);
+  const term = termOf(entry.value);
+  const precisingDefinition = body.slice(term.length + ' ≜ '.length);
   let slot = '';
   if (entry.slot !== undefined) {
-    const g = slots?.find((s) => s.name === entry.slot)?.gloss;
-    slot = g ? `${entry.slot} (${g}): ` : `${entry.slot}: `;
+    const c = slots?.find((s) => s.name === entry.slot)?.precisingDefinition;
+    slot = c ? `${entry.slot} (${c}): ` : `${entry.slot}: `;
   }
   const note = entry.note ? ` (${entry.note})` : '';
-  const explained = anchor === body ? '' : ` — ${gloss}`;
+  const explained = term === body ? '' : ` — ${precisingDefinition}`;
   const fixed = entry.level === 'fixed' ? ' (fixed)' : '';
-  return `- ${slot}**${anchor}**${note}${explained}${fixed}`;
+  return `- ${slot}**${term}**${note}${explained}${fixed}`;
 }
 
 /**
  * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
  * `# <emoji> <name>` (`# <name>` with no mark), the description, then one
  * `## <Group>` per factor group in catalog order, and under it one `### <factor>`
- * per TEXT factor in catalog order, each held entry a line in held order (an empty
- * factor the line `- (none)`). A `binding` factor is never text — it compiles to
- * harness settings — and an `attribute` factor occupies no field; a group with no
- * text factor is omitted. Then the agent's deliverable, field by field, where its
- * contract states one ({@link Agent.contract}). Closed `rstrip() + "\n"`.
+ * per TEXT factor in catalog order, each held entry a line in held order. A factor
+ * the agent holds no entry of states no departure, and renders no section; a group
+ * none of whose text factors holds an entry is omitted. A `binding` factor is never
+ * text — it compiles to harness settings — and an `attribute` factor occupies no
+ * field; a group with no text factor is omitted. Then the agent's deliverable,
+ * field by field, where its contract states one ({@link Agent.contract}). Closed
+ * `rstrip() + "\n"`.
  *
  * The SECTION ORDER is the catalog's own declaration order — which is why the
  * catalog is a parameter and not a module read: the sequence of an agent's
- * sections is a fact about the corpus that declared the dimensions.
+ * sections is a fact about the canon that declared the factors.
  */
-export function agentBody(a: Agent, manifest: DimensionManifest): string {
+export function agentBody(a: Agent, manifest: FactorManifest): string {
   const heading = a.mark ? `${a.mark.emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, '', a.description, ''];
   // Groups by FIRST APPEARANCE, each gathering its text factors in catalog order,
   // so a group the manifest interleaves still renders as one section.
-  const groups = new Map<string, [string, DimensionMeta][]>();
-  for (const [dimension, meta] of Object.entries(manifest)) {
+  const groups = new Map<string, [string, FactorMeta][]>();
+  for (const [factor, meta] of Object.entries(manifest)) {
     if (meta.projection !== 'text' || meta.arity === 'attribute') continue;
     const factors = groups.get(meta.group) ?? [];
-    factors.push([dimension, meta]);
+    factors.push([factor, meta]);
     groups.set(meta.group, factors);
   }
   for (const [group, factors] of groups) {
-    out.push(`## ${group}`, '');
-    for (const [dimension, meta] of factors) {
-      out.push(`### ${dimension}`, '');
-      const entries = entriesOf(a, dimensionField(dimension));
-      if (entries.length === 0) out.push('- (none)');
-      for (const entry of entries) out.push(entryLine(entry, meta.slots));
-      out.push('');
+    const sections: string[] = [];
+    for (const [factor, meta] of factors) {
+      const entries = entriesOf(a, factorField(factor));
+      if (entries.length === 0) continue;
+      sections.push(`### ${factor}`, '');
+      for (const entry of entries) sections.push(entryLine(entry, meta.slots));
+      sections.push('');
     }
+    if (sections.length > 0) out.push(`## ${group}`, '', ...sections);
   }
   if (a.contract?.deliverable !== undefined)
     out.push(...deliverableSection(a.contract.deliverable), '');
@@ -158,20 +162,20 @@ export interface ResolvedSkill {
   readonly trigger: string;
   /** Front-matter `description` (the SKILL.md `description`). */
   readonly description: string;
-  /** The σ* set-builder block (declarations-above / laws-below), emitted verbatim
+  /** The formal set-builder block (declarations-above / laws-below), emitted verbatim
    *  inside the fence. Sourced from the `Skill.formalBlock` IR field. */
   readonly formalBlock: string;
-  /** The composed-anchor provenance names, already harness-projected (or []). */
+  /** The names of the skills it composes (its provenance), already harness-projected (or []). */
   readonly composedFrom: readonly string[];
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
    *  first section (above the fenced formal block). The engine knows only "a
-   *  leading block"; the cell that applies a principle fills it (`Skill.preamble`).
+   *  leading block"; the skill that applies a principle fills it (`Skill.preamble`).
    *  Absent ⇒ omitted. */
   readonly preamble?: string;
   /**
    * The RUNTIME capability this skill is a face of (mirrors `Skill.runtime`). When
    * set, the projection emits a thin shim beside the SKILL.md and the body BINDS it
-   * — without this the shim is unreachable: the cell would carry a script it cannot
+   * — without this the shim is unreachable: the skill would carry a script it cannot
    * name, which is why every skill fell back to embedding the bin name in prose.
    * Plain `string` (not `RuntimeCapability`) keeps core free of a canon `manifest`
    * import.
@@ -179,7 +183,7 @@ export interface ResolvedSkill {
   readonly runtime?: { readonly capability: string };
 }
 
-/** The verb H1, derived from the skill name (the anchor carries the verb). */
+/** The verb H1, derived from the skill name (the term carries the verb). */
 function deriveVerb(name: string): string {
   const words = name.replace(/-/g, ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
@@ -187,11 +191,11 @@ function deriveVerb(name: string): string {
 
 /**
  * The SKILL.md body for a resolved skill, rendered through the ONE generator
- * `renderSkillCellBody` as `# <verb>` + fenced `formalBlock` + "Composed from …".
+ * `renderSkillBody` as `# <verb>` + fenced `formalBlock` + "Composed from …".
  * Shared by the claude and omp adapters. Returns `rstrip() + "\n"`.
  */
 export function skillBody(s: ResolvedSkill): string {
-  return renderSkillCellBody({
+  return renderSkillBody({
     verb: deriveVerb(s.name),
     block: s.formalBlock,
     composedFrom: s.composedFrom,

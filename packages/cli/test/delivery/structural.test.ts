@@ -12,7 +12,7 @@ import canon from '@cratylus/canon';
 import { afterEach, expect, it } from 'vitest';
 import { runInstall } from '../../../forge/src/cli/commands/install.js';
 import type { Host } from '../capability-port/fixture.js';
-import { run, toolText } from '../capability-port/fixture.js';
+import { run } from '../capability-port/fixture.js';
 import { parseYaml } from '../yaml.js';
 import {
   assertOwned,
@@ -30,8 +30,6 @@ import {
   put,
   skew,
   success,
-  toolJSON,
-  traceCommand,
   tree,
   treeWithoutBindings,
   uninstall,
@@ -46,7 +44,7 @@ afterEach(() => {
 });
 const negative = process.env.DELIVERY_NEGATIVE;
 
-it('delivery/1 — one user installation is offered in existing and later projects, without changing another user', () => {
+it('one user installation is offered in existing and later projects, without changing another user', () => {
   h = fresh();
   const second = join(h.root, 'second-user');
   mkdirSync(second);
@@ -61,13 +59,13 @@ it('delivery/1 — one user installation is offered in existing and later projec
   expect(
     Object.keys(tree(join(owned(h), 'agents'))).filter((p) => p.endsWith('.md'))
       .length,
-    'installed corpus agents',
+    'installed canon agents',
   ).toBeGreaterThan(0);
   expect(
     Object.keys(tree(join(owned(h), 'skills'))).filter((p) =>
       p.endsWith('/SKILL.md'),
     ).length,
-    'installed corpus skills',
+    'installed canon skills',
   ).toBeGreaterThan(0);
   for (const cwd of projects)
     expect(tree(cwd)).not.toHaveProperty(
@@ -77,7 +75,7 @@ it('delivery/1 — one user installation is offered in existing and later projec
   expect(tree(second)).toEqual(otherBefore);
 });
 
-it('delivery/2 — every projected leaf belongs to the owned root and outside surfaces are references, never copies', () => {
+it('every projected leaf belongs to the owned root and outside surfaces are references, never copies', () => {
   h = fresh();
   const before = tree(h.home);
   success(install(h));
@@ -89,7 +87,7 @@ it('delivery/2 — every projected leaf belongs to the owned root and outside su
     ).toBeGreaterThan(0);
 });
 
-it('delivery/3 — colliding host agent, skill, extension and settings survive installation', () => {
+it('colliding host agent, skill, extension and settings survive installation', () => {
   h = fresh();
   const material = hostMaterial(h);
   const before = tree(h.home);
@@ -98,15 +96,14 @@ it('delivery/3 — colliding host agent, skill, extension and settings survive i
   assertOwned(h, before);
 });
 
-it('delivery/4 — interactive install with all supplied answers asks nothing', async () => {
+it('interactive install with all supplied answers asks nothing', async () => {
   h = fresh();
   const asked: string[] = [];
   const rc = await runInstall({
     harness: 'omp',
     home: h.home,
     cwd: h.cwd,
-    corpus: canon,
-    all: true,
+    canon,
     rules: 'none',
     modelRoles: 'default',
     scope: 'user',
@@ -119,10 +116,6 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
       scope: async () => {
         asked.push('scope');
         return 'user';
-      },
-      practices: async (offered) => {
-        asked.push('practices');
-        return offered.map((p) => p.name);
       },
       rules: async () => {
         asked.push('rules');
@@ -147,7 +140,7 @@ it('delivery/4 — interactive install with all supplied answers asks nothing', 
   expect(asked, 'never re-ask a supplied answer or confirm it').toEqual([]);
 });
 
-it('delivery/5 — after an answer interactive install asks only missing information, never the harness or an answered question', async () => {
+it('after an answer interactive install asks only missing information, never the harness or an answered question', async () => {
   h = fresh();
   const asked: string[] = [];
   const record = (name: string) => {
@@ -157,7 +150,7 @@ it('delivery/5 — after an answer interactive install asks only missing informa
     harness: 'omp',
     home: h.home,
     cwd: h.cwd,
-    corpus: canon,
+    canon,
     interactive: true,
     prompts: {
       harness: async () => {
@@ -167,10 +160,6 @@ it('delivery/5 — after an answer interactive install asks only missing informa
       scope: async () => {
         record('scope');
         return 'user';
-      },
-      practices: async (offered) => {
-        record('practices');
-        return offered.map((p) => p.name);
       },
       rules: async () => {
         record('rules');
@@ -191,15 +180,15 @@ it('delivery/5 — after an answer interactive install asks only missing informa
     },
   });
   expect(rc).toBe(0);
-  expect(asked).toContain('practices');
-  if (negative === '5') asked.push('practices'); // Negative recording: a second request for the answered selection.
+  expect(asked).toContain('rules');
+  if (negative === '5') asked.push('rules'); // Negative recording: a second request for the answered selection.
   expect(asked).not.toContain('harness');
   expect(asked.length, 'no answered question repeated').toBe(
     new Set(asked).size,
   );
 });
 
-it('delivery/6 — reinstalling the same version leaves the entire installation and changed host settings unchanged', async () => {
+it('reinstalling the same version leaves the entire installation and changed host settings unchanged', async () => {
   h = fresh();
   success(install(h));
   const settings = join(h.home, '.omp/agent/config.yml');
@@ -224,7 +213,7 @@ it('delivery/6 — reinstalling the same version leaves the entire installation 
   }
 });
 
-it('delivery/7 — the version tool identifies the projecting build and the command reached, not another available build', async () => {
+it('the version tool identifies the projecting build and the command reached, not another available build', async () => {
   h = fresh();
   const other = join(h.root, 'other-build');
   cpSync(h.prefix, other, { recursive: true, verbatimSymlinks: true });
@@ -244,7 +233,7 @@ it('delivery/7 — the version tool identifies the projecting build and the comm
   }
 });
 
-it('delivery/8 — a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
+it('a real earlier projection is replaced by exactly the new projection, not merged with removed agents or skills', async () => {
   h = fresh();
   const bindings = earlier(h);
   version(h, '2.5.0');
@@ -277,7 +266,7 @@ it('delivery/8 — a real earlier projection is replaced by exactly the new proj
   }
 });
 
-it('delivery/8 — a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings', () => {
+it('a genuine pre-digest installation leaves no earlier projection and keeps seeded bindings', () => {
   h = fresh();
   const bindings = earlier(h, 'pre-digest-installation.json');
   const manifest = JSON.parse(
@@ -309,7 +298,7 @@ it('delivery/8 — a genuine pre-digest installation leaves no earlier projectio
   );
 });
 
-it('delivery/8 — no earlier same-name agent outside the root survives the upgrade', () => {
+it('no earlier same-name agent outside the root survives the upgrade', () => {
   h = fresh();
   const bindings = earlier(h, 'pre-digest-installation.json');
   const oldArchitect = join(h.home, '.omp/agent/agents/architect.md');
@@ -331,7 +320,7 @@ it('delivery/8 — no earlier same-name agent outside the root survives the upgr
   }
 });
 
-it('delivery/9 — upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
+it('upgrade discards all inside-root edits and additions but preserves an outside skill edit', () => {
   h = fresh();
   const bindings = earlier(h);
   success(install(h));
@@ -357,7 +346,7 @@ it('delivery/9 — upgrade discards all inside-root edits and additions but pres
   }
 });
 
-it('delivery/10 — upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
+it('upgrade rewrites every reference while retaining the host references and settings on shared surfaces', () => {
   h = fresh();
   const bindings = earlier(h);
   const material = hostMaterial(h, bindings);
@@ -385,7 +374,7 @@ it('delivery/10 — upgrade rewrites every reference while retaining the host re
 });
 
 it.each(['redirected', 'replaced'])(
-  'delivery/10 — upgrade preserves a host-%s installation reference location',
+  'upgrade preserves a host-%s installation reference location',
   (change) => {
     h = fresh();
     success(install(h));
@@ -425,7 +414,7 @@ it.each(['redirected', 'replaced'])(
   },
 );
 
-it('delivery/11 — uninstall removes the whole root and all its references, never customized host surfaces', () => {
+it('uninstall removes the whole root and all its references, never customized host surfaces', () => {
   h = fresh();
   const material = hostMaterial(h);
   success(install(h));
@@ -442,7 +431,7 @@ it.each([
   'removed-root',
   'unrecorded-reference',
 ])(
-  'delivery/11 — uninstall follows reference targets despite a %s and keeps shared host surfaces',
+  'uninstall follows reference targets despite a %s and keeps shared host surfaces',
   (damage) => {
     h = fresh();
     const material = hostMaterial(h);
@@ -494,7 +483,7 @@ it.each([
   },
 );
 
-it('delivery/12 — uninstall reaches all projects but neither their records nor a second user installation', () => {
+it('uninstall reaches all projects but neither their records nor a second user installation', () => {
   h = fresh();
   success(install(h));
   const second = join(h.root, 'second-user');
@@ -508,35 +497,7 @@ it('delivery/12 — uninstall reaches all projects but neither their records nor
   ];
   for (const cwd of projects) {
     mkdirSync(cwd, { recursive: true });
-    success(run('git', ['init', '--initial-branch=journal'], cwd, h.env));
-    success(
-      h.command(
-        [
-          'concepts',
-          'context',
-          'booking',
-          '--subject',
-          'This project schedules deliveries',
-        ],
-        cwd,
-      ),
-    );
-    success(
-      h.command(
-        [
-          'concepts',
-          'define',
-          'delivery window',
-          '--context',
-          'booking',
-          '--wording',
-          'A reserved hour',
-          '--reason',
-          'Project design',
-        ],
-        cwd,
-      ),
-    );
+    success(run('git', ['init', '--initial-branch=main'], cwd, h.env));
     put(join(cwd, 'work.txt'), 'project work');
   }
   const before = projects.map((cwd) => tree(cwd));
@@ -547,7 +508,7 @@ it('delivery/12 — uninstall reaches all projects but neither their records nor
   assertRemoved(h);
 });
 
-it('delivery/13 — both starts immediately warn about skew without invoking a tool, changing installation or selecting a build', async () => {
+it('both starts immediately warn about skew without invoking a tool, changing installation or selecting a build', async () => {
   h = fresh();
   success(install(h));
   version(h, '2.5.0');
@@ -565,7 +526,7 @@ it('delivery/13 — both starts immediately warn about skew without invoking a t
   }
 });
 
-it('delivery/14 — matching versions are silent at startup and both remain queryable', async () => {
+it('matching versions are silent at startup and both remain queryable', async () => {
   h = fresh();
   success(install(h));
   const ext = await load(h);
@@ -581,7 +542,7 @@ it('delivery/14 — matching versions are silent at startup and both remain quer
   }
 });
 
-it('delivery/15 — reinstalling with the reached command replaces the recorded version and resolves the startup warning', async () => {
+it('reinstalling with the reached command replaces the recorded version and resolves the startup warning', async () => {
   h = fresh();
   success(install(h));
   version(h, '2.5.0');
@@ -608,7 +569,7 @@ it('delivery/15 — reinstalling with the reached command replaces the recorded 
   }
 });
 
-it('delivery/13 — each startup reports a genuinely earlier command even when it cannot explain version skew', async () => {
+it('each startup reports a genuinely earlier command even when it cannot explain version skew', async () => {
   h = fresh();
   success(install(h));
   const old = earlierCommand(h);
@@ -626,7 +587,7 @@ it('delivery/13 — each startup reports a genuinely earlier command even when i
   }
 });
 
-it('delivery/15 — restoring the current command and reinstalling resolves real-build skew', async () => {
+it('restoring the current command and reinstalling resolves real-build skew', async () => {
   h = fresh();
   success(install(h));
   const old = earlierCommand(h);
@@ -657,7 +618,7 @@ it('delivery/15 — restoring the current command and reinstalling resolves real
   }
 });
 
-it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.0 route or causes a warning', async () => {
+it('a project-pinned 2.6.0 never redirects either installed 2.4.0 route or causes a warning', async () => {
   h = fresh();
   success(install(h));
   const pinned = join(h.cwd, 'pinned');
@@ -665,8 +626,6 @@ it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.
   version(h, '2.6.0', pinned);
   symlinkSync(join(pinned, 'node_modules'), join(h.cwd, 'node_modules'), 'dir');
   put(join(h.cwd, 'package.json'), '{"dependencies":{"cratylus":"2.6.0"}}');
-  h.seed();
-  const calls = traceCommand(h);
   const ext = await load(h);
   try {
     await ext.start();
@@ -675,85 +634,13 @@ it('delivery/16 — a project-pinned 2.6.0 never redirects either installed 2.4.
       command: '2.4.0',
     });
     expect(ext.notifications.filter((n) => n.level === 'warning')).toEqual([]);
-    const before = calls().length;
-    expect(
-      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
-    ).toEqual(h.concepts('state'));
-    const reached = calls()
-      .slice(before)
-      .filter((c) => c.args[0] === 'concepts' && c.args[1] === 'state');
-    expect(reached.length).toBeGreaterThanOrEqual(2);
-    expect(reached.every((c) => c.version === '2.4.0')).toBe(true);
     expect(success(h.command(['--version'])).trim()).toBe('2.4.0');
   } finally {
     ext.restore();
   }
 });
 
-it('delivery/17 — command and tool share journal writes and supersession through the installed runtime with no source path', async () => {
-  h = fresh();
-  success(install(h));
-  h.seed();
-  h.concepts(
-    'define',
-    'delivery window',
-    '--context',
-    'booking',
-    '--wording',
-    'A two-hour interval.',
-    '--reason',
-    'First design',
-  );
-  const ext = await load(h);
-  try {
-    const observed = toolJSON(
-      await ext.call('concept_journal', { verb: 'state' }),
-    );
-    const initial = negative === '17' ? {} : observed; // Negative recording: adapter returns its own empty design.
-    expect(JSON.stringify(initial)).toContain('A two-hour interval.');
-    const changed = await ext.call('concept_journal', {
-      verb: 'supersede',
-      concept: 'delivery window',
-      context: 'booking',
-      wording: 'A one-hour interval.',
-      reason: 'Revised design',
-    });
-    expect(changed.isError).not.toBe(true);
-    const after = h.concepts('state');
-    expect(JSON.stringify(after)).toContain('A one-hour interval.');
-    expect(
-      toolJSON(await ext.call('concept_journal', { verb: 'state' })),
-    ).toEqual(after);
-    expect(h.env.PATH).not.toContain('/workspaces/cratylus');
-  } finally {
-    ext.restore();
-  }
-});
-
-it('delivery/18 — command and tool report the same missing-decision refusal without changing the journal', async () => {
-  h = fresh();
-  success(install(h));
-  h.seed();
-  const before = tree(h.cwd);
-  const command = h.command(['concepts', 'accept', 'missing-decision']);
-  const ext = await load(h);
-  try {
-    const result = await ext.call('concept_journal', {
-      verb: 'accept',
-      id: 'missing-decision',
-    });
-    if (negative === '18') result.isError = false;
-    expect(command.code).not.toBe(0);
-    expect(result.isError).toBe(true);
-    expect(toolText(result)).toContain(command.stderr.trim());
-    expect(command.stderr).toMatch(/missing-decision/);
-    expect(tree(h.cwd)).toEqual(before);
-  } finally {
-    ext.restore();
-  }
-});
-
-it('delivery/19 — the event tap is absent from delivered commands, projection and harness tools, including hidden or disabled forms', async () => {
+it('the event tap is absent from delivered commands, projection and harness tools, including hidden or disabled forms', async () => {
   h = fresh();
   success(install(h));
   noTap(h);
@@ -767,7 +654,7 @@ it('delivery/19 — the event tap is absent from delivered commands, projection 
   }
 });
 
-it('delivery/20 — upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
+it('upgrading a real event-tap installation removes its material and references but keeps unrelated extensions', () => {
   h = fresh();
   const bindings = earlier(h);
   put(

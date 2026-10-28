@@ -8,31 +8,26 @@
 //
 // ONE COMMANDER COMMAND PER CAPABILITY, its verbs rendered into its help, all of it
 // built from the declarations beside the verbs: the capability's purpose from
-// `CAPABILITY_SUMMARIES`, a verb's purpose, positional, and each flag's description
-// and whether it takes a value from the capability's `VERBS`. Nothing is retyped
-// here, so help cannot say what a verb does not take.
+// `CAPABILITY_SUMMARIES`, and a verb's purpose from the capability's `VERBS`.
+// Nothing is retyped here, so help cannot say what a verb does not do.
 //
 // EVERY CAPABILITY EXPLAINS ITSELF: it answers `--explain` with its explanation as
 // JSON, and `<verb> --explain` with one verb's: read out of those same
 // declarations by `explain`, beside the help they also print. Its help adds when
 // to reach for it, and each verb's the concept it acts on, when to reach for it,
-// and whether it reads or appends, so the help says what the explanation says.
+// and that it only reads, so the help says what the explanation says.
 //
-// COMMANDER DOES NOT PARSE A VERB'S FLAGS. It owns the structure and the help; the
+// A VERB TAKES NO ARGUMENTS. Commander owns the structure and the help; the
 // tokens after the verb reach that verb's dispatcher exactly as given, and
-// `readArgv` stays their one reader, so every `verb flags` refusal is the
-// dispatcher's own. The one thing read here is whether the tokens ask for help
-// or for the explanation: `--help`, `-h` or `--explain` as a token of its own,
-// never as the value of a flag that takes one — `concepts context c --subject
-// -h` keeps `-h` as the subject. Help wins over the explanation. A verb the
-// capability does not declare is refused by `verbOf`, the one home of that
-// refusal.
+// `verbOf` refuses any of them, the one home of that refusal and of the refusal of
+// a verb the capability does not declare. The one thing read here is whether the
+// tokens ask for help or for the explanation: `--help`, `-h` or `--explain` as
+// any token after the verb. Help wins over the explanation.
 //
-// Each capability prints its JSON result; `concepts` is handed the
-// contexts the installation it reaches delivers, so its views show them beside the
-// project's own. A refusal is a loud code-1 failure, printed as `cratylus <message>`,
-// a message opening with the capability and the verb, so it reads as every other
-// command's failure does.
+// Each capability prints its JSON result on stdout. A result that is a failure, a
+// model check that fails, is still printed on stdout and exits 1. A refusal is a
+// loud code-1 failure, printed on stderr as `cratylus <message>`, a message opening
+// with the capability and the verb, so it reads as every other command's failure does.
 // Help goes to stdout when asked for and to stderr when it is the answer to a
 // call that named no verb, where it is a failure.
 //
@@ -42,17 +37,12 @@
 // compiler-invisible emitted string).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { Command, Option } from 'commander';
+import { Command } from 'commander';
 import { CLI_BIN } from './bin-name.js';
-import {
-  VERBS as CONCEPTS,
-  JOURNAL,
-} from './capabilities/concepts/dispatch.js';
-import { dispatchConcepts } from './capabilities/concepts/index.js';
+import { MODEL_CHECK, dispatchModel } from './capabilities/model/index.js';
 import { verbOf } from './capabilities/plan/argv.js';
 import {
   VERSION_SKEW,
-  VERBS as VERSION_SKEW_VERBS,
   dispatchVersionSkew,
 } from './capabilities/version-skew/index.js';
 import {
@@ -66,45 +56,45 @@ import {
   explain,
   explainVerb,
 } from './explanation.js';
-import { deliveredContexts } from './runtime-config.js';
-import { type Verb, type VerbFlags, spelled } from './verb-flags.js';
 
 /**
- * Each capability's verb surface: the verbs it declares, and its verb and
- * arguments in, the text it prints out, and, where it explains itself, its
- * interface. A refusal throws.
+ * Each capability's verb surface: its verb in, the result it prints out and
+ * whether that result is a failure, and its interface, which declares its verbs.
+ * A refusal throws.
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
  * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `concepts` cell yields
- * `spawnSync(CLI_BIN, ['concepts', …])`).
+ * THIN SHIM spawns (the emitter is `f(capability)`, so a `versionSkew` skill yields
+ * `spawnSync(CLI_BIN, ['versionSkew', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {
-    readonly verbs: VerbFlags;
-    readonly run: (argv: string[], build: Build) => string;
+    readonly run: (argv: string[], build: Build) => Outcome;
     readonly explained: CapabilityInterface;
   };
 } = {
-  concepts: {
-    verbs: CONCEPTS,
-    // The contexts the installation reached delivers, shown apart from the project's own.
-    run: (argv) =>
-      JSON.stringify(
-        dispatchConcepts(argv, { delivered: deliveredContexts() }),
-        null,
-        2,
-      ),
-    explained: JOURNAL,
+  model: {
+    run: (argv) => {
+      const report = dispatchModel(argv);
+      return { result: report, failed: !report.passed };
+    },
+    explained: MODEL_CHECK,
   },
   versionSkew: {
-    verbs: VERSION_SKEW_VERBS,
-    run: (argv, build) =>
-      JSON.stringify(dispatchVersionSkew(argv, build), null, 2),
+    run: (argv, build) => ({
+      result: dispatchVersionSkew(argv, build),
+      failed: false,
+    }),
     explained: VERSION_SKEW,
   },
 };
+
+/** What a verb gives: its result, printed as JSON, and whether it is a failure. */
+interface Outcome {
+  readonly result: unknown;
+  readonly failed: boolean;
+}
 
 /** The build the commands are held in: the program's own declared version, which
  *  `versionSkew` reports as the command's. */
@@ -115,27 +105,22 @@ export interface Build {
 /** Help is never wrapped: a line holds one fact whatever the terminal's width. */
 const UNWRAPPED = { helpWidth: Number.MAX_SAFE_INTEGER } as const;
 
-/** One verb's command, held for its help alone: its purpose, and where the verb
- *  explains itself when to reach for it, its concept and its effect; its
- *  positional and its flags, declared so they print. It is never registered and
- *  never parses. */
+/** One verb's command, held for its help alone: its purpose, when to reach for
+ *  it, its concept and its effect. It is never registered and never parses. */
 function verbCommand(
   capability: Capability,
   name: string,
-  verb: Verb,
-  explained: ExplainedVerb | undefined,
+  verb: ExplainedVerb,
 ): Command {
-  const command = new Command(name)
+  return new Command(name)
     .summary(verb.purpose)
     .description(
-      explained === undefined
-        ? verb.purpose
-        : [
-            verb.purpose,
-            `When: ${explained.when}`,
-            `Concept: ${explained.concept}`,
-            `Effect: ${explained.effect}`,
-          ].join('\n'),
+      [
+        verb.purpose,
+        `When: ${verb.when}`,
+        `Concept: ${verb.concept}`,
+        `Effect: ${verb.effect}`,
+      ].join('\n'),
     )
     .helpCommand(false)
     .configureHelp({
@@ -144,50 +129,6 @@ function verbCommand(
       commandUsage: (self) =>
         `${CLI_BIN} ${capability} ${self.name()} ${self.usage()}`,
     });
-  if (verb.positional !== null)
-    command.argument(spelled(verb.positional), verb.positional.description);
-  for (const [flag, spec] of Object.entries(verb.flags))
-    command.addOption(
-      new Option(
-        spec.takes === 'value' ? `--${flag} <value>` : `--${flag}`,
-        spec.description,
-      ),
-    );
-  return command;
-}
-
-/** A token read as an attempted flag even after a flag the verb does not take
- *  — `readArgv`'s own rule, which decides what a flag leaves for the next token. */
-const FLAG_SHAPED = /^(?:--|-[A-Za-z][A-Za-z0-9-]*(?:=|$))/;
-
-/**
- * Whether `tokens`, the tail of a verb, ask for one of `asks` — `--help` and
- * `-h`, or `--explain` — as a token of its own, and not as the value of a flag
- * that takes one. The walk spends each token as `readArgv` does, so a token that
- * reader gives to a flag as its value is never read as the request.
- */
-function asksFor(
-  tokens: readonly string[],
-  verb: Verb,
-  asks: readonly string[],
-): boolean {
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i] as string;
-    if (asks.includes(token)) return true;
-    if (!token.startsWith('-') || token === '-') continue;
-    const eq = token.indexOf('=');
-    if (eq !== -1) continue;
-    const name = token.startsWith('--') ? token.slice(2) : undefined;
-    const kind =
-      name !== undefined && Object.hasOwn(verb.flags, name)
-        ? verb.flags[name]?.takes
-        : undefined;
-    if (kind === 'switch') continue;
-    const next = tokens[i + 1] ?? '--';
-    if (kind === 'value' ? !next.startsWith('--') : !FLAG_SHAPED.test(next))
-      i++;
-  }
-  return false;
 }
 
 /** The tokens that ask for help, and for the explanation. */
@@ -224,7 +165,7 @@ function helpOf(
   return [
     command.helpInformation({ error }),
     `When: ${explained.when}\n`,
-    `Run ${name} <verb> --help for what a verb takes.\n`,
+    `Run ${name} <verb> --help for what a verb does.\n`,
     `Run ${name} --explain, or ${name} <verb> --explain, for this explanation as JSON.\n`,
   ].join('');
 }
@@ -233,17 +174,17 @@ function helpOf(
  *  and the tokens after it, exactly as given, to the capability's verb surface,
  *  or answering `--explain` with its explanation. */
 function capabilityCommand(capability: Capability, build: Build): Command {
-  const { verbs, run, explained } = SURFACES[capability];
+  const { run, explained } = SURFACES[capability];
   const verbCommands = new Map(
-    Object.entries(verbs).map(([name, verb]) => [
+    Object.entries(explained.verbs).map(([name, verb]) => [
       name,
-      verbCommand(capability, name, verb, explained.verbs[name]),
+      verbCommand(capability, name, verb),
     ]),
   );
   return (
     new Command(capability)
       .description(CAPABILITY_SUMMARIES[capability])
-      .usage('<verb> [args]')
+      .usage('<verb>')
       .configureHelp({
         ...UNWRAPPED,
         visibleCommands: () => [...verbCommands.values()],
@@ -279,9 +220,8 @@ function capabilityCommand(capability: Capability, build: Build): Command {
             return;
           }
           try {
-            verbOf([verb], capability, verbs);
-            const declared = verbs[verb] as Verb;
-            if (asksFor(tokens, declared, HELP)) {
+            verbOf([verb], capability, explained.verbs);
+            if (tokens.some((token) => HELP.includes(token))) {
               const help = (
                 verbCommands.get(verb) as Command
               ).helpInformation();
@@ -292,7 +232,7 @@ function capabilityCommand(capability: Capability, build: Build): Command {
               );
               return;
             }
-            if (asksFor(tokens, declared, EXPLAIN)) {
+            if (tokens.some((token) => EXPLAIN.includes(token))) {
               const explanation = explainVerb(
                 verb,
                 explained.verbs[verb] as ExplainedVerb,
@@ -301,8 +241,9 @@ function capabilityCommand(capability: Capability, build: Build): Command {
               process.exitCode = 0;
               return;
             }
-            process.stdout.write(`${run([verb, ...tokens], build)}\n`);
-            process.exitCode = 0;
+            const { result, failed } = run([verb, ...tokens], build);
+            process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+            process.exitCode = failed ? 1 : 0;
           } catch (err) {
             refuse(err instanceof Error ? err.message : String(err));
           }
