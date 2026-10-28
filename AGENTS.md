@@ -1,8 +1,8 @@
 # AGENTS
 
-**CRITICAL:** Your **absolutely mandatory immediate next action is to read** @INTRODUCTION.md i.e. [`INTRODUCTION`](./INTRODUCTION.md) - source agnostic, voice neutral, conceptual foundation of the core principles.
+Read @INTRODUCTION.md first: it states Cratylic context design, the theory every record in `design/model/` is written in.
 
-**CRITICAL:** Read the domain model in `design/model` (`purpose.md`, then each `context.md` and its concepts) as the **authoritative domain model** per bounded context.
+Read the domain model in `design/model/` next, `purpose.md` and then each bounded context's `context.md` and its records: it holds what each term means in its bounded context, and it is the one source of meaning the work is judged against.
 
 ## Working conventions
 
