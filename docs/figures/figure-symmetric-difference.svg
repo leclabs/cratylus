@@ -3,24 +3,24 @@
   <defs>
     <clipPath id="cC"><ellipse cx="300" cy="270" rx="150" ry="110"/></clipPath>
     <clipPath id="cI"><ellipse cx="350" cy="255" rx="150" ry="115"/></clipPath>
-    <pattern id="hatchMissing" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <pattern id="hatchUnderspecified" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
       <rect width="8" height="8" fill="#dbeafe"/><line x1="0" y1="0" x2="0" y2="8" stroke="#2563eb" stroke-width="2"/>
     </pattern>
-    <pattern id="hatchSpurious" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+    <pattern id="hatchOverextended" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
       <rect width="8" height="8" fill="#fee2e2"/><line x1="0" y1="0" x2="0" y2="8" stroke="#dc2626" stroke-width="2"/>
     </pattern>
   </defs>
 
   <!-- Panel 1: a term already carries most of a concept -->
   <text x="40" y="48" font-size="24" font-weight="700" fill="#111">A term already carries most of a concept</text>
-  <text x="40" y="76" font-size="15" fill="#555">read in its domain, a term calls most of the concept to mind; the gap is what's left</text>
+  <text x="40" y="76" font-size="15" fill="#555">a term calls most of its concept to mind; what's left is the symmetric difference</text>
   <rect x="40" y="100" width="540" height="340" rx="14" fill="#fff" stroke="#ddd"/>
-  <text x="56" y="124" font-size="13" fill="#999">everything the model learned from its training text, read in the term's domain</text>
+  <text x="56" y="124" font-size="13" fill="#999">the model's semantic space, read in the term's domain</text>
 
-  <!-- concept only: missing -->
-  <ellipse cx="300" cy="270" rx="150" ry="110" fill="url(#hatchMissing)"/>
-  <!-- called to mind only: spurious -->
-  <ellipse cx="350" cy="255" rx="150" ry="115" fill="url(#hatchSpurious)"/>
+  <!-- concept only: underspecification -->
+  <ellipse cx="300" cy="270" rx="150" ry="110" fill="url(#hatchUnderspecified)"/>
+  <!-- called to mind only: overextension -->
+  <ellipse cx="350" cy="255" rx="150" ry="115" fill="url(#hatchOverextended)"/>
   <!-- overlap: carried by the term -->
   <g clip-path="url(#cC)"><ellipse cx="350" cy="255" rx="150" ry="115" fill="#d1fae5"/></g>
   <ellipse cx="300" cy="270" rx="150" ry="110" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="8 5"/>
@@ -29,9 +29,9 @@
   <text x="325" y="262" font-size="16" font-weight="700" fill="#065f46" text-anchor="middle">carried</text>
   <text x="325" y="282" font-size="13" fill="#065f46" text-anchor="middle">by the term, no definition needed</text>
   <g paint-order="stroke" stroke="#fff" stroke-width="5" stroke-linejoin="round">
-    <text x="170" y="350" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">missing</text>
+    <text x="170" y="350" font-size="14" font-weight="700" fill="#1d4ed8" text-anchor="middle">underspecification</text>
     <text x="170" y="368" font-size="12" fill="#1d4ed8" text-anchor="middle">meant, not called to mind</text>
-    <text x="482" y="170" font-size="14" font-weight="700" fill="#b91c1c" text-anchor="middle">spurious</text>
+    <text x="482" y="170" font-size="14" font-weight="700" fill="#b91c1c" text-anchor="middle">overextension</text>
     <text x="482" y="188" font-size="12" fill="#b91c1c" text-anchor="middle">called to mind, not meant</text>
   </g>
 
@@ -40,9 +40,9 @@
   <line x1="300" y1="402" x2="330" y2="402" stroke="#ea580c" stroke-width="3"/>
   <text x="338" y="407" font-size="14" fill="#333">what the term calls to mind</text>
 
-  <!-- Panel 2: find the term with the smallest gap -->
-  <text x="640" y="48" font-size="24" font-weight="700" fill="#111">Find the term with the smallest gap</text>
-  <text x="640" y="76" font-size="15" fill="#555">the fit is a fact about the model: found by asking it, not chosen by taste</text>
+  <!-- Panel 2: find the Cratylic name -->
+  <text x="640" y="48" font-size="24" font-weight="700" fill="#111">Find the Cratylic name</text>
+  <text x="640" y="76" font-size="15" fill="#555">the smallest symmetric difference: found by asking the model, not by taste</text>
   <rect x="640" y="100" width="520" height="340" rx="14" fill="#fff" stroke="#ddd"/>
 
   <!-- three candidate terms against one concept -->
@@ -50,18 +50,18 @@
     <ellipse cx="745" cy="250" rx="52" ry="40" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="8 5"/>
     <ellipse cx="745" cy="250" rx="85" ry="72" fill="none" stroke="#9ca3af" stroke-width="2.5"/>
     <text x="745" y="358" font-size="14" font-weight="700" fill="#4b5563" text-anchor="middle">too broad</text>
-    <text x="745" y="376" font-size="12" fill="#6b7280" text-anchor="middle">much that is spurious</text>
+    <text x="745" y="376" font-size="12" fill="#6b7280" text-anchor="middle">much overextension</text>
   </g>
   <g>
     <ellipse cx="905" cy="262" rx="52" ry="40" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="8 5"/>
     <ellipse cx="940" cy="222" rx="50" ry="38" fill="none" stroke="#9ca3af" stroke-width="2.5"/>
     <text x="905" y="358" font-size="14" font-weight="700" fill="#4b5563" text-anchor="middle">off-target</text>
-    <text x="905" y="376" font-size="12" fill="#6b7280" text-anchor="middle">much missing, much spurious</text>
+    <text x="905" y="376" font-size="12" fill="#6b7280" text-anchor="middle">underspecified, overextended</text>
   </g>
   <g>
     <ellipse cx="1060" cy="250" rx="58" ry="44" fill="none" stroke="#2563eb" stroke-width="3" stroke-dasharray="8 5"/>
     <ellipse cx="1063" cy="247" rx="60" ry="45" fill="none" stroke="#ea580c" stroke-width="3"/>
-    <text x="1060" y="358" font-size="14" font-weight="700" fill="#c2410c" text-anchor="middle">the best term</text>
-    <text x="1060" y="376" font-size="12" fill="#6b7280" text-anchor="middle">almost no gap</text>
+    <text x="1060" y="358" font-size="14" font-weight="700" fill="#c2410c" text-anchor="middle">the Cratylic name</text>
+    <text x="1060" y="376" font-size="12" fill="#6b7280" text-anchor="middle">nearly exact</text>
   </g>
 </svg>
