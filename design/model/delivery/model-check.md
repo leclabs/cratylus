@@ -1,6 +1,6 @@
 # model check
 
-Deterministic, in the project's one check: binds each example to the acceptance test titled by its context, concept and name, or to code review where marked judged in review; warns of implementation leakage in a record
+Deterministic, in the project's one check: binds each example to the acceptance test titled by its context, concept and name, or to code review where marked judged in review; warns where a record reads other than declarative
 
 ## Examples
 
