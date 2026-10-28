@@ -74,7 +74,7 @@ export interface PluginValueRoot {
  * it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
  * plugins sharing it collapses both at once — indistinguishable ids, and the
  * per-plugin Cratylic-name invariant — each plugin names each
- * concept its LOCAL Cratylic name, the term with the smallest semantic gap in its context, unique within
+ * concept its LOCAL Cratylic name, the term with the smallest symmetric difference in its context, unique within
  * its OWN catalog and nowhere wider —
  * holding only by accident. There is no degraded-but-useful reading of the result to warn about.
  *

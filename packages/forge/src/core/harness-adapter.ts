@@ -34,7 +34,7 @@ import type { ResolvedSkill } from './body.js';
  * it realizes a session-scoped hook by placing a module in the scope every session
  * reads. Agent scopes are keyed by agent name (a harness that places artifacts per
  * agent); this token names the session's. It is not an agent name and cannot collide
- * with one — canon agent names are cold-derived words, never `_`-prefixed.
+ * with one — canon agent names are words found by a fresh reading, never `_`-prefixed.
  */
 export const SESSION_SCOPE = '_session';
 

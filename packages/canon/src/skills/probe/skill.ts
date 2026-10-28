@@ -28,7 +28,7 @@ w      ≜ a term under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
 probe : Names × bounded-context → ℘(D) × C
-K ≜ the knowledge a reader holds ⟨∅ in a cold read⟩
+K ≜ the knowledge a reader holds ⟨∅ in a fresh reading⟩
 frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licenced-to-refuse⟩
 parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
 Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩
@@ -45,13 +45,13 @@ crystallize : cratylic(c) = w ⇔ w ∈ experiment(c) ∩ Est(κ(c)) ∧ covers(
               ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w, κ(c)) ; a mint is settled through signify, ¬ crystallized⟩
 
 probe(w,κ | K) ≜ probe(w,κ) taken at K ⟨probe is MEASURED, ¬ read-off : a FAMILY over K, ¬ one value⟩
-probe(w,κ | ∅) ⊨ self-sufficiency ⟨cold : does w, given κ's name and subject, circumscribe carrying ZERO project knowledge?⟩
+probe(w,κ | ∅) ⊨ self-sufficiency ⟨fresh : does w, given κ's name and subject, circumscribe carrying ZERO project knowledge?⟩
 probe(w,κ | K_reader) ⊨ what w fires IN SITU ⟨the reading that binds at use⟩
 { d ∈ fired(w,κ) ↾ K_reader | d ∉ fired(w,κ) ↾ ∅ } ⊨ THE measurement
-    ⟨both poles REQUIRED ; a cold read is a CONTROL, never a substitute for the in-situ one⟩
-K(spawned-subagent) ⊇ installed-canon ∴ ¬cold ⟨it holds project memory · commit subjects · skill bodies⟩
+    ⟨both poles REQUIRED ; the fresh reading is the CONTROL beside the in-situ one⟩
+K(spawned-subagent) ⊇ installed-canon ∴ ¬fresh ⟨it holds project memory · commit subjects · skill bodies⟩
     ∴ agreement( probe(w | K ⊇ canon) , the canon ) ⊨ ∅ ⟨it READ the answer⟩
-cold ⇔ process-isolation ⟨¬ a fresh subagent ; ¬ a stripped prompt⟩
+fresh ⇔ process-isolation ⟨a separate model process holding nothing of the project⟩
 
 frame = produce-a-candidate ⇒ ∄ observable ∅ ⟨an obliged producer ALWAYS emits⟩
     ∴ licence-the-negative : vary the FRAME across runs, ¬ the prompt ⟨fired(w,κ) = ∅ ∧ ∄ cratylic(c) are RESULTS⟩
@@ -67,7 +67,7 @@ W(c) seeded from the ARTIFACT ⟨invoked verb · declared inverse · deferred-to
 
 export const probe: Skill = {
   name: 'probe',
-  description: `Find out what a term says to the model before relying on it — read what a word or candidate name evokes in its domain, given nothing else (a cold read) and in the place it will be read, and the concept that reading picks out, with its symmetric difference from the concept intended: what the name lacks and what it adds. Reach for it to test candidate terms or to discover the concept a name already carries; a term worth keeping is then settled by signify.`,
+  description: `Find out what a term says to the model before relying on it — read what a word or candidate name evokes in its domain, given nothing else (a fresh reading) and in the place it will be read, and the concept that reading picks out, with its symmetric difference from the concept intended: what the name lacks and what it adds. Reach for it to test candidate terms or to discover the concept a name already carries; a term worth keeping is then settled by signify.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
   preamble: primePrinciple,

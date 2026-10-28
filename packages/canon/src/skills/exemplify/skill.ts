@@ -23,7 +23,7 @@ produce            : sources → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify ⟨each concept takes its Cratylic name, the established term where its domain already names it⟩
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
-R_cold(f)          ≜ the cold read @ cratylic context design of fragment f (a naive reader, zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
+R_fresh(f)         ≜ a fresh model's reading of fragment f (zero project-K, given f's terms + inline ≜ with its bounded context's name and subject, nothing of intent(f))
 body(k)            ≜ piece k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
 K                  ≜ project-K, the warm knowledge (the project's own texts) a reader already holds
@@ -34,8 +34,8 @@ fragment_digest(f) ≜ digest( trim( collapse-whitespace( NFC(f) ) ) )
 manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_meaning, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_meaning⟩] }
 
 realized(k) ⇔ factorization(k) ≠ ⊥
-coldpass(k) ⇔ R_cold(body(k)) ≅ meaning(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
-valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
+freshpass(k) ⇔ R_fresh(body(k)) ≅ meaning(k) ∧ decode_warm(body(k) | K) ≅ R_fresh(body(k))
+valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ freshpass(k)
 produce ↦ meaning ; name ↦ term ; realize ↦ factorization
 ∀ k ∈ Pieces : accept(k) defined
 disposition ∈ { reuse, mint }
@@ -50,7 +50,7 @@ accept(k)    ≜ ⊥ , ¬valid(k)` as SkillExpression;
 
 export const exemplify: Skill = {
   name: 'exemplify',
-  description: `Restate a body of context, an agent, a skill or a document, in Cratylic names — find its concepts, give each its term with its precising definition, and write it back built from them, keeping each piece only when its cold read gives the meaning intended and every idea of the source has a place. Reach for it when context written as freeform prose should carry its concepts by name, shorter and meaning nothing beyond what is intended.`,
+  description: `Restate a body of context, an agent, a skill or a document, in Cratylic names — find its concepts, give each its term with its precising definition, and write it back built from them, keeping each piece only when its fresh reading gives the meaning intended and every idea of the source has a place. Reach for it when context written as freeform prose should carry its concepts by name, shorter and meaning nothing beyond what is intended.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
   preamble: primePrinciple,
