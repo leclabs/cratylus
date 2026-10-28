@@ -26,7 +26,7 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 commentary(B) ≜ prose of B beyond β ∪ ι ; commentary(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
-s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation answers to no cold read⟩
+s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation needs no fresh reading⟩
 
 reconstruct(B) ≽ prose
 reconstruct(B) ⋡ prose ⇒ ⊥` as SkillExpression,

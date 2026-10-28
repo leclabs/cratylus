@@ -8,9 +8,9 @@
 // dereferences a glyph by asking an agent to explain the artifact (the on-demand channel),
 // never a maintained doc.
 //
-// `coldVerified`: a cold reader, given the glyph and nothing of its sense, recovers the operation
-// (MEANING/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
-// cold-surveyed against reader priors and passed. `${}` is a CODE mechanism (resolved at
+// `freshVerified`: a fresh model, given the glyph and nothing of its sense, recovers the operation.
+// Universal math/logic notation passes by ubiquity; `↾`/`⟨⟩` were surveyed by fresh readings
+// against reader priors and passed. `${}` is a CODE mechanism (resolved at
 // eval, not decoded) ⇒ false.
 
 export type Glyph = string;
@@ -20,164 +20,172 @@ export interface OperatorEntry {
   readonly sense: string;
   /** the type signature (`name : Domain → Codomain`, or a usage schema) */
   readonly signature: string;
-  /** a cold reader, given the glyph and nothing of its sense, recovers the operation */
-  readonly coldVerified: boolean;
+  /** a fresh model, given the glyph and nothing of its sense, recovers the operation */
+  readonly freshVerified: boolean;
 }
 
 export const OPERATORS = {
   // ── Definition & comparison ──────────────────────────────────────────────
-  '≜': { sense: 'defines', signature: 'name ≜ expr', coldVerified: true },
-  '≠': { sense: 'distinct', signature: 'T × T → Prop', coldVerified: true },
-  '≽': { sense: 'dominates', signature: 'T × T → Prop', coldVerified: true },
+  '≜': { sense: 'defines', signature: 'name ≜ expr', freshVerified: true },
+  '≠': { sense: 'distinct', signature: 'T × T → Prop', freshVerified: true },
+  '≽': { sense: 'dominates', signature: 'T × T → Prop', freshVerified: true },
   '≻': {
     sense: 'strictly-dominates',
     signature: 'T × T → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
   '≅': {
     sense: 'reader-isomorphic',
     signature: '𝒞 × 𝒞 → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '≺': { sense: 'precedes', signature: 'T × T → Prop', coldVerified: true },
-  '≥': { sense: 'at-least', signature: 'T × T → Prop', coldVerified: true },
-  '≤': { sense: 'at-most', signature: 'T × T → Prop', coldVerified: true },
-  '≡': { sense: 'identical', signature: 'T × T → Prop', coldVerified: true },
+  '≺': { sense: 'precedes', signature: 'T × T → Prop', freshVerified: true },
+  '≥': { sense: 'at-least', signature: 'T × T → Prop', freshVerified: true },
+  '≤': { sense: 'at-most', signature: 'T × T → Prop', freshVerified: true },
+  '≡': { sense: 'identical', signature: 'T × T → Prop', freshVerified: true },
   '≢': {
     sense: 'not-identical',
     signature: 'T × T → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⟨': {
     sense: 'tuple-open / modifier-open',
     signature:
       '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⟩': {
     sense: 'tuple-close / modifier-close',
     signature:
       '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⋡': {
     sense: 'does-not-dominate',
     signature: 'T × T → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '⟼': { sense: 'maps-to', signature: 'x ⟼ f(x)', coldVerified: true },
-  𝔹: { sense: 'Booleans', signature: '{⊤, ⊥}', coldVerified: true },
+  '⟼': { sense: 'maps-to', signature: 'x ⟼ f(x)', freshVerified: true },
+  𝔹: { sense: 'Booleans', signature: '{⊤, ⊥}', freshVerified: true },
 
   // ── Propositional logic ──────────────────────────────────────────────────
-  '¬': { sense: 'not', signature: 'Prop → Prop', coldVerified: true },
-  '∧': { sense: 'and', signature: 'Prop × Prop → Prop', coldVerified: true },
-  '∨': { sense: 'or', signature: 'Prop × Prop → Prop', coldVerified: true },
+  '¬': { sense: 'not', signature: 'Prop → Prop', freshVerified: true },
+  '∧': { sense: 'and', signature: 'Prop × Prop → Prop', freshVerified: true },
+  '∨': { sense: 'or', signature: 'Prop × Prop → Prop', freshVerified: true },
   '⊻': {
     sense: 'exclusive-or',
     signature: 'Prop × Prop → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⇒': {
     sense: 'implies',
     signature: 'Prop × Prop → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⇏': {
     sense: 'not-implies',
     signature: 'Prop × Prop → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '⇔': { sense: 'iff', signature: 'Prop × Prop → Prop', coldVerified: true },
-  '⊥': { sense: 'contradiction', signature: 'Prop', coldVerified: true },
-  '∴': { sense: 'therefore', signature: 'Prop ∴ Prop', coldVerified: true },
-  '∵': { sense: 'because', signature: 'Prop ∵ Prop', coldVerified: true },
+  '⇔': { sense: 'iff', signature: 'Prop × Prop → Prop', freshVerified: true },
+  '⊥': { sense: 'contradiction', signature: 'Prop', freshVerified: true },
+  '∴': { sense: 'therefore', signature: 'Prop ∴ Prop', freshVerified: true },
+  '∵': { sense: 'because', signature: 'Prop ∵ Prop', freshVerified: true },
 
   // ── Quantifiers ──────────────────────────────────────────────────────────
-  '∀': { sense: 'for-all', signature: '∀ x : Prop', coldVerified: true },
-  '∃': { sense: 'exists', signature: '∃ x : Prop', coldVerified: true },
-  '∄': { sense: 'none-exist', signature: '∄ x : Prop', coldVerified: true },
+  '∀': { sense: 'for-all', signature: '∀ x : Prop', freshVerified: true },
+  '∃': { sense: 'exists', signature: '∃ x : Prop', freshVerified: true },
+  '∄': { sense: 'none-exist', signature: '∄ x : Prop', freshVerified: true },
 
   // ── Sets ─────────────────────────────────────────────────────────────────
-  '∈': { sense: 'member', signature: 'El × Set → Prop', coldVerified: true },
+  '∈': { sense: 'member', signature: 'El × Set → Prop', freshVerified: true },
   '∉': {
     sense: 'non-member',
     signature: 'El × Set → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  // ASCII operators. Barred for years not by cold-verification but by an encoding
-  // filter in the precising-definition grammar (`codePointAt > 0x7f`); `=` and `|` were in live
-  // use the whole time, hand-split in code. Cold-verifiability is the only bar.
+  // ASCII operators. An encoding filter in the precising-definition grammar (`codePointAt > 0x7f`)
+  // barred them for years; `=` and `|` were in live use the whole time, hand-split in code.
+  // Fresh verification is the only bar.
   '=': {
     sense: 'equality-binding',
     signature: 'A × A → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
   '|': {
     sense: 'given ⟨such-that⟩',
     signature: 'A × Cond → A',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '+': { sense: 'sum-conjunction', signature: 'A × A → A', coldVerified: true },
-  '⊆': { sense: 'subset', signature: 'Set × Set → Prop', coldVerified: true },
+  '+': {
+    sense: 'sum-conjunction',
+    signature: 'A × A → A',
+    freshVerified: true,
+  },
+  '⊆': { sense: 'subset', signature: 'Set × Set → Prop', freshVerified: true },
   '⊂': {
     sense: 'proper-subset',
     signature: 'Set × Set → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '⊇': { sense: 'superset', signature: 'Set × Set → Prop', coldVerified: true },
+  '⊇': {
+    sense: 'superset',
+    signature: 'Set × Set → Prop',
+    freshVerified: true,
+  },
   '⊕': {
     sense: 'direct-sum ⟨composition of parts into a whole⟩',
     signature: 'A × A → A',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '∪': { sense: 'union', signature: 'Set × Set → Set', coldVerified: true },
+  '∪': { sense: 'union', signature: 'Set × Set → Set', freshVerified: true },
   '∩': {
     sense: 'intersection',
     signature: 'Set × Set → Set',
-    coldVerified: true,
+    freshVerified: true,
   },
   '⋃': {
     sense: 'n-ary-union',
     signature: 'Set[Set] → Set',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '∅': { sense: 'empty', signature: 'Set', coldVerified: true },
-  '×': { sense: 'product', signature: 'Set × Set → Set', coldVerified: true },
-  ℘: { sense: 'power-set', signature: 'Set → Set[Set]', coldVerified: true },
+  '∅': { sense: 'empty', signature: 'Set', freshVerified: true },
+  '×': { sense: 'product', signature: 'Set × Set → Set', freshVerified: true },
+  ℘: { sense: 'power-set', signature: 'Set → Set[Set]', freshVerified: true },
   '⊊': {
     sense: 'proper-subset',
     signature: 'Set × Set → Prop',
-    coldVerified: true,
+    freshVerified: true,
   },
-  '⊔': { sense: 'join', signature: 'Set[El] → El', coldVerified: true },
+  '⊔': { sense: 'join', signature: 'Set[El] → El', freshVerified: true },
 
   // ── Maps ─────────────────────────────────────────────────────────────────
-  '→': { sense: 'maps', signature: 'A → B', coldVerified: true },
-  '↦': { sense: 'sends', signature: 'x ↦ y', coldVerified: true },
-  '⇀': { sense: 'partial-map', signature: 'A ⇀ B', coldVerified: true },
-  '↣': { sense: 'injective-map', signature: 'A ↣ B', coldVerified: true },
-  '⊨': { sense: 'entails', signature: 'X ⊨ Y', coldVerified: true },
+  '→': { sense: 'maps', signature: 'A → B', freshVerified: true },
+  '↦': { sense: 'sends', signature: 'x ↦ y', freshVerified: true },
+  '⇀': { sense: 'partial-map', signature: 'A ⇀ B', freshVerified: true },
+  '↣': { sense: 'injective-map', signature: 'A ↣ B', freshVerified: true },
+  '⊨': { sense: 'entails', signature: 'X ⊨ Y', freshVerified: true },
   '↾': {
     sense: 'restriction',
     signature: 'X ↾ Y — X narrowed to scope Y',
-    coldVerified: true,
+    freshVerified: true,
   },
   '∘': {
     sense: 'compose',
     signature: '(B → C) × (A → B) → (A → C)',
-    coldVerified: true,
+    freshVerified: true,
   },
 
   // ── Enumeration ──────────────────────────────────────────────────────────
-  '·': { sense: 'and-list', signature: 'a · b · c', coldVerified: true },
-  '…': { sense: 'and-so-on', signature: '{ a, b, … }', coldVerified: true },
+  '·': { sense: 'and-list', signature: 'a · b · c', freshVerified: true },
+  '…': { sense: 'and-so-on', signature: '{ a, b, … }', freshVerified: true },
 
   // ── Provenance / representation (ASCII) ──────────────────────────────────
   '@': {
     sense:
       'resides-at / sourced-from — the authoritative on-disk or subsystem home of a fact',
     signature: 'fact @ location',
-    coldVerified: true,
+    freshVerified: true,
   },
 
   // ── Reference mechanism (value algebra; ASCII) ───────────────────────────
@@ -185,6 +193,6 @@ export const OPERATORS = {
     sense: 'esm-reference',
     signature:
       '${value} — template-literal interpolation of another value, resolved at eval',
-    coldVerified: false,
+    freshVerified: false,
   },
 } as const satisfies Record<Glyph, OperatorEntry>;

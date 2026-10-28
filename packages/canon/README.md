@@ -135,14 +135,14 @@ product owner in real use; no agent carries countermeasure text against it.
 The first principle, the dense `cratylism` axiom, has its one literal home in
 `genus/prime-principle.ts` and is not stamped on every unit of the canon. It rides only the units whose laws apply
 it: the skills that give a concept its term, judge a term by its symmetric difference from the concept or
-confirm it by a cold read set it as their `preamble`, and an agent carries it once, in plain words, as the
+confirm it by a fresh reading set it as their `preamble`, and an agent carries it once, in plain words, as the
 `cratylism` stance of the role it holds, where that role states it. A unit that does not use it never holds a
 host's own authored surfaces to the canon's naming axiom. The axiom states cratylism as cratylic
 context design holds it: names are natural to the model, whose semantic space already fixes each name's
 meaning, so each concept takes its Cratylic name, the term whose meaning, read in the concept's domain, has
-the smallest symmetric difference from it; intuition proposes and a cold read confirms; the name is found,
+the smallest symmetric difference from it; intuition proposes and a fresh reading confirms; the name is found,
 never coined, a coined name only where no established term covers the concept; its precising definition is
-stated beside it, stating what the name lacks and denying what it adds, each once; and a kept name short of
+stated beside it, stating what holds where the name lacks or adds, each once; and a kept name short of
 it is recorded as such. It is intrinsic to those units' projected bytes, so it survives deployment into a
 foreign repository rather than depending on ambient context.
 

@@ -422,7 +422,7 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
     // (`toolkit/{hooks,project,project-targets}.ts`) took only the units' SHAPES and now
     // take them from the schema; two were private projection programs the shipped
     // command replaced; one regenerated committed hook targets and had none left. The
-    // last four — the project scaffold and the cold-decode oracle's driver — were
+    // last four — the project scaffold and the fresh-reading oracle's driver — were
     // removed with the authoring surface. Canon builds with `tsc` and is projected
     // only by the command that installs it, so no build script uses the projector and
     // `permitted()` licenses none: any move off zero is an edge to argue for afresh.
