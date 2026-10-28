@@ -261,10 +261,12 @@ describe('optional slots', () => {
           communicationStyle:
             softwareEngineerRole.values.communicationStyle.filter(
               (s) =>
-                typeof s !== 'object' || !('slot' in s) || s.slot !== 'density',
+                typeof s !== 'object' ||
+                !('slot' in s) ||
+                s.slot !== 'register',
             ),
         },
       }),
-    ).toThrow(/slot density 0 times/);
+    ).toThrow(/slot register 0 times/);
   });
 });

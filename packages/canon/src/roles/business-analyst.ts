@@ -7,7 +7,6 @@ import type { RoleProfile } from '../compose.js';
 import { intent } from '../factors/assignment/intent.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { bottomLineUpFront } from '../factors/communication-style/bottom-line-up-front.js';
-import { convergence } from '../factors/communication-style/convergence.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
 import { plain } from '../factors/communication-style/plain.js';
 import { decides } from '../factors/decision-rights/decides.js';
@@ -25,7 +24,7 @@ import { conceptualIntegrity } from '../factors/objective/conceptual-integrity.j
 import { satisfice } from '../factors/objective/satisfice.js';
 import { cratylicContextDesign } from '../factors/procedure/cratylic-context-design.js';
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
-import { rectify } from '../factors/procedure/rectify.js';
+import { rectificationOfNames } from '../factors/procedure/rectification-of-names.js';
 import { businessAnalyst } from '../factors/role/business-analyst.js';
 import { conceptualElevation } from '../factors/stance/conceptual-elevation.js';
 import { cratylism } from '../factors/stance/cratylism.js';
@@ -49,7 +48,11 @@ export const businessAnalystRole: RoleProfile = {
       { value: satisfice, slot: 'stopping-rule' },
     ],
     expertise: [domainModeling],
-    procedure: [cratylicContextDesign, rectify, orchestratorWorkers],
+    procedure: [
+      cratylicContextDesign,
+      rectificationOfNames,
+      orchestratorWorkers,
+    ],
     stance: [
       decisive,
       conceptualElevation,
@@ -63,7 +66,6 @@ export const businessAnalystRole: RoleProfile = {
     ],
     communicationStyle: [
       { value: plain, slot: 'register' },
-      { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
       { value: bottomLineUpFront, slot: 'ordering' },
     ],
