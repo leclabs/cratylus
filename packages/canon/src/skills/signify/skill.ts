@@ -18,7 +18,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `Give a concept its Cratylic name — the term whose meaning, read in the concept's domain, has the smallest symmetric difference from the concept, found among the names the model already gives it and confirmed by a fresh reading, never coined where an established term covers it; one term per concept in a context, its precising definition stated beside it. Reach for it when a concept needs a name, or when a name's reading lacks part of its concept or adds to it.`,
+  description: `Give a concept its Cratylic name — the term whose meaning, read in the concept's domain, has the smallest symmetric difference from the concept, found among the names the model already gives it and confirmed by a fresh reading, an established term wherever one covers it; one term per concept in a context, its precising definition stated beside it. Reach for it when a concept needs a name, or when a name's reading lacks part of its concept or adds to it.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
