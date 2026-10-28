@@ -24,15 +24,14 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field              | what it is                                                                                    |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| `manifest`         | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
-| `events`           | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
-| `rulesets`         | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)      |
-| `practiceRulesets` | the rulesets the agents' practice departs by, installed with the agents (`src/rulesets.ts`)   |
-| `factors`          | the factors' values, filed one directory per factor                                           |
-| `agents`           | the composed agents: five generic holders of their roles, and three personas                  |
-| `skills`           | the skills — each a self-sufficient formal block plus the siblings it composes                |
+| field      | what it is                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
+| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
+| `rulesets` | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)      |
+| `factors`  | the factors' values, filed one directory per factor                                           |
+| `agents`   | the composed agents: five generic holders of their roles, and three personas                  |
+| `skills`   | the skills — each a self-sufficient formal block plus the siblings it composes                |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
 canon's agent design. The manifest rides the plugin rather than living in the projector, so the
@@ -43,12 +42,21 @@ are [`@cratylus/schema`](../schema/README.md)'s.
 
 The plugin carries eight agents: the industry roles of behaviour-driven development, each a generic
 holder of its role, and three personas over the business analyst. An install places every one. Each
-role is defined by what it receives and what it hands back, never by steps, and its profile states
-only where cratylus departs from the industry's reading of the role:
+role is invoked by its industry name and defined by what it receives and what it hands back, never by
+steps. Its profile states only cratylus's departures from the industry's role, each by its Cratylic
+name, with a precising definition only where the name leaves a symmetric difference; what the
+industry's role already carries by its name (a tech lead's software delivery, a code reviewer's code
+review, a test engineer's test-first) is not restated. The practice itself, behaviour-driven
+development, is adopted by the project's conventions (the offered `behaviour-driven-development`
+ruleset), not by the agents. The departures follow the domain model's records: decision rights as
+one RAPID letter per decision class, autonomy as mission command, reach open by default (so no role
+narrows it), the domain model as every reader's memory, a user story free-form and unestimated,
+sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus records them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
-  means what was intended; decides meaning only.
+  means what was intended; decides meaning only, and backbriefs the product owner in the industry's
+  terms until the product owner concurs.
 - **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
   software engineers and its examples to the test engineer, joins the changes as the story's risk
   calls for (Ship, Show or Ask), and hands back the outcome.
@@ -64,11 +72,12 @@ The test engineer and the code reviewer run on another model family than the sof
 where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an
 explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
 named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a profile missing
-a factor, a scalar without exactly one value, a slot not filled exactly once, and empty guardrails.
+a factor, a scalar without exactly one value, a required slot not filled exactly once (an objective's
+drive is optional, stated only where it departs), and empty guardrails.
 
 kino, nico and mav are personas over the business analyst role, each named for its expertise (kino
-film production and generative video, nico terminology work as cratylic context design practises
-it, mav software engineering). The business analyst role holds the domain model of every context it
+film production and generative video, nico terminology, giving each concept its Cratylic name, mav
+software engineering). The business analyst role holds the domain model of every context it
 is given; a persona brings its expertise and owns nothing its role does not.
 Each is `persona(businessAnalystRole, overrides)`, stating only its overrides and extensions of the
 role: an agent named as an individual, with a description and a mark of its own beside the values it
@@ -124,17 +133,17 @@ product owner in real use; no agent carries countermeasure text against it.
 
 The first principle, the dense `cratylism` axiom, has its one literal home in
 `genus/prime-principle.ts` and is not stamped on every unit of the canon. It rides only the units whose laws apply
-it: the skills that give a concept its term, judge a term by its semantic gap or confirm it by a cold
-read set it as their `preamble`, and an agent carries it once, in plain words, as the `cratylism`
-stance of the role it holds, where that role states it. A unit that does not use it never holds a
+it: the skills that give a concept its term, judge a term by its symmetric difference from the concept or
+confirm it by a cold read set it as their `preamble`, and an agent carries it once, in plain words, as the
+`cratylism` stance of the role it holds, where that role states it. A unit that does not use it never holds a
 host's own authored surfaces to the canon's naming axiom. The axiom states cratylism as cratylic
-context design holds it: names are natural to the model, whose semantic space is the universe of
-discourse, so each concept takes its Cratylic name, the term leaving the smallest semantic gap read in
-its bounded context; intuition proposes and a cold read confirms; the name is found, never coined, a
-coined name only where no established term covers the concept; its correction is stated beside it,
-each side of the gap once; and a kept name short of it is recorded as such. It is intrinsic to those
-units' projected bytes, so it survives deployment into a foreign repository rather than depending on
-ambient context.
+context design holds it: names are natural to the model, whose semantic space already fixes each name's
+meaning, so each concept takes its Cratylic name, the term whose meaning, read in the concept's domain, has
+the smallest symmetric difference from it; intuition proposes and a cold read confirms; the name is found,
+never coined, a coined name only where no established term covers the concept; its precising definition is
+stated beside it, stating what the name lacks and denying what it adds, each once; and a kept name short of
+it is recorded as such. It is intrinsic to those units' projected bytes, so it survives deployment into a
+foreign repository rather than depending on ambient context.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the
 directory fields are resolved against `import.meta.url` at definition time and consumed verbatim.

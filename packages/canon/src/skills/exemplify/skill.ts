@@ -50,7 +50,7 @@ accept(k)    ≜ ⊥ , ¬valid(k)` as SkillExpression;
 
 export const exemplify: Skill = {
   name: 'exemplify',
-  description: `Restate a body of context, an agent, a skill or a document, in Cratylic names — find its concepts, give each its term with its correction, and write it back built from them, keeping each piece only when its cold read gives the meaning intended and every idea of the source has a place. Reach for it when context written as freeform prose should carry its concepts by name, shorter and with its spurious meaning excluded.`,
+  description: `Restate a body of context, an agent, a skill or a document, in Cratylic names — find its concepts, give each its term with its precising definition, and write it back built from them, keeping each piece only when its cold read gives the meaning intended and every idea of the source has a place. Reach for it when context written as freeform prose should carry its concepts by name, shorter and meaning nothing beyond what is intended.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [],
   preamble: primePrinciple,
