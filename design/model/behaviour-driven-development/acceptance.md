@@ -1,3 +1,3 @@
 # acceptance
 
-Of a user story: every acceptance test of its examples passes, its code review approves, and the business analyst confirms the realization means what was intended; the outcome guides that confirmation and never stands in for it
+Of a user story, also needs the business analyst's confirmation that the realization means what was intended; passing tests and an outcome never stand in for it
