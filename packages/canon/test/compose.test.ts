@@ -192,7 +192,7 @@ describe('every agent', () => {
     const glosses = Object.values(MANIFEST).flatMap((meta) =>
       'slots' in meta
         ? meta.slots.map((slot) =>
-            'correction' in slot ? slot.correction : '',
+            'precisingDefinition' in slot ? slot.precisingDefinition : '',
           )
         : [],
     );

@@ -81,8 +81,8 @@ export interface HookWorker {
 export interface HookDeclaration<E extends EventName = EventName> {
   /** Stable id → `hooks/<id>/`; the hook's term `term(c)` (== the filename). */
   readonly id: string;
-  /** The correction written beside the term (`body = ⟨term, correction⟩`). */
-  readonly correction: string;
+  /** The precising definition written beside the term (`body = ⟨term, precising definition⟩`). */
+  readonly precisingDefinition: string;
   /** Which substrate the event fires in. */
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that trigger the hook (≥1). */

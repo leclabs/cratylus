@@ -14,7 +14,7 @@ import type { Factor, Value } from '../src/manifest.js';
 /**
  * Render a factor's value to its canonical body: `\n\n<body>\n`.
  *
- * Takes a VALUE, not a string. A value's content IS the body ⟨term, correction⟩
+ * Takes a VALUE, not a string. A value's content IS the body ⟨term, precising definition⟩
  * when it is bare, but a value may now carry its own enforcement, and then the body
  * is one face of an object. `bodyOf` reaches it either way; interpolating the value
  * directly would render `[object Object]` into the body.

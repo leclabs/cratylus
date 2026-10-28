@@ -1,7 +1,7 @@
 # @cratylus/schema
 
 The shapes [cratylus](../../README.md)'s canon is written against — its factors, their values,
-terms and corrections, hook declarations and plugin — as a TypeScript type system.
+terms and precising definitions, hook declarations and plugin — as a TypeScript type system.
 
 It sits at the **bottom of the dependency graph**. `canon` is written against it, `forge` validates
 and projects against it, and it holds no opinion about either. Installing and using cratylus is
@@ -89,7 +89,7 @@ own module.
 | `Repertoire` · `Arity` · `Slot` · `EnforcementLevel` · `Entry`                                   | how values are sourced, how many a field holds, and one held value                                                          |
 | `FactorOf` · `SetFactorOf` · `RequiredFactorOf` · `FieldFactorOf` · `FactorFieldsOf` · `AgentOf` | generic derivations over any manifest                                                                                       |
 | `KebabToCamel` · `kebabToCamel` · `FactorFieldName`                                              | a factor's name to the field it occupies, at the type level and at runtime                                                  |
-| `Value` · `Enforcing` · `Binding` · `enforcing` · `isFactorValue` · `bodyOf` · `termOf`          | a factor's value, bare or self-enforcing, and its term/correction split                                                     |
+| `Value` · `Enforcing` · `Binding` · `enforcing` · `isFactorValue` · `bodyOf` · `termOf`          | a factor's value, bare or self-enforcing, and its term/precising-definition split                                           |
 | `Agent` · `factorValueOf` · `AgentContract` · `JsonSchema`                                       | the agent shape, a factor field read off it, and its typed handoff                                                          |
 | `Skill` · `SkillDeploy` · `SkillExpression` · `CapabilityName`                                   | the skill shape and the runtime capability it may be a face of                                                              |
 | `Mark` · `markToColor`                                                                           | an agent's emoji·hue mark, and its hue as a terminal color                                                                  |
