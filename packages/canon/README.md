@@ -117,8 +117,9 @@ stated as alternatives (`anyOf`); it fits when it fits any one. Its outcome name
 for a task with no story the task, says whether the work was `merged` or `dropped`, and holds each
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
-`changes`. The business analyst's handoffs are the product owner's — free-text intent in, a report
-out — so it carries no contract. An agent harness binds the deliverable as its own output schema and
+`changes`. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
+out, in the industry's terms until the product owner concurs — so it carries no contract. An agent
+harness binds the deliverable as its own output schema and
 shows every session, each turn, the assignment form of each agent that takes one: one fenced
 `assignment` JSON block in the dispatch text.
 
