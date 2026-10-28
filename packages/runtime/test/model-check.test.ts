@@ -73,7 +73,6 @@ describe('binding examples to acceptance tests', () => {
       model: join(root, 'design/model'),
       passed: true,
       failures: [],
-      warnings: [],
     });
   });
 
@@ -245,12 +244,12 @@ describe('blanking comments', () => {
 describe('malformed records and contexts', () => {
   const messages = () => check().failures.map((f) => f.message);
 
-  it('fails a record with no term or no correction', () => {
-    write('design/model/shop/a.md', 'A correction with no term\n');
+  it('fails a record with no Cratylic name or no precising definition', () => {
+    write('design/model/shop/a.md', 'A precising definition with no name\n');
     write('design/model/shop/b.md', '# b\n\n## Examples\n');
     expect(messages()).toEqual([
-      'shop/a: has no # term',
-      'shop/b: has no correction',
+      'shop/a: has no # Cratylic name',
+      'shop/b: has no precising definition',
     ]);
   });
 
@@ -381,59 +380,6 @@ describe('malformed records and contexts', () => {
         'shop/till.MD',
       ].map((path) => ({ concept: path, message: `${path}: ${placed}` })),
     );
-  });
-});
-
-describe('warnings', () => {
-  it('warns of history in a correction, naming the concept and the words, and does not fail', () => {
-    write(
-      'design/model/shop/basket.md',
-      '# basket\n\nWhat a shopper buys; it used to mean a wish list\n',
-    );
-    expect(check()).toEqual({
-      model: join(root, 'design/model'),
-      passed: true,
-      failures: [],
-      warnings: [
-        {
-          concept: 'shop/basket',
-          words: 'used to mean',
-          rule: 'recounts history',
-          message:
-            'shop/basket: its correction recounts history: "used to mean"',
-        },
-      ],
-    });
-  });
-
-  it('warns of leakage in a correction and an example, the context’s own words aside', () => {
-    write(
-      'design/model/shop/basket.md',
-      [
-        '# basket',
-        'Kept in redis until checkout, as the shop sells books',
-        '## Examples',
-        '### adds an item (judged in review)',
-        'Given an empty basket',
-        'When addItem() is called',
-        'Then the basket holds the book',
-      ].join('\n'),
-    );
-    expect(check().warnings).toEqual([
-      {
-        concept: 'shop/basket',
-        words: 'redis',
-        rule: 'names a tool or library',
-        message: 'shop/basket: its correction names a tool or library: "redis"',
-      },
-      {
-        concept: 'shop/basket',
-        words: 'addItem',
-        rule: 'names a code identifier',
-        message:
-          'shop/basket: example "adds an item" names a code identifier: "addItem"',
-      },
-    ]);
   });
 });
 

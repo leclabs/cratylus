@@ -4,11 +4,12 @@
 //
 // The model is one directory per bounded context, `<context>/context.md` holding
 // its name and subject, and one file per concept, `<context>/<concept>.md`: its
-// term as the first line's `# heading`, its correction up to any `##` section,
-// and optionally `## Examples`, each example a `### name` (or `### name (judged in
-// review)`) over Given lines, then When lines, then Then lines, each run going on
-// in `And` lines. A concept is `<context>/<concept>`, the directory and the file
-// stem. Beside them is `purpose.md`, and no other record.
+// Cratylic name as the first line's `# heading`, its precising definition up to
+// any `##` section, and optionally `## Examples`, each example a `### name` (or
+// `### name (judged in review)`) over Given lines, then When lines, then Then
+// lines, each run going on in `And` lines. A concept is `<context>/<concept>`,
+// the directory and the file stem. Beside them is `purpose.md`, and no other
+// record.
 //
 // An acceptance test is a plain `it(`/`test(` call, outside comments, whose title
 // is exactly `<context>/<concept>: <example name>`, in any test file under the
@@ -16,9 +17,7 @@
 //
 // The check FAILS for a malformed record or context, a misplaced record, an
 // example no acceptance test names and not judged in review, and an acceptance
-// test naming an example the model does not have. It WARNS, never fails, of
-// implementation leakage in a record's correction and examples and of history
-// recounted in its correction.
+// test naming an example the model does not have.
 //
 // Pure: it reads files and nothing else — no network, no subprocess.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -31,14 +30,13 @@ import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
 import { uncommented } from './comments.js';
-import { type Leak, leaks, recounts, vocabulary } from './leakage.js';
 
 export const VERBS = {
   check: {
     concept: 'model check',
     effect: 'reads',
     purpose:
-      'Check every concept record in the domain model and bind each example to the acceptance test that names it; print the failures and warnings as JSON, exiting 1 on any failure',
+      'Check every concept record in the domain model against its form and bind each example to the acceptance test titled `<context>/<concept>: <example name>`; print the failures as JSON, exiting 1 on any failure',
     when: 'In the project’s one check, and after changing a concept record or an acceptance test',
   },
 } as const satisfies Verbs<string, ExplainedVerb>;
@@ -48,7 +46,7 @@ export type ModelVerb = keyof typeof VERBS;
 export const MODEL_CHECK: CapabilityInterface = {
   name: 'model check',
   purpose: CAPABILITY_SUMMARIES.model,
-  when: `Whenever the domain model or its acceptance tests change; ${CLI_BIN} model check runs in the project's one check`,
+  when: `Whenever the domain model or its acceptance tests change; ${CLI_BIN} model check runs in the project's one check. Each example lives in its concept's record in design/model/, written as given–when–then; its acceptance test, in the project's own test framework, is titled \`<context>/<concept>: <example name>\`, unless the example is marked judged in review`,
   verbs: VERBS,
 };
 
@@ -87,18 +85,11 @@ export interface ModelFailure {
   readonly message: string;
 }
 
-/** What the check warns of: the words in a concept record, and the rule they break. */
-export interface ModelWarning extends Leak {
-  readonly concept: string;
-  readonly message: string;
-}
-
 /** What `model check` prints. */
 export interface ModelReport {
   readonly model: string;
   readonly passed: boolean;
   readonly failures: readonly ModelFailure[];
-  readonly warnings: readonly ModelWarning[];
 }
 
 /** One example of a concept record. */
@@ -111,8 +102,6 @@ interface Example {
 /** One concept record, as read. */
 interface ConceptRecord {
   readonly id: string;
-  readonly term: string | undefined;
-  readonly correction: string;
   readonly examples: Example[];
 }
 
@@ -148,10 +137,10 @@ function readRecord(
         ? { concept: id, message: `${id}: ${message}` }
         : { concept: id, example, message: `${id}: ${message}` },
     );
-  let term: string | undefined;
-  let state: 'start' | 'correction' | 'examples' | 'other' = 'start';
+  let cratylicName: string | undefined;
+  let state: 'start' | 'definition' | 'examples' | 'other' = 'start';
   let examplesSeen = false;
-  const correction: string[] = [];
+  const definition: string[] = [];
   const examples: Example[] = [];
   let example: Example | undefined;
   for (const line of text.split(/\r?\n/)) {
@@ -160,8 +149,8 @@ function readRecord(
       const level = (heading[1] as string).length;
       const title = heading[2] as string;
       if (level === 1 && state === 'start') {
-        term = title;
-        state = 'correction';
+        cratylicName = title;
+        state = 'definition';
       } else if (level === 2 && title === 'Examples' && !examplesSeen) {
         examplesSeen = true;
         state = 'examples';
@@ -183,9 +172,9 @@ function readRecord(
     }
     if (state === 'start') {
       if (line.trim() === '') continue;
-      state = 'correction';
+      state = 'definition';
     }
-    if (state === 'correction') correction.push(line);
+    if (state === 'definition') definition.push(line);
     else if (
       state === 'examples' &&
       example !== undefined &&
@@ -193,9 +182,9 @@ function readRecord(
     )
       example.lines.push(line.trim());
   }
-  if (term === undefined || term === '') fail('has no # term');
-  const corrected = correction.join('\n').trim();
-  if (corrected === '') fail('has no correction');
+  if (cratylicName === undefined || cratylicName === '')
+    fail('has no # Cratylic name');
+  if (definition.join('\n').trim() === '') fail('has no precising definition');
   const named = new Set<string>();
   for (const { name, lines } of examples) {
     if (named.has(name)) fail(`has two examples named "${name}"`, name);
@@ -227,17 +216,11 @@ function readRecord(
         name,
       );
   }
-  return {
-    record: { id, term, correction: corrected, examples },
-    failures,
-  };
+  return { record: { id, examples }, failures };
 }
 
-/** The name and subject of the context file `text`, and each way it is malformed. */
-function readContext(
-  context: string,
-  text: string,
-): { subject: string | undefined; failures: ModelFailure[] } {
+/** Each way the context file `text` is malformed: no name, or no subject. */
+function readContext(context: string, text: string): ModelFailure[] {
   const id = `${context}/context`;
   const failures: ModelFailure[] = [];
   const first = text.split(/\r?\n/).find((l) => l.trim() !== '');
@@ -246,7 +229,7 @@ function readContext(
   const subject = /^\*\*Subject:\*\*\s*(.*)$/m.exec(text)?.[1]?.trim();
   if (subject === undefined || subject === '')
     failures.push({ concept: id, message: `${id}: has no **Subject:**` });
-  return { subject, failures };
+  return failures;
 }
 
 /** One acceptance test: where it is, and the concept and example it names. */
@@ -290,36 +273,6 @@ export function acceptanceTests(root: string): AcceptanceTest[] {
   return found;
 }
 
-/** The warnings on `record` of a context whose concepts' terms are `terms`
- *  and whose subject is `subject`, each once. */
-function warningsOf(
-  record: ConceptRecord,
-  terms: readonly string[],
-  subject: string | undefined,
-): ModelWarning[] {
-  const own = vocabulary(terms, subject === undefined ? [] : [subject]);
-  const passages: { where: string; found: Leak[] }[] = [
-    {
-      where: 'its correction',
-      found: [...leaks(record.correction, own), ...recounts(record.correction)],
-    },
-    ...record.examples.map((e) => ({
-      where: `example "${e.name}"`,
-      found: leaks([e.name, ...e.lines].join('\n'), own),
-    })),
-  ];
-  const seen = new Set<string>();
-  const warnings: ModelWarning[] = [];
-  for (const { where, found } of passages)
-    for (const { words, rule } of found) {
-      const message = `${record.id}: ${where} ${rule}: "${words}"`;
-      if (seen.has(message)) continue;
-      seen.add(message);
-      warnings.push({ concept: record.id, words, rule, message });
-    }
-  return warnings;
-}
-
 /** A file named as a record, whatever the case of its extension. */
 const RECORD_FILE = /\.md$/i;
 
@@ -346,7 +299,6 @@ function recordsIn(dir: string, prefix: string): string[] {
  *  tests under `root`. */
 export function checkModel(root: string, model: string): ModelReport {
   const failures: ModelFailure[] = [];
-  const warnings: ModelWarning[] = [];
   /** Each context's concepts, each with its examples. */
   const records = new Map<string, Map<string, readonly Example[]>>();
   for (const { name: context, directory } of entries(model)) {
@@ -365,15 +317,11 @@ export function checkModel(root: string, model: string): ModelReport {
       else if (entry.name.endsWith('.md')) files.push(entry);
       else if (RECORD_FILE.test(entry.name)) failures.push(misplaced(path));
     }
-    let subject: string | undefined;
-    if (files.some((f) => f.name === 'context.md')) {
-      const read = readContext(
-        context,
-        readFileSync(join(dir, 'context.md'), 'utf8'),
+    if (files.some((f) => f.name === 'context.md'))
+      failures.push(
+        ...readContext(context, readFileSync(join(dir, 'context.md'), 'utf8')),
       );
-      subject = read.subject;
-      failures.push(...read.failures);
-    } else
+    else
       failures.push({
         concept: `${context}/context`,
         message: `${context}: has no context.md`,
@@ -384,16 +332,9 @@ export function checkModel(root: string, model: string): ModelReport {
         const id = `${context}/${f.name.slice(0, -'.md'.length)}`;
         return readRecord(id, readFileSync(join(dir, f.name), 'utf8'));
       });
-    const terms = [
-      context,
-      ...read.flatMap(({ record }) =>
-        record.term === undefined ? [] : [record.term],
-      ),
-    ];
     const concepts = new Map<string, readonly Example[]>();
     for (const { record, failures: malformed } of read) {
       failures.push(...malformed);
-      warnings.push(...warningsOf(record, terms, subject));
       concepts.set(record.id.slice(context.length + 1), record.examples);
     }
     records.set(context, concepts);
@@ -433,7 +374,7 @@ export function checkModel(root: string, model: string): ModelReport {
             message: `${context}/${concept}: example "${example.name}" has no acceptance test naming it and is not judged in review`,
           });
   failures.push(...unknown);
-  return { model, passed: failures.length === 0, failures, warnings };
+  return { model, passed: failures.length === 0, failures };
 }
 
 /** Route `model <verb>` from the working directory `cwd`. */

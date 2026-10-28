@@ -30,17 +30,13 @@ names them: `model` and `versionSkew`. A canon's skill names one of them as
 `model check`, and the [`cratylus` README](../cli/README.md) gives the layout it reads and the
 report it prints. The domain model is plain files in `design/model` at the top of the git
 repository: `purpose.md`, then a directory per bounded context holding its `context.md` and one
-file per concept, its term, its correction and its examples. Version control is its history, so
-the files state only what holds now. `check` reads the model and every test file of the
-repository, and fails for a record that is not well formed, for an example no acceptance test
-names (unless it is marked judged in review), and for an acceptance test naming an example the
-model does not have; an acceptance test names its example by its title,
-`<context>/<concept>: <example name>`. It warns, and never fails, of implementation leakage in a
-concept's correction and examples, code, files, commands, flags, identifiers, tools or libraries
-named instead of what must hold, and of a correction recounting its history. Detection is lexical:
-a context's own words, its concept names and each plain word its subject names, are never leakage,
-though a command, code span or flag holding such a word still is. It records nothing; its result
-is the same every time for the same files.
+file per concept, its Cratylic name, its precising definition and its examples, each written as
+given–when–then. Version control is its history, so the files state only what holds now. `check`
+reads the model and every test file of the repository, and fails for a record that is not in its
+form, for an example no acceptance test names (unless it is marked judged in review), and for an
+acceptance test naming an example the model does not have; an acceptance test, in the project's
+own test framework, names its example by its title, `<context>/<concept>: <example name>`. It
+records nothing; its result is the same every time for the same files.
 
 The `.` barrel is contracts and declarations: it exports `MODEL_CHECK` and `VERSION_SKEW`, each
 capability's interface, and `explain`, so a consumer reads what each verb does as code, beside
