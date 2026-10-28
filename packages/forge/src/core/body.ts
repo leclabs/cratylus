@@ -41,21 +41,22 @@ export function entriesOf(a: Agent, field: string): readonly Entry[] {
 }
 
 /**
- * One entry line: `- ` + (`<slot>: ` or `<slot> (<slot correction>): `) + `**<term>**` +
- * (` (<note>)`) + ` — <correction>` + (` (fixed)` when the level is fixed). A value
- * whose correction is empty is its term alone, so it carries no ` — <correction>`.
+ * One entry line: `- ` + (`<slot>: ` or `<slot> (<slot precising definition>): `) +
+ * `**<term>**` + (` (<note>)`) + ` — <precising definition>` + (` (fixed)` when the level
+ * is fixed). A value whose precising definition is empty is its term alone, so it carries
+ * no ` — <precising definition>`.
  */
 function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
   const body = bodyOf(entry.value);
   const term = termOf(entry.value);
-  const correction = body.slice(term.length + ' ≜ '.length);
+  const precisingDefinition = body.slice(term.length + ' ≜ '.length);
   let slot = '';
   if (entry.slot !== undefined) {
-    const c = slots?.find((s) => s.name === entry.slot)?.correction;
+    const c = slots?.find((s) => s.name === entry.slot)?.precisingDefinition;
     slot = c ? `${entry.slot} (${c}): ` : `${entry.slot}: `;
   }
   const note = entry.note ? ` (${entry.note})` : '';
-  const explained = term === body ? '' : ` — ${correction}`;
+  const explained = term === body ? '' : ` — ${precisingDefinition}`;
   const fixed = entry.level === 'fixed' ? ' (fixed)' : '';
   return `- ${slot}**${term}**${note}${explained}${fixed}`;
 }

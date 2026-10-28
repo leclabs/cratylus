@@ -13,9 +13,9 @@
 // editing the projector.
 //
 // A value of a factor is a per-factor **nominal-branded string** of the shape
-// `body(c) = ⟨term(c), correction(c)⟩`, the term plus the correction written
-// beside it, the term read in its bounded context (the Cratylic name `cratylic(c)`
-// is the term with the smallest semantic gap). There is NO
+// `body(c) = ⟨term(c), precisingDefinition(c)⟩`, the term plus the precising definition
+// written beside it, the term read in its bounded context (the Cratylic name `cratylic(c)`
+// is the term with the smallest symmetric difference). There is NO
 // `{factor,slug,definiens}` value object, NO per-value
 // phantom metadata — the string carries the body; the module's directory
 // (`factors/<factor>/`) is its factor home (PARTITIONED) and its export
@@ -150,10 +150,10 @@ export type Repertoire = 'latent' | 'open' | 'curated' | 'fixed';
  */
 export type Arity = 'scalar' | 'set' | 'slots' | 'attribute';
 
-/** One named coordinate of a `slots` factor: its name, and the correction beside it when it needs one. */
+/** One named coordinate of a `slots` factor: its name, and the precising definition beside it when it needs one. */
 export interface Slot {
   readonly name: string;
-  readonly correction?: string;
+  readonly precisingDefinition?: string;
   /** `true` ⇒ a role may leave this coordinate unfilled; every other slot takes exactly one value. */
   readonly optional?: true;
 }
@@ -171,8 +171,8 @@ export interface Mark {
 // A value of a factor is a bare named expression: `export const x: Objective = '…'`.
 // Each per-factor type is a nominal-branded `string` — the phantom `__factor` brand
 // keys the string to its factor so `tsc` rejects a cross-factor assignment. The
-// value's content is the body ⟨term, correction⟩ (rendered `term ≜ correction`, or
-// just `term` for a Cratylic name that needs no correction).
+// value's content is the body ⟨term, precising definition⟩ (rendered `term ≜ precising
+// definition`, or just `term` for a Cratylic name that needs no precising definition).
 
 /**
  * A bare value: a branded string, keyed to factor `O`.
@@ -246,7 +246,7 @@ export interface Binding {
  * many FACES.
  */
 export interface Enforcing<O extends string> {
-  /** The inline declaration — the body ⟨term, correction⟩ this value would be if bare. */
+  /** The inline declaration — the body ⟨term, precising definition⟩ this value would be if bare. */
   readonly body: BareValue<O>;
   /** Which substrate the events fire in — the `realize`-target family. */
   readonly substrate: HookSubstrate;
@@ -306,13 +306,13 @@ export const bodyOf = <O extends string>(v: Value<O>): BareValue<O> =>
   enforcing(v) ? v.body : v;
 
 /**
- * The term of a value — the stable name, the body minus its correction.
+ * The term of a value — the stable name, the body minus its precising definition.
  *
- * A body is `⟨term, correction⟩`, rendered `term ≜ correction`, or the bare term
- * when it needs no correction (the ideal: a Cratylic name). This is the one home
- * for that split: keying anything on a body means keying on its correction's text
- * too, whereas the term is what the value IS. A bare term returns itself — absence
- * of ` ≜ ` means no correction, never that the term is missing.
+ * A body is `⟨term, precising definition⟩`, rendered `term ≜ precising definition`, or
+ * the bare term when it needs no precising definition (the ideal: a Cratylic name). This
+ * is the one home for that split: keying anything on a body means keying on its precising
+ * definition's text too, whereas the term is what the value IS. A bare term returns
+ * itself — absence of ` ≜ ` means no precising definition, never that the term is missing.
  */
 export const termOf = <O extends string>(v: Value<O>): string => {
   const body = bodyOf(v);
@@ -377,7 +377,7 @@ export interface FactorMeta {
  * qualifier the design states (e.g. `in realization`).
  */
 export interface Entry<D extends string = string> {
-  /** The catalog value, body `'<term> ≜ <correction>'`. */
+  /** The catalog value, body `'<term> ≜ <precising definition>'`. */
   readonly value: Value<D>;
   readonly level: EnforcementLevel | null;
   /** The slot it fills, for arity `slots`. */

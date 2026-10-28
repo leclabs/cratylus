@@ -113,24 +113,24 @@ export const MANIFEST = {
       { name: 'priority' },
       {
         name: 'meaning',
-        correction:
+        precisingDefinition:
           'concepts, user stories and examples, and accepting a realization',
       },
-      { name: 'constraint', correction: 'decisions on realization' },
+      { name: 'constraint', precisingDefinition: 'decisions on realization' },
       {
         name: 'realization',
-        correction:
+        precisingDefinition:
           'how the work is built, its acceptance tests included, and joined',
       },
       {
         name: 'verdict',
-        correction:
+        precisingDefinition:
           "whether a realization passes its acceptance tests, and whether a change's code review approves it",
       },
       { name: 'release' },
       {
         name: 'sign-off',
-        correction:
+        precisingDefinition:
           "the product owner's go-ahead, by default on each user story and its examples before its build and on each release; waived or delegated at the product owner's word",
         optional: true,
       },
@@ -354,10 +354,10 @@ export type { SkillExpression };
 // tools at run time, users add their own), so a closed enum over them is permanently
 // incomplete and every adapter map would be near-empty.
 //
-// The vocabulary was already written in the hook's own term: its correction reads
+// The vocabulary was already written in the hook's own term: its precising definition reads
 // `permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage⟩` — three
 // tool names already factored into TWO ACTS, four lines above the field that
-// flattened them back. The correction was the argmin and the matcher its lossy
+// flattened them back. The precising definition was the argmin and the matcher its lossy
 // projection, so the two acts are named here and the projection is computed:
 //
 //   · `product-owner.consult.pre` — about to put a question or a menu to the product owner.

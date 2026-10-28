@@ -7,7 +7,7 @@
 //
 // A CONSTRAINT HAS TWO FACES, AND ONLY ONE OF THEM IS CONTINGENT.
 //
-//   face_decl — `body`, the inline `<term> ≜ <correction>` declaration, read by the same reasoning it
+//   face_decl — `body`, the inline `<term> ≜ <precising definition>` declaration, read by the same reasoning it
 //               governs. Projected into the agent's own definition by `agentBody`
 //               for EVERY composed value, on EVERY harness, UNCONDITIONALLY.
 //   face_mech — the harness mechanism. Emitted only where the harness can express

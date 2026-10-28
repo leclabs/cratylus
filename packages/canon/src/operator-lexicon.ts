@@ -105,7 +105,7 @@ export const OPERATORS = {
     coldVerified: true,
   },
   // ASCII operators. Barred for years not by cold-verification but by an encoding
-  // filter in the correction grammar (`codePointAt > 0x7f`); `=` and `|` were in live
+  // filter in the precising-definition grammar (`codePointAt > 0x7f`); `=` and `|` were in live
   // use the whole time, hand-split in code. Cold-verifiability is the only bar.
   '=': {
     sense: 'equality-binding',

@@ -6,7 +6,7 @@ import type { HookDeclaration } from '@cratylus/schema';
 
 export const factProbe: HookDeclaration = {
   id: 'fact-probe',
-  correction: 'fixture ↾ projection-fact · names ∀fact · ¬behavior',
+  precisingDefinition: 'fixture ↾ projection-fact · names ∀fact · ¬behavior',
   substrate: 'harness',
   events: ['session.start'],
   entry: 'probe.sh',

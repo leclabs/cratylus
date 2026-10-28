@@ -26,7 +26,7 @@ const CATALOG = {
     level: 'fixed',
     projection: 'text',
     slots: [
-      { name: 'intent', correction: 'what is wanted and why' },
+      { name: 'intent', precisingDefinition: 'what is wanted and why' },
       { name: 'verdict' },
     ],
   },

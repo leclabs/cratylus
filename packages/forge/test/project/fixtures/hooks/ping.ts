@@ -5,7 +5,7 @@ import type { HookDeclaration } from '@cratylus/schema';
 
 export const ping: HookDeclaration = {
   id: 'ping',
-  correction: 'a fixture hook',
+  precisingDefinition: 'a fixture hook',
   substrate: 'harness',
   order: 10,
   events: ['session.start'],

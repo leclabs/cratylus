@@ -22,7 +22,7 @@ function parts(value: Value<Factor>): { name: string; body: string } {
 
 const meaningGloss = MANIFEST['decision-rights'].slots.find(
   (s) => s.name === 'meaning',
-)?.correction;
+)?.precisingDefinition;
 
 /** Each decided value, as its factor's section and a predicate on a line in it; the
  *  section scopes the line to that factor's values. */

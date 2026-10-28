@@ -9,7 +9,7 @@
 // that the marked construction is a COMPILE ERROR — if the error ever disappears,
 // `tsc` fails on the now-unused directive, so these are live negative tests.
 //
-// A factor value is a per-factor NOMINAL-BRANDED STRING (`'<term> ≜ <correction>'`);
+// A factor value is a per-factor NOMINAL-BRANDED STRING (`'<term> ≜ <precising definition>'`);
 // the phantom `__factor` brand keys each string to its factor so a
 // cross-factor assignment of a TYPED value is a compile error. An agent holds
 // every non-attribute factor as a list of entries, each a value with its
