@@ -1,4 +1,4 @@
-import '../reconstitution/binding/omp-mocks.js';
+import '../typed-handoff/binding/omp-mocks.js';
 import {
   chmodSync,
   cpSync,
@@ -19,7 +19,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { expect, vi } from 'vitest';
 import type { Host, ToolResult } from '../capability-port/fixture.js';
 import { host, run, success, toolJSON } from '../capability-port/fixture.js';
-import { omp } from '../reconstitution/binding/omp-mocks.js';
+import { omp } from '../typed-handoff/binding/omp-mocks.js';
 import { parseYaml } from '../yaml.js';
 export { success };
 export const here = dirname(fileURLToPath(import.meta.url));

@@ -25,7 +25,6 @@ import { softwareEngineering } from '../factors/expertise/software-engineering.j
 import { fixedAcceptanceCriteria } from '../factors/guardrails/fixed-acceptance-criteria.js';
 import { honesty } from '../factors/guardrails/honesty.js';
 import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
-import { reconstitution } from '../factors/memory/reconstitution.js';
 import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
 import { working } from '../factors/memory/working.js';
 import { frontier } from '../factors/model/frontier.js';
@@ -86,7 +85,7 @@ export const techLeadRole: RoleProfile = {
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
-    memory: [sourceOfTruth, working, reconstitution],
+    memory: [sourceOfTruth, working],
     assignment: [userStory],
     deliverable: [outcome],
     guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],

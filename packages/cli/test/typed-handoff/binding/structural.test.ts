@@ -26,7 +26,7 @@ afterEach(() => {
   f?.dispose();
 });
 
-describe('reconstitution — binding (delivered declarations and extension)', () => {
+describe('typed handoff — binding (delivered declarations and extension)', () => {
   it('a typed story starts the tech-lead with those inputs and its output schema, never prose substitutes', async () => {
     const validate = outputValidator(f, 'tech-lead');
     expect(
