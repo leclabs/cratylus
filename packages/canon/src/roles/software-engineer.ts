@@ -20,8 +20,7 @@ import { softwareEngineer } from '../factors/role/software-engineer.js';
 
 export const softwareEngineerRole: RoleProfile = {
   name: 'software-engineer',
-  description:
-    'Realizes one task and hands back one change; never writes the acceptance tests its work is judged by.',
+  description: 'Realizes one task and hands back one change.',
   mark: { emoji: '🔨', hue: 'yellow' },
   values: {
     role: [softwareEngineer],

@@ -60,13 +60,11 @@ sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus
 - **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
   software engineers and its examples to the test engineer, joins the changes as the story's risk
   calls for (Ship, Show or Ask), and hands back the outcome.
-- **software-engineer** — realizes one task and hands back one change; never writes the acceptance
-  tests its work is judged by.
+- **software-engineer** — realizes one task and hands back one change.
 - **test-engineer** — writes an acceptance test for each example and gives the verdict whether
   the realization passes.
 - **code-reviewer** — reviews one change it did not write against its user story's acceptance
-  criteria and examples, and hands back one code review naming each finding, leaving building and
-  repairing the work to the software engineers.
+  criteria and examples, and hands back one code review naming each finding.
 
 The test engineer and the code reviewer run on another model family than the software engineers
 where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an

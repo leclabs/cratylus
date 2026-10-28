@@ -15,7 +15,6 @@ import { input } from '../factors/decision-rights/input.js';
 import { codeReview } from '../factors/deliverable/code-review.js';
 import { inUse } from '../factors/evaluation/in-use.js';
 import { honesty } from '../factors/guardrails/honesty.js';
-import { neverRepairs } from '../factors/guardrails/never-repairs.js';
 import { domainModel } from '../factors/memory/domain-model.js';
 import { frontierOtherFamily } from '../factors/model/frontier-other-family.js';
 import { xhigh } from '../factors/model/xhigh.js';
@@ -64,7 +63,7 @@ export const codeReviewerRole: RoleProfile = {
     memory: [domainModel],
     assignment: [reviewRequest],
     deliverable: [codeReview],
-    guardrails: [honesty, neverRepairs],
+    guardrails: [honesty],
     evaluation: [inUse],
   },
 };

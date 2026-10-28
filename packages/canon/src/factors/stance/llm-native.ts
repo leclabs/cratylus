@@ -1,3 +1,3 @@
 import type { Stance } from '../../manifest.js';
 
-export const llmNative: Stance = `llm-native ≜ writes for a model reader: clear, direct, explaining why, rather than for a human skimming`;
+export const llmNative: Stance = `llm-native ≜ writes for a model reader: clear, direct, explaining why`;

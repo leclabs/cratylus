@@ -1,3 +1,3 @@
 import type { ActionScope } from '../../manifest.js';
 
-export const none: ActionScope = `none ≜ changes nothing`;
+export const none: ActionScope = `none`;
