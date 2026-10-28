@@ -96,7 +96,7 @@ export const MANIFEST = {
     projection: 'text',
     slots: [
       { name: 'register' },
-      { name: 'density' },
+      { name: 'density', optional: true },
       { name: 'rationale' },
       { name: 'ordering', optional: true },
     ],

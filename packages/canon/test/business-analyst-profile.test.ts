@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { backbrief } from '../src/factors/deliverable/backbrief.js';
 import { domainModel } from '../src/factors/memory/domain-model.js';
 import { cratylicContextDesign } from '../src/factors/procedure/cratylic-context-design.js';
-import { rectify } from '../src/factors/procedure/rectify.js';
+import { rectificationOfNames } from '../src/factors/procedure/rectification-of-names.js';
 import { cratylism } from '../src/factors/stance/cratylism.js';
 import canon from '../src/index.js';
 import { type Factor, MANIFEST, type Value } from '../src/manifest.js';
@@ -34,7 +34,7 @@ const decided: Record<string, [string, (line: string) => boolean]> = {
   ...Object.fromEntries(
     Object.entries({
       memory: { domainModel },
-      procedure: { cratylicContextDesign, rectify },
+      procedure: { cratylicContextDesign, rectificationOfNames },
       stance: { cratylism },
       deliverable: { backbrief },
     }).flatMap(([section, values]) =>
