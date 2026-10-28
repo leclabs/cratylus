@@ -62,8 +62,8 @@ sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus
   calls for (Ship, Show or Ask), and hands back the outcome.
 - **software-engineer** — realizes one task and hands back one change; never writes the acceptance
   tests its work is judged by.
-- **test-engineer** — writes an acceptance test for each example before the build, sees it fail,
-  and gives the verdict whether the realization passes.
+- **test-engineer** — writes an acceptance test for each example and gives the verdict whether
+  the realization passes.
 - **code-reviewer** — reviews one change it did not write against its user story's acceptance
   criteria and examples, and hands back one code review naming each finding, leaving building and
   repairing the work to the software engineers.

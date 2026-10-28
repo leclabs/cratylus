@@ -1,6 +1,6 @@
-// The test engineer: writes an acceptance test for each example before the build, sees
-// it fail, and gives the verdict whether the realization passes. It states only where
-// cratylus departs from the industry's test engineer.
+// The test engineer: writes an acceptance test for each example and gives the verdict
+// whether the realization passes. It states only where cratylus departs from the
+// industry's test engineer.
 
 import type { RoleProfile } from '../compose.js';
 import { examples } from '../factors/assignment/examples.js';
@@ -22,7 +22,7 @@ import { testEngineer } from '../factors/role/test-engineer.js';
 export const testEngineerRole: RoleProfile = {
   name: 'test-engineer',
   description:
-    'Writes an acceptance test for each example before the build, sees it fail, and reports whether the realization passes.',
+    'Writes an acceptance test for each example and reports whether the realization passes.',
   mark: { emoji: '🧪', hue: 'green' },
   values: {
     role: [testEngineer],
