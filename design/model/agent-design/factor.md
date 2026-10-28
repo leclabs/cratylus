@@ -1,3 +1,3 @@
 # factor
 
-One independent lever of an agent: identity, authority, reach, cognition (model, memory), interface (assignment, deliverable), governance (guardrails, evaluation); never the harness or how a session starts
+One of identity (role, objective, expertise, procedure, stance, communication style), authority (decision rights, autonomy), reach (perception scope, action scope), cognition (model, memory), interface (assignment, deliverable) and governance (guardrails, evaluation)

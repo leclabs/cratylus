@@ -1,6 +1,6 @@
 # orientation
 
-What every session on a host with cratylus installed knows of it from its start, launched as an agent or as none: what cratylus is for, that using it starts by launching the business analyst, and that its theory is cratylic context design; stated once by the cratylus command describing itself; answered at the level asked, the theory only when asked why
+Each session's knowledge of cratylus from its start: its purpose, starting by launching the business analyst, and its theory, Cratylic context design, given when asked why
 
 ## Examples
 

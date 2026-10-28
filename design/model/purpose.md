@@ -1,3 +1,3 @@
 # Purpose
 
-Cratylus lets a person settle what they mean once and have AI agents build exactly that, across sessions, without the meaning drifting. It installs ready-made agents, their skills and their rules into the agent harness the person already works in. The meaning lives in a domain model any fresh session reads whole: each concept named by the term a model already understands, with only the correction it needs, and made concrete by examples. Examples agreed before the build become acceptance tests, and the work is accepted only when they pass; the agents apply established practices by their own judgment, with effort kept in proportion to the change.
+Cratylus installs a team of AI agents in industry roles, with its rules, skills and capabilities, into the agent harness its product owner already uses. The team holds the product owner's meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.

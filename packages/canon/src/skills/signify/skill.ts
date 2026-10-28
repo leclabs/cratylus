@@ -18,7 +18,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `Give a concept its Cratylic name — the term that leaves the smallest semantic gap in its bounded context, found among the names the model already gives it and confirmed by a cold read, never coined where an established term covers it; one term per concept in a context, its correction stated beside it. Reach for it when a concept needs a name, or when a name's reading leaves meaning missing or makes meaning spurious.`,
+  description: `Give a concept its Cratylic name — the term whose meaning, read in the concept's domain, has the smallest symmetric difference from the concept, found among the names the model already gives it and confirmed by a cold read, never coined where an established term covers it; one term per concept in a context, its precising definition stated beside it. Reach for it when a concept needs a name, or when a name's reading lacks part of its concept or adds to it.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
@@ -30,11 +30,12 @@ fired       : Names × bounded-context → ℘(D) ⟨fired(n, κ) : what n invok
 dec         : Names × bounded-context ⇀ ℘(D)
 circ(n,c)   ⇔ fired(n, κ(c)) = D(c)
 |n|         ≜ LLM-native description-length
-gap(n,c)    ≜ the semantic gap of n for c ⟨missing meaning ∪ spurious meaning⟩ @ cratylic context design ⟨c named n · n read in κ(c)⟩
-covers(n,c) ⇔ n read in κ(c) addresses c ⟨gap(n,c) closable by a correction supplying its missing meaning ∧ excluding its spurious meaning, ¬ excluding n's core meaning⟩
+Δ(n,c)      ≜ fired(n, κ(c)) △ D(c) ⟨the symmetric difference of n from c @ cratylic context design · c named n · n read in κ(c)⟩
+lacks(n,c)  ≜ D(c) \\ fired(n, κ(c)) ;  adds(n,c) ≜ fired(n, κ(c)) \\ D(c) ⟨Δ(n,c) = lacks(n,c) ∪ adds(n,c)⟩
+covers(n,c) ⇔ n read in κ(c) addresses c ⟨Δ(n,c) closable by a precising definition stating lacks(n,c) ∧ denying adds(n,c), ¬ denying n's core meaning⟩
 Est         : bounded-context → ℘(Names) ⟨Est(κ) : the terms established in κ's domain⟩
 cratylic    : C → Names
-cratylic(c) ≜ argmin_{n ∈ Est(κ(c)) : covers(n,c)} ⟨gap(n,c), |n|, n⟩ ⟨the smallest semantic gap in κ(c) among the established terms covering c · |n| then n break a tie⟩
+cratylic(c) ≜ argmin_{n ∈ Est(κ(c)) : covers(n,c)} ⟨Δ(n,c), |n|, n⟩ ⟨the smallest symmetric difference from c in κ(c) among the established terms covering c · |n| then n break a tie⟩
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ covers(∘ M, c) ∧ ∘ M ∉ Est(κ(c))
 Art         ≜ the text's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
@@ -66,9 +67,9 @@ c ∉ dom(τ) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Terms assigned c :
 ¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)), ¬ about cᵢ ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; covers(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-correction(c) ≜ the correction closing gap(cratylic(c), c) @ cratylic context design ⟨its missing meaning stated · its spurious meaning stated denied⟩
-∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨τ(c), correction(c)⟩ ⟨d ∈ gap(τ(c), c) ∩ D(c) stated ; d ∈ gap(τ(c), c) ∧ d ∉ D(c) stated denied⟩
-correction(c) = ∅ ⇒ c enters as τ(c) alone
+precising-definition(c) ≜ the precising definition closing Δ(cratylic(c), c) @ cratylic context design ⟨lacks(cratylic(c), c) stated · adds(cratylic(c), c) stated denied⟩
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨τ(c), precising-definition(c)⟩ ⟨d ∈ lacks(τ(c), c) stated ; d ∈ adds(τ(c), c) stated denied⟩
+precising-definition(c) = ∅ ⇒ c enters as τ(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(τ(c), κ(c))
 
 conform(a)  ⇔  register(a) = cratylic

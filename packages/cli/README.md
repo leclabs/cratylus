@@ -113,9 +113,9 @@ reads the project installation; elsewhere it reads yours.
 ### Which rules
 
 A rule is stated with why it holds, and your agents follow it in every session of every project; a
-ruleset is a named set of rules offered together (`gitflow`, `conventional-commits`,
-`commit-discipline`, `established-libraries`, `green-field`). Install always places the
-`behaviour-driven-development` ruleset with the agents; it is never offered. On a terminal, install offers each
+ruleset is a named set of rules offered together (`behaviour-driven-development`, `gitflow`,
+`conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`).
+`behaviour-driven-development` adopts that practice by its name alone. On a terminal, install offers each
 ruleset in turn: all its rules, rule by rule, or none, which is the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
 (`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
@@ -123,8 +123,8 @@ ruleset or rule is refused, listing each ruleset with its rules.
 
 The choice is recorded in the root by rule name, and installing again keeps it without asking
 unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
-named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no offered rule
-is placed and the summary names choosing them as a next step.
+named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
+placed and the summary names choosing them as a next step.
 
 ### Which model each tier and persona runs on
 
@@ -360,11 +360,11 @@ The model check. Its one verb is `check`, which takes no arguments and only read
 
 What the model check is for, when to reach for it and the concept its verb acts on are stated once, by the runtime, and not repeated here: `cratylus model --help` and `cratylus model check --help` print them, and `cratylus model --explain` and `cratylus model check --explain` print the same explanation as JSON (its name `model check`). In omp it is the tool `model_check`.
 
-The domain model is `design/model` at the top of the git repository you run it in (the nearest directory at or above the working directory holding `.git`, else the working directory). It is plain files, and version control is its history: `purpose.md`, what the project is for; then a directory per bounded context, holding `context.md` (`# <context name>`, then `**Subject:** …` and `**Relation:** …`) and one file per concept, `<concept>.md`. A concept's file opens with `# <term>`, then its correction, then, where it has any, `## Examples`: each example a `### <example name>` heading, or `### <example name> (judged in review)`, followed by its `Given`, `When` and `Then` lines (and any `And`). A concept is named `<context>/<concept>`, its directory and its file's stem, as `delivery/model-check`.
+The domain model is `design/model` at the top of the git repository you run it in (the nearest directory at or above the working directory holding `.git`, else the working directory). It is plain files, and version control is its history: `purpose.md`, what the project is for; then a directory per bounded context, holding `context.md` (`# <context name>`, then `**Subject:** …` and `**Relation:** …`) and one file per concept, `<concept>.md`. A concept's file opens with `# <Cratylic name>`, then its precising definition, then, where it has any, `## Examples`: each example a `### <example name>` heading, or `### <example name> (judged in review)`, followed by its `Given`, `When` and `Then` lines (and any `And`). A concept is named `<context>/<concept>`, its directory and its file's stem, as `delivery/model-check`.
 
 An acceptance test binds an example by its title: a vitest `it(…)` or `test(…)` titled exactly `<context>/<concept>: <example name>`, the example's heading without `(judged in review)`, as `it('delivery/model-check: an example with no acceptance test fails', …)`. The check reads every test file (`*.test.*`, `*.spec.*`) in the repository, but for those under `node_modules`, `dist` and every directory whose name starts with `.`.
 
-`check` prints its report as JSON, `{ "model", "passed", "failures", "warnings" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its term or its correction, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, and says why. It warns, and never fails, where a concept's correction or examples name code, files, commands, flags, identifiers, tools or libraries instead of what must hold, and where a correction recounts its history (what the concept used to mean, what it no longer is, a decision by its number): each warning names the concept, the words and the rule they break. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
+`check` prints its report as JSON, `{ "model", "passed", "failures" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its Cratylic name or its precising definition, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, and says why. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
 
 #### `cratylus model check`
 

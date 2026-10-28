@@ -823,12 +823,6 @@ export interface AgentPlugin extends Layout {
    * later plugin's ruleset of the same name replaces an earlier one's.
    */
   readonly rulesets?: readonly Ruleset[];
-  /**
-   * The rulesets by which the practice the plugin's agents work by departs from
-   * it: installed with the agents on every install, never offered. Absent ⇒ none.
-   * Composed as `rulesets` are.
-   */
-  readonly practiceRulesets?: readonly Ruleset[];
 }
 
 /**

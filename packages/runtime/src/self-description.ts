@@ -10,15 +10,15 @@
 
 import { CLI_BIN } from './bin-name.js';
 
-/** What the command is for. */
-export const PURPOSE = `${CLI_BIN} lets you settle what you mean once and have AI agents build exactly that, across sessions, without the meaning drifting.`;
+/** What the command is for: the domain model's purpose, restated for its reader. */
+export const PURPOSE = `${CLI_BIN} installs a team of AI agents in industry roles, with its rules, skills and capabilities, into the agent harness you already use. The team holds your meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.`;
 
 /** How using it starts. */
 export const START = `To start, launch the business analyst with \`omp --agent business-analyst\` and say what you want: it holds the domain model and hands the work to the other agents ${CLI_BIN} installed, so you write none of your own.`;
 
 /** Where its theory is, for when someone asks why it works. */
 export const THEORY =
-  'Why it works, when asked: cratylic context design, whose domain model is at https://github.com/leclabs/cratylus/tree/main/design/model/cratylic-context-design.';
+  'Why it works, when asked: Cratylic context design, whose domain model is at https://github.com/leclabs/cratylus/tree/main/design/model/context-engineering.';
 
 /** What a newcomer needs first: the purpose, the start and the theory, a line each. */
 export const ORIENTATION = [PURPOSE, START, THEORY].join('\n');

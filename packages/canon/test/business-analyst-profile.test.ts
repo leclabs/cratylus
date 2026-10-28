@@ -5,14 +5,13 @@
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';
 import { describe, expect, it } from 'vitest';
-import { report } from '../src/factors/deliverable/report.js';
-import { sourceOfTruth } from '../src/factors/memory/source-of-truth.js';
+import { backbrief } from '../src/factors/deliverable/backbrief.js';
+import { domainModel } from '../src/factors/memory/domain-model.js';
 import { cratylicContextDesign } from '../src/factors/procedure/cratylic-context-design.js';
 import { rectify } from '../src/factors/procedure/rectify.js';
 import { cratylism } from '../src/factors/stance/cratylism.js';
 import canon from '../src/index.js';
 import { type Factor, MANIFEST, type Value } from '../src/manifest.js';
-import { businessAnalystRole } from '../src/roles/business-analyst.js';
 
 /** A value `name ≜ body`, or its bare term, which renders as `- **name** … — body`, or `- **name**`. */
 function parts(value: Value<Factor>): { name: string; body: string } {
@@ -21,33 +20,23 @@ function parts(value: Value<Factor>): { name: string; body: string } {
   return { name, body };
 }
 
-const meaningCorrection = MANIFEST['decision-rights'].slots.find(
+const meaningGloss = MANIFEST['decision-rights'].slots.find(
   (s) => s.name === 'meaning',
 )?.correction;
-
-const rectifyEntry = businessAnalystRole.values.procedure?.find(
-  (p) => typeof p === 'object' && 'value' in p && p.value === rectify,
-);
-const rectifyNote =
-  rectifyEntry && 'note' in rectifyEntry ? rectifyEntry.note : undefined;
 
 /** Each decided value, as its factor's section and a predicate on a line in it; the
  *  section scopes the line to that factor's values. */
 const decided: Record<string, [string, (line: string) => boolean]> = {
   meaning: [
     'decision-rights',
-    (l) => l.startsWith(`- meaning (${meaningCorrection}): **D**`),
-  ],
-  rectify: [
-    'procedure',
-    (l) => l.startsWith(`- **${parts(rectify).name}** (${rectifyNote}) — `),
+    (l) => l.startsWith(`- meaning (${meaningGloss}): **D**`),
   ],
   ...Object.fromEntries(
     Object.entries({
-      memory: { sourceOfTruth },
-      procedure: { cratylicContextDesign },
+      memory: { domainModel },
+      procedure: { cratylicContextDesign, rectify },
       stance: { cratylism },
-      deliverable: { report },
+      deliverable: { backbrief },
     }).flatMap(([section, values]) =>
       Object.entries(values).map(([key, value]) => {
         const { name, body } = parts(value);
@@ -86,8 +75,7 @@ describe('the business analyst conforms to the pattern', async () => {
   const businessAnalyst = lines('business-analyst');
 
   it("the business analyst's definition carries each decided value", () => {
-    expect(meaningCorrection).toBeDefined();
-    expect(rectifyNote).toBeDefined();
+    expect(meaningGloss).toBeDefined();
     for (const [key, [factor, holds]] of Object.entries(decided)) {
       expect(section(businessAnalyst, factor).filter(holds), key).toHaveLength(
         1,

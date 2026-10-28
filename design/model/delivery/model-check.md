@@ -1,6 +1,6 @@
 # model check
 
-Deterministic, run in the project's one check: each concept record states its term, its correction and its examples; every example has an acceptance test naming it, or is marked judged in review; every example an acceptance test names exists; implementation leakage in a record is warned of, never refused
+Deterministic, in the project's one check: each record in its form, each example bound to the acceptance test titled by its context, concept and name, or to code review where marked judged in review
 
 ## Examples
 
@@ -21,9 +21,3 @@ Then it fails, naming the test and the missing example
 Given a concept whose only example is marked judged in review
 When the model check runs
 Then it passes for that concept
-
-### history in a record is warned of
-
-Given a concept whose correction recounts what the concept used to mean
-When the model check runs
-Then it warns, naming the concept and the words, and does not fail for them

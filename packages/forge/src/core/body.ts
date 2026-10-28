@@ -64,11 +64,13 @@ function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
  * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
  * `# <emoji> <name>` (`# <name>` with no mark), the description, then one
  * `## <Group>` per factor group in catalog order, and under it one `### <factor>`
- * per TEXT factor in catalog order, each held entry a line in held order (an empty
- * factor the line `- (none)`). A `binding` factor is never text — it compiles to
- * harness settings — and an `attribute` factor occupies no field; a group with no
- * text factor is omitted. Then the agent's deliverable, field by field, where its
- * contract states one ({@link Agent.contract}). Closed `rstrip() + "\n"`.
+ * per TEXT factor in catalog order, each held entry a line in held order. A factor
+ * the agent holds no entry of states no departure, and renders no section; a group
+ * none of whose text factors holds an entry is omitted. A `binding` factor is never
+ * text — it compiles to harness settings — and an `attribute` factor occupies no
+ * field; a group with no text factor is omitted. Then the agent's deliverable,
+ * field by field, where its contract states one ({@link Agent.contract}). Closed
+ * `rstrip() + "\n"`.
  *
  * The SECTION ORDER is the catalog's own declaration order — which is why the
  * catalog is a parameter and not a module read: the sequence of an agent's
@@ -87,14 +89,15 @@ export function agentBody(a: Agent, manifest: FactorManifest): string {
     groups.set(meta.group, factors);
   }
   for (const [group, factors] of groups) {
-    out.push(`## ${group}`, '');
+    const sections: string[] = [];
     for (const [factor, meta] of factors) {
-      out.push(`### ${factor}`, '');
       const entries = entriesOf(a, factorField(factor));
-      if (entries.length === 0) out.push('- (none)');
-      for (const entry of entries) out.push(entryLine(entry, meta.slots));
-      out.push('');
+      if (entries.length === 0) continue;
+      sections.push(`### ${factor}`, '');
+      for (const entry of entries) sections.push(entryLine(entry, meta.slots));
+      sections.push('');
     }
+    if (sections.length > 0) out.push(`## ${group}`, '', ...sections);
   }
   if (a.contract?.deliverable !== undefined)
     out.push(...deliverableSection(a.contract.deliverable), '');

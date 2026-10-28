@@ -1,6 +1,6 @@
 # capability
 
-A cratylus function an agent calls as a tool and the product owner runs as a command, explaining itself in a few lines; the model check is one
+One function, a tool to agents and a command to the product owner, explaining itself in a few lines
 
 ## Examples
 

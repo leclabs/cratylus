@@ -18,7 +18,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const materialize: Skill = {
   name: 'materialize',
-  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its correction, and each other concept by the terms of the concepts it is built from, never restating them, in a form chosen before writing, separate files or one document. Reach for it once concepts have their Cratylic names and must become context.`,
+  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its precising definition, and each other concept by the terms of the concepts it is built from, never restating them, in a form chosen before writing, separate files or one document. Reach for it once concepts have their Cratylic names and must become context.`,
   formalBlock: `C ≜ concept lattice
 prim : C → 𝔹
 fac : C → ℘(℘(C))
@@ -29,15 +29,15 @@ kind : C → Kinds
 Kinds ≜ the closed kind set
 
 concept-record   ≜ ⟨meaning, term, factorization⟩
-correction @ signify
+precising-definition @ signify
 cite-by-ref ≜ composite stores factor-terms ∧ ¬restate factor-content
-CSF ≜ bipartite-normal-form: primitive↦⟨term,correction⟩ by value ; composite↦⟨term,factor-terms⟩ by reference
+CSF ≜ bipartite-normal-form: primitive↦⟨term,precising-definition⟩ by value ; composite↦⟨term,factor-terms⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
 F(m) ≜ min_≺ fac(m)
-CSF(c) ≜ ( term(c) , correction(c) )             ,  prim(c) ∧ correction(c) ≠ ∅
-CSF(c) ≜ term(c)                                ,  prim(c) ∧ correction(c) = ∅
+CSF(c) ≜ ( term(c) , precising-definition(c) ) ,  prim(c) ∧ precising-definition(c) ≠ ∅
+CSF(c) ≜ term(c)                                ,  prim(c) ∧ precising-definition(c) = ∅
 CSF(c) ≜ ( term(c) , { term(p) | p ∈ F(c) } ) ,  ¬prim(c)
 realize(k) fills factorization(k) ≜ CSF(k) ; meaning(k), term(k) preserved
 term(k) = ⊥ ⇒ realize(k) = ⊥

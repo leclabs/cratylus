@@ -1,5 +1,5 @@
 # agent design
 
-**Subject:** what an AI agent is, how one is composed, and what it works by: its profile, and the practices, skills and rules it applies
+**Subject:** an AI agent's composition: its factors and their values
 
-**Relation:** describes the agents behaviour-driven development's roles are, and the agents, skills and rules delivery installs
+**Relation:** describes the agents that are behaviour-driven development's roles and that delivery installs
