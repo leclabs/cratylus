@@ -1,6 +1,6 @@
 # model check
 
-Deterministic, in the project's one check: binds each example to the acceptance test titled by its context, concept and name, or to code review where marked judged in review; warns where a record reads other than declarative
+Deterministic, in the project's one check: each record in its form, each example bound to the acceptance test titled by its context, concept and name, or to code review where marked judged in review
 
 ## Examples
 
@@ -21,9 +21,3 @@ Then it fails, naming the test and the missing example
 Given a concept whose only example is marked judged in review
 When the model check runs
 Then it passes for that concept
-
-### history in a record is warned of
-
-Given a concept whose precising definition recounts what the concept used to mean
-When the model check runs
-Then it warns, naming the concept and the words, and passes for them
