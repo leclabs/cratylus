@@ -1,3 +1,3 @@
 # sign-off
 
-The product owner's go-ahead: on a user story before its work starts, unless waived; on a release; on a change the product owner asked to review before it joins; and wherever the product owner asks; given in advance for a stretch of work under delegation of authority
+The product owner's go-ahead, by default on a user story before its work starts and on a release, and wherever the product owner asks; waived or delegated as the product owner chooses
