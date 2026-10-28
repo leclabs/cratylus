@@ -1,5 +1,38 @@
 # @cratylus/schema
 
+## 0.13.0
+
+### Minor Changes
+
+- a59e469: forge no longer carries the consumer-patch fold or value provenance, which only the removed configuration file and `explain` reached. `install` still discovers the canon's values, and discovery still refuses a shared namespace and a reference graph that dangles or cycles. The schema package's README now addresses cratylus's contributors rather than a canon's author.
+
+  BREAKING CHANGE: forge's `./resolve` subpath is removed, with `resolve`, `ResolveConfig`, `ResolvedAgentSet`, `ResolvedFragment`, `FragmentContribution`, `ContributionSource`, `LoadedPlugin`, `PatchEntry`, `PatchOp`, `MissingExtendsTargetError`, `IllegalOpForValueShapeError`, `ForcePriorityTieError` and its re-export of `AgentPlugin` and `defineAgentPlugin` (import those from `@cratylus/schema`). `@cratylus/forge/project` loses `resolveFragmentBodies`, `AmbiguousFragmentBodyError` and `ProjectOpts.resolvedBodies`. `@cratylus/schema` loses `withBody`, which only the fold used.
+
+- 87a0501: The `cratylus` command offers using cratylus only: `install`, `uninstall` and the capabilities (`model`, `versionSkew`). Its help, its no-argument output and its README list nothing else, and `install` always installs the canon the command is built with.
+
+  BREAKING CHANGE: the commands `init`, `add`, `compose`, `project`, `deploy` (with `deploy --check`), `explain` and `catalog` are removed, and with them the `Corpus authoring:` help group; each is now refused as an unknown command. `cratylus.config.ts` is read by nothing: `install` no longer reads one from the working directory and always installs the bundled canon, refusing only when mounted with no canon at all. The `cratylus` package has no library entry any more, so `defineConfig` (and `CratylusConfig`) are gone from `cratylus` and from `@cratylus/forge`, together with forge's `./config`, `./deploy` and `./validate` subpaths (the config loader and scaffold, render-tree deploy and its drift check, `scaffoldProject`, `writeRenderTree`, the cold-read driver), and `@cratylus/forge/catalog` loses `enumerateCatalog`, `shortlex` and `CatalogEntry`. `projectorCommands` returns the two commands as one list and takes the canon as `canon`; `usageExitCode` is removed. `@cratylus/schema` drops the `deploy-bin` and `deploy-check-drift-code` projection facts and `SkillDeploy.assets`, which only the removed deploy read. `@cratylus/canon` no longer carries the `create-agent` and `create-skill` skills: the `cratylic-context-design` practice keeps its other skills, and an install no longer places those two. A project installation over an earlier render tree in `.cratylus/<harness>` is still refused: move that tree away, and install again.
+
+- 9a8582e: `cratylus install` offers the `behaviour-driven-development` ruleset, first among the canon's rulesets and taken or left like every other. It holds one rule, `behaviour-driven-development-adopted`: "This project practises behaviour-driven development.", because the practice's name carries it whole, each role's participation included. Taken with `--rules behaviour-driven-development`, install places `rules/behaviour-driven-development-adopted.md`; without a terminal and without `--rules`, it places no rule and lists the six rulesets offered. `Rule.convention` is renamed `Rule.statement`.
+- ff7723e: `cratylus install` installs every agent and skill of the canon, and offers the rulesets, whole or rule by rule. Run with no terminal and naming only the harness, it installs everything and is never refused for want of a choice. A completed install ends with how using cratylus starts where the business analyst is installed.
+
+  BREAKING CHANGE: `InstallPrompts` asks for the harness, the scope, the rules, the model roles and the agent status, and nothing else. A plugin, `@cratylus/schema`'s `AgentPlugin` and `@cratylus/forge/project`'s `ProjectablePlugin` alike, is its name, its agents, skills, factors and hooks, its factor manifest and its rulesets (an `AgentPlugin` also its lifecycle events); the projection, the installation record and the deploy record carry agents, skills and rules.
+
+- b8158fc: A term's precising definition is called by its name. `Slot.correction` becomes `Slot.precisingDefinition` and `HookDeclaration.correction` becomes `HookDeclaration.precisingDefinition`; the canon's manifest gives each decision-rights slot its precising definition under the new field. Rendered agents are unchanged.
+- 5405787: `@cratylus/schema` names the canon's shapes in the design's terms: factor, value, term, correction, hook declaration, canon. It no longer says corpus, dimension, fragment, cell, anchor, gloss, residue or σ*.
+
+  Breaking renames: `DimensionMeta` → `FactorMeta`, `DimensionManifest` → `FactorManifest`, `DimensionFieldName` → `FactorFieldName`, `DimensionOf` → `FactorOf`, `SetDimensionOf` → `SetFactorOf`, `RequiredDimensionOf` → `RequiredFactorOf`, `FieldDimensionOf` → `FieldFactorOf`, `DimensionFieldsOf` → `FactorFieldsOf`, `isDimensionValue` → `isFactorValue`, `dimensionValueOf` → `factorValueOf`, `anchorOf` → `termOf`, `HookCell` → `HookDeclaration` (its field `residue` → `correction`). A value's brand property `__dimension` is `__factor`. `Binding.anchor` is `Binding.term` and `Binding.fragment` is `Binding.value`. `Slot.gloss` is `Slot.correction`. A plugin's directory of factors is `factors`, not `fragments`. `mergeManifest` logs `override factor …` and, when no plugin declares a manifest, refuses with `no plugin in the set declares a factor manifest`.
+
+### Patch Changes
+
+- 7fd4af9: READMEs and source comments cite the standing decisions by their records in `design/decisions/`, by file name.
+- 53f1bba: nico's expertise is terminology work as cratylic context design practises it, finding each concept's Cratylic name, its correction beside it, in the bounded contexts it is given. The canon README names the discipline cratylic context design, and the package keywords say `cratylic-context-design`.
+- 4958b21: The person cratylus serves is called the product owner everywhere, never the operator: in the elicit skill, the `install` help and refusals, the READMEs and the code's comments.
+
+  **Breaking.** The canon's lifecycle moment `operator.consult.pre` is now `product-owner.consult.pre`, and `@cratylus/forge`'s exported omp bindings (`canonicalActToOmp`, `ompBindingOf`) know it only by the new name. A hook bound to `operator.consult.pre` must now name `product-owner.consult.pre`.
+
+- e8c2123: The README says which `Agent` fields the canon's own fold copies from its factors (`holds`, `routing`, `contract`), and that `skills` and `isolation` are not factors but stated on the agent itself.
+- d2c0e9d: The README's export table names exactly what the root entry exports, and its `Agent` paragraph names the optional fields that exist (`holds`, `routing`, `contract`, `skills`, `isolation`), no longer `dispatches` or `readOnly`.
+
 ## 0.12.0
 
 ### Minor Changes

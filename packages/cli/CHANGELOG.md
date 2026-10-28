@@ -1,5 +1,104 @@
 # @cratylus/invoke
 
+## 0.21.0
+
+### Minor Changes
+
+- 87a0501: The `cratylus` command offers using cratylus only: `install`, `uninstall` and the capabilities (`model`, `versionSkew`). Its help, its no-argument output and its README list nothing else, and `install` always installs the canon the command is built with.
+
+  BREAKING CHANGE: the commands `init`, `add`, `compose`, `project`, `deploy` (with `deploy --check`), `explain` and `catalog` are removed, and with them the `Corpus authoring:` help group; each is now refused as an unknown command. `cratylus.config.ts` is read by nothing: `install` no longer reads one from the working directory and always installs the bundled canon, refusing only when mounted with no canon at all. The `cratylus` package has no library entry any more, so `defineConfig` (and `CratylusConfig`) are gone from `cratylus` and from `@cratylus/forge`, together with forge's `./config`, `./deploy` and `./validate` subpaths (the config loader and scaffold, render-tree deploy and its drift check, `scaffoldProject`, `writeRenderTree`, the cold-read driver), and `@cratylus/forge/catalog` loses `enumerateCatalog`, `shortlex` and `CatalogEntry`. `projectorCommands` returns the two commands as one list and takes the canon as `canon`; `usageExitCode` is removed. `@cratylus/schema` drops the `deploy-bin` and `deploy-check-drift-code` projection facts and `SkillDeploy.assets`, which only the removed deploy read. `@cratylus/canon` no longer carries the `create-agent` and `create-skill` skills: the `cratylic-context-design` practice keeps its other skills, and an install no longer places those two. A project installation over an earlier render tree in `.cratylus/<harness>` is still refused: move that tree away, and install again.
+
+- 9a8582e: `cratylus install` offers the `behaviour-driven-development` ruleset, first among the canon's rulesets and taken or left like every other. It holds one rule, `behaviour-driven-development-adopted`: "This project practises behaviour-driven development.", because the practice's name carries it whole, each role's participation included. Taken with `--rules behaviour-driven-development`, install places `rules/behaviour-driven-development-adopted.md`; without a terminal and without `--rules`, it places no rule and lists the six rulesets offered. `Rule.convention` is renamed `Rule.statement`.
+- b023712: A capability's verb only reads and takes no arguments, which is all the two remaining capabilities use; the machinery for anything more is removed.
+
+  - `@cratylus/runtime`: a verb's `effect` is `reads` alone (the `appends` effect is gone), and a verb's explanation is its `name`, `concept`, `purpose`, `when` and `effect`, with no `parameters` (`ParameterExplanation` and `ParameterSchema` are gone). The `./verb-flags` subpath is gone, and with it `Positional`, `Flags`, `Flag`, `ValueShape`, `valueFlag`, `switchFlag`, `spelled`, `Argv`, `readArgv`, `refused` and `nearest`; a verb's declaration is its purpose, beside the concept, when and effect it explains. Any token after a verb is refused by `verbOf`, in one line naming each token and the verb's `--help`; `--help`, `-h` and `--explain` are read as any token after the verb. A verb's help lists no arguments or flags.
+  - `@cratylus/forge`: the omp extension's capability tools are all read-only (approval `read`); a tool takes a required `verb` of the capability's verbs, or nothing where the capability explains one verb alone, and a call runs `<bin> <capability> <verb>`.
+  - `cratylus`: the README says a capability verb takes no arguments.
+
+- 0df8f19: The domain model is plain files in `design/model/`, checked by the model check: `cratylus model check`, in omp the tool `model_check`. The command offers `install`, `uninstall` and exactly two capabilities, `model` and `versionSkew`; the runtime's `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` are `model` and `versionSkew`, and every capability tool only reads.
+
+  - `@cratylus/runtime` exports from `.` the capabilities' explanations (`MODEL_CHECK`, `VERSION_SKEW`), `explain` and the command's self-description; `./runtime-config` holds the runtime configuration and the installation's root and scope. Its subpaths are `.`, `./main`, `./bin-name`, `./capability`, `./runtime-config` and `./package.json`.
+  - A build projects the agents, skills and rules, and install places them, the extension and the installation record in the owned root, and nothing else.
+  - The cratylus omp extension is emitted whenever the harness adapter has one (`HarnessAdapter.capabilitySurface`), and it alone carries the capabilities to the harness.
+
+  BREAKING CHANGE: a script or import using a command, tool, export, subpath or installed file not listed above must drop it.
+
+- 891d1b0: `cratylus install` installs every agent and skill of the canon, and offers the rulesets, whole or rule by rule. Run with no terminal and naming only the harness, it installs everything and is never refused for want of a choice. Its options are `--harness`, `--scope`, `--rules`, `--model-roles`, `--agent-status`, `--yes`, `--verbose`, `--dry-run` and `--home`.
+
+  BREAKING CHANGE: `cratylus install` refuses any option not listed above; a script passing one must drop it.
+
+- 6af2a28: The model check binds an example only to a test that can run, and refuses records it used to pass over. A test title only in a `//` or `/* */` comment binds nothing and names nothing missing (comments are blanked by a small scanner that keeps string, template and regular-expression literals whole, so `'http://x'` survives). A `.md` file in `design/model` other than `purpose.md`, a `<context>/context.md` or a `<context>/<concept>.md` — another file at the root, any file in a nested directory, an extension not in lower case — fails as a misplaced record, naming the file. An example's lines must be Given lines, then When lines, then Then lines, each run optionally going on in `And` lines, and nothing else; otherwise it fails, naming the concept and the example.
+- 42049b7: The model check: `cratylus model check` checks the domain model, plain files in `design/model` of the repository holding the working directory, and binds each of its examples to the acceptance test that names it. A concept record is `<context>/<concept>.md`, its `# term`, its correction and optionally `## Examples` of `### <name>` (or `### <name> (judged in review)`) over Given, When and Then lines; an acceptance test is an `it(`/`test(` whose title is exactly `<context>/<concept>: <example name>`. It prints its report as JSON on stdout, `{model, passed, failures, warnings}`, and exits 1 when anything fails: a malformed record or context, an example no acceptance test names and not judged in review, or an acceptance test naming an example the model does not have. Implementation leakage in a record and history recounted in its correction are warnings, never failures. With no `design/model` it refuses on stderr. `cratylus model --explain` explains it, and the omp extension offers it as the tool `model_check`.
+
+  `@cratylus/runtime`: `CAPABILITIES` and canon's `RUNTIME_CAPABILITIES` gain `model`; `@cratylus/runtime` exports `MODEL_CHECK`. The orientation starts with the business analyst (`omp --agent business-analyst`), and its theory points at the domain model of cratylic context design. The repository's `pnpm check` ends with the model check.
+
+- 5c312bd: The model check holds each concept record to its form and each example to its acceptance test, and nothing more: its report is `{ "model", "passed", "failures" }`, its word-list warnings gone. A record's failures speak of its Cratylic name and precising definition (`has no # Cratylic name`, `has no precising definition`). Its explanation says where each example lives, in its concept's record in `design/model/`, written as given–when–then, and how its acceptance test, in the project's own test framework, is titled, `<context>/<concept>: <example name>`, unless it is marked judged in review. The command's orientation states the domain model's purpose: a team of AI agents in industry roles, installed into the agent harness you already use, holding your meaning in a living domain model written by Cratylic context design and realizing it by behaviour-driven development; its theory points at the context-engineering context.
+- c18354e: The command describes itself, and every omp session knows from its start what cratylus is for and how using it starts. `@cratylus/runtime` holds the one text, `ORIENTATION` (of `PURPOSE`, `START` and `THEORY`): what cratylus is for, that using it starts by launching the business analyst with `omp --agent business-analyst` and saying what you want, and that its theory is cratylic context design, whose domain model is in cratylus's repository at `design/model/cratylic-context-design`.
+
+  `cratylus --help` opens with what the command is for. `cratylus` with no arguments prints the three-line orientation and a line naming `cratylus --help` for everything else, on stdout, exit 0 (it printed the help on stderr and exited 1). `cratylus --explain` prints `{name, purpose, orientation}` as JSON.
+
+  The cratylus omp extension runs the reached command's `--explain` once at load and appends its orientation, verbatim, right after omp's own system prompt in every session, launched or not, main or dispatched; a command that cannot explain itself adds nothing. The READMEs name the business analyst, by its command, as the way in.
+
+- c82a25d: The seven skills of cratylic context design (conceptualize, elicit, exemplify, formalize, materialize, probe, signify) say in their descriptions what each is for and when to reach for it, in the pattern's own terms (term, Cratylic name, semantic gap, missing and spurious meaning, correction, cold read), with no notation and nothing of how cratylus builds them (decision 0334). Their bodies keep their procedures with the design's terms: signify's `residue(n,c)` is now `gap(n,c)`, the semantic gap of n for c read in κ(c) (missing meaning ∪ spurious meaning, cited `@ cratylic context design`), and `cratylic(c)`, the Cratylic name of c, is the term of smallest semantic gap; a concept enters a text as its term with `correction(c)`, its missing meaning stated and its spurious meaning stated denied, the term alone when the correction is empty; the cold-decode oracle is now the cold read, and a sign or signifier meaning a name is a term. Only what the design defines (the semantic gap, the correction, the cold read) is cited to it; exemplify's warm decode, `coldpass` and `K`, and probe's `K`, are the skills' own.
+
+  Every concept is held to its Cratylic name, in a user's project as in cratylus's own: the limit to the core agent dimension names and values is gone from every body. signify's `dom(τ)` is every concept the text carries, a concept its domain already names takes that established term, found and never coined, its cold read confirming it, and a concept is no longer excluded for being outside that vocabulary; exemplify's `valid(k)` requires the cold pass of every piece, and its `core` is gone; formalize names every entity and operation by its term through signify. materialize writes a primitive concept as its term with its correction, the term alone where the correction is empty, never restating what the term carries, in place of the term with the concept's whole meaning; composites stay by reference.
+
+  A term need not read exactly as its concept to name it. signify's `covers(n,c)` holds when n, read in κ(c), addresses c, so its gap can be closed by a correction supplying the missing meaning and excluding the spurious, without excluding n's core meaning. `Est(κ)` is the terms established in κ's domain. `cratylic(c)` is the established term covering c of smallest gap (then `|n|`, then n), so a coined name never beats an established one; a mint, which lies outside `Est(κ(c))`, only where no established term covers c, and the concept is excluded, logged, when no mint covers it either; `correction(c)` closes `gap(cratylic(c), c)`. A rejection binds a term that does not cover; the exact fit `circ` stays only in the misattribution law and nowhere selects a name. probe's `experiment(c)` narrows the candidates to those covering c read amid them, and `crystallize` settles `cratylic(c)` on the experiment's established covering candidate of smallest gap; a mint is settled through signify, never crystallized.
+
+  The prime principle the skills open with states cratylism as the design holds it: names natural to the model, whose semantic space is the universe of discourse; each concept takes its Cratylic name, the term of smallest semantic gap read in its bounded context, which intuition proposes and a cold read confirms, found and never coined unless no established term covers it; its correction beside it, each side of the gap once; a kept name short of it recorded as such. It no longer cites the residue or the oracle, nor scopes itself to the corpus's core agent dimension names and values. The canon README says the same.
+
+- 4958b21: The person cratylus serves is called the product owner everywhere, never the operator: in the elicit skill, the `install` help and refusals, the READMEs and the code's comments.
+
+  **Breaking.** The canon's lifecycle moment `operator.consult.pre` is now `product-owner.consult.pre`, and `@cratylus/forge`'s exported omp bindings (`canonicalActToOmp`, `ompBindingOf`) know it only by the new name. A hook bound to `operator.consult.pre` must now name `product-owner.consult.pre`.
+
+### Patch Changes
+
+- 12a55a5: `cratylus install`'s help and the `cratylus` README name what install places in the design's terms: the canon cratylus ships, its agents, skills and rules, where they said "the bundled corpus". The command hands forge's install the canon as `canon`.
+- 7fd4af9: READMEs and source comments cite the standing decisions by their records in `design/decisions/`, by file name.
+- 9a8582e: Bind the departures-only domain model to acceptance tests of the packed command: install offers behaviour-driven development and adopts it by name when chosen, installs every agent and skill unattended, and checks example bindings with a report of the model, its verdict and its failures. Remove acceptance tests for retired examples.
+- 23826e9: The READMEs document the domain model as plain files in `design/model`, one per concept, and the model check (`cratylus model check`, the tool `model_check`) that binds every example to its acceptance test.
+- 3442096: `cratylus --help` shows each capability's usage as `<capability> <verb>`.
+- 53f1bba: nico's expertise is terminology work as cratylic context design practises it, finding each concept's Cratylic name, its correction beside it, in the bounded contexts it is given. The canon README names the discipline cratylic context design, and the package keywords say `cratylic-context-design`.
+- 1045204: `cratylus --explain` given with any other word (`cratylus --explain install`, `cratylus --version --explain`) is refused as a usage error, one stderr line and exit 1, running nothing. The `cratylus` package describes itself with the command's purpose, and the READMEs say that `cratylus` with no arguments prints how to start, without restating the orientation.
+- Updated dependencies [41c216f]
+- Updated dependencies [41c216f]
+- Updated dependencies [86b9f42]
+- Updated dependencies [a59e469]
+- Updated dependencies [87a0501]
+- Updated dependencies [9a8582e]
+- Updated dependencies [85e6484]
+- Updated dependencies [0f98ee3]
+- Updated dependencies [2e59765]
+- Updated dependencies [2e91395]
+- Updated dependencies [fb58bf7]
+- Updated dependencies [c21bbed]
+- Updated dependencies [b023712]
+- Updated dependencies [1c51eec]
+- Updated dependencies [0df8f19]
+- Updated dependencies [7fd4af9]
+- Updated dependencies [23826e9]
+- Updated dependencies [9b36a76]
+- Updated dependencies [fee3ce2]
+- Updated dependencies [ff7723e]
+- Updated dependencies [56385af]
+- Updated dependencies [6af2a28]
+- Updated dependencies [42049b7]
+- Updated dependencies [5c312bd]
+- Updated dependencies [c18354e]
+- Updated dependencies [53f1bba]
+- Updated dependencies [c82a25d]
+- Updated dependencies [81e83bc]
+- Updated dependencies [b8158fc]
+- Updated dependencies [4958b21]
+- Updated dependencies [e712ceb]
+- Updated dependencies [a1abdda]
+- Updated dependencies [34268dc]
+- Updated dependencies [edfae61]
+- Updated dependencies [54989e1]
+  - @cratylus/forge@0.20.0
+  - @cratylus/canon@0.22.0
+  - @cratylus/runtime@0.20.0
+
 ## 0.20.0
 
 ### Minor Changes
