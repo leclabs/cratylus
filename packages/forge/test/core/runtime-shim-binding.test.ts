@@ -22,7 +22,7 @@ function resolved(over: Partial<ResolvedSkill> = {}): ResolvedSkill {
   return {
     name: 'wake',
     trigger: '/wake',
-    description: 'reconstitute an agent at session start',
+    description: 'wake an agent at session start',
     formalBlock: BLOCK,
     composedFrom: [],
     ...over,

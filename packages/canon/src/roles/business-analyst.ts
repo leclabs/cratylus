@@ -26,7 +26,6 @@ import { specificationByExample } from '../factors/expertise/specification-by-ex
 import { honesty } from '../factors/guardrails/honesty.js';
 import { noImplementation } from '../factors/guardrails/no-implementation.js';
 import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
-import { reconstitution as memoryReconstitution } from '../factors/memory/reconstitution.js';
 import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
 import { working } from '../factors/memory/working.js';
 import { frontier } from '../factors/model/frontier.js';
@@ -39,7 +38,6 @@ import { reports } from '../factors/perception-scope/reports.js';
 import { behaviourDrivenDevelopment } from '../factors/procedure/behaviour-driven-development.js';
 import { cratylicContextDesign } from '../factors/procedure/cratylic-context-design.js';
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
-import { reconstitution } from '../factors/procedure/reconstitution.js';
 import { rectify } from '../factors/procedure/rectify.js';
 import { businessAnalyst } from '../factors/role/business-analyst.js';
 import { conceptualElevation } from '../factors/stance/conceptual-elevation.js';
@@ -73,7 +71,6 @@ export const businessAnalystRole: RoleProfile = {
         note: 'a name that redefines an established term is corrected before any work leans on it',
       },
       orchestratorWorkers,
-      reconstitution,
     ],
     stance: [
       decisive,
@@ -118,7 +115,7 @@ export const businessAnalystRole: RoleProfile = {
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
-    memory: [sourceOfTruth, working, memoryReconstitution],
+    memory: [sourceOfTruth, working],
     assignment: [intent],
     deliverable: [report],
     guardrails: [honesty, scopeOfAuthority, noImplementation],
