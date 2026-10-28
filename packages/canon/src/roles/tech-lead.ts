@@ -1,18 +1,11 @@
 // The tech lead: holds a user story's realization, deciding how it is built, handing its
 // tasks to software engineers and its examples to the test engineer, joining the changes
-// and handing back the outcome; never decides what anything means.
+// and handing back the outcome; never decides what anything means. It states only where
+// cratylus departs from the industry's tech lead.
 
 import type { RoleProfile } from '../compose.js';
-import { commitOwnPaths } from '../factors/action-scope/commit-own-paths.js';
-import { integrate } from '../factors/action-scope/integrate.js';
-import { runChecks } from '../factors/action-scope/run-checks.js';
 import { userStory } from '../factors/assignment/user-story.js';
-import { handoff } from '../factors/autonomy/handoff.js';
-import { humanInTheLoop } from '../factors/autonomy/human-in-the-loop.js';
-import { humanOnTheLoop } from '../factors/autonomy/human-on-the-loop.js';
-import { managementByException } from '../factors/autonomy/management-by-exception.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
-import { principal } from '../factors/autonomy/principal.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
 import { maintenance } from '../factors/communication-style/maintenance.js';
 import { plain } from '../factors/communication-style/plain.js';
@@ -20,27 +13,16 @@ import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { outcome } from '../factors/deliverable/outcome.js';
 import { inUse } from '../factors/evaluation/in-use.js';
-import { softwareDelivery } from '../factors/expertise/software-delivery.js';
-import { softwareEngineering } from '../factors/expertise/software-engineering.js';
-import { fixedAcceptanceCriteria } from '../factors/guardrails/fixed-acceptance-criteria.js';
 import { honesty } from '../factors/guardrails/honesty.js';
-import { scopeOfAuthority } from '../factors/guardrails/scope-of-authority.js';
-import { sourceOfTruth } from '../factors/memory/source-of-truth.js';
-import { working } from '../factors/memory/working.js';
+import { domainModel } from '../factors/memory/domain-model.js';
 import { frontier } from '../factors/model/frontier.js';
 import { high } from '../factors/model/high.js';
-import { delivery } from '../factors/objective/delivery.js';
 import { satisfice } from '../factors/objective/satisfice.js';
-import { domainModel } from '../factors/perception-scope/domain-model.js';
-import { reports } from '../factors/perception-scope/reports.js';
-import { workProduct } from '../factors/perception-scope/work-product.js';
-import { behaviourDrivenDevelopment } from '../factors/procedure/behaviour-driven-development.js';
+import { architectureDecisionRecord } from '../factors/procedure/architecture-decision-record.js';
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
 import { shipShowAsk } from '../factors/procedure/ship-show-ask.js';
 import { techLead } from '../factors/role/tech-lead.js';
 import { decisive } from '../factors/stance/decisive.js';
-import { separationOfConcerns } from '../factors/stance/separation-of-concerns.js';
-import { simplicity } from '../factors/stance/simplicity.js';
 import { tailoring } from '../factors/stance/tailoring.js';
 
 export const techLeadRole: RoleProfile = {
@@ -50,13 +32,10 @@ export const techLeadRole: RoleProfile = {
   mark: { emoji: '🧭', hue: 'blue' },
   values: {
     role: [techLead],
-    objective: [
-      { value: delivery, slot: 'drive' },
-      { value: satisfice, slot: 'stopping-rule' },
-    ],
-    expertise: [softwareDelivery, softwareEngineering],
-    procedure: [behaviourDrivenDevelopment, orchestratorWorkers, shipShowAsk],
-    stance: [decisive, tailoring, separationOfConcerns, simplicity],
+    objective: [{ value: satisfice, slot: 'stopping-rule' }],
+    expertise: [],
+    procedure: [orchestratorWorkers, shipShowAsk, architectureDecisionRecord],
+    stance: [decisive, tailoring],
     communicationStyle: [
       { value: plain, slot: 'register' },
       { value: maintenance, slot: 'density' },
@@ -71,24 +50,17 @@ export const techLeadRole: RoleProfile = {
       { value: input, slot: 'verdict' },
       { value: input, slot: 'release' },
     ],
-    autonomy: [
-      principal,
-      { value: humanInTheLoop, note: 'at a sign-off it does not hold' },
-      { value: humanOnTheLoop, note: 'otherwise' },
-      missionCommand,
-      managementByException,
-      handoff,
-    ],
-    perceptionScope: [domainModel, reports, workProduct],
-    actionScope: [integrate, commitOwnPaths, runChecks],
+    autonomy: [missionCommand],
+    perceptionScope: [],
+    actionScope: [],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
-    memory: [sourceOfTruth, working],
+    memory: [domainModel],
     assignment: [userStory],
     deliverable: [outcome],
-    guardrails: [honesty, scopeOfAuthority, fixedAcceptanceCriteria],
+    guardrails: [honesty],
     evaluation: [inUse],
   },
 };

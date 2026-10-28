@@ -11,7 +11,7 @@
 // what is missing: its required fields are its contents. An array takes `[]` unless
 // it is marked `minItems: 1`. An assignment taking alternative forms states each
 // under `anyOf`, and fits when it fits any one. The business analyst's handovers are
-// the product owner's: free-text intent in, a report out, neither carrying a contract.
+// the product owner's: free-text intent in, a backbrief out, neither carrying a contract.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type JsonSchema, termOf } from '@cratylus/schema';

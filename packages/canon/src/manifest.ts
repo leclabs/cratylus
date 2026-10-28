@@ -64,7 +64,8 @@ export const MANIFEST = {
     repertoire: 'open',
     level: 'firm',
     projection: 'text',
-    slots: [{ name: 'drive' }, { name: 'stopping-rule' }],
+    // `drive` is stated only where it departs from what the role's name carries.
+    slots: [{ name: 'drive', optional: true }, { name: 'stopping-rule' }],
   },
   expertise: {
     group: 'Identity',
@@ -129,7 +130,8 @@ export const MANIFEST = {
       { name: 'release' },
       {
         name: 'sign-off',
-        correction: "the product owner's go-ahead",
+        correction:
+          "the product owner's go-ahead, by default on each user story and its examples before its build and on each release; waived or delegated at the product owner's word",
         optional: true,
       },
     ],
@@ -255,7 +257,7 @@ export type RequiredFactor = RequiredFactorOf<typeof MANIFEST>;
 export type Agent = AgentOf<typeof MANIFEST>;
 
 // ── Per-factor value types (branded strings) ────────────────────────────────
-// A factor's value is a named export: `export const x: Objective = '<term> ≜ <correction>'`.
+// A factor's value is a named export: `export const x: Objective = '<term> ≜ <precising definition>'`.
 // Each alias is a nominal-branded `string` — the phantom `__factor` brand keys
 // the string to its factor so `tsc` rejects a cross-factor assignment.
 

@@ -40,11 +40,9 @@ companion get their shim emitted alongside them. A shim forwards its arguments t
 
 ### A render is the whole plugin set
 
-`projectPluginSet` renders every agent, skill and hook the plugin set declares, and every rule of
-its practice rulesets (`AgentPlugin.practiceRulesets`); an install places them all. The one choice a
-render takes is which offered rules to place (`ProjectOpts.rules`), and the tree reports the offered
-rulesets (`ProjectedTree.rulesets`) for an install to offer, and the practice rules it rendered
-(`ProjectedTree.practiceRules`).
+`projectPluginSet` renders every agent, skill and hook the plugin set declares; an install places
+them all. The one choice a render takes is which rules to place (`ProjectOpts.rules`), and the tree
+reports the offered rulesets (`ProjectedTree.rulesets`) for an install to offer.
 
 ### An agent is given its skills' closure
 
@@ -63,8 +61,10 @@ skills' full instructions in every turn's system prompt.
 
 An agent's text is rendered from its values: `# <mark> <name>` (the name alone without a mark), its
 description, then one section per factor group in catalog order, each value as its term and
-correction, marked `(fixed)` where its level is fixed. Reach (perception-scope, action-scope) and
-model are never text. On OMP the definition's front matter carries `model: "@<name>"`, the model
+precising definition, marked `(fixed)` where its level is fixed. A factor the agent holds no value of
+states no departure and renders no section, nor does a group all of whose factors are empty. Reach
+(perception-scope, action-scope) and model are never text. On OMP the definition's front matter
+carries `model: "@<name>"`, the model
 role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
 any agent. `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after

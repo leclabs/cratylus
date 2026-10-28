@@ -1,11 +1,12 @@
 // Composition: a persona that removes `none` from action-scope or weakens a guardrail
 // is made, and warned of, never refused, while no composed agent is narrowed to
 // read-only; each role's typed handoff rides its agent as `contract`; every agent
-// states it is evaluated in real use; no value of any agent is held by a guard; an
-// optional slot may be left unfilled, never another.
+// states it is evaluated in real use, holds no practice as its procedure and speaks
+// no retired term; no value of any agent is held by a guard; an optional slot may be
+// left unfilled, never another.
 
 import { setImmediate } from 'node:timers/promises';
-import { type JsonSchema, enforcing, termOf } from '@cratylus/schema';
+import { type JsonSchema, bodyOf, enforcing, termOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { businessAnalyst } from '../src/agents/business-analyst.js';
 import { codeReviewer } from '../src/agents/code-reviewer.js';
@@ -19,6 +20,7 @@ import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/factors/action-scope/none.js';
 import { bottomLineUpFront } from '../src/factors/communication-style/bottom-line-up-front.js';
 import { honesty } from '../src/factors/guardrails/honesty.js';
+import { MANIFEST } from '../src/manifest.js';
 import { codeReviewerRole } from '../src/roles/code-reviewer.js';
 import { softwareEngineerRole } from '../src/roles/software-engineer.js';
 
@@ -37,7 +39,11 @@ describe('composition over action-scope', () => {
     const warned: string[] = [];
     const listen = (w: Error) => warned.push(w.message);
     process.on('warning', listen);
-    const widened = persona(codeReviewerRole, {
+    const narrowed = {
+      ...codeReviewerRole,
+      values: { ...codeReviewerRole.values, actionScope: [none] },
+    };
+    const widened = persona(narrowed, {
       name: 'widener',
       description: 'A code reviewer that would act.',
       mark,
@@ -147,7 +153,7 @@ describe('the business analyst', () => {
     );
     expect(elevation?.level).toBe('firm');
     const [deliverable] = businessAnalyst.deliverable;
-    expect(deliverable && termOf(deliverable.value)).toBe('report');
+    expect(deliverable && termOf(deliverable.value)).toBe('backbrief');
   });
 });
 
@@ -170,6 +176,38 @@ describe('every agent', () => {
         agent.evaluation.map((e) => termOf(e.value)),
         name,
       ).toEqual(['in-use']);
+  });
+
+  it('holds no practice as its procedure: the project adopts behaviour-driven development', () => {
+    for (const [name, agent] of Object.entries(agents))
+      expect(
+        agent.procedure.map((e) => termOf(e.value)),
+        name,
+      ).not.toContain('behaviour-driven-development');
+  });
+
+  it('speaks no retired term in its description, values, notes or slot glosses', () => {
+    const retired =
+      /correction|semantic gap|missing meaning|spurious meaning|cold.?read|implementation leakage/i;
+    const glosses = Object.values(MANIFEST).flatMap((meta) =>
+      'slots' in meta
+        ? meta.slots.map((slot) =>
+            'correction' in slot ? slot.correction : '',
+          )
+        : [],
+    );
+    for (const gloss of glosses) expect(gloss).not.toMatch(retired);
+    for (const [name, agent] of Object.entries(agents)) {
+      expect(agent.description, name).not.toMatch(retired);
+      for (const [field, entries] of Object.entries(agent))
+        if (Array.isArray(entries))
+          for (const e of entries as { value?: unknown; note?: string }[])
+            if (e !== null && typeof e === 'object' && 'value' in e)
+              expect(
+                `${bodyOf(e.value as never)} ${e.note ?? ''}`,
+                `${name} ${field}`,
+              ).not.toMatch(retired);
+    }
   });
 
   it('carries its own mark, shared with no other agent', () => {

@@ -1,7 +1,9 @@
 // The agent BODY format: `# <emoji> <name>`, the description, then one `## <Group>`
 // per factor group in catalog order and one `### <factor>` per TEXT factor, each
 // held entry one line in held order. A binding factor and an attribute factor are
-// never text; a group with no text factor is omitted; an empty factor is `- (none)`.
+// never text; a group with no text factor is omitted; a factor with no entry states
+// no departure and renders no section, and a group whose text factors are all empty
+// is omitted.
 
 import type { Agent, FactorManifest } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
@@ -112,13 +114,31 @@ describe('agentBody — the projected text of an agent', () => {
         '- intent (what is wanted and why): **I** — gives input (fixed)',
         '- verdict: **D** (in verdict) — decides (fixed)',
         '',
-        '## Governance',
-        '',
-        '### evaluation',
-        '',
-        '- (none)',
-        '',
       ].join('\n'),
+    );
+  });
+
+  it('renders no section for a factor with no entry, and no group whose factors are all empty', () => {
+    const body = agentBody(
+      { ...agent, stance: [] } as unknown as Agent,
+      CATALOG,
+    );
+    expect(body).toContain('### role');
+    expect(body).not.toContain('### stance');
+    expect(body).not.toContain('### evaluation');
+    expect(body).not.toContain('## Governance');
+    expect(body).not.toContain('(none)');
+    const bare = agentBody(
+      {
+        ...agent,
+        role: [],
+        stance: [],
+        decisionRights: [],
+      } as unknown as Agent,
+      CATALOG,
+    );
+    expect(bare).toBe(
+      '# 🔎 code-reviewer\n\nReviews a change before it lands.\n',
     );
   });
 
