@@ -6,8 +6,8 @@
 import type { RoleProfile } from '../compose.js';
 import { userStory } from '../factors/assignment/user-story.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
+import { convergence } from '../factors/communication-style/convergence.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
 import { plain } from '../factors/communication-style/plain.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
@@ -38,7 +38,7 @@ export const techLeadRole: RoleProfile = {
     stance: [decisive, tailoring],
     communicationStyle: [
       { value: plain, slot: 'register' },
-      { value: maintenance, slot: 'density' },
+      { value: convergence, slot: 'density' },
       { value: decisionRationale, slot: 'rationale' },
     ],
     decisionRights: [

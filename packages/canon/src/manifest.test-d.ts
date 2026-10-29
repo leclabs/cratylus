@@ -60,7 +60,7 @@ const baseFixture: Agent = {
   stance: [{ value: stanceA, level: 'firm' }],
   communicationStyle: [
     { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
-    { value: 'maintenance ≜ a peer density', level: 'firm', slot: 'density' },
+    { value: 'convergence', level: 'firm', slot: 'density' },
     { value: 'answer-only ≜ the answer', level: 'firm', slot: 'rationale' },
   ],
   decisionRights: [{ value: 'P', level: 'fixed', slot: 'realization' }],
