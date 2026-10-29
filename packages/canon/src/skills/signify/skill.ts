@@ -18,7 +18,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `Give a concept its Cratylic name — the term whose meaning, read in the concept's domain, has the smallest symmetric difference from the concept, found among the names the model already gives it and confirmed by a fresh reading, never coined where an established term covers it; one term per concept in a context, its precising definition stated beside it. Reach for it when a concept needs a name, or when a name's reading lacks part of its concept or adds to it.`,
+  description: `Give a concept its Cratylic name — the term whose meaning, read in the concept's domain, has the smallest symmetric difference from the concept, found among the names the model already gives it and confirmed by a fresh reading, an established term wherever one covers it; one term per concept in a context, its precising definition stated beside it. Reach for it when a concept needs a name, or when a name's reading lacks part of its concept or adds to it.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
@@ -39,9 +39,9 @@ cratylic(c) ≜ argmin_{n ∈ Est(κ(c)) : covers(n,c)} ⟨Δ(n,c), |n|, n⟩ �
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n, κ(c)) ≠ ∅ } ∧ covers(∘ M, c) ∧ ∘ M ∉ Est(κ(c))
 Art         ≜ the text's own authored surfaces ⟨prose ≡ identifier ≡ path⟩
-τ           : C ↣ Names ⟨the term assignment · injective within each κ, ¬ across · dom(τ) ≜ every concept the text carries, less those excluded below⟩
+τ           : C ↣ Names ⟨the term assignment · injective within each κ · dom(τ) ≜ every concept the text carries, less those excluded below⟩
 register(a) ≜ the register a's body is observably authored in ⟨cratylic ∨ human⟩
-verbatim(a) ≜ a ships whole, byte-exact : its Cratylic names settled, never re-derived at projection
+verbatim(a) ≜ a ships whole, byte-exact : its Cratylic names settled
 
 ∀ c ∈ dom(τ) : τ(c) ≜ cratylic(c)
 Terms ≜ { ⟨τ(c), κ(c)⟩ | c ∈ dom(τ) } ⟨the assigned-term set, each term with its context⟩
@@ -62,10 +62,10 @@ c ∉ dom(τ) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Terms assigned c :
         ⟨τ(cᵢ), τ(cⱼ) taken at DIFFERENT altitudes is still this collision⟩
 
 ∃ d : { n : ¬circ(n,c) } all fail on d ALONE ⇒ d ∉ D(c) ∧ ∃ cᵢ ≠ c : d ∈ D(cᵢ) ⟨the property hangs off the wrong noun⟩
-    ↦ conceptualize ⟨re-partition, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution, ¬ that cratylic(c) is scarce⟩
+    ↦ conceptualize ⟨re-partition, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution⟩
 
-¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)), ¬ about cᵢ ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
-    ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; covers(n, cⱼ) re-established independently ∨ n stays rejected⟩
+¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)) ⟨fired reads n with κ's name and subject only⟩
+    ∴ a rejection BINDS n ⟨n freed from cᵢ is fit for cⱼ once covers(n, cⱼ) is established independently ∨ n stays rejected⟩
 
 precising-definition(c) ≜ the precising definition closing Δ(cratylic(c), c) @ cratylic context design ⟨what holds stated : lacks(cratylic(c), c) supplied · adds(cratylic(c), c) narrowed⟩
 ∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨τ(c), precising-definition(c)⟩ ⟨d ∈ lacks(τ(c), c) supplied ; d ∈ adds(τ(c), c) narrowed⟩

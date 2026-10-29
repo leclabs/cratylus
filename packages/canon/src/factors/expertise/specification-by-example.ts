@@ -1,3 +1,3 @@
 import type { Expertise } from '../../manifest.js';
 
-export const specificationByExample: Expertise = `specification-by-example ≜ examples agreed before any build`;
+export const specificationByExample: Expertise = `specification-by-example`;

@@ -2,7 +2,6 @@
 // is the business analyst's.
 
 import { persona } from '../compose.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
 import { softwareEngineering } from '../factors/expertise/software-engineering.js';
 import { businessAnalystRole } from '../roles/business-analyst.js';
 
@@ -13,6 +12,5 @@ export const mav = persona(businessAnalystRole, {
   mark: { emoji: '✈️', hue: 'green' },
   values: {
     expertise: [softwareEngineering],
-    communicationStyle: [{ value: maintenance, slot: 'density' }],
   },
 });

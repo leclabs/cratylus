@@ -87,8 +87,9 @@ export type CapabilityName = string;
  *   ceilings, the roles); the canon transcribes it, it does not tend it.
  *
  * The third member read `coined` until 2026-08-05, and that was a defect the
- * canon's own first principle names: `cratylism` states a canonical term is
- * `INTRINSIC ∧ DISCOVERED ¬coined`, and `cratylism` is itself a value of
+ * canon's own first principle names: `cratylism` holds that a concept's canonical
+ * term is found among the names the model already gives it, and coined only where
+ * no established term covers it; `cratylism` was then itself a value of
  * `engineering-principles` — a factor this type classified `coined`. The type
  * refuted the axiom it types, in the axiom's own vocabulary.
  *
@@ -123,17 +124,17 @@ export type CapabilityName = string;
  * from strained to clean at once. Nine failing on one element is evidence, not
  * coincidence — so the member, not the field, was the defect.
  *
- * WHY `latent`. `cratylism` itself carries `model-latent-space = real stable
- * concepts`, so the member that means "the model's own set, discovered not
- * authored" wears the term the axiom already gave it, and the type now QUOTES its
- * axiom where it used to contradict it.
+ * WHY `latent`. `cratylism` holds that the model's semantic space — its latent
+ * space — already fixes each name's meaning, so the member that means "the model's
+ * own set, discovered not authored" wears the term the axiom already gives it, and
+ * the type now QUOTES its axiom where it used to contradict it.
  * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
  * `model-native`/`model`. Both of its winners are occupancy-blocked:
- * `model` is a live factor name (`export type Model`), and `model-native` is a
- * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:
- * `native` (occupied — `llm-native`, and harness-native event vocabulary) ·
- * `discovered` (occupied — cratylism's own `DISCOVERED`) · `intrinsic` (occupied —
- * cratylism's `INTRINSIC`) · `innate` (free and clean, but no grounding in the canon, and
+ * `model` is a live factor name (`export type Model`), and `model-native` was then a
+ * near-homonym of the `llm-native` value three agents composed. ⊥ 2026-08-05:
+ * `native` (occupied then — `llm-native`, and harness-native event vocabulary) ·
+ * `discovered` (occupied then — cratylism's own `DISCOVERED`) · `intrinsic` (occupied
+ * then — cratylism's `INTRINSIC`) · `innate` (free and clean, but no grounding in the canon, and
  * it fights the truth that a model's vocabulary IS learned) · `given` · `learned`
  * (reads as mutating-from-telemetry, which inverts the closure) · `emergent` ·
  * `endogenous` (imported jargon, breaks register with `open`/`curated`).
@@ -358,6 +359,13 @@ export interface FactorMeta {
   readonly projection: 'text' | 'binding';
   /** The named coordinates of a `slots` factor, in order. Absent otherwise. */
   readonly slots?: readonly Slot[];
+  /**
+   * The framework whose terms the factor's values are, by its name (e.g.
+   * `RAPID`): named once where the factor renders, so each value carries the
+   * meaning that name gives it and needs no precising definition of its own.
+   * Absent ⇒ the values carry their meaning by their own terms.
+   */
+  readonly framework?: string;
   /**
    * May an agent hold this factor EMPTY? Absent ⇒ it may (`[]`).
    *

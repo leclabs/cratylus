@@ -5,7 +5,7 @@ import { signify } from '../signify/skill.js';
 
 export const formalize: Skill = {
   name: 'formalize',
-  description: `State a process, a practice or a skill exactly — each concept by its term, with the laws that hold between them and no prose that explains, accepted only when the process can be rebuilt from the statement at least as faithfully as from the prose. Reach for it when a procedure must read the same to every model, its reading lacking nothing of the procedure and adding nothing to it.`,
+  description: `State a process, a practice or a skill exactly — each concept by its term, with the laws that hold between them, accepted only when the process can be rebuilt from the statement at least as faithfully as from the prose. Reach for it when a procedure must read the same to every model, its reading lacking nothing of the procedure and adding nothing to it.`,
   formalBlock: `prose ≜ the source text
 E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
@@ -26,7 +26,7 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 commentary(B) ≜ prose of B beyond β ∪ ι ; commentary(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
-s ∉ T ⇒ extend T with s ; ¬ degrade the notation to a weaker one already in T ⟨llm-native · a block's notation needs no fresh reading⟩
+s ∉ T ⇒ extend T with s ⟨llm-native · a block's notation needs no fresh reading⟩
 
 reconstruct(B) ≽ prose
 reconstruct(B) ⋡ prose ⇒ ⊥` as SkillExpression,

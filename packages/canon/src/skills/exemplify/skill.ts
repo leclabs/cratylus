@@ -17,7 +17,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // in whatever order the work wants.
 
 const FORMAL_BLOCK = `concept-record     ≜ ⟨ meaning , term? , factorization? ⟩
-sources            ≜ input material @ conceptualize ⟨the material D is drawn OVER, ¬ D itself⟩
+sources            ≜ input material @ conceptualize ⟨the material D is drawn OVER⟩
 C                  ≜ concept lattice @ conceptualize
 produce            : sources → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify ⟨each concept takes its Cratylic name, the established term where its domain already names it⟩

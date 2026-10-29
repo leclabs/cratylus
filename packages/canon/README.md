@@ -51,29 +51,27 @@ development, is adopted by the project's conventions (the offered `behaviour-dri
 ruleset), not by the agents. The departures follow the domain model's records: decision rights as
 one RAPID letter per decision class, autonomy as mission command, reach open by default (so no role
 narrows it), the domain model as every reader's memory, a user story free-form and unestimated,
-sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus records them.
+sign-off and tailoring as cratylus records them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
-  means what was intended; decides meaning only, and backbriefs the product owner in the industry's
-  terms until the product owner concurs.
+  means what was intended; decides meaning only, and backbriefs the product owner.
 - **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
   software engineers and its examples to the test engineer, joins the changes as the story's risk
   calls for (Ship, Show or Ask), and hands back the outcome.
-- **software-engineer** — realizes one task and hands back one change; never writes the acceptance
-  tests its work is judged by.
+- **software-engineer** — realizes one task and hands back one change.
 - **test-engineer** — writes an acceptance test for each example and gives the verdict whether
   the realization passes.
-- **code-reviewer** — reviews one change it did not write against its user story's acceptance
-  criteria and examples, and hands back one code review naming each finding, leaving building and
-  repairing the work to the software engineers.
+- **code-reviewer** — reviews one change against its user story's acceptance criteria and examples,
+  and hands back one code review.
 
 The test engineer and the code reviewer run on another model family than the software engineers
 where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an
 explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
 named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a profile missing
 a factor, a scalar without exactly one value, a required slot not filled exactly once (an objective's
-drive is optional, stated only where it departs), and empty guardrails.
+drive is optional, stated only where it departs, and a role holds a decision-rights letter only in the
+decision classes it has a part in), and empty guardrails.
 
 kino, nico and mav are personas over the business analyst role, each named for its expertise (kino
 film production and generative video, nico terminology, giving each concept its Cratylic name, mav
@@ -118,7 +116,7 @@ for a task with no story the task, says whether the work was `merged` or `droppe
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
 `changes`. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
-out, in the industry's terms until the product owner concurs — so it carries no contract. An agent
+out — so it carries no contract. An agent
 harness binds the deliverable as its own output schema and
 shows every session, each turn, the assignment form of each agent that takes one: one fenced
 `assignment` JSON block in the dispatch text.
@@ -135,7 +133,7 @@ product owner in real use; no agent carries countermeasure text against it.
 The first principle, the dense `cratylism` axiom, has its one literal home in
 `genus/prime-principle.ts` and is not stamped on every unit of the canon. It rides only the units whose laws apply
 it: the skills that give a concept its term, judge a term by its symmetric difference from the concept or
-confirm it by a fresh reading set it as their `preamble`, and an agent carries it once, in plain words, as the
+confirm it by a fresh reading set it as their `preamble`, and an agent carries it once, by its name, as the
 `cratylism` stance of the role it holds, where that role states it. A unit that does not use it never holds a
 host's own authored surfaces to the canon's naming axiom. The axiom states cratylism as cratylic
 context design holds it: names are natural to the model, whose semantic space already fixes each name's

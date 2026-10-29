@@ -2,7 +2,6 @@
 // is the business analyst's.
 
 import { persona } from '../compose.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
 import { terminology } from '../factors/expertise/terminology.js';
 import { parsimony } from '../factors/objective/parsimony.js';
 import { analytical } from '../factors/stance/analytical.js';
@@ -18,6 +17,5 @@ export const nico = persona(businessAnalystRole, {
     objective: [{ value: parsimony, slot: 'drive' }],
     expertise: [terminology],
     stance: [analytical, zeroTrust],
-    communicationStyle: [{ value: maintenance, slot: 'density' }],
   },
 });

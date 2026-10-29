@@ -1,14 +1,13 @@
 // The tech lead: holds a user story's realization, deciding how it is built, handing its
 // tasks to software engineers and its examples to the test engineer, joining the changes
-// and handing back the outcome; never decides what anything means. It states only where
-// cratylus departs from the industry's tech lead.
+// and handing back the outcome. It states only where cratylus departs from the industry's
+// tech lead.
 
 import type { RoleProfile } from '../compose.js';
 import { userStory } from '../factors/assignment/user-story.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
-import { plain } from '../factors/communication-style/plain.js';
+import { technical } from '../factors/communication-style/technical.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { outcome } from '../factors/deliverable/outcome.js';
@@ -37,8 +36,7 @@ export const techLeadRole: RoleProfile = {
     procedure: [orchestratorWorkers, shipShowAsk, architectureDecisionRecord],
     stance: [decisive, tailoring],
     communicationStyle: [
-      { value: plain, slot: 'register' },
-      { value: maintenance, slot: 'density' },
+      { value: technical, slot: 'register' },
       { value: decisionRationale, slot: 'rationale' },
     ],
     decisionRights: [

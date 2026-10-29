@@ -6,8 +6,7 @@ import type { RoleProfile } from '../compose.js';
 import { examples } from '../factors/assignment/examples.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
-import { plain } from '../factors/communication-style/plain.js';
+import { technical } from '../factors/communication-style/technical.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { acceptanceTests } from '../factors/deliverable/acceptance-tests.js';
@@ -31,8 +30,7 @@ export const testEngineerRole: RoleProfile = {
     procedure: [],
     stance: [],
     communicationStyle: [
-      { value: plain, slot: 'register' },
-      { value: maintenance, slot: 'density' },
+      { value: technical, slot: 'register' },
       { value: decisionRationale, slot: 'rationale' },
     ],
     decisionRights: [

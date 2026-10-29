@@ -1,17 +1,16 @@
 // The business analyst: holds the domain model, turning the product owner's intent into
 // concepts, user stories and examples, and confirming a realization means what was
-// intended; never decides how anything is built. It states only where cratylus departs
-// from the industry's business analyst.
+// intended; it decides meaning. It states only where cratylus departs from the industry's
+// business analyst.
 
 import type { RoleProfile } from '../compose.js';
 import { intent } from '../factors/assignment/intent.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { bottomLineUpFront } from '../factors/communication-style/bottom-line-up-front.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { plain } from '../factors/communication-style/plain.js';
+import { technical } from '../factors/communication-style/technical.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
-import { none } from '../factors/decision-rights/none.js';
 import { recommends } from '../factors/decision-rights/recommends.js';
 import { backbrief } from '../factors/deliverable/backbrief.js';
 import { inUse } from '../factors/evaluation/in-use.js';
@@ -26,7 +25,7 @@ import { cratylicContextDesign } from '../factors/procedure/cratylic-context-des
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
 import { rectificationOfNames } from '../factors/procedure/rectification-of-names.js';
 import { businessAnalyst } from '../factors/role/business-analyst.js';
-import { conceptualElevation } from '../factors/stance/conceptual-elevation.js';
+import { conceptualThinking } from '../factors/stance/conceptual-thinking.js';
 import { cratylism } from '../factors/stance/cratylism.js';
 import { decisive } from '../factors/stance/decisive.js';
 import { firstPrinciples } from '../factors/stance/first-principles.js';
@@ -55,7 +54,7 @@ export const businessAnalystRole: RoleProfile = {
     ],
     stance: [
       decisive,
-      conceptualElevation,
+      conceptualThinking,
       cratylism,
       firstPrinciples,
       greenField,
@@ -65,7 +64,7 @@ export const businessAnalystRole: RoleProfile = {
       mece,
     ],
     communicationStyle: [
-      { value: plain, slot: 'register' },
+      { value: technical, slot: 'register' },
       { value: decisionRationale, slot: 'rationale' },
       { value: bottomLineUpFront, slot: 'ordering' },
     ],
@@ -73,9 +72,6 @@ export const businessAnalystRole: RoleProfile = {
       { value: input, slot: 'intent' },
       { value: recommends, slot: 'priority' },
       { value: decides, slot: 'meaning' },
-      { value: none, slot: 'constraint' },
-      { value: none, slot: 'realization' },
-      { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
       { value: recommends, slot: 'sign-off' },
     ],

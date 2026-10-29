@@ -59,13 +59,11 @@ const baseFixture: Agent = {
   procedure: [{ value: 'test-first ≜ checks before the build', level: 'firm' }],
   stance: [{ value: stanceA, level: 'firm' }],
   communicationStyle: [
-    { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
-    { value: 'maintenance ≜ a peer density', level: 'firm', slot: 'density' },
+    { value: 'formal ≜ ceremonious words', level: 'firm', slot: 'register' },
+    { value: 'casual', level: 'firm', slot: 'density' },
     { value: 'answer-only ≜ the answer', level: 'firm', slot: 'rationale' },
   ],
-  decisionRights: [
-    { value: 'P ≜ performs', level: 'fixed', slot: 'realization' },
-  ],
+  decisionRights: [{ value: 'P', level: 'fixed', slot: 'realization' }],
   autonomy: [
     {
       value: 'human-in-the-loop ≜ a person approves',

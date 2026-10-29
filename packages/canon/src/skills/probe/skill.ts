@@ -19,7 +19,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 const FORMAL_BLOCK = `D    ≜ distinction space ⟨structured knowledge to draw on⟩
 cl   ≜ closure ⟨smallest concept containing a set of priors⟩
 C    ≜ concept lattice ⟨the cl-closed subsets of D⟩
-priors(w,κ) ≜ understanding w carries before any definition, read in κ ⟨associations · connotations · structured-knowledge unpacked from w with κ's name and subject, not its surface wording⟩
+priors(w,κ) ≜ understanding w carries before any definition, read in κ ⟨associations · connotations · structured-knowledge unpacked from w with κ's name and subject⟩
 Names  ≜ the readable terms
 dec  : Names × bounded-context ⇀ ℘(D) @ signify
 cratylic @ signify
@@ -37,14 +37,14 @@ free(h,κ) ⇔ ∄ c' ∈ dom(τ) : κ(c') = κ ∧ τ(c') = h ∧ c' ≠ c ⟨h
 fired(w,κ) ≜ priors(w,κ)
 fired(a, κ) = dec(a, κ) , ⟨a, κ⟩ ∈ dom(dec)
 concept(w,κ) ≜ cl(fired(w,κ))
-probe(w,κ) ≜ ⟨ fired(w,κ) · concept(w,κ) ⟩ ⟨w with κ's name and subject only : ∄ sibling · ∄ menu · open question⟩
-probe(w,κ) ↾ W ≜ w read in κ amid W ⟨the distractors' priors leak into the read ⇒ CONTRAST, ¬ priors(w,κ)⟩
-experiment(c) ≜ { w ∈ W(c) | covers(w, c) ↾ W(c) } ⊨ DIAGNOSTIC ⟨w read in κ(c) amid W(c) ; narrows W(c) ; ¬ decides cratylic(c)⟩
+probe(w,κ) ≜ ⟨ fired(w,κ) · concept(w,κ) ⟩ ⟨w with κ's name and subject only : open question⟩
+probe(w,κ) ↾ W ≜ w read in κ amid W ⟨the distractors' priors leak into the read ⇒ CONTRAST⟩
+experiment(c) ≜ { w ∈ W(c) | covers(w, c) ↾ W(c) } ⊨ DIAGNOSTIC ⟨w read in κ(c) amid W(c) ; narrows W(c)⟩
 coverage : { w ∈ Names | fired(w, κ(c)) ≠ ∅ ∧ covers(w, c) } ⊆ W(c)
 crystallize : cratylic(c) = w ⇔ w ∈ experiment(c) ∩ Est(κ(c)) ∧ covers(w, c) ∧ ∄ n ∈ W(c) ∩ Est(κ(c)) : covers(n, c) ∧ ⟨Δ(n,c), |n|, n⟩ < ⟨Δ(w,c), |w|, w⟩
-              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w, κ(c)) ; a mint is settled through signify, ¬ crystallized⟩
+              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w, κ(c)) ; a mint is settled through signify⟩
 
-probe(w,κ | K) ≜ probe(w,κ) taken at K ⟨probe is MEASURED, ¬ read-off : a FAMILY over K, ¬ one value⟩
+probe(w,κ | K) ≜ probe(w,κ) taken at K ⟨probe is MEASURED : a FAMILY over K⟩
 probe(w,κ | ∅) ⊨ self-sufficiency ⟨fresh : does w, given κ's name and subject, circumscribe carrying ZERO project knowledge?⟩
 probe(w,κ | K_reader) ⊨ what w fires IN SITU ⟨the reading that binds at use⟩
 { d ∈ fired(w,κ) ↾ K_reader | d ∉ fired(w,κ) ↾ ∅ } ⊨ THE measurement
@@ -54,16 +54,16 @@ K(spawned-subagent) ⊇ installed-canon ∴ ¬fresh ⟨it holds project memory �
 fresh ⇔ process-isolation ⟨a separate model process holding nothing of the project⟩
 
 frame = produce-a-candidate ⇒ ∄ observable ∅ ⟨an obliged producer ALWAYS emits⟩
-    ∴ licence-the-negative : vary the FRAME across runs, ¬ the prompt ⟨fired(w,κ) = ∅ ∧ ∄ cratylic(c) are RESULTS⟩
+    ∴ licence-the-negative : vary the FRAME across runs ⟨fired(w,κ) = ∅ ∧ ∄ cratylic(c) are RESULTS⟩
 ¬controlled(probe) ⇒ over-detection INVISIBLE ⟨a spurious constraint reads as caution⟩
     ∀ k imposed by a failing read : a passing read under a varied frame RETRACTS k
 
-fired(w,κ) ⊨ sweep(parts(w)) vs Idiom ⟨the WINNER swept, ¬ only the rejects⟩
+fired(w,κ) ⊨ sweep(parts(w)) vs Idiom ⟨every candidate swept, the WINNER included⟩
 free(head(w), κ) ⇒ fired(w,κ) ⊇ fired(mod(w),κ) ⟨a free head takes the modifier's priors through it⟩
 
 ∀ w ∈ W(c) : probe(w, κ(c)) ↦ evidence about c ⟨harvest-the-rejects : concept(w, κ(c)) of a REJECTED w constrains D(c)⟩
 W(c) seeded from the ARTIFACT ⟨invoked verb · declared inverse · deferred-to piece⟩ ≺ minted candidates
-    ⟨a real concept's term is FOUND ; mint is the LAST resort, ¬ the first⟩` as SkillExpression;
+    ⟨a real concept's term is FOUND ; mint is the LAST resort⟩` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
