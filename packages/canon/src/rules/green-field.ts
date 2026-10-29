@@ -12,7 +12,7 @@ export const greenField: Ruleset = {
         'Existing code and docs constrain work only where explicitly declared.',
       statement:
         'Treat existing code, records and docs as constraints only where a constraint is explicitly declared; everywhere else, shape the work by what it is for.',
-      why: 'What happens to exist is history, not requirement; reading it as a constraint carries its accidents into every new piece of work.',
+      why: 'What happens to exist is history; reading it as a constraint carries its accidents into every new piece of work.',
     },
     {
       name: 'green-field-clean-cutover',

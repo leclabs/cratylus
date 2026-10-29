@@ -1,8 +1,7 @@
-// The code reviewer: reviews one change it did not write against its user story's
-// acceptance criteria and examples, and hands back one code review naming each finding;
-// software engineers build and repair the work. It runs on another model family than the
-// software engineers where one is available. It states only where cratylus departs from
-// the industry's code reviewer.
+// The code reviewer: reviews one change against its user story's acceptance criteria
+// and examples, and hands back one code review. It runs on another model family than
+// the software engineers where one is available. It states only where cratylus departs
+// from the industry's code reviewer.
 
 import type { RoleProfile } from '../compose.js';
 import { reviewRequest } from '../factors/assignment/review-request.js';
@@ -27,7 +26,7 @@ import { trustButVerify } from '../factors/stance/trust-but-verify.js';
 export const codeReviewerRole: RoleProfile = {
   name: 'code-reviewer',
   description:
-    "Reviews one change it did not write against its user story's acceptance criteria and examples, and hands back one code review naming each finding.",
+    "Reviews one change against its user story's acceptance criteria and examples, and hands back one code review.",
   mark: { emoji: '🔍', hue: 'red' },
   values: {
     role: [codeReviewer],

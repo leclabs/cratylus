@@ -30,7 +30,7 @@ Kinds ≜ the closed kind set
 
 concept-record   ≜ ⟨meaning, term, factorization⟩
 precising-definition @ signify
-cite-by-ref ≜ composite stores factor-terms ∧ ¬restate factor-content
+cite-by-ref ≜ composite stores factor-terms
 CSF ≜ bipartite-normal-form: primitive↦⟨term,precising-definition⟩ by value ; composite↦⟨term,factor-terms⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
@@ -42,7 +42,7 @@ CSF(c) ≜ ( term(c) , { term(p) | p ∈ F(c) } ) ,  ¬prim(c)
 realize(k) fills factorization(k) ≜ CSF(k) ; meaning(k), term(k) preserved
 term(k) = ⊥ ⇒ realize(k) = ⊥
 
-CSF(c) never restates what term(c) carries ⟨minimal @ signify⟩
+CSF(c) minimal @ signify
 prose(c) ≜ render(CSF(c))
 CSF(c) ≽ prose(c)
 
