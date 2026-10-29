@@ -63,9 +63,7 @@ const baseFixture: Agent = {
     { value: 'maintenance ≜ a peer density', level: 'firm', slot: 'density' },
     { value: 'answer-only ≜ the answer', level: 'firm', slot: 'rationale' },
   ],
-  decisionRights: [
-    { value: 'P ≜ performs', level: 'fixed', slot: 'realization' },
-  ],
+  decisionRights: [{ value: 'P', level: 'fixed', slot: 'realization' }],
   autonomy: [
     {
       value: 'human-in-the-loop ≜ a person approves',

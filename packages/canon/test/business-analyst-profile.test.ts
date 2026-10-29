@@ -4,6 +4,7 @@
 
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';
+import type { FactorMeta } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { backbrief } from '../src/factors/deliverable/backbrief.js';
 import { domainModel } from '../src/factors/memory/domain-model.js';
@@ -55,9 +56,12 @@ const decided: Record<string, [string, (line: string) => boolean]> = {
   ),
 };
 
-/** The lines of an agent definition's `### <factor>` section. */
+/** The lines of an agent definition's `### <factor>` section, headed `### <factor>`
+ *  or, for a factor that names its framework, `### <factor> (<framework>)`. */
 function section(lines: readonly string[], factor: string): string[] {
-  const start = lines.indexOf(`### ${factor}`) + 1;
+  const { framework }: FactorMeta = MANIFEST[factor as Factor];
+  const heading = framework ? `### ${factor} (${framework})` : `### ${factor}`;
+  const start = lines.indexOf(heading) + 1;
   if (start === 0) return [];
   const end = lines.findIndex((l, i) => i >= start && /^#{1,3} /.test(l));
   return lines.slice(start, end === -1 ? undefined : end);

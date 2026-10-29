@@ -108,6 +108,9 @@ export const MANIFEST = {
     repertoire: 'fixed',
     level: 'firm',
     projection: 'text',
+    // Each value is a RAPID letter, named by the framework once where the factor
+    // renders; `–` is not a RAPID letter and keeps its precising definition.
+    framework: 'RAPID',
     slots: [
       { name: 'intent' },
       { name: 'priority' },

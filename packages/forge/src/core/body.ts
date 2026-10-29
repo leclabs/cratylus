@@ -65,7 +65,9 @@ function entryLine(entry: Entry, slots: readonly Slot[] | undefined): string {
  * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
  * `# <emoji> <name>` (`# <name>` with no mark), the description, then one
  * `## <Group>` per factor group in catalog order, and under it one `### <factor>`
- * per TEXT factor in catalog order, each held entry a line in held order. A factor
+ * per TEXT factor in catalog order — `### <factor> (<framework>)` for a factor
+ * whose values are the terms of a named framework, so the name is given once —
+ * each held entry a line in held order. A factor
  * the agent holds no entry of states no departure, and renders no section; a group
  * none of whose text factors holds an entry is omitted. A `binding` factor is never
  * text — it compiles to harness settings — and an `attribute` factor occupies no
@@ -94,7 +96,8 @@ export function agentBody(a: Agent, manifest: FactorManifest): string {
     for (const [factor, meta] of factors) {
       const entries = entriesOf(a, factorField(factor));
       if (entries.length === 0) continue;
-      sections.push(`### ${factor}`, '');
+      const title = meta.framework ? `${factor} (${meta.framework})` : factor;
+      sections.push(`### ${title}`, '');
       for (const entry of entries) sections.push(entryLine(entry, meta.slots));
       sections.push('');
     }

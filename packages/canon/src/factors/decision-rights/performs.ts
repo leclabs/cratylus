@@ -1,3 +1,3 @@
 import type { DecisionRights } from '../../manifest.js';
 
-export const performs: DecisionRights = `P ≜ performs`;
+export const performs: DecisionRights = `P`;

@@ -359,6 +359,13 @@ export interface FactorMeta {
   /** The named coordinates of a `slots` factor, in order. Absent otherwise. */
   readonly slots?: readonly Slot[];
   /**
+   * The framework whose terms the factor's values are, by its name (e.g.
+   * `RAPID`): named once where the factor renders, so each value carries the
+   * meaning that name gives it and needs no precising definition of its own.
+   * Absent ⇒ the values carry their meaning by their own terms.
+   */
+  readonly framework?: string;
+  /**
    * May an agent hold this factor EMPTY? Absent ⇒ it may (`[]`).
    *
    * Catalog DATA, not a type-level special case. Whether the ideal agent may
