@@ -56,22 +56,23 @@ sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
   means what was intended; decides meaning only, and backbriefs the product owner in the industry's
-  terms until the product owner concurs.
+  terms.
 - **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
   software engineers and its examples to the test engineer, joins the changes as the story's risk
   calls for (Ship, Show or Ask), and hands back the outcome.
 - **software-engineer** — realizes one task and hands back one change.
 - **test-engineer** — writes an acceptance test for each example and gives the verdict whether
   the realization passes.
-- **code-reviewer** — reviews one change it did not write against its user story's acceptance
-  criteria and examples, and hands back one code review naming each finding.
+- **code-reviewer** — reviews one change against its user story's acceptance criteria and examples,
+  and hands back one code review.
 
 The test engineer and the code reviewer run on another model family than the software engineers
 where one is available. A role profile (`src/roles/<role>.ts`) states a value for every factor, an
 explicitly empty set counting as one, and its mark; `agents/<role>.ts` is `holder(<role>Role)`:
 named for the role, carrying nothing beyond it, its mark the role's. `holder` refuses a profile missing
 a factor, a scalar without exactly one value, a required slot not filled exactly once (an objective's
-drive is optional, stated only where it departs), and empty guardrails.
+drive is optional, stated only where it departs, and a role holds a decision-rights letter only in the
+decision classes it has a part in), and empty guardrails.
 
 kino, nico and mav are personas over the business analyst role, each named for its expertise (kino
 film production and generative video, nico terminology, giving each concept its Cratylic name, mav
@@ -116,7 +117,7 @@ for a task with no story the task, says whether the work was `merged` or `droppe
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
 `changes`. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
-out, in the industry's terms until the product owner concurs — so it carries no contract. An agent
+out, in the industry's terms — so it carries no contract. An agent
 harness binds the deliverable as its own output schema and
 shows every session, each turn, the assignment form of each agent that takes one: one fenced
 `assignment` JSON block in the dispatch text.

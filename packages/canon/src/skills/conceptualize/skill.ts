@@ -17,7 +17,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const conceptualize: Skill = {
   name: 'conceptualize',
-  description: `Find the concepts a source holds before any is named — which are primitive, what each means, and which concepts each of the others is built from, so each is distinct and together they cover the source. Reach for it when a design, a document or a domain has to be broken into concepts before each gets its Cratylic name; it decides no term and no form.`,
+  description: `Find the concepts a source holds before any is named — which are primitive, what each means, and which concepts each of the others is built from, so each is distinct and together they cover the source. Reach for it when a design, a document or a domain has to be broken into concepts before each gets its Cratylic name.`,
   formalBlock:
     `sources             ≜ input material ⟨multi-modal · bears substrate-boundaries⟩
 concept-record      ≜ ⟨ meaning , term? , factorization? ⟩

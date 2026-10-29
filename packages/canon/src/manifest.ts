@@ -109,28 +109,36 @@ export const MANIFEST = {
     level: 'firm',
     projection: 'text',
     // Each value is a RAPID letter, named by the framework once where the factor
-    // renders; `–` is not a RAPID letter and keeps its precising definition.
+    // renders. A role holds a letter only in the classes it has a part in, so
+    // every slot is optional.
     framework: 'RAPID',
     slots: [
-      { name: 'intent' },
-      { name: 'priority' },
+      { name: 'intent', optional: true },
+      { name: 'priority', optional: true },
       {
         name: 'meaning',
         precisingDefinition:
           'concepts, user stories and examples, and accepting a realization',
+        optional: true,
       },
-      { name: 'constraint', precisingDefinition: 'decisions on realization' },
+      {
+        name: 'constraint',
+        precisingDefinition: 'decisions on realization',
+        optional: true,
+      },
       {
         name: 'realization',
         precisingDefinition:
           'how the work is built, its acceptance tests included, and joined',
+        optional: true,
       },
       {
         name: 'verdict',
         precisingDefinition:
           "whether a realization passes its acceptance tests, and whether a change's code review approves it",
+        optional: true,
       },
-      { name: 'release' },
+      { name: 'release', optional: true },
       {
         name: 'sign-off',
         precisingDefinition:

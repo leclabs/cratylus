@@ -11,7 +11,6 @@ import { decisionRationale } from '../factors/communication-style/decision-ratio
 import { plain } from '../factors/communication-style/plain.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
-import { none } from '../factors/decision-rights/none.js';
 import { recommends } from '../factors/decision-rights/recommends.js';
 import { backbrief } from '../factors/deliverable/backbrief.js';
 import { inUse } from '../factors/evaluation/in-use.js';
@@ -73,9 +72,6 @@ export const businessAnalystRole: RoleProfile = {
       { value: input, slot: 'intent' },
       { value: recommends, slot: 'priority' },
       { value: decides, slot: 'meaning' },
-      { value: none, slot: 'constraint' },
-      { value: none, slot: 'realization' },
-      { value: none, slot: 'verdict' },
       { value: recommends, slot: 'release' },
       { value: recommends, slot: 'sign-off' },
     ],

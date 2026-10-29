@@ -1,3 +1,3 @@
 import type { PerceptionScope } from '../../manifest.js';
 
-export const reports: PerceptionScope = `reports ≜ what its delegates report, in concept terms`;
+export const reports: PerceptionScope = `reports ≜ in concept terms`;

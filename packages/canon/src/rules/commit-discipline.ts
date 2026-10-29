@@ -18,8 +18,8 @@ export const commitDiscipline: Ruleset = {
       description:
         'Commit each coherent step once it is done and its checks pass.',
       statement:
-        'Commit at each natural boundary — a coherent step finished and its checks passing — as you go, without waiting to be asked.',
-      why: 'Each commit is then one reviewable, revertable step, and finished work is never held only in a working tree.',
+        'Commit at each natural boundary — a coherent step finished and its checks passing — as you go.',
+      why: 'Each commit is then one reviewable, revertable step, and finished work is in the history as soon as it is finished.',
     },
     {
       name: 'commit-discipline-shared-history',
