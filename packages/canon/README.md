@@ -51,12 +51,11 @@ development, is adopted by the project's conventions (the offered `behaviour-dri
 ruleset), not by the agents. The departures follow the domain model's records: decision rights as
 one RAPID letter per decision class, autonomy as mission command, reach open by default (so no role
 narrows it), the domain model as every reader's memory, a user story free-form and unestimated,
-sign-off, Ship/Show/Ask, tailoring and architecture decision records as cratylus records them.
+sign-off and tailoring as cratylus records them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
-  means what was intended; decides meaning only, and backbriefs the product owner in the industry's
-  terms.
+  means what was intended; decides meaning only, and backbriefs the product owner.
 - **tech-lead** — holds a user story's realization: decides how it is built, hands its tasks to
   software engineers and its examples to the test engineer, joins the changes as the story's risk
   calls for (Ship, Show or Ask), and hands back the outcome.
@@ -117,7 +116,7 @@ for a task with no story the task, says whether the work was `merged` or `droppe
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
 `changes`. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
-out, in the industry's terms — so it carries no contract. An agent
+out — so it carries no contract. An agent
 harness binds the deliverable as its own output schema and
 shows every session, each turn, the assignment form of each agent that takes one: one fenced
 `assignment` JSON block in the dispatch text.
