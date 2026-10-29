@@ -138,7 +138,7 @@ describe('typed handoffs', () => {
 });
 
 describe('the business analyst', () => {
-  it("composes its ordering, decisiveness and elevation as plain values at their factor's default level", () => {
+  it("composes its ordering, decisiveness and conceptual thinking as plain values at their factor's default level", () => {
     const ordering = businessAnalyst.communicationStyle.find(
       (e) => e.slot === 'ordering',
     );
@@ -148,10 +148,10 @@ describe('the business analyst', () => {
       (e) => termOf(e.value) === 'decisive',
     );
     expect(decisive?.level).toBe('firm');
-    const elevation = businessAnalyst.stance.find(
-      (e) => termOf(e.value) === 'conceptual-elevation',
+    const conceptualThinking = businessAnalyst.stance.find(
+      (e) => termOf(e.value) === 'conceptual-thinking',
     );
-    expect(elevation?.level).toBe('firm');
+    expect(conceptualThinking?.level).toBe('firm');
     const [deliverable] = businessAnalyst.deliverable;
     expect(deliverable && termOf(deliverable.value)).toBe('backbrief');
   });
