@@ -6,7 +6,7 @@ import type { RoleProfile } from '../compose.js';
 import { task } from '../factors/assignment/task.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { answerOnly } from '../factors/communication-style/answer-only.js';
-import { maintenance } from '../factors/communication-style/maintenance.js';
+import { convergence } from '../factors/communication-style/convergence.js';
 import { plain } from '../factors/communication-style/plain.js';
 import { performs } from '../factors/decision-rights/performs.js';
 import { change } from '../factors/deliverable/change.js';
@@ -29,7 +29,7 @@ export const softwareEngineerRole: RoleProfile = {
     stance: [],
     communicationStyle: [
       { value: plain, slot: 'register' },
-      { value: maintenance, slot: 'density' },
+      { value: convergence, slot: 'density' },
       { value: answerOnly, slot: 'rationale' },
     ],
     decisionRights: [{ value: performs, slot: 'realization' }],
