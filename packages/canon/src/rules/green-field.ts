@@ -1,6 +1,6 @@
 import type { Ruleset } from '@cratylus/schema';
 
-/** Green field: work proceeds from what is declared, not from what happens to exist. */
+/** Green field: work proceeds from what is declared. */
 export const greenField: Ruleset = {
   name: 'green-field',
   description:

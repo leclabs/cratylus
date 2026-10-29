@@ -7,8 +7,8 @@ Read the domain model in `design/model/` next, `purpose.md` and then each bounde
 ## Working conventions
 
 - **Practice:** this project practises behaviour-driven development.
-- **Branching:** feature branches branch from `develop`, are short-lived, and merge into `develop` locally, without a pull request. A release is a pull request from `develop` into `main`, and it is the product owner's.
-- **One check:** `pnpm check` builds, lints, typechecks, runs the deterministic tests and runs the model check (`cratylus model check`), and fails when any of them fails. The `pre-push` hook runs it, and CI runs exactly it after checkout and `pnpm install`, with nothing before or after. Every dependency it needs is declared in the workspace's manifests.
+- **Branching:** feature branches branch from `develop`, are short-lived, and merge into `develop` locally. A release is a pull request from `develop` into `main`, and it is the product owner's.
+- **One check:** `pnpm check` builds, lints, typechecks, runs the deterministic tests and runs the model check (`cratylus model check`), and fails when any of them fails. The `pre-push` hook runs it, and CI runs exactly it after checkout and `pnpm install`. Every dependency it needs is declared in the workspace's manifests.
 - **Tests cover cratylus's own deterministic code:** the check tests cratylus's code and the files it produces; agent behaviour is judged in real use. The supported omp version is >=18.12.0; after an omp upgrade the product owner or the business analyst tries one real session by hand.
 - **Every example has its acceptance test:** an example in `design/model` is bound by the test titled `<context>/<concept>: <example name>`, unless it is marked judged in review; the model check fails for an example no test names and for a test naming an example the model does not have.
 - **Version history is controlled by review:** a change to existing records is judged in review.

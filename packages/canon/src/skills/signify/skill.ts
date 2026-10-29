@@ -64,7 +64,7 @@ c ∉ dom(τ) ⇒ ∄ n : ⟨n, κ(c)⟩ ∈ Terms assigned c :
 ∃ d : { n : ¬circ(n,c) } all fail on d ALONE ⇒ d ∉ D(c) ∧ ∃ cᵢ ≠ c : d ∈ D(cᵢ) ⟨the property hangs off the wrong noun⟩
     ↦ conceptualize ⟨re-partition, then cᵢ names EASILY ; a losing STREAK on one d proves misattribution⟩
 
-¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)) ⟨fired reads n with κ's name and subject only : ∄ sibling · ∄ menu⟩
+¬covers(n, cᵢ) ⇒ evidence about fired(n, κ(cᵢ)) ⟨fired reads n with κ's name and subject only⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is fit for cⱼ once covers(n, cⱼ) is established independently ∨ n stays rejected⟩
 
 precising-definition(c) ≜ the precising definition closing Δ(cratylic(c), c) @ cratylic context design ⟨what holds stated : lacks(cratylic(c), c) supplied · adds(cratylic(c), c) narrowed⟩

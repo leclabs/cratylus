@@ -37,7 +37,7 @@ free(h,κ) ⇔ ∄ c' ∈ dom(τ) : κ(c') = κ ∧ τ(c') = h ∧ c' ≠ c ⟨h
 fired(w,κ) ≜ priors(w,κ)
 fired(a, κ) = dec(a, κ) , ⟨a, κ⟩ ∈ dom(dec)
 concept(w,κ) ≜ cl(fired(w,κ))
-probe(w,κ) ≜ ⟨ fired(w,κ) · concept(w,κ) ⟩ ⟨w with κ's name and subject only : ∄ sibling · ∄ menu · open question⟩
+probe(w,κ) ≜ ⟨ fired(w,κ) · concept(w,κ) ⟩ ⟨w with κ's name and subject only : open question⟩
 probe(w,κ) ↾ W ≜ w read in κ amid W ⟨the distractors' priors leak into the read ⇒ CONTRAST⟩
 experiment(c) ≜ { w ∈ W(c) | covers(w, c) ↾ W(c) } ⊨ DIAGNOSTIC ⟨w read in κ(c) amid W(c) ; narrows W(c)⟩
 coverage : { w ∈ Names | fired(w, κ(c)) ≠ ∅ ∧ covers(w, c) } ⊆ W(c)
