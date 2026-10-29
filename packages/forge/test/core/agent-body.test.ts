@@ -1,9 +1,10 @@
 // The agent BODY format: `# <emoji> <name>`, the description, then one `## <Group>`
 // per factor group in catalog order and one `### <factor>` per TEXT factor, each
-// held entry one line in held order. A binding factor and an attribute factor are
-// never text; a group with no text factor is omitted; a factor with no entry states
-// no departure and renders no section, and a group whose text factors are all empty
-// is omitted.
+// held entry one line in held order; a factor whose values are a framework's terms
+// names the framework once, at its heading. A binding factor and an attribute
+// factor are never text; a group with no text factor is omitted; a factor with no
+// entry states no departure and renders no section, and a group whose text factors
+// are all empty is omitted.
 
 import type { Agent, FactorManifest } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
@@ -25,6 +26,7 @@ const CATALOG = {
     arity: 'slots',
     level: 'fixed',
     projection: 'text',
+    framework: 'RAPID',
     slots: [
       { name: 'intent', precisingDefinition: 'what is wanted and why' },
       { name: 'verdict' },
@@ -67,9 +69,9 @@ const agent = {
   key: null,
   role: [{ value: 'code-reviewer ≜ judges a change', level: 'fixed' }],
   decisionRights: [
-    { value: 'I ≜ gives input', level: 'fixed', slot: 'intent' },
+    { value: 'I', level: 'fixed', slot: 'intent' },
     {
-      value: 'D ≜ decides',
+      value: 'D',
       level: 'fixed',
       slot: 'verdict',
       note: 'in verdict',
@@ -109,10 +111,10 @@ describe('agentBody — the projected text of an agent', () => {
         '',
         '## Authority',
         '',
-        '### decision-rights',
+        '### decision-rights (RAPID)',
         '',
-        '- intent (what is wanted and why): **I** — gives input (fixed)',
-        '- verdict: **D** (in verdict) — decides (fixed)',
+        '- intent (what is wanted and why): **I** (fixed)',
+        '- verdict: **D** (in verdict) (fixed)',
         '',
       ].join('\n'),
     );
