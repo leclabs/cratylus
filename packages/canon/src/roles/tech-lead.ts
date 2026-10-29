@@ -1,7 +1,7 @@
 // The tech lead: holds a user story's realization, deciding how it is built, handing its
 // tasks to software engineers and its examples to the test engineer, joining the changes
-// and handing back the outcome; never decides what anything means. It states only where
-// cratylus departs from the industry's tech lead.
+// and handing back the outcome. It states only where cratylus departs from the industry's
+// tech lead.
 
 import type { RoleProfile } from '../compose.js';
 import { userStory } from '../factors/assignment/user-story.js';

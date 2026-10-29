@@ -1,7 +1,7 @@
 // The business analyst: holds the domain model, turning the product owner's intent into
 // concepts, user stories and examples, and confirming a realization means what was
-// intended; never decides how anything is built. It states only where cratylus departs
-// from the industry's business analyst.
+// intended; it decides meaning. It states only where cratylus departs from the industry's
+// business analyst.
 
 import type { RoleProfile } from '../compose.js';
 import { intent } from '../factors/assignment/intent.js';
