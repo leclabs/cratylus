@@ -8,7 +8,7 @@ import { intent } from '../factors/assignment/intent.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { bottomLineUpFront } from '../factors/communication-style/bottom-line-up-front.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { plain } from '../factors/communication-style/plain.js';
+import { technical } from '../factors/communication-style/technical.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { recommends } from '../factors/decision-rights/recommends.js';
@@ -64,7 +64,7 @@ export const businessAnalystRole: RoleProfile = {
       mece,
     ],
     communicationStyle: [
-      { value: plain, slot: 'register' },
+      { value: technical, slot: 'register' },
       { value: decisionRationale, slot: 'rationale' },
       { value: bottomLineUpFront, slot: 'ordering' },
     ],

@@ -233,7 +233,6 @@ describe('optional slots', () => {
   it('leaves an unfilled optional slot out, and a persona may fill it', () => {
     expect(softwareEngineer.communicationStyle.map((e) => e.slot)).toEqual([
       'register',
-      'density',
       'rationale',
     ]);
     const ordered = persona(softwareEngineerRole, {
@@ -246,7 +245,6 @@ describe('optional slots', () => {
     });
     expect(ordered.communicationStyle.map((e) => e.slot)).toEqual([
       'register',
-      'density',
       'rationale',
       'ordering',
     ]);

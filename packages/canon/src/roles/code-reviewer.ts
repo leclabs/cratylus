@@ -6,9 +6,8 @@
 import type { RoleProfile } from '../compose.js';
 import { reviewRequest } from '../factors/assignment/review-request.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
-import { convergence } from '../factors/communication-style/convergence.js';
 import { decisionRationale } from '../factors/communication-style/decision-rationale.js';
-import { plain } from '../factors/communication-style/plain.js';
+import { technical } from '../factors/communication-style/technical.js';
 import { decides } from '../factors/decision-rights/decides.js';
 import { input } from '../factors/decision-rights/input.js';
 import { codeReview } from '../factors/deliverable/code-review.js';
@@ -35,8 +34,7 @@ export const codeReviewerRole: RoleProfile = {
     procedure: [],
     stance: [impartial, trustButVerify, adversarial],
     communicationStyle: [
-      { value: plain, slot: 'register' },
-      { value: convergence, slot: 'density' },
+      { value: technical, slot: 'register' },
       { value: decisionRationale, slot: 'rationale' },
     ],
     decisionRights: [
