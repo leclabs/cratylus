@@ -59,8 +59,8 @@ const baseFixture: Agent = {
   procedure: [{ value: 'test-first ≜ checks before the build', level: 'firm' }],
   stance: [{ value: stanceA, level: 'firm' }],
   communicationStyle: [
-    { value: 'plain ≜ ordinary words', level: 'firm', slot: 'register' },
-    { value: 'convergence', level: 'firm', slot: 'density' },
+    { value: 'formal ≜ ceremonious words', level: 'firm', slot: 'register' },
+    { value: 'casual', level: 'firm', slot: 'density' },
     { value: 'answer-only ≜ the answer', level: 'firm', slot: 'rationale' },
   ],
   decisionRights: [{ value: 'P', level: 'fixed', slot: 'realization' }],
