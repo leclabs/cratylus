@@ -1,5 +1,17 @@
 # @cratylus/forge
 
+## 0.21.0
+
+### Minor Changes
+
+- 6bcc373: Decision rights are invoked as RAPID by its name. A factor's metadata may now name the framework its values are the terms of (`framework`), and the projected agent text names it once, at the factor's heading: `### decision-rights (RAPID)`. Canon's decision-rights values `D`, `I`, `R`, `P` and `A` are now bare letters, carrying their meaning by RAPID's name. The slots' precising definitions are unchanged.
+
+### Patch Changes
+
+- Updated dependencies [c4c9c3a]
+- Updated dependencies [6bcc373]
+  - @cratylus/schema@0.14.0
+
 ## 0.20.0
 
 ### Minor Changes
