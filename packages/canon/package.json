@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/canon",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "description": "The canon cratylus ships — its agents, skills, rules and the factors' values, each concept as its Cratylic name with its precising definition where it needs one, in its bounded context, as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "engines": {
