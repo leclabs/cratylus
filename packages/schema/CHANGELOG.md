@@ -1,5 +1,15 @@
 # @cratylus/schema
 
+## 0.14.0
+
+### Minor Changes
+
+- 6bcc373: Decision rights are invoked as RAPID by its name. A factor's metadata may now name the framework its values are the terms of (`framework`), and the projected agent text names it once, at the factor's heading: `### decision-rights (RAPID)`. Canon's decision-rights values `D`, `I`, `R`, `P` and `A` are now bare letters, carrying their meaning by RAPID's name. The slots' precising definitions are unchanged.
+
+### Patch Changes
+
+- c4c9c3a: The density every agent that held `maintenance` reads is now `convergence`, by its name alone. The communication-style value `maintenance` ("a peer's density, in the notation that peer works in"), which named the opposite of its concept in Communication Accommodation Theory, is removed; `convergence`, text `convergence`, takes its place for the tech lead, the software engineer, the test engineer, the code reviewer, mav and nico. The stance value `llmNative` (`llm-native`), which no agent held, is removed. The schema's comments on `Repertoire` quote the `cratylism` axiom as it now stands.
+
 ## 0.13.0
 
 ### Minor Changes

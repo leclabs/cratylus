@@ -1,5 +1,33 @@
 # @cratylus/canon
 
+## 0.23.0
+
+### Minor Changes
+
+- 67df142: Each canon value, role description and skill description now states only cratylus's departure from its name, and nothing as a prohibition. Twenty-three values are invoked by their name alone — the action scopes `none`, `run-checks`, `commit-own-paths` and `edit-own-outputs`; the autonomy `principal`; the communication style `provenance-attribution`; the expertise `research-investigation`, `software-delivery` and `specification-by-example`; the guardrail `accountability`; the models `fast`, `frontier`, `low`, `medium`, `high`, `xhigh` and `max`; the objectives `correctness` and `review-accuracy`; the perception scopes `outside-research` and `work-product`; and the stances `dry` and `user-centered` — and the stance `llm-native` keeps only "writes for a model reader: clear, direct, explaining why". The guardrail values `never-repairs` and `no-implementation` are removed (breaking: a profile importing either no longer compiles); the code reviewer no longer holds `never-repairs`, its deliverable, a code review naming each finding, carrying what it hands back. The software engineer's description is "Realizes one task and hands back one change."; the `signify` skill's description asks for "an established term wherever one covers it", and the `materialize` skill's description no longer says "never restating them".
+- bbf86c0: The business analyst's stance invokes conceptual thinking by its name alone. The stance value `conceptual-elevation` ("works at meaning and design") is removed; `conceptualThinking`, text `conceptual-thinking`, takes its place.
+- c4c9c3a: The density every agent that held `maintenance` reads is now `convergence`, by its name alone. The communication-style value `maintenance` ("a peer's density, in the notation that peer works in"), which named the opposite of its concept in Communication Accommodation Theory, is removed; `convergence`, text `convergence`, takes its place for the tech lead, the software engineer, the test engineer, the code reviewer, mav and nico. The stance value `llmNative` (`llm-native`), which no agent held, is removed. The schema's comments on `Repertoire` quote the `cratylism` axiom as it now stands.
+- 00bf8c0: A role holds a RAPID letter only in the decision classes it has a part in, and its agent text lists only those. The decision-rights value `–` is removed, every decision-rights slot is optional, the software engineer lists only realization (`P`) and the business analyst no longer lists constraint, realization or verdict.
+
+  Five values keep only their departure: `backbrief ≜ in the industry's terms`, `handoff ≜ with the evidence that earns its result`, `own-task ≜ with its user story's examples`, `reports ≜ in concept terms` and `personal ≜ reserved for ipseic agents`. The code reviewer is described as "Reviews one change against its user story's acceptance criteria and examples, and hands back one code review."
+
+  The skills state their laws by what holds, with no contrast clause: signify's term assignment is injective within each context, a rejection is evidence about what the name fires, and a name freed from one concept is fit for another once it covers it; exemplify's sources are the material the distinctions are drawn over; probe's priors are unpacked from the term with its context's name and subject, a mint is settled through signify, a probe is measured as a family over the reader's knowledge, the frame is varied across runs, every candidate is swept with the winner included, and a mint is the last resort; formalize extends its notation table with a new symbol and is described without "no prose that explains"; materialize's cite-by-ref stores the factor terms and a canonical form is minimal; conceptualize is described without "it decides no term and no form"; signify's verbatim artefact has its Cratylic names settled.
+
+  The commit-discipline rule commits at each natural boundary as you go, so finished work is in the history as soon as it is finished; the green-field rule's reason reads "What happens to exist is history; reading it as a constraint carries its accidents into every new piece of work."
+
+- 6bcc373: Decision rights are invoked as RAPID by its name. A factor's metadata may now name the framework its values are the terms of (`framework`), and the projected agent text names it once, at the factor's heading: `### decision-rights (RAPID)`. Canon's decision-rights values `D`, `I`, `R`, `P` and `A` are now bare letters, carrying their meaning by RAPID's name. The slots' precising definitions are unchanged.
+- 26544af: Every agent's register is `technical`, by its name alone: each established term is named, never explained. The communication-style value `plain`, the residue of the retired layman register, is removed, and `technical`, text `technical`, takes its place for every role and persona. The communication-style value `convergence` is removed with it: the technical register carries the density between peers, so the tech lead, the software engineer, the test engineer, the code reviewer, mav and nico hold no density value.
+
+### Patch Changes
+
+- f8414f7: The prime principle each signification skill opens with invokes `cratylism` by its name, which carries the naturalist thesis: a Cratylic name is FOUND, and coined exactly where no established term covers the concept, and the carry clause reads `intrinsic`. The fresh read in signify and probe is stated as reading the term with its context's name and subject only, probe's still an open question.
+- 675f849: `ship-show-ask`, `architecture-decision-record`, the `plain` register, the `backbrief` deliverable and the `generative-video` expertise are invoked by their names alone. Their glosses restated what the name, or a value the same agent already holds, carries, or carried this repository's own convention into every project canon is installed in.
+- 831743c: The `honesty` guardrail is invoked by its name alone. Its gloss, "calls what is not recorded unknown", is gone, so no agent is primed to treat what no record states as unknown.
+- 86a21e0: The last glosses that restated their name are cut to cratylus's departure. The `parsimony` and `delivery` objectives are invoked by their names alone. `ship-show-ask` reads "Ask, by the product owner"; `architecture-decision-record` reads "edited in place when its decision changes"; the `plain` register reads "in the context's own terms"; and the `examples` assignment reads "to bind".
+- Updated dependencies [c4c9c3a]
+- Updated dependencies [6bcc373]
+  - @cratylus/schema@0.14.0
+
 ## 0.22.0
 
 ### Minor Changes
