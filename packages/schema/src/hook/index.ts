@@ -1,42 +1,24 @@
 // `@cratylus/schema/hook` — the SHAPE of a lifecycle binding, and NOT its
 // vocabulary.
 //
-// The shape lives here; the names live in the canon.
+// The shape lives here; the names live in the canon — `@cratylus/canon`'s
+// `CANONICAL_EVENTS`, one declaration every other site derives or receives. A
+// package that needs a VOCABULARY takes it from the one home that declares it.
+// `CapabilityName` states that a capability HAS a name and stops; {@link EventName}
+// is its peer and stops in the same place.
 //
-// This module held the NAMES until 2026-08-05 — 28 of them, emitted from a sibling
-// `hook.schema.json` by a sibling generator — while `runtime/src/events.ts` held the
-// same 28, hand-authored, identical as sets AND in order, with nothing enforcing it.
-// That is the IDENTICAL defect the `schema → runtime` repair fixed one axis over: a
-// package reaching for a VOCABULARY and being handed one by whichever module
-// happened to spell it. `CapabilityName` states that a capability HAS a name and
-// stops; {@link EventName} is its peer and stops in the same place. The members are
-// the canon's — `@cratylus/canon`'s `CANONICAL_EVENTS`.
+// `vcs.commit.post` is an ordinary canon member carrying `substrate: 'git'`: an
+// open `EventName` needs no union to admit a git-substrate event.
 //
-// WHAT DISSOLVED WITH THE ENUM. `SubstrateEvent = CanonicalEvent | 'vcs.commit.post'`
-// existed only because the enum was CLOSED: a git-substrate event had no literal to
-// be, so the union widened by exactly one string. With an open `EventName` there is
-// nothing to widen — `vcs.commit.post` is an ordinary canon member carrying
-// `substrate: 'git'`, and the union, the generator and the JSON schema are gone.
-//
-// WHAT DISSOLVED WITH `matcher` (2026-08-05). `Hook` and `HookDeclaration` each carried a
-// `matcher`, and this package described the one field THREE ways at once: the
-// `HarnessMechanism` law below (a mechanism lives HERE and NEVER on the source
-// declaration), `HookDeclaration.matcher` (documented with a claude tool-name regex as its own
-// example), and the emitted `Hook.matcher` (a harness-agnostic glob). The third
-// described a UNION of two unlike things — path-glob narrowing, genuinely
-// harness-agnostic, and tool-name narrowing, harness-native — and zero path-glob
-// matchers existed in the canon, so parsimony deletes the field rather than
-// picking one of its senses. A future path need arrives as its own field, never as
-// an overloaded `matcher`.
-//
-// WHAT REPLACED IT is not a tool vocabulary. Tool sets are OPEN-WORLD (MCP servers
-// add tools at run time, users add their own, two harnesses overlap only in
-// shell/file primitives), so a closed enum over them is permanently incomplete. The
-// declaration names the ACT instead — `product-owner.consult.pre`, `subagent.dispatch.pre` —
-// which is an ordinary member of the lifecycle vocabulary, and the adapter COMPUTES
-// the native pair ⟨event, selector⟩ from it ({@link NativeBinding}). Declaration-level
-// harness-neutrality is structural after that: there is no field left for a vendor
-// tool name to sit in.
+// A HOOK DECLARATION NAMES AN ACT, NEVER A TOOL. Tool sets are OPEN-WORLD (MCP
+// servers add tools at run time, users add their own, two harnesses overlap only in
+// shell/file primitives), so a closed enum over them would be permanently
+// incomplete. The declaration names the ACT instead — `product-owner.consult.pre`,
+// `subagent.dispatch.pre` — which is an ordinary member of the lifecycle vocabulary,
+// and the adapter COMPUTES the native pair ⟨event, selector⟩ from it
+// ({@link NativeBinding}). Declaration-level harness-neutrality is structural: there
+// is no field for a vendor tool name to sit in. A path-scoped need would arrive as a
+// field of its own.
 //
 // A LEAF module by construction: it imports nothing.
 
@@ -72,11 +54,8 @@ export type Substrate = 'harness' | 'git';
  * before a `HarnessAdapter.hooks()` projects it onto a harness's native settings
  * surface.
  *
- * HAND-AUTHORED since 2026-08-05. It was emitted from `hook.schema.json`, and the
- * generator's whole payload beyond this interface was the event enum — a JSON
- * file, a generator, an emitted union and a `gen` script, all ceremony around a
- * vocabulary that was never this package's to hold. The shape is seven fields and
- * is now authored where every other shape in this package is.
+ * Hand-authored, as every other shape in this package is: seven fields, with the
+ * event vocabulary left to the canon.
  */
 export interface Hook {
   /** Stable identifier; usually the source filename without extension. */
@@ -98,9 +77,8 @@ export interface Hook {
  * THE SELECTOR IS COMPUTED, NEVER DECLARED. A canonical event like
  * `product-owner.consult.pre` names an ACT (about to put a question or a menu to the
  * product owner); on claude that act is `PreToolUse` narrowed to the tool that performs
- * it, and the tool's NAME is a vendor fact the adapter holds. A declaration that spelled it
- * would have chosen a face — which is exactly what one hook did, with
- * `matcher: 'AskUserQuestion|Agent|SendMessage'` sitting on a harness-agnostic shape.
+ * it, and the tool's NAME is a vendor fact the adapter holds. A declaration that
+ * spelled it would choose one harness's face on a harness-agnostic shape.
  *
  * MANY ACTS MAY SHARE ONE NATIVE EVENT, which is why this is a binding rather than
  * an entry in the plain `canonical → native` map: that map must reverse (native →
@@ -117,10 +95,9 @@ export interface NativeBinding {
    *
    * IT IS A FIELD, not a convention, because SILENCE IS THE DEFECT. A harness whose
    * selector cannot express the act's narrowing can FIRE `product-owner.consult.pre`
-   * and cannot NARROW it; an adapter used to drop the narrowing without a word and the hook
-   * ran on every tool call there. Declaring the loss beside the binding makes the
-   * report structural: the serializer has the sentence in hand at the only moment
-   * it could stay quiet.
+   * and cannot NARROW it, so the hook runs on every tool call there. Declaring the
+   * loss beside the binding makes the report structural: the serializer has the
+   * sentence in hand at the only moment it could stay quiet.
    */
   readonly unnarrowed?: string;
 }
@@ -130,8 +107,8 @@ export interface NativeBinding {
  * `realize(c, adapter)` yields and `inject` writes.
  *
  * Lives HERE, in the project register, and NEVER on the source declaration: it is a
- * function OF the adapter. A declaration carrying a command is a BEING holding one
- * FACE's bytes, which is why it could no longer have many faces.
+ * function OF the adapter. A declaration carrying a command would be a BEING holding
+ * one FACE's bytes, and could not have many faces.
  */
 export interface HarnessMechanism {
   /** The fire command — references the deployed worker path. */
