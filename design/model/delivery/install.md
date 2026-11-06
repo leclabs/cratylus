@@ -15,3 +15,10 @@ Then the harness offers exactly business-analyst, tech-lead, software-engineer, 
 Given no terminal
 When install runs at user scope naming only the harness
 Then it installs every agent and skill and completes
+
+### offers a ruleset added since the recorded choice
+
+Given an installation whose recorded choice predates a ruleset now offered
+When install runs again on a terminal without --rules
+Then it keeps the recorded choice and asks only about the newly offered rules
+And without a terminal it keeps the recorded choice and names the rules it did not offer
