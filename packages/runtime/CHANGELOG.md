@@ -1,5 +1,11 @@
 # @cratylus/runtime
 
+## 0.20.1
+
+### Patch Changes
+
+- 1eb7696: Source comments, the projected omp session module's comments and the package READMEs state what holds now, its rationale included; version control keeps what changed.
+
 ## 0.20.0
 
 ### Minor Changes

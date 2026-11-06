@@ -1,5 +1,11 @@
 # @cratylus/schema
 
+## 0.14.1
+
+### Patch Changes
+
+- 255d244: The schema's doc comments state what holds now, its rationale included; version control keeps what changed.
+
 ## 0.14.0
 
 ### Minor Changes
