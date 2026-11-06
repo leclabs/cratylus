@@ -24,14 +24,14 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field      | what it is                                                                                    |
-| ---------- | --------------------------------------------------------------------------------------------- |
-| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
-| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
-| `rulesets` | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)      |
-| `factors`  | the factors' values, filed one directory per factor                                           |
-| `agents`   | the composed agents: five generic holders of their roles, and three personas                  |
-| `skills`   | the skills — each a self-sufficient formal block plus the siblings it composes                |
+| field      | what it is                                                                                                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value                                                                                        |
+| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary                                                                                                     |
+| `rulesets` | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)                                                                                             |
+| `factors`  | the factors' values, filed one directory per factor                                                                                                                                  |
+| `agents`   | the composed agents: five generic holders of their roles, and three personas                                                                                                         |
+| `skills`   | the skills — each a self-sufficient formal block, citing related skills inside it at the borrowing term (`@ <skill>`); formalize alone composes siblings (conceptualize and signify) |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
 canon's agent design. The manifest rides the plugin rather than living in the projector, so the
