@@ -180,9 +180,8 @@ import { projectorCommands } from '@cratylus/forge/cli';
 
 `adapterByName` is the single selection point for a harness adapter. OMP is its one implementation;
 consumers depend on the adapter port and selector rather than on concrete rendering functions.
-The declaration types and `defineAgentPlugin` are [`@cratylus/schema`](../schema/README.md)'s.
-They are no longer forge's, and importing them from the projector was the
-inversion `schema` exists to end.
+The declaration types and `defineAgentPlugin` are [`@cratylus/schema`](../schema/README.md)'s,
+so the projector holds no declaration shape of its own.
 
 The other subpaths are `./harness-adapter` (the port and its staging constants), `./catalog` (the
 value catalogs of a plugin set), `./module-scan` and `./adapters/omp` (the OMP adapter).

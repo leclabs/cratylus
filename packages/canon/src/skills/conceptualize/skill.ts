@@ -1,19 +1,8 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
 
-// COMPOSES NOTHING, and that is the repair.
-//
-// This skill used to declare `composition: () => [exemplify, signify, materialize]` and import those
-// modules to do it. The thunk's only consumer is the trailing `Composed from …`
-// line of the projected SKILL.md (`forge/src/core/exemplify/skill-body.ts`), so each
-// import bought one sentence of provenance and cost a module-level cycle: the four
-// signification skills each claimed to be composed from the other three, and no one of
-// them could be read, taken or deployed alone.
-//
-// The relation those edges named is CITATION, not dependency: these skills RESTATE each
-// other's terms in different registers (prose here, signature there). A citation
-// belongs inside the block, at the term that borrows it (`@ <skill>`), where it needs
-// no import and cannot cycle. Composition is the caller's: an agent pipes these skills
-// in whatever order the work wants.
+// Composes nothing. Each skill this one relates to is cited inside its block, at the
+// term that borrows it (`@ <skill>`); composition is the caller's: an agent pipes these
+// skills in whatever order the work wants.
 
 export const conceptualize: Skill = {
   name: 'conceptualize',

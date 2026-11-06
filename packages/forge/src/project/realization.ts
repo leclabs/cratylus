@@ -37,11 +37,9 @@
 //
 // FIRE-ABILITY IS NOT SCOPABILITY. `realizable` answers "can the adapter fire `e`
 // at all"; a constraint composed into an agent needs the strictly stronger "can it
-// fire `e` FOR THAT AGENT". A global `Stop` fires and names nobody. Because there
-// was once no word for the second question, an adapter grew a private
-// `throw` to ask it — a second decision site, invisible because it was never a
-// missing string, only a missing distinction. Adapters DECLARE capability
-// (`realizes`, `scopes`); this module alone decides what a "cannot" means.
+// fire `e` FOR THAT AGENT". A global `Stop` fires and names nobody. Adapters DECLARE
+// capability (`realizes`, `scopes`); this module alone decides what a "cannot"
+// means, so no adapter holds a second decision site of its own.
 
 import type { EventName } from '@cratylus/schema/hook';
 import type { HarnessAdapter } from '../core/harness-adapter.js';

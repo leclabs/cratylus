@@ -56,7 +56,7 @@ import {
  * make the duplicate unrepresentable at the boundary — which sounds like the stronger
  * guarantee and is the weaker one: the collision would then be resolved by
  * last-write-wins inside the CALLER's `new Map(…)`, silently, at a site that reports
- * nothing and is no longer this module's to police. A shape that cannot express the
+ * nothing and is not this module's to police. A shape that cannot express the
  * defect cannot reject it; it can only lose it.
  */
 export interface PluginValueRoot {
@@ -118,18 +118,15 @@ export interface ValueEntry {
 /**
  * WHAT EVERY PLUGIN YIELDED: each namespace ⟼ its value entries, in root order.
  *
- * One plugin's catalog of values is now the map's VALUE — a bare
- * `readonly ValueEntry[]` — and its namespace is the KEY. The `{name, values}`
- * pair that used to carry both was a single entry of this map written out by hand, and
- * an array of those pairs is a map whose defining property is unenforced: it can hold a
+ * One plugin's catalog of values is the map's VALUE — a bare
+ * `readonly ValueEntry[]` — and its namespace is the KEY. An array of `{name, values}`
+ * pairs would be a map whose defining property is unenforced: it could hold a
  * namespace twice. Post-guard it cannot, so the type says so. `ReadonlyMap` and not
  * `Record` because a namespace is a plugin's own string, not a key this module coins,
  * and `Record<string, …>` invites `catalogs[ns]` on a value that may be absent.
  *
- * ORDER SURVIVES THE CHANGE: a `Map` iterates in insertion order, so `extends` position
- * is preserved exactly as the pair array preserved it. What does not survive is the caller's ability to read the i-th
- * result and assume it belongs to the i-th root; that correspondence was asserted in a
- * comment and is now asked for by name.
+ * ORDER IS KEPT: a `Map` iterates in insertion order, so `extends` position is
+ * preserved. A caller reads a root's result by its namespace, never by its position.
  *
  * The `Value` infix is load-bearing: `PluginCatalogs` would read as a catalog OF
  * plugins, which this is not. It is each plugin's catalog of values.

@@ -3,10 +3,10 @@
 //
 // Two stages read the plugin set's skills: projection renders each one, and
 // deploy emits the configuration their runtime faces carry into the host runtime
-// config. Each used to resolve them its own way, and two resolutions of one set are
-// two answers waiting to differ — a skill rendered from one plugin while its
-// configuration came from another. So the resolution lives here and both call it:
-// the configuration emitted is the one carried by the skills actually deployed.
+// config. Two resolutions of one set would be two answers waiting to differ — a skill
+// rendered from one plugin while its configuration came from another. So the
+// resolution lives here and both call it: the configuration emitted is the one
+// carried by the skills actually deployed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { join } from 'node:path';

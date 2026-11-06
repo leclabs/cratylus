@@ -54,7 +54,7 @@ asked):
 | ----------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Which agent harness                       | `--harness omp`                         | absent, and the host has no omp directory                                                       | none: refused                                            |
 | Which scope                               | `--scope <user\|project>`               | absent, on a terminal, where the project here is not your home                                  | user                                                     |
-| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                                    | the choice the last install recorded, else none          |
+| Which rules                               | `--rules <name,…\|none>`                | absent, on a terminal, where no install here recorded a choice, or of the rules offered since   | the choice the last install recorded, else none          |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | at user scope, a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
@@ -113,18 +113,25 @@ reads the project installation; elsewhere it reads yours.
 ### Which rules
 
 A rule is stated with why it holds, and your agents follow it in every session of every project; a
-ruleset is a named set of rules offered together (`behaviour-driven-development`, `gitflow`,
-`conventional-commits`, `commit-discipline`, `established-libraries`, `green-field`).
-`behaviour-driven-development` adopts that practice by its name alone. On a terminal, install offers each
-ruleset in turn: all its rules, rule by rule, or none, which is the default. `--rules <name,…>`
+ruleset is a named set of rules offered together (`behaviour-driven-development`,
+`context-engineering`, `gitflow`, `conventional-commits`, `commit-discipline`,
+`established-libraries`, `green-field`). `behaviour-driven-development` adopts that practice by its
+name alone, and `context-engineering` adopts ten principles of context engineering, each by its name.
+On a terminal, install offers each ruleset in turn: all its rules, rule by rule, or none, which is
+the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
 (`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
 ruleset or rule is refused, listing each ruleset with its rules.
 
-The choice is recorded in the root by rule name, and installing again keeps it without asking
-unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
-named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
-placed and the summary names choosing them as a next step.
+The choice is recorded in the root by rule name, with every rule you were offered, and installing
+again keeps it unless `--rules` says otherwise; a rule the installed version does not offer is
+dropped from it and named in the summary. A rule offered since the choice was recorded — a ruleset
+added to the canon after your first install — is asked about on a terminal, in the same way and
+alone, and what you take is added to the choice; a rule you were offered and declined is not asked
+about again. Without a terminal, or under `--yes`, the choice is kept, no rule offered since is
+placed, and the summary's `rules:` line names them with how to choose them; they are asked about
+at the next install on a terminal. With no choice recorded, no rule is placed and the summary names
+choosing them as a next step.
 
 ### Which model each tier and persona runs on
 
@@ -171,7 +178,7 @@ Where you have put something of your own at either of those places — `cratylus
 
 Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/config.yml`: a project installation writes no product owner's own setting (above). The models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
-**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
+**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that the new one does not. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
 **Session hooks.** The canon names 31 canonical lifecycle events; omp realizes 9 of them by a native event of its own. The rest have no native peer there and are refused or skipped with a warning rather than faked.
 
@@ -218,8 +225,8 @@ assignment of each agent that takes one.
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed
 for that agent, and, when asked, a command per agent in `~/.local/bin` linked to the launcher.
-Install now places nothing under `~/.omp/agent/personas/`. The next user install removes
-them: the files are pruned as files the deploy manifest records and this install no longer writes,
+Install places nothing under `~/.omp/agent/personas/`. The next user install removes
+them: the files are pruned as files the deploy manifest records and this install does not write,
 and each linked command the manifest records under `personaLinks` is unlinked while it still points
 into the harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
 removes them too.
@@ -273,7 +280,7 @@ An agent's definition names its own model role first, then the tier and effort i
 
 ## The host runtime config
 
-Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is read no more, and the next user install or uninstall takes its parts out.
+Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is not read, and the next user install or uninstall takes its parts out.
 
 ## Version skew
 
@@ -321,7 +328,7 @@ cratylus install [options]
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                                                                          |
 | `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project")                                                       |
-| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                                                                        |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, those offered since asked on a terminal; else asked on a terminal; without one, none)                                                               |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked) |
 | `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no product owner's own setting (default: at user scope, asked where the status line hides it) (choices: "show", "hide")                                |
 | `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead                                                                                                                                                                                                                                                          |

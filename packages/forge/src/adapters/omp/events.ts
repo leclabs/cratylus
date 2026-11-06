@@ -18,22 +18,21 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * THE THREE FALSE FRIENDS, each corrected here rather than in a comment nobody
  * reads at the call site:
  *
- * 1. **`turn.end` is `session_stop` — not `turn_end`, and no longer `agent_end`.**
+ * 1. **`turn.end` is `session_stop` — not `turn_end`, and not `agent_end`.**
  *    omp's "turn" is a MODEL turn: `TurnStartEvent`/`TurnEndEvent` carry a
  *    `turnIndex` that increments WITHIN one user exchange, so a hook on `turn_end`
- *    fires several times per exchange. That much was always right. What was wrong
- *    was the replacement.
+ *    fires several times per exchange.
  *
  *    `agent_end` is documented _"notification-only"_ and takes no result, so a
- *    turn-end hook could not REFUSE there — the best it could do was queue a
+ *    turn-end hook could not REFUSE there — the best it could do is queue a
  *    continuation with `sendUserMessage`, which is a steer wearing a bound's name.
  *    `session_stop` is omp's actual analogue of Claude's `Stop`, and it is not an
  *    analogy: its result type is `{decision?: "block"; reason?: string}`, whose own
  *    doc-comment reads _"Claude/Codex-compatible block decision"_. The event
  *    carries `messages`, `last_assistant_message`, `session_id` and —
  *    decisively — **`stop_hook_active`**, the re-entry flag the workers read and
- *    which `agent_end` has no field for, so the guard's own loop-safety was dead
- *    on this harness.
+ *    which `agent_end` has no field for, so the guard's own loop-safety would be
+ *    dead there.
  *
  *    Measured against the installed binary: a handler returning
  *    `{decision: "block", reason}` re-opened the turn and fired again with
@@ -47,9 +46,7 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  *    is `{type, turnIndex, timestamp}` — it realizes the MOMENT and carries no
  *    prompt text at all. `BeforeAgentStartEvent` carries `prompt: string`
  *    (`extensions/types.ts:655-660`), which is what a hook binding this event
- *    actually needs. The bootstrap's DELTA mapped this to `turn_start` and graded
- *    it `provide`; that was right about `turn_start` and had not yet weighed
- *    `before_agent_start`, which makes it `proxy`.
+ *    actually needs; it is graded `proxy`.
  *
  * 3. **`agent_start`/`agent_end` are the MAIN loop, not subagents.** They do not
  *    realize `subagent.*`; the `task` tool's `tool_call`/`tool_result` does, which
@@ -194,10 +191,9 @@ export const OMP_ENVELOPE_KIND: Readonly<
  * an envelope on stdin, a verdict on stdout — and that contract is their WIRE
  * FORMAT, not their harness. On claude the field arrives already spelled this way
  * because claude writes the envelope; here the shim writes it, so the shim owes it
- * the spelling the contract names. A `tool_name` of `ask` reaches the worker's
- * `case` and falls through to its `*)` allow branch, which is how a deployed,
- * opted-in, correctly-scoped pre-guard permitted every call it was installed to
- * judge.
+ * the spelling the contract names. A `tool_name` of `ask` would reach the worker's
+ * `case` and fall through to its `*)` allow branch, so a deployed, opted-in,
+ * correctly-scoped pre-guard would permit every call it is installed to judge.
  *
  * `Agent` carries `subagent.dispatch.pre` because the worker matches
  * `Agent|SendMessage` — one act, either spelling, and the first is enough.

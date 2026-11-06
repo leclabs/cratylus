@@ -1,11 +1,10 @@
-// Persona commands — RETIRED; what remains takes away the ones earlier installs linked.
+// Persona commands: what takes away the ones an earlier installation linked.
 //
-// An install used to link `<home>/.local/bin/<persona>` to the harness's generic
-// launcher, so a persona could be started by its name. Starting a session as an agent
-// now goes only through the harness itself (`omp --agent <name>`), so install links no
-// command and places no launcher. The links an earlier install placed or adopted are
-// still recorded in the harness's deploy manifest (`DeployManifest.personaLinks`), and
-// this module removes exactly those: install does so on every run, uninstall too.
+// Install links no `<home>/.local/bin/<persona>` command and places no launcher:
+// starting a session as an agent goes only through the harness itself
+// (`omp --agent <name>`). The links an earlier install placed or adopted are recorded
+// in the harness's deploy manifest (`DeployManifest.personaLinks`), and this module
+// removes exactly those: install does so on every run, uninstall too.
 //
 // THE BIN DIR IS NOT OURS. A link is ours only if it is RECORDED, and only while it is
 // still a symlink into this harness's own home, where the launcher it was linked to

@@ -20,9 +20,10 @@
 //   installation.json       what install did outside the root: its scope (user or
 //                           project; absent, user); the references it placed;
 //                           whether it created the project's harness directory; the
-//                           rules it installed, by name; and which
-//                           of the product owner's choices it has been answered, never
-//                           their values, which are the host's own settings
+//                           rules it installed, by name, and the rules it offered the
+//                           product owner; and which of the product owner's choices it
+//                           has been answered, never their values, which are the host's
+//                           own settings
 //
 // THE HARNESS'S OWN SURFACES ONLY REFER INTO IT. omp loads an extension package for
 // every project of a user from its plugin directory (`~/.omp/plugins`), and for one
@@ -118,6 +119,12 @@ export interface InstallationRecord {
    *  upgrade keeps. Absent where the canon offered no rulesets, or the choice was
    *  never made. */
   readonly rules?: readonly string[];
+  /** Every rule, by name, the product owner was offered when that choice was made or
+   *  last added to — chosen or declined — so a later install asks only about the
+   *  rules offered since. A rule offered since and not yet asked about is not in it.
+   *  Written with `rules`; absent in a record written before it, where every offered
+   *  rule not in `rules` counts as offered since. */
+  readonly offeredRules?: readonly string[];
   readonly references: readonly OwnedReference[];
   /** Set where a project installation created the project's harness directory
    *  (`<project>/.omp`): its uninstall removes that directory where it is left empty,
