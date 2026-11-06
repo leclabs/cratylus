@@ -200,7 +200,7 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
           '--quiet',
           '--return',
           '--command',
-          `cratylus ${args.join(' ')}`,
+          `stty cols 200 rows 50; cratylus ${args.join(' ')}`,
           '/dev/null',
         ],
         {
