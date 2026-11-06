@@ -741,13 +741,12 @@ export async function projectPluginSet(
   let hooks = 0;
   if (carried.length > 0) {
     const renderHooks = opts.adapter.hooks;
-    // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
-    // only the first. `hooks` returns a settings fragment (claude);
-    // `scopeActivatedSurface` returns modules placed per scope (omp, whose loader
-    // scans a dir and whose config root is profile-scoped). Reading the absence of
-    // the FORMER as "no surface at all" is what dropped all five of canon's
-    // session-scoped hooks on omp while that adapter could realize and narrow every
-    // event they name.
+    // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch knows both.
+    // `hooks` returns a settings fragment (claude); `scopeActivatedSurface` returns
+    // modules placed per scope (omp, whose loader scans a dir and whose config root is
+    // profile-scoped). Reading the absence of the FORMER as "no surface at all" would
+    // drop every one of canon's session-scoped hooks on omp, which can realize and
+    // narrow every event they name.
     const renderScopeActivated = opts.adapter.scopeActivatedSurface;
     if (!renderHooks && !renderScopeActivated) {
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
@@ -815,10 +814,8 @@ export async function projectPluginSet(
         }
       }
       // THE WORKERS ARE THE SAME BYTES ON EVERY HARNESS — only the registration
-      // differs — so they are emitted once, past the branch that chose it. They
-      // used to sit inside the settings-fragment arm, which is why a harness with a
-      // code surface would have shipped registrations pointing at workers that were
-      // never staged.
+      // differs — so they are emitted once, past the branch that chose it: a harness
+      // with a code surface ships its registrations with the workers they point at.
       if (registered) {
         for (const src of sources) {
           const id = src.hook.id ?? 'unnamed';

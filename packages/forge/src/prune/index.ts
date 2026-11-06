@@ -29,12 +29,11 @@ export type KindRecord = Record<string, string[]>;
  *
  * A tampered or hand-edited manifest must not be able to steer a delete out of
  * the roots it was given; that is why this exists and why the set is passed in by
- * the caller rather than derived from the record. One root was enough while every
- * destination sat under the harness home. It is not anymore: omp's destinations
- * are `../.agents/…`, a SIBLING of `.omp`, so every one of them resolved outside
- * the single root and was silently skipped — retired agents, retired skills and
- * stale launch specs accumulated forever, and the prune reported nothing removed
- * because nothing was a candidate.
+ * the caller rather than derived from the record. One root is not enough: omp's
+ * destinations are `../.agents/…`, a SIBLING of `.omp`, so under the harness home
+ * alone every one of them would resolve outside the root and be silently skipped —
+ * retired agents, retired skills and stale launch specs accumulating, and the prune
+ * reporting nothing removed because nothing was a candidate.
  */
 export function containingRoot(
   roots: readonly string[],

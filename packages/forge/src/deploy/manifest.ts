@@ -36,8 +36,8 @@ export interface DeployManifest {
   // settings.json hook commands this tool registered (the `hooks` kind).
   hookCommands: string[];
   // The persona commands an EARLIER install linked into the user's bin dir, as paths
-  // relative to the user's HOME (`.local/bin/<persona>`). Install links none any more;
-  // the record stays so install and uninstall can take away what was linked. The bin
+  // relative to the user's HOME (`.local/bin/<persona>`). Install links none; the
+  // record is kept so install and uninstall can take away what was linked. The bin
   // dir is shared with every other program on the host, so a link is ours only if it
   // is written here.
   personaLinks: string[];
@@ -508,7 +508,7 @@ type HooksBlock = Record<string, HookEntry[]>;
 
 /**
  * Drop the settings entries whose commands are ALL stale — the registrations a
- * prior deploy added for a hook the render tree no longer carries. Surgical by
+ * prior deploy added for a hook the render tree does not carry now. Surgical by
  * construction: an entry is dropped only when every command in it appears in
  * `commands`, so a foreign entry (or a mixed one) is never collateral. Pure —
  * no IO — and returns the count actually dropped.

@@ -25,7 +25,7 @@
 // stay, as the host's.
 //
 // WHAT THE HOST HAS CHANGED SINCE IS THE HOST'S. A recorded file outside the root whose
-// bytes no longer hash to the digest of what was written is left; a file recorded before
+// bytes do not hash to the digest of what was written is left; a file recorded before
 // digests were kept is cratylus's by that record, and taken back. A reference the
 // host has pointed elsewhere, a hook registration in an entry that now runs a command
 // of the host's, a config line the host has rewritten: each is left, and NAMED, so the
