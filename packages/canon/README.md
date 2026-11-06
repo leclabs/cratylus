@@ -44,14 +44,12 @@ The plugin carries eight agents: the industry roles of behaviour-driven developm
 holder of its role, and three personas over the business analyst. An install places every one. Each
 role is invoked by its industry name and defined by what it receives and what it hands back, never by
 steps. Its profile states only cratylus's departures from the industry's role, each by its Cratylic
-name, with a precising definition only where the name leaves a symmetric difference; what the
-industry's role already carries by its name (a tech lead's software delivery, a code reviewer's code
-review, a test engineer's test-first) is not restated. The practice itself, behaviour-driven
-development, is adopted by the project's conventions (the offered `behaviour-driven-development`
-ruleset), not by the agents. The departures follow the domain model's records: decision rights as
-one RAPID letter per decision class, autonomy as mission command, reach open by default (so no role
-narrows it), the domain model as every reader's memory, a user story free-form and unestimated,
-sign-off and tailoring as cratylus records them.
+name, as the context-engineering ruleset's Cratylic context design and maxim of quantity hold. The
+practice itself, behaviour-driven development, is adopted by the project's conventions (the offered
+`behaviour-driven-development` ruleset), not by the agents. The departures follow the domain
+model's records: decision rights as one RAPID letter per decision class, autonomy as mission
+command, reach open by default (so no role narrows it), the domain model as every reader's memory,
+a user story free-form and unestimated, sign-off and tailoring as cratylus records them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization

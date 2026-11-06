@@ -104,9 +104,8 @@ export const OPERATORS = {
     signature: 'El × Set → Prop',
     freshVerified: true,
   },
-  // ASCII operators. An encoding filter in the precising-definition grammar (`codePointAt > 0x7f`)
-  // barred them for years; `=` and `|` were in live use the whole time, hand-split in code.
-  // Fresh verification is the only bar.
+  // ASCII operators: the precising-definition grammar admits any code point, and fresh
+  // verification is the only bar.
   '=': {
     sense: 'equality-binding',
     signature: 'A × A → Prop',

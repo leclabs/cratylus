@@ -1,8 +1,6 @@
 # AGENTS
 
-Read @INTRODUCTION.md first: it states Cratylic context design, the theory every record in `design/model/` is written in.
-
-Read the domain model in `design/model/` next, `purpose.md` and then each bounded context's `context.md` and its records: it holds what each term means in its bounded context, and it is the one source of meaning the work is judged against.
+Read the domain model in `design/model/` first, `purpose.md` and then each bounded context's `context.md` and its records: it holds what each term means in its bounded context, and it is the one source of meaning the work is judged against.
 
 ## Working conventions
 

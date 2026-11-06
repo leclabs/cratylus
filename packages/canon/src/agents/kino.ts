@@ -1,4 +1,4 @@
-// kino: a persona over the business analyst (master design §4). Everything not stated here
+// kino: a persona over the business analyst. Everything not stated here
 // is the business analyst's.
 
 import { persona } from '../compose.js';
