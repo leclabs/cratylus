@@ -188,8 +188,12 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
       // As in the industry-roles example, util-linux script supplies a real
       // terminal to the installed command. Answer only after clack renders the
       // question: down + enter chooses the whole added ruleset; enter confirms.
-      const { promise, resolve, reject } =
-        Promise.withResolvers<CommandResult>();
+      let resolve!: (result: CommandResult) => void;
+      let reject!: (reason: unknown) => void;
+      const promise = new Promise<CommandResult>((onResolve, onReject) => {
+        resolve = onResolve;
+        reject = onReject;
+      });
       const child = spawn(
         'script',
         [
