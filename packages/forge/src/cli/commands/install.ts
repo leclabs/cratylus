@@ -37,7 +37,8 @@
 // agent and skill of the canon is installed. Each decision has a flag; a decision given by
 // flag is never asked, and a run with no terminal (or `--yes`) takes the default. The
 // rules default to none, and the choice, once made, is recorded by name and kept by every
-// later install that is not told otherwise. Before anything is written the run
+// later install that is not told otherwise, which asks only about the rules offered since.
+// Before anything is written the run
 // shows what it would place, and on a terminal that is not fully decided it asks once to
 // go ahead: declining writes nothing. What it places is then summarised in a few lines;
 // the per-file detail is `--verbose`'s.
@@ -135,8 +136,8 @@ export interface InstallCmdOpts {
   cwd?: string;
   /** `--rules <name,…|none>`: the rules to place, each name a ruleset (taken whole)
    *  or one of its rules; `none` places none. Given at all, it settles the decision.
-   *  Absent: the choice an earlier install recorded, else asked; told nothing and
-   *  unable to ask, none. */
+   *  Absent: the choice an earlier install recorded, with the rules offered since asked
+   *  about, else asked; told nothing and unable to ask, the recorded choice, else none. */
   rules?: string;
   /** `--model-roles <role=model,…|default>`: the model each named role runs on,
    *  bound in the host's own settings: a tier the agents fall back to, or the role
@@ -420,21 +421,42 @@ async function install(opts: InstallCmdOpts): Promise<number> {
 
   // ── WHICH RULES ──────────────────────────────────────────────────────────────
   // The rulesets the canon offers, each taken whole, rule by rule, or not at all. Told
-  // by flag; else the choice an earlier install recorded, kept without asking (a rule
-  // the canon does not offer now is dropped from it, and named); else asked. A run that can
-  // neither places none of them, and leaves the choice open: no offered rule is placed
-  // unless chosen.
+  // by flag, which decides alone; else the choice an earlier install recorded, kept (a
+  // rule the canon does not offer now is dropped from it, and named), and the rules
+  // offered since it was recorded — offered now, and not among those the record says
+  // the product owner was offered, chosen or declined — asked about on a terminal, the
+  // answer added to it; a run that cannot ask places none of those, names them, and
+  // leaves them out of what it records as offered, so a later run still asks. With no
+  // choice recorded, asked; a run that can neither places none of them, and leaves
+  // the choice open: no offered rule is placed unless chosen.
   const offered = rendered.report.rulesets;
   const offeredRules = offered.flatMap((s) => s.rules.map((r) => r.name));
   const recordedRules = Array.isArray(prior?.rules) ? prior.rules : undefined;
+  // A record written before it held what was offered counts every rule not chosen as
+  // offered since.
+  const recordedOffered = Array.isArray(prior?.offeredRules)
+    ? prior.offeredRules
+    : recordedRules;
   let rules: string[] = [];
   let droppedRules: string[] = [];
+  let unaskedRules: string[] = [];
   let rulesDecided = true;
   if (opts.rules !== undefined) {
     rules = parseRules(opts.rules, offered);
   } else if (recordedRules !== undefined) {
     rules = recordedRules.filter((n) => offeredRules.includes(n));
     droppedRules = recordedRules.filter((n) => !offeredRules.includes(n));
+    const since = offeredRules.filter((n) => !recordedOffered?.includes(n));
+    if (since.length > 0 && interactive) {
+      open = true;
+      const asked = offered.flatMap((s) => {
+        const fresh = s.rules.filter((r) => since.includes(r.name));
+        return fresh.length > 0 ? [{ ...s, rules: fresh }] : [];
+      });
+      rules.push(...(await answered(prompts.rules(asked))));
+    } else {
+      unaskedRules = since;
+    }
   } else if (offered.length === 0) {
     rulesDecided = false;
   } else if (interactive) {
@@ -446,6 +468,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // Declaration order, each once.
   rules = offeredRules.filter((n) => rules.includes(n));
   const rulesOpen = !rulesDecided && offered.length > 0;
+  const rulesOffered = offeredRules.filter((n) => !unaskedRules.includes(n));
 
   if (rules.length > 0) {
     try {
@@ -721,7 +744,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       configuration,
       record: {
         scope,
-        ...(rulesDecided ? { rules } : {}),
+        ...(rulesDecided ? { rules, offeredRules: rulesOffered } : {}),
         references: linked.references,
         ...(createdHarnessDir ? { createdHarnessDir: true as const } : {}),
         ...(statusAnswered ? { answered: ['agentStatus' as const] } : {}),
@@ -740,7 +763,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       base,
       root,
       tree: placedTree,
-      rules: { chosen: rules, dropped: droppedRules, open: rulesOpen },
+      rules: {
+        chosen: rules,
+        dropped: droppedRules,
+        unasked: unaskedRules,
+        open: rulesOpen,
+      },
       config: configFile,
       ...(projectHiding === undefined ||
       userStatusFile === undefined ||
@@ -793,11 +821,13 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The rules placed, those of an earlier choice the canon does not offer now, and whether the
-     *  choice is still open: offered, but neither told, recorded nor asked. */
+    /** The rules placed, those of an earlier choice the canon does not offer now, those
+     *  offered since that choice and not asked about, and whether the choice is still
+     *  open: offered, but neither told, recorded nor asked. */
     rules: {
       chosen: readonly string[];
       dropped: readonly string[];
+      unasked: readonly string[];
       open: boolean;
     };
     /** The user's host config file holding model roles, where the harness has one:
@@ -824,14 +854,22 @@ function describe(
       : `${CLI_BIN} is installed in ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`,
     `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
   ];
-  if (ctx.rules.chosen.length > 0 || ctx.rules.dropped.length > 0) {
+  if (
+    ctx.rules.chosen.length > 0 ||
+    ctx.rules.dropped.length > 0 ||
+    ctx.rules.unasked.length > 0
+  ) {
     const dropped =
       ctx.rules.dropped.length > 0
         ? `; ${dry ? 'would drop' : 'dropped'} ${list(ctx.rules.dropped)}, no longer offered`
         : '';
+    const unasked =
+      ctx.rules.unasked.length > 0
+        ? `; not placed, offered since your choice: ${list(ctx.rules.unasked)} (run install again on a terminal to be asked, or pass --rules <ruleset-or-rule,…> naming every rule to place)`
+        : '';
     const placed =
       ctx.rules.chosen.length > 0 ? list(ctx.rules.chosen) : 'none';
-    lines.push(`  rules: ${placed}${dropped}`);
+    lines.push(`  rules: ${placed}${dropped}${unasked}`);
   }
   if (found.references.length > 0) {
     lines.push(

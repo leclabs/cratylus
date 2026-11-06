@@ -69,7 +69,7 @@ export function projectorCommands(options: ProjectorOptions = {}): Command[] {
     .addOption(
       new Option(
         '--rules <names>',
-        "The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)",
+        "The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, those offered since asked on a terminal; else asked on a terminal; without one, none)",
       ),
     )
     .addOption(
