@@ -1,5 +1,21 @@
 # @cratylus/invoke
 
+## 0.22.0
+
+### Minor Changes
+
+- 120828d: Install offers the rules a canon offers since the recorded choice: on a terminal it asks only about those, and otherwise keeps the choice and names them.
+
+### Patch Changes
+
+- 1eb7696: Source comments, the projected omp session module's comments and the package READMEs state what holds now, its rationale included; version control keeps what changed.
+- Updated dependencies [d7b58b5]
+- Updated dependencies [1eb7696]
+- Updated dependencies [120828d]
+  - @cratylus/canon@0.24.0
+  - @cratylus/forge@0.22.0
+  - @cratylus/runtime@0.20.1
+
 ## 0.21.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @cratylus/canon
 
+## 0.24.0
+
+### Minor Changes
+
+- d7b58b5: Offers the context-engineering ruleset: ten principles of context engineering, each adopted by its Cratylic name with its precising definition.
+
+### Patch Changes
+
+- 1eb7696: Source comments, the projected omp session module's comments and the package READMEs state what holds now, its rationale included; version control keeps what changed.
+- Updated dependencies [255d244]
+  - @cratylus/schema@0.14.1
+
 ## 0.23.0
 
 ### Minor Changes
