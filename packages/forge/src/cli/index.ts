@@ -2,14 +2,11 @@
 //
 // This module builds `install` and `uninstall`; the program that owns the `bin` adds
 // them to its own tree beside the capabilities, so there is ONE command, one help, one
-// refusal of a mistyped word. It used to build its own `cac` program and parse
-// `process.argv` itself, which is how a mistyped flag died with a stack trace and a
-// mistyped top-level flag exited 0: two programs, each with its own idea of what an
-// unknown word is.
+// refusal of a mistyped word: one program, with one idea of what an unknown word is.
 //
 // EVERY VALUE IS CHECKED WHERE IT IS PARSED. A flag that takes one of a set (`--scope`,
 // `--harness`) declares the set, so Commander refuses a value outside it, names the
-// choices, and runs nothing — `--scope porject` used to mean user scope. A required
+// choices, and runs nothing: `--scope porject` is refused, never read as user scope. A required
 // value (`uninstall`'s `--harness`) is declared required. Every default a flag has is
 // declared with it, so the help prints the default the command runs with: where it is
 // a fixed value it is the option's own default, and where it depends on another flag

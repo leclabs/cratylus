@@ -51,8 +51,8 @@ export {
 // insertion so every other byte of the host-owned config survives.
 export { addModelRoles } from './model-roles.js';
 
-// The persona commands earlier installs linked into the user's bin dir, removed as
-// recorded: install links none any more, and takes away what an earlier one placed.
+// The persona commands an earlier installation linked into the user's bin dir, removed
+// as recorded: install links none, and takes away what an earlier one placed.
 export { removePersonaCommands } from './persona-commands.js';
 
 // The host's status line, where an agent's name and mark become visible: Claude Code's

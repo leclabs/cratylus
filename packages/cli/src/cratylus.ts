@@ -11,11 +11,8 @@
 // no release: `install` records it in what it places, and `versionSkew` reports it as
 // the command's.
 //
-// ONE PROGRAM, so `--help` at every level lists everything it has, and one place
-// answers a word it does not know. The surface used to be two programs — the
-// capabilities' and the projector's — with the bin choosing between them on its first
-// word, so `cratylus --help` listed the projector and none of the capabilities, and a
-// mistyped flag died with a stack trace in one of them and exited 0 in the other.
+// ONE PROGRAM, so `--help` at every level lists everything it has, the projector's
+// commands and the capabilities alike, and one place answers a word it does not know.
 //
 // THE REGISTER IS KEPT HERE FOR EVERY COMMAND. A usage error — an unknown command or
 // option, a value outside its choices, a missing required value or argument — is

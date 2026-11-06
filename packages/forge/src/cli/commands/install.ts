@@ -421,7 +421,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   // ── WHICH RULES ──────────────────────────────────────────────────────────────
   // The rulesets the canon offers, each taken whole, rule by rule, or not at all. Told
   // by flag; else the choice an earlier install recorded, kept without asking (a rule
-  // no longer offered is dropped from it, and named); else asked. A run that can
+  // the canon does not offer now is dropped from it, and named); else asked. A run that can
   // neither places none of them, and leaves the choice open: no offered rule is placed
   // unless chosen.
   const offered = rendered.report.rulesets;
@@ -793,7 +793,7 @@ function describe(
     base: string;
     root: string;
     tree: ProjectedTree;
-    /** The rules placed, those of an earlier choice no longer offered, and whether the
+    /** The rules placed, those of an earlier choice the canon does not offer now, and whether the
      *  choice is still open: offered, but neither told, recorded nor asked. */
     rules: {
       chosen: readonly string[];
