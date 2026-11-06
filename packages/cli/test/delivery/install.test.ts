@@ -246,7 +246,9 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
       .soft(entries(join(root, 'rules')), output)
       .toEqual(chosen.map((name) => `${name}.md`).sort());
     expect.soft(after.rules, output).toEqual(chosen);
-    expect.soft(after.offeredRules, output).toEqual(offeredRules);
+    expect
+      .soft(after.offeredRules, output)
+      .toEqual(terminal ? offeredRules : formerlyOffered);
     if (terminal) {
       const asked = [...output.matchAll(/Rules: ([\w-]+) —/g)].map(
         (match) => match[1],
