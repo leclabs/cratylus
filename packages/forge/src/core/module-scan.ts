@@ -3,10 +3,10 @@
 // (a plugin's agents, skills and hooks).
 //
 // A plugin package is scanned in TWO shapes: as SOURCE inside the workspace
-// (`.ts`, loaded through tsx) and as an INSTALLED, BUILT package (`.js`). Every
-// scan used to hardcode a `*.ts` glob, so an installed package matched NOTHING —
-// and silently, because a zero-match glob is an empty list, not an error. A
-// consumer would have gotten an empty catalog with no diagnostic at all.
+// (`.ts`, loaded through tsx) and as an INSTALLED, BUILT package (`.js`). A scan of
+// one extension alone would match NOTHING in the other shape, and silently, because a
+// zero-match glob is an empty list, not an error: the consumer would get an empty
+// catalog with no diagnostic at all.
 //
 // Scanning both extensions is therefore a correctness requirement of shipping the
 // canon as a build-time plugin, not a convenience. Declaration files are excluded

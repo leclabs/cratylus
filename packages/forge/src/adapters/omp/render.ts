@@ -120,8 +120,8 @@ export const OMP_PACKAGE_DIR = 'plugins';
  *  composes. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
-/** The emitted DISPATCH ISOLATION module's filename. A second file, since it retires
- *  with the agents that declare a worktree of their own and with nothing else. */
+/** The emitted DISPATCH ISOLATION module's filename. A second file, since it is placed
+ *  for the agents that declare a worktree of their own and for nothing else. */
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
 /** The capabilities omp is offered as tools: those that explain themselves
@@ -554,22 +554,12 @@ function renderRegistration(
       ? `\n    if (${JSON.stringify(covered)}.includes(event.toolName)) return;`
       : '';
   const kind = OMP_ENVELOPE_KIND[r.native];
-  // THE VERDICT IS ON STDOUT, NEVER IN THE EXIT CODE, and reading it from the
-  // wrong place is how this gate came to refuse work it had never judged. The
-  // workers speak the Claude hook contract: a JSON verdict on stdout and `exit 0`
-  // UNCONDITIONALLY — `allow`, `deny` and every fail-open path alike. So a
-  // nonzero code means the worker MALFUNCTIONED or was not there, which is not a
-  // refusal (`fail-open ∀error`), and a zero code means nothing on its own.
-  //
-  // WHAT THIS REPLACES, because the failure is instructive. The old form read
-  // `r.exitCode`, and `ExecResult` is `{stdout, stderr, code, killed}` — there is
-  // no `exitCode` on it. `undefined === 127` is false and `undefined !== 0` is
-  // TRUE, so the two guards inverted into `{block: true, reason: ""}` on EVERY
-  // fire: every `ask` and every `task` call refused, with an empty reason, for
-  // reasons the worker never supplied. The `127` line was written to prevent
-  // exactly that — "a governance mechanism bricking the session it was supposed to
-  // govern" — and it was reading the same absent field, so the guard against the
-  // catastrophe was the catastrophe. Measured against the installed binary:
+  // THE VERDICT IS ON STDOUT, NEVER IN THE EXIT CODE. The workers speak the Claude
+  // hook contract: a JSON verdict on stdout and `exit 0` UNCONDITIONALLY — `allow`,
+  // `deny` and every fail-open path alike. So a nonzero code means the worker
+  // MALFUNCTIONED or was not there, which is not a refusal (`fail-open ∀error`), and
+  // a zero code means nothing on its own. omp's `ExecResult` is
+  // `{stdout, stderr, code, killed}`, measured against the installed binary:
   // `pi.exec("sh", ["-c", "exit 3"])` → `{"stdout":"","stderr":"","code":3,
   // "killed":false}`.
   const cmd = JSON.stringify(r.command);
@@ -599,10 +589,9 @@ function renderRegistration(
   // DISTINCT reason, because delivery re-opens the turn and a worker repeating
   // itself would otherwise re-open it forever.
   //
-  // `turn.end` USED TO LIVE ON THIS BRANCH, and that was the whole degradation:
-  // `agent_end` is notification-only, so the canon's one turn-end BOUND could
-  // only ever steer here. `session_stop` refuses for real, and carries the
-  // `stop_hook_active` flag, which the bridge passes on to the worker.
+  // `turn.end` IS ON THE STOP BRANCH, because `session_stop` refuses for real
+  // (`agent_end` is notification-only, so a turn-end BOUND there could only steer),
+  // and carries the `stop_hook_active` flag, which the bridge passes on to the worker.
   const act =
     refusal === 'stop'
       ? `
@@ -717,11 +706,10 @@ const TURN_BRIDGE: readonly string[] = [
   '',
   '// THE ENVELOPE OF A TOOL CALL NO SELECTOR NARROWED. `tool.use.pre` binds `tool_call`',
   '// with no tool name, so nothing at registration says which tool this fire is, and',
-  '// the envelope carried an EMPTY `tool_name` — which the worker reads as "nothing to',
-  '// judge" and allows, on every call it was registered to judge. The name is on the',
-  "// event; it is spelled here in the workers' wire contract (`OMP_WIRE_TOOL`), and a",
-  "// tool the table does not name passes through under omp's own spelling, which the",
-  "// worker's `*)` branch allows.",
+  '// an EMPTY `tool_name` reads to the worker as "nothing to judge" and is allowed.',
+  "// The name is on the event; it is spelled here in the workers' wire contract",
+  "// (`OMP_WIRE_TOOL`), and a tool the table does not name passes through under omp's",
+  "// own spelling, which the worker's `*)` branch allows.",
   `const WIRE_TOOL: Record<string, string> = ${JSON.stringify(OMP_WIRE_TOOL)};`,
   '',
   '// OMP MESSAGES A RUNNING AGENT THROUGH `write`, addressed to `agent://<id>` (and',
@@ -1009,7 +997,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * THE REST OF THE DECLARATION. Once per launch, held as
  * session-scoped runtime overrides on the session's own settings (never persisted)
  * and put back as they were when the launch ends (a switch to a session the name
- * no longer resolves for): personality `none`, as every dispatched child runs;
+ * does not resolve for): personality `none`, as every dispatched child runs;
  * `read-summarize` true or false as declared, else the session's own setting; the
  * advisor through `resolveAgentAdvisorSelection` (`task.agentAdvisor` first, then
  * front matter; none without either, as for a child), a pattern landing on

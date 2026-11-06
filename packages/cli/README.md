@@ -124,7 +124,7 @@ settles it instead: a ruleset's name takes all its rules, a rule's name only tha
 ruleset or rule is refused, listing each ruleset with its rules.
 
 The choice is recorded in the root by rule name, and installing again keeps it without asking
-unless `--rules` says otherwise; a rule a later version no longer offers is dropped from it and
+unless `--rules` says otherwise; a rule the installed version does not offer is dropped from it and
 named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
 placed and the summary names choosing them as a next step.
 
@@ -173,7 +173,7 @@ Where you have put something of your own at either of those places — `cratylus
 
 Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/config.yml`: a project installation writes no product owner's own setting (above). The models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
-**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that it no longer does. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
+**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that the new one does not. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
 
 **Session hooks.** The canon names 31 canonical lifecycle events; omp realizes 9 of them by a native event of its own. The rest have no native peer there and are refused or skipped with a warning rather than faked.
 
@@ -220,8 +220,8 @@ assignment of each agent that takes one.
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed
 for that agent, and, when asked, a command per agent in `~/.local/bin` linked to the launcher.
-Install now places nothing under `~/.omp/agent/personas/`. The next user install removes
-them: the files are pruned as files the deploy manifest records and this install no longer writes,
+Install places nothing under `~/.omp/agent/personas/`. The next user install removes
+them: the files are pruned as files the deploy manifest records and this install does not write,
 and each linked command the manifest records under `personaLinks` is unlinked while it still points
 into the harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
 removes them too.
@@ -275,7 +275,7 @@ An agent's definition names its own model role first, then the tier and effort i
 
 ## The host runtime config
 
-Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is read no more, and the next user install or uninstall takes its parts out.
+Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is not read, and the next user install or uninstall takes its parts out.
 
 ## Version skew
 

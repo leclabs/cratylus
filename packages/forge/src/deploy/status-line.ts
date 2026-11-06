@@ -41,7 +41,7 @@ import {
  *   - `restored` — the line is the one install placed over the host's own command;
  *                  the host's command is back, every other key of the line as it was.
  *   - `removed`  — the line is the one install SET where the host had none; it is gone.
- *   - `absent`   — the host has no `statusLine` any more; nothing to undo.
+ *   - `absent`   — the host has no `statusLine` now; nothing to undo.
  *   - `changed`  — the host runs another command than the one install placed; the
  *                  line is the host's now and is left as it is.
  */

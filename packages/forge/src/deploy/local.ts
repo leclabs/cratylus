@@ -18,7 +18,7 @@ import { digestFile } from './manifest.js';
  *   - `unchanged`  — its bytes hash to the digest recorded when it was written.
  *   - `changed`    — they do not: the host edited it.
  *   - `unverified` — no digest was recorded: placed before digests were kept.
- *   - `absent`     — nothing is there any more.
+ *   - `absent`     — nothing is there now.
  */
 export type PlacedFileState = 'unchanged' | 'changed' | 'unverified' | 'absent';
 

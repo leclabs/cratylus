@@ -82,8 +82,7 @@ export interface HarnessProjection {
 export interface HarnessHooksProjection {
   /**
    * WHERE this harness keeps its scope-activated hook config — `settings.json`
-   * for claude. The projector used to hardcode the claude name, which made a
-   * second harness's artifact unnameable.
+   * for claude. The adapter names it, so every harness's artifact is nameable.
    */
   readonly filename: string;
   readonly settings: Record<string, unknown>;
@@ -173,16 +172,14 @@ export interface HarnessAdapter {
    * Where agent `<name>`'s definition lands ON THE HOST, relative to the harness
    * home — this adapter's DESTINATION layout, and its sole authority.
    *
-   * NOT the render tree's layout. Those are two different facts and conflating them
-   * is what made this method necessary. The render tree is forge's own STAGING
-   * layout — uniformly `agents/<name><agentExt>`, one file per agent, because that
-   * is convenient for a projector and a tree a human diffs. Where a HARNESS
-   * reads its agents from is the harness's business, and install's job is the map
-   * between them. It used to be the identity map, which silently assumed every
-   * harness stages the way forge does.
+   * NOT the render tree's layout. Those are two different facts. The render tree is
+   * forge's own STAGING layout — uniformly `agents/<name><agentExt>`, one file per
+   * agent, because that is convenient for a projector and a tree a human diffs. Where
+   * a HARNESS reads its agents from is the harness's business, and install's job is
+   * the map between them; the identity map would assume every harness stages the way
+   * forge does.
    *
-   * Claude does (`agents/<name>.md`), so the
-   * assumption held for one harness and was invisible. **omp does not**: its
+   * Claude does (`agents/<name>.md`). **omp does not**: its
    * definition lands at `<home>/agent/agents/<name>.md` — inside omp's own
    * config root, two levels down, because that is the USER-level task-agent
    * root omp discovers from and forge's flat `agents/<name>.md` staging is not
@@ -198,16 +195,10 @@ export interface HarnessAdapter {
    *
    * PLURAL because how many destinations a skill needs depends on how the
    * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
-   * reads skills from one user-level dir, so `agents` goes unused for it.
-   * **omp used to be the exception** — its native config root was
-   * profile-scoped, so a skill reachable from every projected persona needed
-   * N+1 copies (see `git blame` for the incident: `~/.omp/skills` is a
-   * directory omp never scans, so a byte-perfect render once deployed 16
-   * unloadable skills and reported success). It no longer is: identity moved to
-   * a LAUNCH SPEC out of a harness-neutral `~/.agents` root that every launch —
-   * personaed or bare — reads NATIVELY, so `agents` goes unused for omp too now.
-   * The parameter stays because a FUTURE harness may still scope a reader per
-   * agent, and the port cannot special-case one implementation's history.
+   * reads skills from one user-level dir, and omp reads them from a harness-neutral
+   * `~/.agents` root that every launch — personaed or bare — reads NATIVELY, so
+   * `agents` goes unused for both. The parameter is there for a harness that scopes
+   * a reader per agent, which would need a copy per agent scope.
    *
    * REQUIRED, like `agentRel`: install places a render tree by its paths with no
    * vector to ask, so it must compute every destination from the name alone,
@@ -279,8 +270,8 @@ export interface HarnessAdapter {
    * The map `realizes`/`scopes` already answer FROM, declared on the port so a
    * consumer can READ it without knowing which harness it holds. Deploy is that
    * consumer: it emits the host's runtime configuration, and the runtime's own
-   * capabilities need the native names to attach anything at all. They used to hold
-   * a byte-identical private copy, which is the clone this field retires.
+   * capabilities need the native names to attach anything at all. This field is the
+   * map's one home, so the runtime holds no copy of it.
    *
    * An event ABSENT from the map is unrealizable here — the fidelity ladder's
    * `declare` rung, never a fabricated binding.
@@ -370,14 +361,11 @@ export interface HarnessAdapter {
    * deploy emits `mechanism` per (value, adapter); it is never a field the
    * authored value carries.
    *
-   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** An implementation took a
-   * `mechanisms` parameter and defaulted it to an empty map, and the adapter never
-   * passed one, so every binding hit `if (!m) continue` and the function returned
-   * `null` for every input — measured, not inferred. Per-agent enforcing
-   * constraints reached the host as nothing at all, while the unit tests stayed
-   * green because they called the function DIRECTLY with a mechanism map the
-   * production path never supplied. Threading it through the port is what makes
-   * the two paths the same path.
+   * The port threads `mechanisms` through so the production path and a direct call
+   * are the same path: an implementation that defaulted it to an empty map would
+   * return `null` for every binding, silently, and per-agent enforcing constraints
+   * would reach the host as nothing at all while a unit test that supplies the map
+   * stays green.
    *
    * Returns one projection, MANY, or null. Plural because a harness may scope by
    * per-agent DIRECTORY rather than by a selector, which cannot be expressed as a
@@ -400,13 +388,10 @@ export interface HarnessAdapter {
    * via `enforcingSurface`; this is the same accommodation for the half no agent
    * composes.
    *
-   * **IT WAS MISSING, AND ITS ABSENCE WAS A SILENT DEGRADE.** Projection branched on
-   * `hooks` alone, so on omp every scope-activated hook — the stance gate, the
-   * deploy-drift notice, the memory-consolidation nudge, the resume notice — was
-   * warned about and dropped, and the harness deployed no mechanism whatsoever
-   * while the adapter's own header claimed scope⇔realize was closed. Measured on
-   * `fire`: no `~/.omp/hooks` and no per-profile `agent/extensions` dir, against
-   * all five hooks wired in the same host's `~/.claude/settings.json`.
+   * Without it, projection would branch on `hooks` alone, and on omp every
+   * scope-activated hook — the stance gate, the deploy-drift notice, the
+   * memory-consolidation nudge, the resume notice — would be warned about and
+   * dropped, the harness deploying no mechanism whatsoever.
    *
    * `agentNames` is the projected agent set, for a harness that scopes by
    * directory and must place a copy per agent scope beside the session's ({@link
@@ -525,8 +510,8 @@ export interface HarnessAdapter {
    * settings that make the flag exist and keep what the copy built out of the
    * dispatcher's checkout, which the extension holds as the session's own. It is the
    * floor under {@link startsInWorktree} `false`: the agent that declares a worktree
-   * still does not get one off the branch its work belongs on, but it no longer builds in the
-   * checkout that dispatches it.
+   * still does not get one off the branch its work belongs on, but it builds in a copy,
+   * not in the checkout that dispatches it.
    *
    * Absent ⇒ no such mechanism: an agent declaring a worktree on a harness that
    * cannot start one runs in the checkout its dispatcher runs in.
