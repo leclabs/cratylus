@@ -54,12 +54,10 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
 /**
  * A runtime CAPABILITY name — the BOUND, not the members.
  *
- * This used to read `keyof Omit<RuntimePlugin, 'name'>`, deriving the closed set
- * from the runtime's implementation interface. That was the only `schema →
- * runtime` edge, and it was the wrong kind of borrowing: what this package needs
- * is a **vocabulary** (which names exist), and what it reached for was a
- * **shape** (how those things are implemented). The rule `shape ⊥ vocabulary`
- * already holds for `Event` — shape here, names in the canon.
+ * What this package needs is a **vocabulary** (which names exist), not a
+ * **shape** (how those things are implemented), so it borrows nothing from the
+ * runtime's implementation interface. The rule `shape ⊥ vocabulary` holds for
+ * `Event` the same way — shape here, names in the canon.
  *
  * So the members are the canon's, exactly as WHICH factors exist is the
  * canon's. This package states that a capability HAS a name and stops; the canon
@@ -67,13 +65,10 @@ export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
  * `Skill` against it, which is the `FactorManifest`/`MANIFEST` pattern reused
  * rather than a second one invented.
  *
- * NAMING NOTE. A blind decode returned `FacultyName`/`Faculty` and argued it
- * well — the `*Name` suffix is what buys the shape/vocabulary distinction, and
- * that insight is kept here. Its root word is not, because the prompt that
- * produced it wrongly disqualified `capability`: only the plural keyspace
- * `capabilities` is occupied, not the root. `capability` is this architecture's
- * established term for the concept, so adopting
- * `Faculty` would have minted a SECOND term for one concept — the precise defect
+ * NAMING NOTE. The `*Name` suffix is what carries the shape/vocabulary
+ * distinction. The root is `capability`, this architecture's established term for
+ * the concept (only the plural keyspace `capabilities` is occupied, not the root);
+ * a second term such as `Faculty` would name one concept twice, the defect
  * `term(cᵢ) = term(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` forbids. */
 export type CapabilityName = string;
 
@@ -86,58 +81,26 @@ export type CapabilityName = string;
  * - `fixed`   — a closed list the DESIGN fixes (decision classes, reach
  *   ceilings, the roles); the canon transcribes it, it does not tend it.
  *
- * The third member read `coined` until 2026-08-05, and that was a defect the
- * canon's own first principle names: `cratylism` holds that a concept's canonical
+ * Each member is named by a plain word about who holds or tends the set, so the
+ * type states the canon's own first principle, `cratylism`: a concept's canonical
  * term is found among the names the model already gives it, and coined only where
- * no established term covers it; `cratylism` was then itself a value of
- * `engineering-principles` — a factor this type classified `coined`. The type
- * refuted the axiom it types, in the axiom's own vocabulary.
+ * no established term covers it.
  *
- * `curated` is the repair and not a euphemism. A fresh reading ranked it first for
- * carrying closure, ownership and maintenance at once, which is the exact
- * contrast that matters against `enum` (`catalog` loses the agency — it never
- * says WHOSE). Its one stated cost, that it understates invention, is the whole
- * point here: under cratylism nothing was invented, only selected. `open` does
- * NOT subsume it — the three are MECE on ownership, so this is a rename, never a
- * merge.
+ * `curated` carries closure, ownership and maintenance at once, the exact
+ * contrast that matters against a bare list (`catalog` loses the agency — it never
+ * says WHOSE); that it understates invention is the point, since under cratylism
+ * nothing is invented, only selected. `open` does NOT subsume it — the members are
+ * MECE on ownership (model · agent · canon · design).
  *
- * ── `enum` → `latent` (2026-08-05) — the SECOND member the axiom refuted ───────
- *
- * `curated` repaired the third member and left this one unexamined. The MEANINGS were
- * always MECE on ownership — model · agent · canon — which is why the merge was
- * refused; the TERMS were not. `open` and `curated` are plain words about how a set
- * is held or tended. `enum` was programming-language type vocabulary naming a
- * REPRESENTATION, and it misfired inside its own register: `enum` decodes as "a
- * closed list written down in the source", while this member's whole meaning is that
- * the canon wrote NONE of them down — it read them out of the model. The term
- * asserted what the meaning denied, the same shape of defect as `coined`. Worse, under
- * `enum`'s own prediction this member and `curated` become indistinguishable: both
- * are closed finite lists, and the one fact that separates them — who authored the
- * values — is exactly the fact `enum` cannot carry.
- *
- * HOW THE COLLAPSE WAS DETECTED. Six independent blind forward decodes of the axis
- * "who owns the value-set" returned six DIFFERENT winners (`vocabulary` · `domain` ·
- * `provenance` · `admission` · `valueSource` · `sourcing`). Argmin undefined — the
- * signature of a meaning that is not yet one concept. Two independent blind
- * reverse decodes then named one cause, and supplied the falsifier: hold the field
- * word fixed and swap this member for a party term, and all nine field candidates go
- * from strained to clean at once. Nine failing on one element is evidence, not
- * coincidence — so the member, not the field, was the defect.
- *
- * WHY `latent`. `cratylism` holds that the model's semantic space — its latent
- * space — already fixes each name's meaning, so the member that means "the model's
- * own set, discovered not authored" wears the term the axiom already gives it, and
- * the type now QUOTES its axiom where it used to contradict it.
- * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
- * `model-native`/`model`. Both of its winners are occupancy-blocked:
- * `model` is a live factor name (`export type Model`), and `model-native` was then a
- * near-homonym of the `llm-native` value three agents composed. ⊥ 2026-08-05:
- * `native` (occupied then — `llm-native`, and harness-native event vocabulary) ·
- * `discovered` (occupied then — cratylism's own `DISCOVERED`) · `intrinsic` (occupied
- * then — cratylism's `INTRINSIC`) · `innate` (free and clean, but no grounding in the canon, and
- * it fights the truth that a model's vocabulary IS learned) · `given` · `learned`
- * (reads as mutating-from-telemetry, which inverts the closure) · `emergent` ·
- * `endogenous` (imported jargon, breaks register with `open`/`curated`).
+ * `latent` names the model's semantic space — its latent space — which, under
+ * `cratylism`, already fixes each name's meaning: the member that means "the
+ * model's own set, discovered not authored" wears the term the axiom gives it. A
+ * representation term such as `enum` would assert "a closed list written down in the
+ * source", the opposite of a set the canon read out of the model, and would make the
+ * member indistinguishable from `curated`. `model` is a live factor name
+ * (`export type Model`); `native`, `discovered` and `intrinsic` would collide with
+ * terms the canon uses for other concepts; `innate` and `learned` misstate how a
+ * model holds its vocabulary; `endogenous` breaks register with `open`/`curated`.
  */
 export type Repertoire = 'latent' | 'open' | 'curated' | 'fixed';
 
@@ -182,16 +145,13 @@ export interface Mark {
  * brand discriminates by the type ARGUMENT, not by the constraint: a
  * `BareValue<'guardrails'>` is refused where a `Role` is wanted because the
  * `__factor` properties are incompatible, which holds for any string literal.
- * Measured, not assumed — both the cross-factor refusal and the `required`
- * catch-all survive the relaxation intact.
+ * Both the cross-factor refusal and the `required` catch-all hold under the
+ * relaxed constraint, measured, not assumed.
  *
- * The constraint's ONLY job was catching a misspelled factor name
- * (`Value<'guardrials'>`). That check LIVES IN THE CANON, which owns the manifest
- * and derives its own `Factor` from it (canon's `Value<D extends
- * Factor>`) — the projector cannot be the home of WHICH factors exist and
- * still be projecting a design rather than containing one. Nothing is lost.
- *
- * Forge's internals never needed it: `project/index.ts` writes `Value<string>` to
+ * A misspelled factor name (`Value<'guardrials'>`) is caught IN THE CANON, which
+ * owns the manifest and derives its own `Factor` from it (canon's `Value<D extends
+ * Factor>`) — the projector cannot be the home of WHICH factors exist and still be
+ * projecting a design rather than containing one. Forge writes `Value<string>` to
  * mean "a value of ANY factor", and nothing in forge branches on a factor's
  * identity. The machinery is structural; this states it.
  */
@@ -258,8 +218,8 @@ export interface Enforcing<O extends string> {
    *
    * A command, a timeout, a matcher or worker bytes are all PROJECT-register
    * content, emitted per harness by deploy; a value carries only `events` and
-   * `substrate`. They were briefly carried here and that broke
-   * BEING/FACE — a being holding one face's shell script cannot have many faces.
+   * `substrate`, because a BEING holding one face's shell script cannot have many
+   * faces.
    *
    * Absent ⇒ the term of this value is its own mechanism key.
    */
@@ -293,11 +253,10 @@ export const enforcing = <O extends string>(v: Value<O>): v is Enforcing<O> =>
 /**
  * Is `u` a value of a factor at all — bare or enforcing?
  *
- * The catalog scans whole modules and sees every export, so "not a string" was
- * doing double duty as "not a value". Now that a value may be an object, that
- * test would admit any exported object and drop every enforcing one. This is the
- * predicate that actually means what the scan needs, and it is SHAPE-checked
- * rather than truthy-checked: an object that merely exists is not a value.
+ * The catalog scans whole modules and sees every export, and a value may be a
+ * string or an object, so neither "is a string" nor "is an object" means "is a
+ * value". This is the predicate that does, and it is SHAPE-checked rather than
+ * truthy-checked: an object that merely exists is not a value.
  */
 export const isFactorValue = (u: unknown): u is Value<string> =>
   typeof u === 'string' || enforcing(u as Value<string>);
@@ -337,12 +296,9 @@ export interface FactorMeta {
   /**
    * How the value-catalog is sourced (the `Repertoire`).
    *
-   * This field read `kind` until 2026-08-05, which put a second concept on a term
-   * forge's `FragmentKind` (a value's structural shape) already carried. A blind
-   * reverse decode read `kind` here as "the closure policy of the factor's value
-   * space" and ranked this site's claim on the term weakest — `kind` fires "variant
-   * tag answering what is this?", and this is a property ABOUT the factor, not
-   * the factor's identity.
+   * Named `repertoire`, not `kind`: `kind` reads as a variant tag answering "what
+   * is this?" and is forge's `FragmentKind` (a value's structural shape), while this
+   * is a property ABOUT the factor, not the factor's identity.
    */
   readonly repertoire: Repertoire;
   /** How many values the factor field holds (the `Arity`). */
@@ -370,10 +326,9 @@ export interface FactorMeta {
    * May an agent hold this factor EMPTY? Absent ⇒ it may (`[]`).
    *
    * Catalog DATA, not a type-level special case. Whether the ideal agent may
-   * exist without a given factor is a canon question, and the one factor
-   * that answers "no" — `guardrails` — used to answer it as a hand-written
-   * exception inside the `Agent` interface, i.e. a doctrine the canon stated and
-   * the projector enforced with no link between them.
+   * exist without a given factor is a canon question, so the answer lives in the
+   * canon's manifest (`guardrails` answers "no"), linked to the projector that
+   * enforces it rather than written as an exception inside the `Agent` interface.
    */
   readonly required?: true;
 }
@@ -400,8 +355,8 @@ export interface Entry<D extends string = string> {
  *
  * Distinct from a catalog (`FactorName → ℘(value)`), which is the
  * same index set with a different codomain: a catalog maps a factor to its
- * VALUES, a manifest maps it to its METADATA (group/repertoire/arity/level/…). That
- * disambiguation used to live only in the prose.
+ * VALUES, a manifest maps it to its METADATA (group/repertoire/arity/level/…). The
+ * two are distinct types, so the disambiguation is not left to prose.
  *
  * This is the parameter type of every function that reads one, and no projector
  * ships an instance: a projector that can only ever read the one it contains is
@@ -475,9 +430,8 @@ export type FactorFieldName<D extends string = string> = KebabToCamel<D>;
 
 // ── Generic derivation over a manifest ──────────────────────────────────────
 // The canon states its manifest ONCE and reads its whole factor type-system out
-// of it with these. Each is the generic form of a derivation that used to be
-// written against forge's own resident one; the manifest is now a parameter,
-// which is the entire difference between projecting a design and containing one.
+// of it with these. Each derivation takes the manifest as a parameter, which is
+// the entire difference between projecting a design and containing one.
 
 /** Every factor name manifest `A` declares — a literal union when `A` is a
  *  `satisfies`-checked const, and `string` when the `satisfies` was dropped. */
@@ -663,8 +617,7 @@ export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
    * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
    * `cratylus <capability>` CLI — NOT a bundle of the impl (the capability logic
    * lives host-side behind the runtime port, installed once per host).
-   * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded design in which
-   * forge composed a standalone, dependency-free `.mjs` at build time.
+   * Absent ⇒ SKILL.md only.
    *
    * `configuration` is what the capability receives from the canon: data, never
    * code, and no opinion here about any capability's keys. `install` emits it into
@@ -713,8 +666,8 @@ export interface Skill<C extends CapabilityName = CapabilityName>
 
 /**
  * Resolve a provenance mark's hue to a terminal color. The hue is the source of
- * truth; this maps it to the concrete color token a harness wants. (Identity for
- * now — a richer hue→color table lands with a later projection task.)
+ * truth and is itself the color token a harness takes, so the mapping is the
+ * identity.
  */
 export function markToColor(mark: Mark): string {
   return mark.hue;
@@ -744,17 +697,11 @@ export type { EventName } from './hook/index.js';
 
 // ── The plugin authoring surface ────────────────────────────────────────────
 //
-// MOVED HERE FROM `@cratylus/forge/resolve` on 2026-08-05, retiring the last
-// property-2 breach: `canon/src/index.ts` — the canon's ROOT — had to import
-// `defineAgentPlugin` from the PROJECTOR in order to declare things that are the
-// canon's own. Nothing depends on projection; that is the rule, and this was the
-// last edge violating it.
-//
-// The move is not a judgement call. `AgentPlugin` imported exactly one thing,
-// `FactorManifest` from this package, and `defineAgentPlugin` is
-// `(plugin) => plugin` — a pure identity factory with ZERO forge dependency. It
-// sat in the projector by history, not by need, and "the shapes the canon is written
-// against" is this package's charter.
+// The plugin authoring surface lives here because nothing depends on projection:
+// the canon's root declares its plugin with `defineAgentPlugin` without importing
+// the PROJECTOR. `AgentPlugin` needs only `FactorManifest` from this package, and
+// `defineAgentPlugin` is `(plugin) => plugin` — a pure identity factory — so "the
+// shapes the canon is written against", this package's charter, covers both.
 
 /**
  * WHERE a plugin's factors, agents, skills and hook declarations live on disk — the package-relative dirs a
