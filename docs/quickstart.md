@@ -2,7 +2,7 @@
 
 In this walkthrough you'll take one concept from a sentence of prose to a checked record in a domain model. On the way you'll find the term the model already uses for it, which is its _Cratylic name_, and check that term with a _fresh reading_: a model given only the term and its domain, with no other context.
 
-Everything below comes from a real run on 2026-11-05: cratylus 0.21.1, omp 18.16.0, Node 22, models through OpenRouter. Your output will differ in wording, because models vary from run to run. Long answers are shortened where you see `…`.
+Everything below comes from a real run on 2026-11-05 with cratylus 0.21.1 and omp 18.16.0. Your output will differ in wording, because models vary from run to run. Long answers are shortened where you see `…`.
 
 It assumes you've done the four steps in the [README](../README.md#get-started-about-five-minutes).
 
@@ -40,7 +40,7 @@ omp --agent business-analyst
 
 > I want our agents to name one concept by its Cratylic name. Domain: software delivery. The concept: before a change merges, a single command builds, lints, typechecks and runs the deterministic tests; developers run that same command locally (a pre-push hook runs it) and CI runs exactly it, nothing more. Candidates I am considering: "quality gate", "required status check", "pre-merge check". Probe each candidate with a fresh reading, choose the Cratylic name, and give its precising definition. Report only; do not create or edit any files.
 
-In our run the agent read both skills, then made each fresh reading as a separate model call that carried no project context. It asked each question two ways: once openly, and once allowing the model to answer "no term fits", so the model wasn't pushed into producing an answer. The run took 2 minutes and cost about $0.32.
+In our run the agent read both skills, then made each fresh reading as a separate model call that carried no project context. It asked each question two ways: once openly, and once allowing the model to answer "no term fits", so the model wasn't pushed into producing an answer.
 
 For each candidate, here is what the reading added that you don't mean, and what it left out that you do:
 
@@ -74,7 +74,7 @@ A fresh reading doesn't need any special tooling. It's a model given the term an
 
 ```sh
 omp -p --no-session --no-tools --no-skills --no-extensions --no-rules --no-context-files \
-  --model openrouter/openai/gpt-6.1-sol \
+  --model <a model of another family> \
   'Domain: software delivery. In this domain, what does the term "pre-merge check" mean? Answer in at most 6 terse bullets: what it is, where it runs, what it contains, what it does not imply.'
 ```
 
@@ -157,7 +157,7 @@ Run the check again. It fails, with exit code 1, because no test claims this exa
 }
 ```
 
-To bind it, write a vitest test whose title is exactly `<context>/<concept>: <example name>`. The check then passes again:
+To bind it, write an acceptance test, an `it(…)` or `test(…)` call, whose title is exactly `<context>/<concept>: <example name>`. The check then passes again:
 
 ```ts
 it('delivery/pre-merge-check: a red check blocks the merge', () => {

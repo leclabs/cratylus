@@ -62,35 +62,29 @@ What that gets you (from [INTRODUCTION.md](./INTRODUCTION.md), the one-page theo
 
 ## Get started (about five minutes)
 
-You need Node 22 or later and an API key that omp can use. These steps were tested with OpenRouter.
+You need Node 22 or later.
 
-**1. Install cratylus and omp.** omp is the coding-agent harness the team runs in. It runs on bun 1.4.4 or later, so install bun with it:
+**1. Install omp** by following [omp's installation guide](https://github.com/can1357/oh-my-pi#install), set up a model provider there, and run omp once. omp is the coding-agent harness the team runs in, and cratylus installs into the `~/.omp` it creates.
 
-```sh
-npm install -g cratylus bun @oh-my-pi/pi-coding-agent
-```
-
-**2. Run omp once,** so it creates `~/.omp`, which cratylus installs into. Without a model configured it exits with `No default model selected…`. That's expected: the directory is all cratylus needs.
+**2. Install cratylus.**
 
 ```sh
-omp -p hi
+npm install -g cratylus
 ```
 
-**3. Install the team and tell it which models to use.**
+**3. Install the team.**
 
 ```sh
-export OPENROUTER_API_KEY=…
-cratylus install --dry-run      # preview: what it would place, and where; writes nothing
-cratylus install --yes --rules behaviour-driven-development \
-  --model-roles frontier=openrouter/anthropic/claude-opus-5.5,frontier-other-family=openrouter/openai/gpt-6.1-sol
+cratylus install --dry-run   # preview: what it would place, and where; writes nothing
+cratylus install
 ```
 
-There are two model tiers:
+Install asks only what you haven't told it: which harness, which rulesets your agents follow in every project, and which model each tier runs on. Agents fall back to two tiers:
 
 - `frontier` runs the business analyst, the tech lead and the software engineers.
-- `frontier-other-family` runs the test engineer and the code reviewer. Where another model family is available, it checks the work, rather than the family that wrote it.
+- `frontier-other-family` runs the test engineer and the code reviewer. Bind it to a model of another family than `frontier`'s, so a different family checks the work than the one that wrote it.
 
-The bindings go into your own omp settings (`~/.omp/agent/config.yml`), so upgrading or uninstalling keeps them. `--rules` picks the rules your agents follow in every project. Besides `behaviour-driven-development`, the rulesets are `gitflow`, `conventional-commits`, `commit-discipline`, `established-libraries` and `green-field`. Everything cratylus places goes into one folder it owns, `~/.cratylus/omp/`, and omp loads it in every project.
+The bindings go into your own omp settings, so upgrading or uninstalling keeps them. Everything cratylus places goes into one folder it owns, `~/.cratylus/omp/`, and omp loads it in every project.
 
 **4. Start with the business analyst** and tell it what you want:
 
@@ -124,7 +118,7 @@ Every flag, refusal and default is in [packages/cli/README.md](./packages/cli/RE
 
 Read [INTRODUCTION.md](./INTRODUCTION.md) first, then the domain model in [design/model](./design/model). Each concept is one plain file, each bounded context is a directory, and git is its history. Every example in the model must be bound to an acceptance test titled `<context>/<concept>: <example name>`, and `cratylus model check` enforces that. [AGENTS.md](./AGENTS.md) has the working conventions.
 
-Heads-up on tooling: the workspace pins Node ^26.8.2 and pnpm 12.4.1 and refuses anything else. With [mise](https://mise.jdx.dev), run `mise trust && mise install`, then `pnpm install` and `pnpm check`. `pnpm check` is the same check CI and the pre-push hook run, and it takes about two minutes.
+The workspace pins its Node and pnpm versions in the root [package.json](./package.json)'s `devEngines` and refuses any others. With [mise](https://mise.jdx.dev), run `mise trust && mise install`, then `pnpm install` and `pnpm check`, the same check CI and the pre-push hook run.
 
 ## License
 
