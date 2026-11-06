@@ -54,7 +54,7 @@ asked):
 | ----------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Which agent harness                       | `--harness omp`                         | absent, and the host has no omp directory                                                       | none: refused                                            |
 | Which scope                               | `--scope <user\|project>`               | absent, on a terminal, where the project here is not your home                                  | user                                                     |
-| Which rules                               | `--rules <name,…\|none>`                | absent, and no install here recorded a choice, on a terminal                                    | the choice the last install recorded, else none          |
+| Which rules                               | `--rules <name,…\|none>`                | absent, on a terminal, where no install here recorded a choice, or of the rules offered since   | the choice the last install recorded, else none          |
 | Which model each tier and persona runs on | `--model-roles <role=model,…\|default>` | at user scope, a tier the agents fall back to, or a persona's role, has no model in your config | none bound; each unbound tier is named as your next step |
 
 On a terminal the questions come in that order, and `Install this?` follows them. The model
@@ -123,10 +123,15 @@ settles it instead: a ruleset's name takes all its rules, a rule's name only tha
 (`--rules gitflow,commit-discipline-own-paths`), and `--rules none` takes none. A name that is no
 ruleset or rule is refused, listing each ruleset with its rules.
 
-The choice is recorded in the root by rule name, and installing again keeps it without asking
-unless `--rules` says otherwise; a rule the installed version does not offer is dropped from it and
-named in the summary. Without a terminal, or under `--yes`, with no choice recorded, no rule is
-placed and the summary names choosing them as a next step.
+The choice is recorded in the root by rule name, with every rule you were offered, and installing
+again keeps it unless `--rules` says otherwise; a rule the installed version does not offer is
+dropped from it and named in the summary. A rule offered since the choice was recorded — a ruleset
+added to the canon after your first install — is asked about on a terminal, in the same way and
+alone, and what you take is added to the choice; a rule you were offered and declined is not asked
+about again. Without a terminal, or under `--yes`, the choice is kept, no rule offered since is
+placed, and the summary's `rules:` line names them with how to choose them; they are asked about
+at the next install on a terminal. With no choice recorded, no rule is placed and the summary names
+choosing them as a next step.
 
 ### Which model each tier and persona runs on
 
@@ -323,7 +328,7 @@ cratylus install [options]
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--harness <name>`        | The agent harness to install into (default: the one this machine has, else asked) (choices: "omp")                                                                                                                                                                                                                                          |
 | `--scope <scope>`         | Where to install: user, for you in every project, or project, inside the project of the current directory, committable, in place of your user installation there (default: asked on a terminal outside your home directory, user preselected; else user) (choices: "user", "project")                                                       |
-| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, else asked on a terminal; without one, none)                                                                                                        |
+| `--rules <names>`         | The rules your agents follow in every project, comma-separated: a ruleset's name takes all its rules, a rule's name that one; or 'none' (default: the rules chosen at the last install, those offered since asked on a terminal; else asked on a terminal; without one, none)                                                               |
 | `--model-roles <roles>`   | The model each tier the agents fall back to, or an agent's own role, runs on, as role=model comma-separated, bound in your own user settings; or 'default' to bind none; refused with --scope project, since a project installation binds no models (default: at user scope, each tier and persona role your settings do not bind is asked) |
 | `--agent-status <choice>` | Whether the status line, where your settings hide it, shows the session's agent, written as your own user setting; refused with --scope project, since a project installation writes no product owner's own setting (default: at user scope, asked where the status line hides it) (choices: "show", "hide")                                |
 | `-y, --yes`               | Take the default of every decision not given, and place without asking to go ahead                                                                                                                                                                                                                                                          |
