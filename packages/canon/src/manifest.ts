@@ -7,11 +7,7 @@
 // that shape. THIS module owns the INSTANCE: WHICH factors exist, and each one's
 // metadata. The manifest rides the PLUGIN (`src/index.ts` declares
 // `manifest: MANIFEST`), so a consumer projecting canon gets the design without
-// the projector containing it.
-//
-// The manifest used to live in `forge`, which meant the canon could not
-// discover a factor without editing the projector — the thesis inverted at its
-// most load-bearing point. A projector that knows there are exactly 18 factors
+// the projector containing it. A projector that knows there are exactly 18 factors
 // named these 18 things is not projecting a design; it contains one.
 //
 // WHERE THE TYPO-CATCHING LIVES. The schema's `BareValue<O>` is constrained
@@ -309,15 +305,10 @@ export type Evaluation = Value<'evaluation'>;
 // against them so a skill naming a capability this canon does not ship is a
 // COMPILE error rather than a shim that forwards to a bin verb nobody serves.
 //
-// This retires the `schema → runtime` edge. `CapabilityName` used to read
-// `keyof Omit<RuntimePlugin, 'name'>` — schema reaching into the runtime's
-// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`: the
-// ports stay in the runtime, and the names come from the canon. Nothing moved
-// except where the members
-// are declared.
+// `shape ⊥ vocabulary`: `CapabilityName` is schema's, the ports stay in the
+// runtime, and the names come from the canon.
 //
-// THE TERM IS `RuntimeCapability`, WHICH IS WHAT SCHEMA ALREADY CALLED IT — and
-// that is the finding. The name was never the defect; the derivation source was.
+// THE TERM IS `RuntimeCapability`, schema's own term for it.
 // The qualifier is load-bearing HERE and not in schema: in an agent catalog a
 // bare `Capability` reads as what an agent is able to do (the `expertise`
 // factor above), which is a different concept; one root would cover two.
@@ -336,12 +327,8 @@ export type { SkillExpression };
 // ── The lifecycle-event vocabulary ──────────────────────────────────────────
 //
 // A NAME FOR A MOMENT IS A TERM, and terms are what this canon is made of.
-// That decides the home: not schema (which held 28 of these, emitted
-// from a JSON file by a generator), not runtime (which held the same 28,
-// hand-authored, identical as sets AND in order), but here — beside
-// `RUNTIME_CAPABILITIES`, which is the same ruling one axis over, already landed.
-// The two declarations agreed by coincidence for as long as they coexisted, and
-// nothing enforced it because their consumer sets were disjoint.
+// That decides the home: here, beside `RUNTIME_CAPABILITIES`, which is the same
+// ruling one axis over.
 //
 // EVERY OTHER SITE DERIVES OR RECEIVES:
 //   · schema  states only that an event HAS a name (`EventName`) and narrows
@@ -356,20 +343,11 @@ export type { SkillExpression };
 // is for.
 //
 // TWO MEMBERS NAME AN ACT RATHER THAN A HARNESS CALLBACK, and they are the reason
-// there is no tool vocabulary. `stance-guardrail-pre` bound `tool.use.pre` and then
-// narrowed it with `matcher: 'AskUserQuestion|Agent|SendMessage'` — three claude tool
-// names, on a hook declaration whose whole claim is harness-neutrality, silently dropped by an
-// adapter that could not narrow it (so the hook fired on every tool call there). The
-// obvious repair — a canonical TOOL vocabulary beside this one — is a category error: harnesses share a
-// LIFECYCLE, which is closed, but their TOOL SETS are open-world (MCP servers add
-// tools at run time, users add their own), so a closed enum over them is permanently
-// incomplete and every adapter map would be near-empty.
-//
-// The vocabulary was already written in the hook's own term: its precising definition reads
-// `permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage⟩` — three
-// tool names already factored into TWO ACTS, four lines above the field that
-// flattened them back. The precising definition was the argmin and the matcher its lossy
-// projection, so the two acts are named here and the projection is computed:
+// there is no tool vocabulary. Harnesses share a LIFECYCLE, which is closed, but their
+// TOOL SETS are open-world (MCP servers add tools at run time, users add their own), so
+// a closed enum over them would be permanently incomplete and every adapter map
+// near-empty. A hook that concerns certain tools binds the act those tools perform,
+// and the projection to tool names is computed:
 //
 //   · `product-owner.consult.pre` — about to put a question or a menu to the product owner.
 //     `principal.consult.pre` was the runner-up; `user.ask.pre` is rejected (`user`
@@ -382,16 +360,12 @@ export type { SkillExpression };
 //
 // TWO, and no third: a third act has no site in this canon. An adapter maps each to
 // its native ⟨event, selector⟩ pair (`NativeBinding`); a harness that can fire the
-// act but not narrow it DECLARES that loss and the projection warns, which is what
-// closed that divergence. `matcher` no longer exists on any hook declaration or IR shape.
+// act but not narrow it DECLARES that loss and the projection warns. A hook
+// declaration and every IR shape name the act alone; the selector is the adapter's.
 //
-// `vcs.commit.post` IS AN ORDINARY MEMBER. It was `SubstrateEvent = CanonicalEvent |
-// 'vcs.commit.post'` — a union that existed only because the enum was closed and a
-// git-substrate moment had no literal to be. Nothing about it was ever exceptional:
-// it is a name for a moment, on the `git` substrate rather than the `harness` one,
-// and `substrate` is a declared axis (`Substrate = 'harness' | 'git'`) that already
-// routes it. With an open `EventName` the union has nothing to widen, so it
-// dissolved on its own.
+// `vcs.commit.post` IS AN ORDINARY MEMBER: a name for a moment, on the `git`
+// substrate rather than the `harness` one, and `substrate` is a declared axis
+// (`Substrate = 'harness' | 'git'`) that routes it.
 //
 // `worktree.create` NAMES THE MOMENT A WORKTREE IS MADE FOR AN AGENT, and a hook bound to
 // it does not observe the moment, it PERFORMS it: the harness asks the hook to create the

@@ -9,7 +9,7 @@
 // replace the role's, set values that extend the role's, and values it removes.
 // Everything it does not state is the role's.
 //
-// Composition REFUSES a malformed persona (master design §2): one that states the
+// Composition REFUSES a malformed persona: one that states the
 // role, names an unknown factor or slot, removes a value its role does not hold, or
 // carries no mark of its own is never made, and the `CompositionRefusal` names what
 // it refused. A persona that weakens or removes a guardrail, or takes from a set
