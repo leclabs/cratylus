@@ -63,8 +63,14 @@ An agent's text is rendered from its values: `# <mark> <name>` (the name alone w
 description, then one section per factor group in catalog order, each value as its term and
 precising definition, marked `(fixed)` where its level is fixed. A factor the agent holds no value of
 states no departure and renders no section, nor does a group all of whose factors are empty. Reach
-(perception-scope, action-scope) and model are never text. On OMP the definition's front matter
-carries `model: "@<name>"`, the model
+(perception-scope, action-scope) and model are never text. A protected path an agent declares it
+writes (`writes`, copied by the canon from its action scope) is guarded on OMP by the reach module,
+`extensions/cratylus-reach.ts`: it refuses a write there by a subagent of any agent that does not
+write it, OMP's own included, and by a main session started as such an agent of cratylus with
+`omp --agent`; the product owner's own session is never judged. The file tools are judged by the
+paths they name; a shell or eval call by the text of its input, whether it reads or writes, so a
+path a call builds at run time passes; the tools that read are never judged. On OMP the
+definition's front matter carries `model: "@<name>"`, the model
 role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
 any agent. `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier
 and effort (`ProjectedTree.agentModels`), from which each declaration's model falls back to after
@@ -129,18 +135,18 @@ A harness adapter implements `HarnessAdapter` (`@cratylus/forge/harness-adapter`
 name through `adapterByName`. OMP is the current implementation; projection and install depend on the
 port, not on OMP's concrete rendering functions.
 
-| member                                              | what the harness says                                                                       |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `name`, `substrate`, `home`, `agentExt`             | its canonical name, substrate, dot-directory and agent-definition extension                 |
-| `agentRel`, `skillRel`, `hooksFile`                 | where an agent, skill and hook module land, relative to the harness home                    |
-| `agentDef`, `skillDef`, `hooks`                     | how an agent, skill and hook registration are rendered                                      |
-| `preloadsSkills`, `mainSessionSkillHook`            | whether an agent definition preloads skills and how a main session gets them                |
-| `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                            |
-| `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment      |
-| `scopedRel`                                         | where a scoped artifact lands for an agent or the session                                   |
-| `launchSurface`                                     | what is composed from the agents beyond their definitions (OMP's dispatch isolation module) |
-| `capabilitySurface`                                 | the capability tools, and on OMP the `--agent` flag that starts a session as an agent       |
-| `statusSegment`                                     | how a session's agent appears in OMP's segmented status line                                |
+| member                                              | what the harness says                                                                  |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `name`, `substrate`, `home`, `agentExt`             | its canonical name, substrate, dot-directory and agent-definition extension            |
+| `agentRel`, `skillRel`, `hooksFile`                 | where an agent, skill and hook module land, relative to the harness home               |
+| `agentDef`, `skillDef`, `hooks`                     | how an agent, skill and hook registration are rendered                                 |
+| `preloadsSkills`, `mainSessionSkillHook`            | whether an agent definition preloads skills and how a main session gets them           |
+| `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                       |
+| `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment |
+| `scopedRel`                                         | where a scoped artifact lands for an agent or the session                              |
+| `launchSurface`                                     | what the agents compose beyond their definitions (OMP's isolation and reach modules)   |
+| `capabilitySurface`                                 | the capability tools, and on OMP the `--agent` flag that starts a session as an agent  |
+| `statusSegment`                                     | how a session's agent appears in OMP's segmented status line                           |
 
 An event absent from `nativeEvents` is unrealizable, and projection reports it rather than
 fabricating a binding. `scopes` is a stronger demand than `realizes`: firing is not scoping, and an

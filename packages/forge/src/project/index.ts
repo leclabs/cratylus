@@ -643,7 +643,7 @@ export async function projectPluginSet(
   }
 
   // WHAT THE ADAPTER COMPOSES FROM THE AGENTS THEMSELVES beyond their definitions
-  // (omp's dispatch isolation module), staged the same way `enforcingSurface`'s
+  // (omp's dispatch isolation and reach modules), staged the same way `enforcingSurface`'s
   // output is, by whatever scope the adapter named. Optional: an adapter that
   // composes nothing from the agents emits nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;

@@ -432,7 +432,8 @@ export interface HarnessAdapter {
   /**
    * Emit what this harness composes from the COMPOSED AGENTS themselves, beyond each
    * agent's own definition: omp's dispatch isolation module (the agents that declare a
-   * worktree of their own). Staged the same way
+   * worktree of their own) and its reach module (the protected paths the agents
+   * declare they write). Staged the same way
    * `enforcingSurface`'s output is (`scope` = the agent name, or
    * {@link SESSION_SCOPE}).
    *

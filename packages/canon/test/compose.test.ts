@@ -1,6 +1,7 @@
 // Composition: a persona that removes `none` from action-scope or weakens a guardrail
 // is made, and warned of, never refused, while no composed agent is narrowed to
-// read-only; each role's typed handoff rides its agent as `contract`; every agent
+// read-only; only the business analyst and its personas write the domain model; each
+// role's typed handoff rides its agent as `contract`; every agent
 // states it is evaluated in real use, holds no practice as its procedure and speaks
 // no retired term; no value of any agent is held by a guard; an optional slot may be
 // left unfilled, never another.
@@ -18,6 +19,7 @@ import { techLead } from '../src/agents/tech-lead.js';
 import { testEngineer } from '../src/agents/test-engineer.js';
 import { CompositionRefusal, holder, persona } from '../src/compose.js';
 import { none } from '../src/factors/action-scope/none.js';
+import { writeDomainModel } from '../src/factors/action-scope/write-domain-model.js';
 import { bottomLineUpFront } from '../src/factors/communication-style/bottom-line-up-front.js';
 import { honesty } from '../src/factors/guardrails/honesty.js';
 import { MANIFEST } from '../src/manifest.js';
@@ -73,6 +75,38 @@ describe('composition over action-scope', () => {
   it('narrows no composed agent to read-only, the code reviewer included', () => {
     for (const [name, agent] of Object.entries(agents))
       expect(agent, name).not.toHaveProperty('readOnly');
+  });
+});
+
+describe('the domain model is written by the business analyst alone', () => {
+  const writers: readonly string[] = ['businessAnalyst', 'kino', 'mav', 'nico'];
+
+  it('gives the business analyst and every persona over it write-domain-model and design/model/ to write', () => {
+    for (const name of writers) {
+      const agent = agents[name as keyof typeof agents];
+      expect(
+        agent.actionScope.map((e) => termOf(e.value)),
+        name,
+      ).toContain(termOf(writeDomainModel));
+      expect(
+        agent.writes?.map((p) => p.path),
+        name,
+      ).toEqual(['design/model/']);
+      expect(agent.writes?.[0]?.refusal, name).toMatch(
+        /raise a meaning question to the business analyst/,
+      );
+    }
+  });
+
+  it('gives every other agent neither', () => {
+    for (const [name, agent] of Object.entries(agents)) {
+      if (writers.includes(name)) continue;
+      expect(
+        agent.actionScope.map((e) => termOf(e.value)),
+        name,
+      ).not.toContain(termOf(writeDomainModel));
+      expect(agent, name).not.toHaveProperty('writes');
+    }
   });
 });
 

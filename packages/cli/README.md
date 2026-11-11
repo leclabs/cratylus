@@ -165,7 +165,7 @@ Everything install places for you lives under one root it owns: at user scope `~
   skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks the canon declares, and the dispatch isolation where an agent needs it
+  extensions/…              the session hooks the canon declares, the dispatch isolation where an agent needs it, and the guard that refuses a write to the domain model (`design/model/`) by any agent but the business analyst
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the canon declares any
