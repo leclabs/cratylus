@@ -574,6 +574,27 @@ export interface Agent {
    * harness cannot preload.
    */
   readonly isolation?: 'worktree';
+  /**
+   * OPTIONAL — the PROTECTED PATHS this agent writes. Copied by the canon's own fold
+   * from the paths its action-scope values reserve. Absent ⇒ none.
+   *
+   * A path any agent declares here is protected: written only by the agents
+   * declaring it, and read by every agent. A HARNESS that can judge a session's
+   * tool calls refuses a write to it by any other agent's session, telling the
+   * session the path's own {@link ProtectedPath.refusal}.
+   */
+  readonly writes?: readonly ProtectedPath[];
+}
+
+/** A path some agents alone write: what a harness refuses to every other agent. */
+export interface ProtectedPath {
+  /** A directory relative to the repository root, ending in `/`. */
+  readonly path: string;
+  /** What the path holds, as a sentence names it (`the domain model`), so a harness
+   *  can say how to read it where it refuses a call that only might read. */
+  readonly name: string;
+  /** What a refused write is told: whose the path is and how to have it changed. */
+  readonly refusal: string;
 }
 
 /**

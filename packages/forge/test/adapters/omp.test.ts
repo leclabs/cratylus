@@ -19,14 +19,24 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { ORIENTATION } from '@cratylus/runtime';
 import { kebabToCamel } from '@cratylus/schema';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import {
   OMP_CRATYLUS_MODULE,
   OMP_ISOLATION_MODULE,
+  OMP_REACH_MODULE,
   OMP_SESSION_MODULE,
   agentToOmpMd,
   ompCapabilityExtensions,
   ompHarnessAdapter,
+  ompReachExtensions,
   ompRoleRouting,
 } from '../../src/adapters/omp/index.js';
 import { OMP_CAPABILITY_TOOLS } from '../../src/adapters/omp/render.js';
@@ -501,14 +511,281 @@ describe('omp launch', () => {
   it('composes no launcher, persona overlay or badge from the agents', () => {
     // Starting a session as an agent goes only through `omp --agent`, which the
     // capability module registers: what the adapter composes from the agents is
-    // the dispatch isolation module, once at the session scope, and only for an
-    // agent declaring a worktree.
+    // the dispatch isolation module, only for an agent declaring a worktree, and
+    // the reach module, only for an agent declaring a path it writes, each once at
+    // the session scope.
     expect(ompHarnessAdapter.launchSurface?.([AGENT])).toEqual([]);
     expect(
       ompHarnessAdapter
         .launchSurface?.([AGENT, agent({ name: 'iso', isolation: 'worktree' })])
         .map((f) => [f.filename, f.scope]),
     ).toEqual([[OMP_ISOLATION_MODULE, SESSION_SCOPE]]);
+    expect(
+      ompHarnessAdapter
+        .launchSurface?.([
+          AGENT,
+          agent({ name: 'iso', isolation: 'worktree' }),
+          agent({ name: 'ba', writes: MODEL_WRITES }),
+        ])
+        .map((f) => [f.filename, f.scope]),
+    ).toEqual([
+      [OMP_ISOLATION_MODULE, SESSION_SCOPE],
+      [OMP_REACH_MODULE, SESSION_SCOPE],
+    ]);
+  });
+});
+
+/** What a write to the domain model is told, as the canon says it. */
+const MODEL_REFUSAL =
+  'design/model/ is the domain model, which only the business analyst writes. To change it, raise a meaning question to the business analyst.';
+const MODEL_WRITES = [
+  { path: 'design/model/', name: 'the domain model', refusal: MODEL_REFUSAL },
+];
+
+describe('omp reach', () => {
+  const agents = [
+    agent({ name: 'business-analyst', writes: MODEL_WRITES }),
+    agent({ name: 'kino', writes: MODEL_WRITES }),
+    agent({ name: 'tech-lead' }),
+  ];
+  type Handler = (event: unknown, ctx: unknown) => unknown;
+  let factory: (pi: unknown) => void;
+  let dir: string;
+  beforeAll(async () => {
+    const [module] = ompReachExtensions(agents);
+    dir = mkdtempSync(join(tmpdir(), 'omp-reach-'));
+    const file = join(dir, OMP_REACH_MODULE);
+    writeFileSync(file, module?.content ?? '');
+    // Dynamic: the module under test is the emitted bytes, written to disk here.
+    factory = (await import(file)).default;
+  });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  /** The verdict on one call of `tool` in a session: one omp dispatched as `sub`,
+   *  or a main one started with `--agent <flag>` (or without it). The stand-in omp
+   *  answers `getFlag` only for a flag the module registered, as omp does. */
+  function verdict(
+    session: { sub?: string; flag?: string; ctx?: object },
+    tool: string,
+    input: unknown,
+    cwd = '/x/wt/repo',
+  ): unknown {
+    const registered: string[] = [];
+    let handler: Handler | undefined;
+    factory({
+      registerFlag: (name: string) => registered.push(name),
+      getFlag: (name: string) =>
+        name === 'agent' && registered.includes(name)
+          ? session.flag
+          : undefined,
+      on: (event: string, fn: Handler) => {
+        if (event === 'tool_call') handler = fn;
+      },
+    });
+    const ctx = session.ctx ?? {
+      cwd,
+      agent:
+        session.sub === undefined
+          ? { kind: 'main' }
+          : { kind: 'sub', name: session.sub },
+    };
+    return handler?.({ toolName: tool, input }, ctx);
+  }
+  const refused = { block: true, reason: MODEL_REFUSAL };
+  const write = { path: 'design/model/x.md', content: 'x' };
+
+  it("refuses a write to the domain model by another agent's subagent, naming a meaning question to the business analyst", () => {
+    expect(verdict({ sub: 'tech-lead' }, 'write', write)).toEqual(refused);
+    expect(MODEL_REFUSAL).toMatch(
+      /raise a meaning question to the business analyst/,
+    );
+  });
+
+  it('lets the business analyst and a persona over it write the domain model', () => {
+    expect(
+      verdict({ sub: 'business-analyst' }, 'write', write),
+    ).toBeUndefined();
+    expect(verdict({ sub: 'kino' }, 'write', write)).toBeUndefined();
+  });
+
+  it("refuses omp's own agents, which are none of cratylus", () => {
+    expect(verdict({ sub: 'task' }, 'write', write)).toEqual(refused);
+  });
+
+  it('judges a main session only when it was started as an agent of cratylus that does not write the path', () => {
+    expect(verdict({}, 'write', write)).toBeUndefined();
+    expect(verdict({ flag: 'tech-lead' }, 'write', write)).toEqual(refused);
+    expect(
+      verdict(
+        { flag: 'tech-lead', ctx: { cwd: '/x/wt/repo' } },
+        'write',
+        write,
+      ),
+      'a context with no agent is a main session',
+    ).toEqual(refused);
+    expect(
+      verdict({ flag: 'business-analyst' }, 'write', write),
+    ).toBeUndefined();
+    expect(
+      verdict({ flag: 'scout' }, 'write', write),
+      'an agent cratylus did not project is the product owner’s own',
+    ).toBeUndefined();
+  });
+
+  it('judges an edit by the paths its grammar names, never by the content it writes', () => {
+    const tl = { sub: 'tech-lead' };
+    expect(
+      verdict(tl, 'edit', {
+        input: '[design/model/x.md#1A2B]\nPUT 1.=1:\n+text',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '[src/a.ts#1A2B]\nPUT 1.=1:\n+// see design/model/x.md\n- design/model/y.md',
+      }),
+    ).toBeUndefined();
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '*** Begin Patch\n*** Update File: design/model/x.md\n@@\n-a\n+b\n*** End Patch',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'ast_edit', {
+        ops: [{ pat: 'a', out: 'b' }],
+        paths: ['design/model/'],
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'write', {
+        path: 'xd://ast_edit',
+        content: JSON.stringify({
+          ops: [{ pat: 'a', out: 'b' }],
+          paths: ['design/model/x.md'],
+        }),
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'write', { path: 'xd://ast_edit', content: '{not json' }),
+    ).toBeUndefined();
+  });
+
+  it("resolves each path an edit's grammar names and judges it by its components", () => {
+    const tl = { sub: 'tech-lead' };
+    expect(
+      verdict(
+        tl,
+        'edit',
+        { input: '[reach.md#1A2B]\nPUT 1.=1:\n+text' },
+        '/x/wt/repo/design/model',
+      ),
+      'a bare header from inside the domain model',
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input: '[design/./model/x.md#1A2B]\nPUT 1.=1:\n+text',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', { input: '[notes.md#1A2B]\nMV design/model/x.md' }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '*** Begin Patch\n*** Delete File: design/model/x.md\n*** End Patch',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '*** Begin Patch\n*** Update File: notes.md\n*** Move to: design/model/x.md\n@@\n-a\n+b\n*** End Patch',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input: '[design/model backup/x.md#1A2B]\nPUT 1.=1:\n+text',
+      }),
+    ).toBeUndefined();
+  });
+
+  it('refuses a write to the domain model of a worktree by its absolute path', () => {
+    expect(
+      verdict(
+        { sub: 'tech-lead' },
+        'write',
+        { path: '/x/wt/repo/design/model/a.md', content: 'x' },
+        '/elsewhere',
+      ),
+    ).toEqual(refused);
+  });
+
+  it('refuses a shell or eval call naming the domain model, naming the tools that read it', () => {
+    const shell = {
+      block: true,
+      reason: `${MODEL_REFUSAL} A shell or eval call naming design/model/ is refused whether it reads or writes; read the domain model with the read, grep or glob tool.`,
+    };
+    expect(
+      verdict({ sub: 'tech-lead' }, 'bash', {
+        command: 'cat design/model/a.md',
+      }),
+    ).toEqual(shell);
+    expect(
+      verdict({ sub: 'tech-lead' }, 'bash', {
+        command: 'ls',
+        cwd: 'design/model',
+      }),
+    ).toEqual(shell);
+    expect(
+      verdict({ sub: 'tech-lead' }, 'eval', {
+        language: 'py',
+        code: 'x = 1\ndesign/model',
+      }),
+    ).toEqual(shell);
+  });
+
+  it('never judges a tool that reads', () => {
+    for (const [tool, input] of [
+      ['read', { path: 'design/model/a.md' }],
+      ['grep', { pattern: 'x', path: 'design/model/' }],
+      ['glob', { path: 'design/model/**' }],
+    ] as const)
+      expect(verdict({ sub: 'tech-lead' }, tool, input), tool).toBeUndefined();
+  });
+
+  it('refuses no path that only shares the spelling of the protected one', () => {
+    for (const path of [
+      'design/modeling/x',
+      'design/examples/x',
+      'design/model backup/x.md',
+      'other!design/model/x',
+    ])
+      expect(
+        verdict({ sub: 'tech-lead' }, 'write', { path, content: 'x' }),
+        path,
+      ).toBeUndefined();
+  });
+
+  it('emits no module where no agent writes a protected path', () => {
+    expect(ompReachExtensions([AGENT])).toEqual([]);
+  });
+
+  it('refuses to project two refusals for one path', () => {
+    expect(() =>
+      ompReachExtensions([
+        agent({ name: 'a', writes: MODEL_WRITES }),
+        agent({
+          name: 'b',
+          writes: [
+            {
+              path: 'design/model/',
+              name: 'the domain model',
+              refusal: 'another',
+            },
+          ],
+        }),
+      ]),
+    ).toThrow(/design\/model\//);
   });
 });
 

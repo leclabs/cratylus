@@ -30,6 +30,7 @@ import {
 } from '@cratylus/schema';
 import { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
 import { type Agent, type Factor, MANIFEST } from './manifest.js';
+import { PROTECTED_PATHS } from './protected-paths.js';
 
 /** The factors an agent holds a field for: every factor that is not an attribute. */
 type HeldFactor = {
@@ -185,6 +186,9 @@ function agentOf(
       ? { deliverable: DELIVERABLE_CONTRACTS[deliverable] }
       : {}),
   };
+  const writes = terms('actionScope').flatMap((term) =>
+    PROTECTED_PATHS[term] ? [PROTECTED_PATHS[term]] : [],
+  );
   return {
     name: identity.name,
     description: identity.description,
@@ -196,6 +200,7 @@ function agentOf(
       effort: slotTerm('model', 'effort'),
     },
     ...(Object.keys(contract).length > 0 ? { contract } : {}),
+    ...(writes.length > 0 ? { writes } : {}),
     ...vector,
   } as unknown as Agent;
 }
