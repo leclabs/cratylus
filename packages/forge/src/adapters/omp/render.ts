@@ -124,6 +124,10 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
  *  for the agents that declare a worktree of their own and for nothing else. */
 export const OMP_ISOLATION_MODULE = `${CLI_BIN}-isolation.ts`;
 
+/** The emitted REACH module's filename: the guard on the protected paths, placed
+ *  where some agent declares a path it alone writes and for nothing else. */
+export const OMP_REACH_MODULE = `${CLI_BIN}-reach.ts`;
+
 /** The capabilities omp is offered as tools: those that explain themselves
  *  (`<bin> <capability> --explain`): the model check and the version skew. */
 export const OMP_CAPABILITY_TOOLS: readonly Capability[] = [
@@ -140,6 +144,13 @@ export const OMP_CRATYLUS_MODULE = `${CLI_BIN}.ts`;
  *  main session as the agent definition omp discovers by that name
  *  (design/decisions/agent-launch-through-the-extension.md). */
 const OMP_AGENT_FLAG = 'agent';
+
+/** What omp says of {@link OMP_AGENT_FLAG}. The CRATYLUS module registers the flag
+ *  and the REACH module registers it again in these same words, since omp's
+ *  `getFlag` answers a module only for a flag it registered itself, and merges
+ *  same-named flags last-wins (measured in omp 18.18.6). */
+const OMP_AGENT_FLAG_DESCRIPTION =
+  'Start the session as the agent definition omp discovers by this name';
 
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
@@ -496,6 +507,233 @@ export function ompIsolationExtensions(
         '    return {',
         '      input: batch ? { ...input, tasks: next } : (next[0] as Record<string, unknown>),',
         '    };',
+        '  });',
+        '}',
+        '',
+      ].join('\n'),
+    },
+  ];
+}
+
+/**
+ * The REACH module: the `tool_call` handler that refuses a write to a protected
+ * path by a session whose agent does not write it, at the SESSION scope
+ * (design/decisions/a-protected-path-is-guarded-in-the-extension.md).
+ *
+ * A path any agent declares in `writes` is protected, and its writers are the agents
+ * declaring it; all of them say one refusal for it, or projection fails naming the
+ * path. omp's agent `tools` grants whole tools and `tools.restrictedFolders` gates
+ * reads, so neither carries a path some agents alone write; a handler judging each
+ * call does.
+ *
+ * WHO IS JUDGED. omp hands a subagent its parent's extensions, so the module loads in
+ * every session and asks which one is running. A SUBAGENT session is judged as the
+ * agent omp dispatched (`ctx.agent.name`), omp's own agents and every agent not of
+ * cratylus included; a MAIN session only when started as an agent of cratylus
+ * (`omp --agent <name>`, `<name>` among the projected agents). A main session started
+ * as nothing, or as no agent of cratylus, is the product owner's own and is never
+ * judged. The module registers the `agent` flag in the CRATYLUS module's words, since
+ * omp answers `getFlag` only for a flag the asking module registered.
+ *
+ * WHAT IS JUDGED. `write`, `edit` and `ast_edit` by the paths they name, each
+ * resolved against the session's directory and judged by its components, so a path
+ * is refused where it holds the protected path's segments one after another: the
+ * paths under the keys that name a file, and those an edit's own grammar names on
+ * its path lines (a hashline header `[PATH#TAG]` and `MV DEST`; apply_patch's
+ * `*** Add File:`, `*** Update File:`, `*** Delete File:` and `*** Move to:`).
+ * Its other lines but the body lines, which carry file content, are judged as text.
+ * A write to `xd://<tool>` is the call of `<tool>` its content is. `bash` and `eval`
+ * by every text of their input, refused whether they read or write, so a path a call
+ * builds at run time passes: that is the guard's known limit. No other tool is
+ * judged, so every tool that only reads passes.
+ */
+export function ompReachExtensions(
+  agents: readonly Agent[],
+): HarnessProjection[] {
+  const byPath = new Map<
+    string,
+    { writers: string[]; name: string; refusal: string }
+  >();
+  for (const a of agents)
+    for (const { path, name, refusal } of a.writes ?? []) {
+      const held = byPath.get(path);
+      if (held === undefined)
+        byPath.set(path, { writers: [a.name], name, refusal });
+      else if (held.refusal !== refusal || held.name !== name)
+        throw new Error(
+          `the agents writing '${path}' say two different refusals for it: '${held.name}: ${held.refusal}' and '${name}: ${refusal}'`,
+        );
+      else if (!held.writers.includes(a.name)) held.writers.push(a.name);
+    }
+  if (byPath.size === 0) return [];
+  const guarded = [...byPath]
+    .sort(([a], [b]) => (a < b ? -1 : 1))
+    .map(([path, { writers, name, refusal }]) => ({
+      path,
+      writers: writers.sort(),
+      refusal,
+      // A shell or eval call is judged by its text alone, which cannot tell a read
+      // from a write: what it is told names the tools that read.
+      shellRefusal: `${refusal} A shell or eval call naming ${path} is refused whether it reads or writes; read ${name} with the read, grep or glob tool.`,
+    }));
+  return [
+    {
+      filename: OMP_REACH_MODULE,
+      scope: SESSION_SCOPE,
+      content: [
+        `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} install\`.`,
+        `// Refuses a write to ${guarded.map((p) => `\`${p.path}\``).join(', ')} by a session whose agent does not write it.`,
+        '//',
+        ...SESSION_PLACEMENT,
+        '//',
+        "// A subagent session is judged as the agent omp dispatched, omp's own agents included;",
+        `// a main session only when started as an agent of ${CLI_BIN} (\`omp --agent <name>\`), so`,
+        "// the product owner's own session is never judged. A file tool is judged by the paths",
+        '// it names; a shell or eval call by the text of its input, whether it reads or writes,',
+        '// so a path it builds at run time passes. No other tool is judged.',
+        '',
+        "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
+        "import { resolve, sep } from 'node:path';",
+        '',
+        'interface Protected {',
+        '  path: string;',
+        '  writers: readonly string[];',
+        '  refusal: string;',
+        '  shellRefusal: string;',
+        '}',
+        "// What the handler reads off its context: the session's directory and the agent it runs as.",
+        'type Session = { cwd?: string; agent?: { kind?: string; name?: string } };',
+        '// What a judged call names: resolved paths, judged by their components; texts,',
+        '// judged by their spelling; and whether it is a shell or eval call.',
+        'type Named = { paths: string[]; texts: string[]; shell: boolean };',
+        '',
+        `// Every agent of ${CLI_BIN}, by name: a main session started as one of them is judged.`,
+        `const AGENTS: readonly string[] = ${JSON.stringify(agents.map((a) => a.name).sort())};`,
+        '// Each protected path, the agents that write it, and what any other agent is told.',
+        `const PROTECTED: readonly Protected[] = ${JSON.stringify(guarded)};`,
+        `// The flag the ${CLI_BIN} module registers, registered here in its words so \`pi.getFlag\` answers.`,
+        `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
+        `const AGENT_FLAG_DESCRIPTION = ${JSON.stringify(OMP_AGENT_FLAG_DESCRIPTION)};`,
+        '// The keys whose strings name a file an edit changes.',
+        'const PATH_KEYS: readonly string[] = ["path", "paths", "rename"];',
+        "// The key whose text is an edit's own grammar, and its body lines, which carry file content.",
+        'const GRAMMAR_KEY = "input";',
+        'const BODY_LINE = /^[-+ @]/;',
+        '// A write to `xd://<tool>` is a call of that tool.',
+        'const DEVICE = /^xd:\\/\\/([^/?#]+)\\/?$/;',
+        "// The lines of an edit's own grammar that name a file, each capturing the path it names:",
+        "// a hashline header `[PATH#TAG]` and `MV DEST`, and apply_patch's `*** Add File:`,",
+        '// `*** Update File:`, `*** Delete File:` and `*** Move to:`.',
+        'const PATH_LINES: readonly RegExp[] = [',
+        '  /^\\[(.+)#[^#\\]]*\\]$/,',
+        '  /^MV\\s+(.+)$/,',
+        '  /^\\*\\*\\* (?:Add|Update|Delete) File:\\s*(.+)$/,',
+        '  /^\\*\\*\\* Move to:\\s*(.+)$/,',
+        '];',
+        '// Each protected path with its segments, which a resolved path holds one after another',
+        '// where it is the protected directory or under it, and the test of whether a text',
+        '// names it as a whole path, never a longer name sharing its spelling.',
+        'const GUARDS = PROTECTED.map((p) => {',
+        '  const segments = p.path.split("/").filter((segment) => segment !== "");',
+        '  const dir = segments.join("/").replace(/[\\\\^$.*+?()[\\]{}|]/g, "\\\\$&");',
+        '  return { ...p, segments, names: new RegExp(`(?<![\\\\w.-])${dir}(?![\\\\w.-])`) };',
+        '});',
+        '',
+        '/** Whether a resolved path holds `segments` one after another. */',
+        'function holds(path: string, segments: readonly string[]): boolean {',
+        '  const parts = path.split(sep);',
+        '  for (let at = 0; at + segments.length <= parts.length; at++)',
+        '    if (segments.every((segment, i) => parts[at + i] === segment)) return true;',
+        '  return false;',
+        '}',
+        '',
+        '/** Every string under `value`, at any depth. */',
+        'function strings(value: unknown, texts: string[]): void {',
+        '  if (typeof value === "string") texts.push(value);',
+        '  else if (typeof value === "object" && value !== null)',
+        '    for (const item of Object.values(value)) strings(item, texts);',
+        '}',
+        '',
+        '/** The path a line of an edit grammar names, unquoted, or nothing where it names none. */',
+        'function pathOf(line: string): string | undefined {',
+        '  for (const form of PATH_LINES) {',
+        '    const found = form.exec(line.trim());',
+        '    if (found !== null) return (found[1] as string).trim().replace(/^(["\'])(.*)\\1$/, "$2");',
+        '  }',
+        '  return undefined;',
+        '}',
+        '',
+        '/** Every path an edit names, resolved against `cwd`, and every other line of its own',
+        ' *  grammar but its body lines. */',
+        'function edited(value: unknown, key: string, cwd: string, call: Named): void {',
+        '  if (typeof value === "string") {',
+        '    if (PATH_KEYS.includes(key)) call.paths.push(resolve(cwd, value));',
+        '    else if (key === GRAMMAR_KEY)',
+        '      for (const line of value.split(/\\r?\\n/)) {',
+        '        if (BODY_LINE.test(line)) continue;',
+        '        const path = pathOf(line);',
+        '        if (path === undefined) call.texts.push(line);',
+        '        else call.paths.push(resolve(cwd, path));',
+        '      }',
+        '  } else if (Array.isArray(value)) {',
+        '    for (const item of value) edited(item, key, cwd, call);',
+        '  } else if (typeof value === "object" && value !== null) {',
+        '    for (const [k, item] of Object.entries(value)) edited(item, k, cwd, call);',
+        '  }',
+        '}',
+        '',
+        '/** What a call of `tool` names, or nothing where the tool is not judged. */',
+        'function named(tool: string, input: unknown, cwd: string): Named | undefined {',
+        '  const args = (typeof input === "object" && input !== null ? input : {}) as Record<string, unknown>;',
+        '  if (tool === "write") {',
+        '    if (typeof args.path !== "string") return undefined;',
+        '    const device = DEVICE.exec(args.path);',
+        '    if (device === null) return { paths: [resolve(cwd, args.path)], texts: [], shell: false };',
+        '    let call: unknown;',
+        '    try {',
+        '      call = JSON.parse(String(args.content));',
+        '    } catch {',
+        '      return undefined;',
+        '    }',
+        '    return named(device[1] as string, call, cwd);',
+        '  }',
+        '  if (tool === "edit" || tool === "ast_edit") {',
+        '    const call: Named = { paths: [], texts: [], shell: false };',
+        '    edited(args, "", cwd, call);',
+        '    return call;',
+        '  }',
+        '  if (tool === "bash" || tool === "eval") {',
+        '    const call: Named = { paths: [], texts: [], shell: true };',
+        '    strings(args, call.texts);',
+        '    if (typeof args.cwd === "string") call.paths.push(resolve(cwd, args.cwd));',
+        '    return call;',
+        '  }',
+        '  return undefined;',
+        '}',
+        '',
+        'export default function (pi: ExtensionAPI) {',
+        '  pi.registerFlag(AGENT_FLAG, { description: AGENT_FLAG_DESCRIPTION, type: "string" });',
+        `  // The agent a session is judged as: the one omp dispatched, or the agent of ${CLI_BIN} a`,
+        "  // main session was started as; none for the product owner's own session.",
+        '  const judged = (ctx: Session): string | undefined => {',
+        '    if (ctx.agent?.kind === "sub") return ctx.agent.name ?? "";',
+        '    const flag = pi.getFlag(AGENT_FLAG);',
+        '    return typeof flag === "string" && AGENTS.includes(flag) ? flag : undefined;',
+        '  };',
+        '  pi.on("tool_call", (event, ctx: Session) => {',
+        '    const agent = judged(ctx ?? {});',
+        '    if (agent === undefined) return undefined;',
+        '    const call = named(event.toolName, event.input, ctx?.cwd ?? process.cwd());',
+        '    if (call === undefined) return undefined;',
+        '    for (const guard of GUARDS) {',
+        '      if (guard.writers.includes(agent)) continue;',
+        '      if (',
+        '        call.paths.some((path) => holds(path, guard.segments)) ||',
+        '        call.texts.some((text) => guard.names.test(text))',
+        '      )',
+        '        return { block: true, reason: call.shell ? guard.shellRefusal : guard.refusal };',
+        '    }',
+        '    return undefined;',
         '  });',
         '}',
         '',
@@ -954,8 +1192,9 @@ const SESSION_PLACEMENT: readonly string[] = [
  * declaration, skills and assignment forms. The module restates no word of it; a
  * command that cannot explain itself adds nothing and fails nothing.
  *
- * NO CALL IS REFUSED FOR WHAT IT CHANGES. What a call may change is
- * a rule held by review.
+ * NO CALL IS REFUSED HERE FOR WHAT IT CHANGES. A protected path is guarded by the
+ * REACH module ({@link ompReachExtensions}); every other limit on what a call may
+ * change is a rule held by review.
  *
  * AGENT LAUNCH (design/decisions/agent-launch-through-the-extension.md). The module
  * registers omp's `--agent <name>` flag.
@@ -1353,7 +1592,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '',
         'export default async function (pi: ExtensionAPI) {',
         '  pi.registerFlag(AGENT_FLAG, {',
-        '    description: "Start the session as the agent definition omp discovers by this name",',
+        `    description: ${JSON.stringify(OMP_AGENT_FLAG_DESCRIPTION)},`,
         '    type: "string",',
         '  });',
         '  let launched: Launched | undefined;',
@@ -1623,10 +1862,14 @@ export const ompHarnessAdapter: HarnessAdapter = {
   skillRel: ompSkillRel,
   // The session module: the hooks no agent composes.
   scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),
-  // The dispatch isolation module: what this harness composes from the agents
-  // beyond their definitions. Starting a session as one goes through `omp --agent`,
-  // which the capability module below registers, so nothing here launches anything.
-  launchSurface: (agents) => ompIsolationExtensions(agents),
+  // The dispatch isolation and reach modules: what this harness composes from the
+  // agents beyond their definitions. Starting a session as one goes through `omp
+  // --agent`, which the capability module below registers, so nothing here launches
+  // anything.
+  launchSurface: (agents) => [
+    ...ompIsolationExtensions(agents),
+    ...ompReachExtensions(agents),
+  ],
   // The capabilities a plain session is offered as tools, each composed at load
   // from the installed command's own explanation, and `--agent`.
   capabilitySurface: ompCapabilityExtensions,

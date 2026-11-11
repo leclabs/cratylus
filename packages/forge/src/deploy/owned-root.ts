@@ -12,7 +12,7 @@
 //   skills/<name>/…         the canon's skills
 //   rules/<name>.md         the rules chosen at install, each applied in every session
 //   extensions/<module>.ts  the harness's adapters (the capability tools, the session
-//                           hooks, the dispatch isolation)
+//                           hooks, the dispatch isolation, the reach guard)
 //   hooks/<id>/<worker>     the workers the session hooks run
 //   package.json            the package: its name, the VERSION of cratylus that
 //                           projected it, and the modules omp loads (`omp.extensions`)

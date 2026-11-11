@@ -4,6 +4,7 @@
 // business analyst.
 
 import type { RoleProfile } from '../compose.js';
+import { writeDomainModel } from '../factors/action-scope/write-domain-model.js';
 import { intent } from '../factors/assignment/intent.js';
 import { missionCommand } from '../factors/autonomy/mission-command.js';
 import { bottomLineUpFront } from '../factors/communication-style/bottom-line-up-front.js';
@@ -82,7 +83,7 @@ export const businessAnalystRole: RoleProfile = {
       },
     ],
     perceptionScope: [],
-    actionScope: [],
+    actionScope: [writeDomainModel],
     model: [
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },

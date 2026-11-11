@@ -165,7 +165,7 @@ Everything install places for you lives under one root it owns: at user scope `~
   skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks the canon declares, and the dispatch isolation where an agent needs it
+  extensions/…              the session hooks the canon declares, the dispatch isolation where an agent needs it, and the guard that refuses a write to the domain model (`design/model/`) by any agent but the business analyst
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the canon declares any
@@ -218,9 +218,19 @@ Install places no launcher and links no command for it: `--agent` is cratylus's 
 what install places), and it starts any agent definition omp discovers, not only the installed
 agents. An `omp --agent` session starts with the full instructions of the skills its agent
 definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
-through omp's own skill discovery, as any omp session does. Nothing judges an agent's acts or
-replies: an agent's behaviour is evaluated in real use. Every turn shows the typed
+through omp's own skill discovery, as any omp session does. Nothing judges an agent's replies or,
+but for a write to the domain model below, its acts: an agent's behaviour is evaluated in real use. Every turn shows the typed
 assignment of each agent that takes one.
+
+Writing the domain model, `design/model/`, is the business analyst's alone (it and its personas
+kino, mav and nico). The installed extension refuses a `write`, `edit` or `ast_edit` reaching
+`design/model/`, and a `bash` or `eval` call whose input names it, in a dispatched session whose
+agent is not one of them, omp's own agents included, and in a session started as another installed
+agent (`omp --agent tech-lead`); the refusal says to raise a meaning question to the business
+analyst. Your own session, started with no `--agent` or as an agent cratylus did not install, is
+not refused. Reading is never refused: read the model with the `read`, `grep` or `glob` tool, since
+a shell command naming the path is refused whether it reads or writes, and one building the path at
+run time is not caught (`design/decisions/a-protected-path-is-guarded-in-the-extension.md`).
 
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed

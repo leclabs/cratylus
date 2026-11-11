@@ -34,6 +34,7 @@ export {
   type Stated,
 } from './compose.js';
 export { ASSIGNMENT_CONTRACTS, DELIVERABLE_CONTRACTS } from './contracts.js';
+export { PROTECTED_PATHS } from './protected-paths.js';
 export { MANIFEST, RULESETS };
 export { businessAnalystRole } from './roles/business-analyst.js';
 export { codeReviewerRole } from './roles/code-reviewer.js';
