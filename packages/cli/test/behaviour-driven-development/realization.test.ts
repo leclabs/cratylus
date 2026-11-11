@@ -3,10 +3,17 @@ import { join } from 'node:path';
 import { Ajv, type AnySchema } from 'ajv';
 import { afterEach, expect, it } from 'vitest';
 import { type Host, host, success } from '../capability-port/fixture.js';
+import {
+  type LoadedExtension,
+  load,
+} from '../typed-handoff/binding/fixture.js';
 import { parseYaml } from '../yaml.js';
 
 let h: Host | undefined;
+let running: LoadedExtension | undefined;
 afterEach(() => {
+  running?.restore();
+  running = undefined;
   h?.dispose();
   h = undefined;
 });
@@ -37,7 +44,7 @@ it('behaviour-driven-development/realization: the tech lead remembers what is bu
   );
 });
 
-it('behaviour-driven-development/realization: a task names the realization it touches', () => {
+it('behaviour-driven-development/realization: a task names the realization it touches', async () => {
   h = host();
   success(h.install);
   // These installed declarations also supply dispatchers' Assignment forms.
@@ -104,4 +111,24 @@ it('behaviour-driven-development/realization: a task names the realization it to
   for (const form of lead.anyOf) {
     expect(form.properties).not.toHaveProperty('realizedBy');
   }
+  // The Assignment forms the installed extension shows every session name each realization's
+  // fields, the values `realization` takes and the rule each carries.
+  running = await load({
+    ...h,
+    extension: join(h.home, '.cratylus/omp/extensions/cratylus.ts'),
+  });
+  const answer = await running.fire('before_agent_start', { systemPrompt: [] });
+  const forms = (answer?.systemPrompt as string[] | undefined)?.join('\n');
+  const form = /(?:^|\n)(- software-engineer:[\s\S]*?)(?=\n- |$)/.exec(
+    forms ?? '',
+  )?.[1];
+  expect(form, 'the software engineer has an assignment form').toBeDefined();
+  expect(form).toMatch(
+    /^ {2}- `realizedBy` \(list of objects, may be empty, required\): \S/m,
+  );
+  expect(form).toMatch(/^ {4}- `commit` \(string, required\): \S/m);
+  expect(form).toMatch(/^ {4}- `header` \(string, required\): \S/m);
+  expect(form).toMatch(
+    /^ {4}- `realization` \(string, `change` or `replace`, required\): `change` [^\n]*`replace` [^\n]*deleted whole in the same change/m,
+  );
 });

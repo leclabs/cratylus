@@ -1748,6 +1748,66 @@ describe('omp tool definitions', () => {
       }
     });
 
+    it('nests the fields of a list of objects beneath it in the assignment form, each with its shape, need and meaning', async () => {
+      omp.agents = [
+        declare(
+          {
+            name: 'software-engineer',
+            description: 'Realizes a task.',
+            assignment: {
+              type: 'object',
+              properties: {
+                task: { type: 'string', description: 'The task.' },
+                realizedBy: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      commit: {
+                        type: 'string',
+                        description: 'The merge commit.',
+                      },
+                      realization: {
+                        type: 'string',
+                        enum: ['change', 'replace'],
+                        description: 'How the task treats it.',
+                      },
+                    },
+                    required: ['commit'],
+                  },
+                  description: 'Each merge the task touches.',
+                },
+              },
+              required: ['task', 'realizedBy'],
+            },
+          },
+          'Realize the task.',
+        ),
+      ];
+      const session = await started();
+      await session.fire('session_start', 'sub');
+      const { systemPrompt } = (await session.fire(
+        'before_agent_start',
+        'sub',
+      )) as { systemPrompt: string[] };
+      expect(systemPrompt.at(-1)).toBe(
+        [
+          '# Assignment forms',
+          '',
+          'Give a dispatch of these agents its assignment in its task text so:',
+          '',
+          '- software-engineer: give its assignment in the task text as one fenced code block with info string `assignment` holding one JSON object:',
+          '  ```assignment',
+          '  {"task": …, "realizedBy": …}',
+          '  ```',
+          '  - `task` (string, required): The task.',
+          '  - `realizedBy` (list of objects, may be empty, required): Each merge the task touches.',
+          '    - `commit` (string, required): The merge commit.',
+          '    - `realization` (string, `change` or `replace`, optional): How the task treats it.',
+        ].join('\n'),
+      );
+    });
+
     it("carries the reached command's orientation right after omp's prompt in every session, launched or not, main or dispatched", async () => {
       omp.agents = [declare({ name: 'pilot', description: 'd' }, 'Fly.')];
       const orientation = 'What it is for.\nHow it starts.\nWhy it works.';
