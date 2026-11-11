@@ -131,12 +131,17 @@ describe('typed handoffs', () => {
       'the tech lead takes a story, or a task with no story',
     ).toEqual([
       ['story', 'slice', 'why', 'acceptanceCriteria', 'outOfScope'],
-      softwareEngineer.contract?.assignment?.required,
+      ['task', 'goal', 'changes', 'done'],
     ]);
     expect(required('softwareEngineer')).toEqual({
-      assignment: ['task', 'goal', 'changes', 'done'],
+      assignment: ['task', 'goal', 'changes', 'done', 'realizedBy'],
       deliverable: ['change', 'tests', 'verified'],
     });
+    expect(
+      softwareEngineer.contract?.assignment?.properties?.realizedBy?.items
+        ?.required,
+      'each realization a task touches names its merge and how it is treated',
+    ).toEqual(['commit', 'header', 'realization']);
     expect(required('codeReviewer')).toEqual({
       assignment: ['change'],
       deliverable: ['verdict', 'findings', 'meaningQuestions'],

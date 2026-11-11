@@ -1,6 +1,6 @@
 # install
 
-At user scope by default, or project scope; places every agent and skill, and offers the rulesets, each taken whole or rule by rule; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
+At user scope by default, or project scope; places every agent and skill, and offers the rulesets, each taken whole or rule by rule; a recorded rule no longer offered is dropped and named; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
 
 ## Examples
 
@@ -22,3 +22,17 @@ Given an installation whose recorded choice predates a ruleset now offered
 When install runs again on a terminal without --rules
 Then it keeps the recorded choice and asks only about the newly offered rules
 And without a terminal it keeps the recorded choice and names the rules it did not offer
+
+### offers clean-cutover in place of green-field
+
+Given cratylus's rulesets
+When install offers them
+Then it offers the clean-cutover ruleset, holding only the clean-cutover rule
+And it offers no green-field rule
+
+### drops a recorded rule no longer offered
+
+Given an installation whose recorded choice names green-field-declared-constraints
+When install runs again
+Then it drops that rule and names it as no longer offered
+And it asks about clean-cutover as a newly offered rule

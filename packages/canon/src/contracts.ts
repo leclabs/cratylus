@@ -58,7 +58,7 @@ const meaningQuestions = said(
 );
 
 // The story and the task, each a form of its own: the tech lead takes either, a
-// software engineer a task.
+// software engineer a task naming the realization it touches.
 const storyForm = record(
   {
     story: storyField,
@@ -82,18 +82,30 @@ const storyForm = record(
   },
   ['examples'],
 );
-const taskForm = record(
+const taskFields: Record<string, JsonSchema> = {
+  task: said(text, 'The task, by its name (a kebab-case id).'),
+  story: said(
+    text,
+    'The user story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
+  ),
+  goal: said(text, "What the task is for, in its user story's terms."),
+  changes: said(text, 'What the task changes.'),
+  done: said(text, 'What done means for the task.'),
+};
+const taskForm = record(taskFields, ['story']);
+const realizedBy = said(
   {
-    task: said(text, 'The task, by its name (a kebab-case id).'),
-    story: said(
-      text,
-      'The user story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
-    ),
-    goal: said(text, "What the task is for, in its user story's terms."),
-    changes: said(text, 'What the task changes.'),
-    done: said(text, 'What done means for the task.'),
+    type: 'array',
+    items: record({
+      commit: said(text, 'The merge commit, by its short sha.'),
+      header: said(text, "The merge commit's header."),
+      realization: said(
+        { type: 'string', enum: ['change', 'replace'] },
+        "`change` where the story's examples leave the concept's meaning as it is: its realization is changed in place. `replace` where they change it: the old realization is deleted whole in the same change, its code, every test of it and their fixtures; the new meaning's tests are written from its examples alone; a test that fails because it asserts the replaced meaning is deleted with it.",
+      ),
+    }),
   },
-  ['story'],
+  'Each merge into develop that realized a concept the task touches, empty where it touches none; the software engineer opens each with `git show <sha> --stat` and follows its paths at HEAD.',
 );
 
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
@@ -109,7 +121,7 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
       ],
     },
   ],
-  [task, taskForm],
+  [task, record({ ...taskFields, realizedBy }, ['story'])],
   [
     reviewRequest,
     record(
@@ -196,7 +208,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     record({
       verdict: said(
         { type: 'string', enum: ['approve', 'changes'] },
-        'Whether the code review approves the change or asks for changes.',
+        'Whether the code review approves the change or asks for changes; it approves only where each concept the change touches has exactly one realization after it.',
       ),
       findings: said(
         texts,

@@ -16,7 +16,7 @@ describe('canon rulesets', () => {
       'conventional-commits',
       'commit-discipline',
       'established-libraries',
-      'green-field',
+      'clean-cutover',
     ]);
     expect(canon.rulesets).toBe(RULESETS);
   });

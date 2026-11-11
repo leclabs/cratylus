@@ -115,7 +115,7 @@ reads the project installation; elsewhere it reads yours.
 A rule is stated with why it holds, and your agents follow it in every session of every project; a
 ruleset is a named set of rules offered together (`behaviour-driven-development`,
 `context-engineering`, `gitflow`, `conventional-commits`, `commit-discipline`,
-`established-libraries`, `green-field`). `behaviour-driven-development` adopts that practice by its
+`established-libraries`, `clean-cutover`). `behaviour-driven-development` adopts that practice by its
 name alone, and `context-engineering` adopts ten principles of context engineering, each by its name.
 On a terminal, install offers each ruleset in turn: all its rules, rule by rule, or none, which is
 the default. `--rules <name,…>`
