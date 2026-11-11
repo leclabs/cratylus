@@ -671,6 +671,44 @@ describe('omp reach', () => {
     ).toBeUndefined();
   });
 
+  it("resolves each path an edit's grammar names and judges it by its components", () => {
+    const tl = { sub: 'tech-lead' };
+    expect(
+      verdict(
+        tl,
+        'edit',
+        { input: '[reach.md#1A2B]\nPUT 1.=1:\n+text' },
+        '/x/wt/repo/design/model',
+      ),
+      'a bare header from inside the domain model',
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input: '[design/./model/x.md#1A2B]\nPUT 1.=1:\n+text',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', { input: '[notes.md#1A2B]\nMV design/model/x.md' }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '*** Begin Patch\n*** Delete File: design/model/x.md\n*** End Patch',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input:
+          '*** Begin Patch\n*** Update File: notes.md\n*** Move to: design/model/x.md\n@@\n-a\n+b\n*** End Patch',
+      }),
+    ).toEqual(refused);
+    expect(
+      verdict(tl, 'edit', {
+        input: '[design/model backup/x.md#1A2B]\nPUT 1.=1:\n+text',
+      }),
+    ).toBeUndefined();
+  });
+
   it('refuses a write to the domain model of a worktree by its absolute path', () => {
     expect(
       verdict(
@@ -716,7 +754,12 @@ describe('omp reach', () => {
   });
 
   it('refuses no path that only shares the spelling of the protected one', () => {
-    for (const path of ['design/modeling/x', 'design/examples/x'])
+    for (const path of [
+      'design/modeling/x',
+      'design/examples/x',
+      'design/model backup/x.md',
+      'other!design/model/x',
+    ])
       expect(
         verdict({ sub: 'tech-lead' }, 'write', { path, content: 'x' }),
         path,
