@@ -546,27 +546,31 @@ export function ompIsolationExtensions(
 export function ompReachExtensions(
   agents: readonly Agent[],
 ): HarnessProjection[] {
-  const byPath = new Map<string, { writers: string[]; refusal: string }>();
+  const byPath = new Map<
+    string,
+    { writers: string[]; name: string; refusal: string }
+  >();
   for (const a of agents)
-    for (const { path, refusal } of a.writes ?? []) {
+    for (const { path, name, refusal } of a.writes ?? []) {
       const held = byPath.get(path);
-      if (held === undefined) byPath.set(path, { writers: [a.name], refusal });
-      else if (held.refusal !== refusal)
+      if (held === undefined)
+        byPath.set(path, { writers: [a.name], name, refusal });
+      else if (held.refusal !== refusal || held.name !== name)
         throw new Error(
-          `the agents writing '${path}' say two different refusals for it: '${held.refusal}' and '${refusal}'`,
+          `the agents writing '${path}' say two different refusals for it: '${held.name}: ${held.refusal}' and '${name}: ${refusal}'`,
         );
       else if (!held.writers.includes(a.name)) held.writers.push(a.name);
     }
   if (byPath.size === 0) return [];
   const guarded = [...byPath]
     .sort(([a], [b]) => (a < b ? -1 : 1))
-    .map(([path, { writers, refusal }]) => ({
+    .map(([path, { writers, name, refusal }]) => ({
       path,
       writers: writers.sort(),
       refusal,
       // A shell or eval call is judged by its text alone, which cannot tell a read
       // from a write: what it is told names the tools that read.
-      shellRefusal: `${refusal} A shell or eval call naming ${path} is refused whether it reads or writes; read ${path} with the read, grep or glob tool.`,
+      shellRefusal: `${refusal} A shell or eval call naming ${path} is refused whether it reads or writes; read ${name} with the read, grep or glob tool.`,
     }));
   return [
     {

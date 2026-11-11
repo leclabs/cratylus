@@ -538,7 +538,9 @@ describe('omp launch', () => {
 /** What a write to the domain model is told, as the canon says it. */
 const MODEL_REFUSAL =
   'design/model/ is the domain model, which only the business analyst writes. To change it, raise a meaning question to the business analyst.';
-const MODEL_WRITES = [{ path: 'design/model/', refusal: MODEL_REFUSAL }];
+const MODEL_WRITES = [
+  { path: 'design/model/', name: 'the domain model', refusal: MODEL_REFUSAL },
+];
 
 describe('omp reach', () => {
   const agents = [
@@ -683,7 +685,7 @@ describe('omp reach', () => {
   it('refuses a shell or eval call naming the domain model, naming the tools that read it', () => {
     const shell = {
       block: true,
-      reason: `${MODEL_REFUSAL} A shell or eval call naming design/model/ is refused whether it reads or writes; read design/model/ with the read, grep or glob tool.`,
+      reason: `${MODEL_REFUSAL} A shell or eval call naming design/model/ is refused whether it reads or writes; read the domain model with the read, grep or glob tool.`,
     };
     expect(
       verdict({ sub: 'tech-lead' }, 'bash', {
@@ -731,7 +733,13 @@ describe('omp reach', () => {
         agent({ name: 'a', writes: MODEL_WRITES }),
         agent({
           name: 'b',
-          writes: [{ path: 'design/model/', refusal: 'another' }],
+          writes: [
+            {
+              path: 'design/model/',
+              name: 'the domain model',
+              refusal: 'another',
+            },
+          ],
         }),
       ]),
     ).toThrow(/design\/model\//);

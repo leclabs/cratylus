@@ -15,6 +15,7 @@ import { writeDomainModel } from './factors/action-scope/write-domain-model.js';
 export const PROTECTED_PATHS: Readonly<Record<string, ProtectedPath>> = {
   [termOf(writeDomainModel)]: {
     path: 'design/model/',
+    name: 'the domain model',
     refusal:
       'design/model/ is the domain model, which only the business analyst writes. To change it, raise a meaning question to the business analyst.',
   },
