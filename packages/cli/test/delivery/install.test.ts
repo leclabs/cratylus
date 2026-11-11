@@ -345,8 +345,12 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
 
     let result: CommandResult;
     if (terminal) {
-      const { promise, resolve, reject } =
-        Promise.withResolvers<CommandResult>();
+      let resolve!: (result: CommandResult) => void;
+      let reject!: (reason: unknown) => void;
+      const promise = new Promise<CommandResult>((onResolve, onReject) => {
+        resolve = onResolve;
+        reject = onReject;
+      });
       const child = spawn(
         'script',
         [
@@ -400,8 +404,13 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
     expect
       .soft(entries(join(root, 'rules')), output)
       .toEqual(chosen.map((name) => `${name}.md`).sort());
+    // The last rules: line is the summary of what was placed; on a terminal the
+    // preview before it says what would be.
     const summary =
-      output.split('\n').find((line) => /^\s*rules:/.test(line)) ?? '';
+      output
+        .split('\n')
+        .filter((line) => /^\s*rules:/.test(line))
+        .at(-1) ?? '';
     expect
       .soft(summary, output)
       .toContain(`dropped ${obsolete}, no longer offered`);
