@@ -422,6 +422,14 @@ describe('finding acceptance tests', () => {
         ['basket_test.go:2', 'ends with \\'],
       ]);
     });
+
+    it('reads a title once in a Python test, and none quoted in its docstring', () => {
+      write(
+        'test_x.py',
+        `"""See "${title}" for details\nand '${title}' too"""\nnames = ["${title}"]\n`,
+      );
+      expect(read()).toEqual(['test_x.py:3']);
+    });
   });
 });
 
@@ -444,6 +452,13 @@ describe('lexing literals', () => {
   it('yields a Go raw literal as written, and none with a substitution', () => {
     const code = 'a(`b\\d`, `c${d}`, "e\\"f")';
     expect(texts(code, 'go')).toEqual(['b\\d', 'e"f']);
+  });
+
+  it('yields a tripled literal whole across lines, so a title quoted in it is none', () => {
+    const code = 'a = """x\n"y" """ + \'\'\'z\'\'\'';
+    expect(texts(code, 'py')).toEqual(['x\n"y" ', 'z']);
+    expect(texts('f("""a "b" c""", "d")', 'kt')).toEqual(['a "b" c', 'd']);
+    expect(texts('"""a\nb', 'py')).toEqual([]);
   });
 });
 
