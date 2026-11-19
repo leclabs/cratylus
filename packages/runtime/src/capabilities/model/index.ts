@@ -11,12 +11,11 @@
 // the directory and the file stem. Beside them is `purpose.md`, and no other
 // record.
 //
-// An acceptance test is a test, in any language and test framework, whose title
-// is exactly `<context>/<concept>: <example name>`, found in the repository's
-// test files outside `node_modules`, `dist` and hidden directories. What a test
-// file and a test are is the rule of
+// An acceptance test is a whole string literal, outside comments, in a test file
+// of any language, or a scenario line of a feature file, equal to
+// `<context>/<concept>: <example name>`; the rule is
 // design/decisions/acceptance-tests-name-their-examples.md, read by
-// `declarations.ts`; a title in a comment or in prose binds nothing.
+// `declarations.ts` and `comments.ts`.
 //
 // The check FAILS for a malformed record or context, a misplaced record, an
 // example no acceptance test names and not judged in review, an example more than

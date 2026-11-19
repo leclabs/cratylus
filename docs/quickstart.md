@@ -157,7 +157,7 @@ Run the check again. It fails, with exit code 1, because no test claims this exa
 }
 ```
 
-To bind it, write an acceptance test, a test in any language and test framework (an `it(…)` or `test(…)` call, Go's `t.Run`, an RSpec `it "…" do`, a Gherkin `Scenario:`), whose title is exactly `<context>/<concept>: <example name>`. The check reads a test file by its name (`basket.test.ts`, `test_basket.py`, `basket_test.go`, `*.feature`) and never a changelog or the docs; [the decision record](../design/decisions/acceptance-tests-name-their-examples.md) says what it reads as a test. The check then passes again:
+To bind it, write an acceptance test, a test in any language and test framework, whose title is exactly `<context>/<concept>: <example name>`. The check knows no framework: in a test file (`basket.test.ts`, `test_basket.py`, `basket_test.go`, `*.feature`, never a changelog or the docs) any whole string literal equal to the title binds, whatever call holds it, and a Gherkin `Scenario:` line binds likewise. [The decision record](../design/decisions/acceptance-tests-name-their-examples.md) states the rule. The check then passes again:
 
 ```ts
 it('delivery/pre-merge-check: a red check blocks the merge', () => {

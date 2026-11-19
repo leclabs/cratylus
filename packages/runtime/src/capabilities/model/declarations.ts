@@ -1,8 +1,9 @@
 // What the model check reads as a test, in any language and test framework, by
 // the rule of design/decisions/acceptance-tests-name-their-examples.md: which
-// files are test files, and which titled declarations in one are tests.
+// files are test files, and which whole string literals in one, or scenario
+// lines of a feature file, are candidate titles.
 
-import { uncommented } from './comments.js';
+import { lex } from './comments.js';
 
 /** The extension of the file `name`, lowercase and without its dot; none for a
  *  name without one. */
@@ -255,11 +256,15 @@ function declarations(text: string, extension: string): TestTitle[] {
     });
 }
 
-/** The tests in the test file `name` holding `text`: each title it gives, by
- *  line. */
+/** The candidate titles in the test file `name` holding `text`, by line: each
+ *  whole string literal outside comments, or each scenario of a feature file. */
 export function testTitles(name: string, text: string): TestTitle[] {
   const extension = extensionOf(name);
-  return extension === 'feature'
-    ? scenarios(text)
-    : declarations(uncommented(text, extension), extension);
+  if (extension === 'feature') return scenarios(text);
+  let line = 1;
+  let at = 0;
+  return lex(text, extension).literals.map(({ index, text: title }) => {
+    for (; at < index; at++) if (text.charCodeAt(at) === 10) line++;
+    return { line, title };
+  });
 }

@@ -1,7 +1,9 @@
-// The comments of a source file, blanked, so a test title only in a comment — a
-// test that cannot run — binds nothing. A small scanner, not a parser: it knows
-// the comment syntax of a language by the extension of its files, and the
-// string, template and regular-expression literals a comment marker may sit in
+// The one lexer of a source file the model check reads: one pass that blanks
+// each comment, so a test title only in a comment — a test that cannot run —
+// binds nothing, and yields each whole string literal outside comments, the
+// candidates for a title. A small scanner, not a parser: it knows the comment
+// and string syntax of a language by the extension of its files, and the
+// template and regular-expression literals a comment marker may sit in
 // (`'http://x'`, `/\/\//`), and nothing else of the language.
 
 /** Words after which a `/` begins a regular expression, not a division. */
@@ -178,18 +180,22 @@ define(
 );
 
 /** From inside a string quoted by `q` at `from` in `s`: the index after its
- *  end, or at the line break an unclosed one stops at. */
-function stringEnd(s: string, from: number, q: string): number {
+ *  end, or at the line break an unclosed one stops at, and whether it closed. */
+function stringEnd(
+  s: string,
+  from: number,
+  q: string,
+): { end: number; closed: boolean } {
   const n = s.length;
   let k = from;
   while (k < n) {
     const c = s[k];
     if (c === '\\') k += 2;
-    else if (c === q) return k + 1;
-    else if (c === '\n') return k;
+    else if (c === q) return { end: k + 1, closed: true };
+    else if (c === '\n') return { end: k, closed: false };
     else k++;
   }
-  return n;
+  return { end: n, closed: false };
 }
 
 /** Each character of `out` from `from` up to `to` made a space, but a line break. */
@@ -197,25 +203,45 @@ function blanked(out: string[], from: number, to: number): void {
   for (let k = from; k < to; k++) if (out[k] !== '\n') out[k] = ' ';
 }
 
-/** `source` with each comment blanked, every character of it but a line break
- *  made a space, so what is left keeps its lines and columns. The comments are
- *  those of the language the file `extension` (lowercase, without its dot)
- *  names; an extension the check does not know reads `//`, `/* *\/` and `#`
- *  comments. String literals are kept whole, and in a script (`js`, `ts` and
- *  their kin) template and regular-expression literals too. */
-export function uncommented(source: string, extension: string): string {
+/** A string literal's text, its escapes read as what they escape. */
+const unescaped = (body: string): string => body.replace(/\\(.)/gs, '$1');
+
+/** A whole string literal outside comments: where it opens, and its text. */
+export interface Literal {
+  readonly index: number;
+  readonly text: string;
+}
+
+/** A source file lexed: the code with each comment blanked, and each whole
+ *  literal in the order it opens. */
+export interface Lexed {
+  readonly code: string;
+  readonly literals: Literal[];
+}
+
+/** `source` lexed. `code` is `source` with each comment blanked, every character
+ *  of it but a line break made a space, so what is left keeps its lines and
+ *  columns. The comments are those of the language the file `extension`
+ *  (lowercase, without its dot) names; an extension the check does not know
+ *  reads `//`, `/* *\/` and `#` comments. A literal is one `'…'` or `"…"` in the
+ *  quotes of the language, closed on its line, or a backtick literal with no
+ *  `${`; its escapes are read as what they escape, a raw one (Go's backtick)
+ *  as written. In a script (`js`, `ts` and their kin) template and
+ *  regular-expression literals are scanned whole too. */
+export function lex(source: string, extension: string): Lexed {
   return SCRIPTS.has(extension)
-    ? uncommentedScript(source)
-    : uncommentedBy(source, SYNTAXES.get(extension) ?? FALLBACK);
+    ? lexScript(source)
+    : lexBy(source, SYNTAXES.get(extension) ?? FALLBACK);
 }
 
 /** A character literal: one character or one escape between `'`s. */
 const CHARACTER =
   /'(?:[^'\\\n]|\\(?:u\{[0-9a-fA-F]+\}|x[0-9a-fA-F]{2}|\d+|[^\n]))'/y;
 
-function uncommentedBy(s: string, language: Syntax): string {
+function lexBy(s: string, language: Syntax): Lexed {
   const n = s.length;
   const out = s.split('');
+  const literals: Literal[] = [];
   /** The index after the block comment `[open, close]` begun at `from`. */
   const blockEnd = (from: number, [open, close]: readonly [string, string]) => {
     let k = from + open.length;
@@ -294,21 +320,30 @@ function uncommentedBy(s: string, language: Syntax): string {
       i = to;
     } else if (language.raw.includes(c)) {
       const end = s.indexOf(c, i + 1);
+      const body = end < 0 ? '' : s.slice(i + 1, end);
+      if (end >= 0 && !body.includes('${')) {
+        literals.push({ index: i, text: body });
+      }
       i = end < 0 ? n : end + 1;
     } else if (c === "'" && language.character) {
       CHARACTER.lastIndex = i;
       const literal = CHARACTER.exec(s);
       i += literal === null ? 1 : literal[0].length;
     } else if (language.quotes.includes(c)) {
-      i = stringEnd(s, i + 1, c);
+      const { end, closed } = stringEnd(s, i + 1, c);
+      if (closed) {
+        literals.push({ index: i, text: unescaped(s.slice(i + 1, end - 1)) });
+      }
+      i = end;
     } else i++;
   }
-  return out.join('');
+  return { code: out.join(''), literals };
 }
 
-function uncommentedScript(s: string): string {
+function lexScript(s: string): Lexed {
   const n = s.length;
   const out = s.split('');
+  const literals: Literal[] = [];
   const blank = (from: number, to: number) => blanked(out, from, to);
   /** The brace depth outside each open `${` of a template. */
   const substitutions: number[] = [];
@@ -316,15 +351,21 @@ function uncommentedScript(s: string): string {
   /** Whether what comes next is an operand, where `/` begins a regular expression. */
   let operand = true;
 
+  /** Whether the last `template` scan ended at a closing backtick. */
+  let closed = false;
+
   /** From inside a template at `from`: the index after its closing backtick, or
    *  after the `${` it opens. */
   const template = (from: number): number => {
     let k = from;
+    closed = false;
     while (k < n) {
       const c = s[k];
       if (c === '\\') k += 2;
-      else if (c === '`') return k + 1;
-      else if (c === '$' && s[k + 1] === '{') {
+      else if (c === '`') {
+        closed = true;
+        return k + 1;
+      } else if (c === '$' && s[k + 1] === '{') {
         substitutions.push(depth);
         depth = 0;
         return k + 2;
@@ -370,10 +411,24 @@ function uncommentedScript(s: string): string {
       i = regex(i + 1);
       operand = false;
     } else if (c === "'" || c === '"') {
-      i = stringEnd(s, i + 1, c);
+      const string = stringEnd(s, i + 1, c);
+      if (string.closed) {
+        literals.push({
+          index: i,
+          text: unescaped(s.slice(i + 1, string.end - 1)),
+        });
+      }
+      i = string.end;
       operand = false;
     } else if (c === '`') {
+      const opens = i;
       i = template(i + 1);
+      if (closed) {
+        literals.push({
+          index: opens,
+          text: unescaped(s.slice(opens + 1, i - 1)),
+        });
+      }
       operand = substitutions.length > 0 && s[i - 1] === '{';
     } else if (c === '}' && depth === 0 && substitutions.length > 0) {
       depth = substitutions.pop() as number;
@@ -391,5 +446,5 @@ function uncommentedScript(s: string): string {
       i++;
     }
   }
-  return out.join('');
+  return { code: out.join(''), literals };
 }
