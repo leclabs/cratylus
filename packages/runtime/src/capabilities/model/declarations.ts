@@ -92,9 +92,21 @@ const RAW_BACKTICKS_IN = new Set(['go']);
 const ATTRIBUTED_IN = new Set(['cs', 'fs', 'fsi', 'fsx']);
 
 /** The text of an attribute list from after its `[` to a test attribute's `(`:
- *  F#'s `<`, any attributes before it, each ended by `,`, then its name. */
+ *  F#'s `<`, any attributes before it, each ended by `,`, then its name. The
+ *  bracket scan has already passed the literals in it. */
 const TEST_ATTRIBUTE =
-  /^<?(?:[^[\]]*,)?\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
+  /^<?(?:[\s\S]*,)?\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
+
+/** Whether the `[` at `list` in `text` opens an attribute list: F#'s `[<`, or
+ *  a `[` that follows, past whitespace, the start of the file or the end of a
+ *  statement, block or attribute list (`;`, `{`, `}`, `]`), where an indexer's
+ *  `[` follows an operand. */
+function opensAttributes(text: string, list: number): boolean {
+  if (text[list + 1] === '<') return true;
+  let k = list - 1;
+  while (k >= 0 && /\s/.test(text[k] as string)) k--;
+  return k < 0 || ';{}]'.includes(text[k] as string);
+}
 
 /** What follows a literal that joins it to another: a concatenation or
  *  formatting operator after any whitespace, line breaks included, a second
@@ -214,6 +226,7 @@ function declarations(text: string, extension: string): TestTitle[] {
           list !== undefined &&
           text[call] === '(' &&
           text[list] === '[' &&
+          opensAttributes(text, list) &&
           TEST_ATTRIBUTE.test(text.slice(list + 1, call))
         );
       },

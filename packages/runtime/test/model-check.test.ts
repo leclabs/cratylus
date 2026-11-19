@@ -388,6 +388,8 @@ describe('finding acceptance tests', () => {
           '[Trait("a", "b"), TestCase(1,',
           `    ${'Test'}Name = "${title}")]`,
           `[Xunit.Fact${' '.repeat(201)}(${display})]`,
+          `var item = items[Fact(${display})];`,
+          `[Trait("group", "[smoke]"), Fact(${display})]`,
           '',
         ].join('\n'),
       );
@@ -399,6 +401,7 @@ describe('finding acceptance tests', () => {
       expect(read()).toEqual([
         'BasketTests.cs:9',
         'BasketTests.cs:10',
+        'BasketTests.cs:12',
         'BasketTests.fs:1',
       ]);
     });
