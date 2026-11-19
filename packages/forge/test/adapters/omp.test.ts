@@ -1172,7 +1172,8 @@ describe('omp tool definitions', () => {
       root: string;
       project: string;
     }> {
-      const dir = mkdtempSync(join(tmpdir(), 'omp-skew-'));
+      // Canonical, as the start reports it: the temp dir may sit behind a symlink.
+      const dir = realpathSync(mkdtempSync(join(tmpdir(), 'omp-skew-')));
       tmp.push(dir);
       const project = join(dir, 'project');
       const root = join(project, '.cratylus', 'omp');

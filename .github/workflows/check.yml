@@ -20,7 +20,14 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # ONE CHECK, EVERY HOST A DEVELOPER RUNS IT ON: the tests assert cratylus against the
+    # host's own facts (temp-dir symlinks, the `script` dialect, disk case), so a host left
+    # out of CI is a host whose `pnpm check` can break unseen.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5

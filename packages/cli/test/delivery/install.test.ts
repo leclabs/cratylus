@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -17,8 +16,8 @@ import {
   type CommandResult,
   type Host,
   host,
-  run,
 } from '../capability-port/fixture.js';
+import { onTerminal } from '../terminal.js';
 import { parseYaml } from '../yaml.js';
 
 const INDUSTRY_ROLES = [
@@ -109,22 +108,14 @@ function canonSkills(): string[] {
 
 const said = (r: CommandResult) => `${r.stdout}\n${r.stderr}`;
 
-it('delivery/install: installs the industry roles', () => {
+it('delivery/install: installs the industry roles', async () => {
   h = emptyHome();
   // On a terminal, deciding nothing: whatever install may ask, `--yes` takes its
   // default, so the agents offered are the ones every user installation places.
   // (The run without a terminal is bound by the next example.)
-  const r = run(
-    'script',
-    [
-      '--quiet',
-      '--return',
-      '--command',
-      'cratylus install --harness omp --scope user --yes',
-      '/dev/null',
-    ],
-    h.cwd,
-    h.env,
+  const r = await onTerminal(
+    'cratylus install --harness omp --scope user --yes',
+    h,
   );
   expect(r.code, said(r)).toBe(0);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
@@ -185,57 +176,30 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
 
     let result: CommandResult;
     if (terminal) {
-      // As in the industry-roles example, util-linux script supplies a real
-      // terminal to the installed command. Answer only after clack renders the
-      // question: down + enter chooses the whole added ruleset; enter confirms.
-      let resolve!: (result: CommandResult) => void;
-      let reject!: (reason: unknown) => void;
-      const promise = new Promise<CommandResult>((onResolve, onReject) => {
-        resolve = onResolve;
-        reject = onReject;
-      });
-      const child = spawn(
-        'script',
-        [
-          '--quiet',
-          '--return',
-          '--command',
-          `stty cols 200 rows 50; cratylus ${args.join(' ')}`,
-          '/dev/null',
-        ],
-        {
-          cwd: h.cwd,
-          env: h.env,
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 30_000,
-        },
-      );
-      let stdout = '';
-      let stderr = '';
+      // As in the industry-roles example, a pseudo-terminal of its own runs the
+      // installed command. Answer only after clack renders the question:
+      // down + enter chooses the whole added ruleset; enter confirms.
       let chose = false;
       let confirmed = false;
-      child.stdout.on('data', (chunk) => {
-        stdout += String(chunk);
-        const output = stripVTControlCharacters(stdout);
-        if (
-          !chose &&
-          output.includes('Rules: context-engineering') &&
-          output.includes('rule by rule')
-        ) {
-          chose = true;
-          child.stdin.write('\x1b[B\r');
-        }
-        if (!confirmed && output.includes('Install this?')) {
-          confirmed = true;
-          child.stdin.write('\r');
-        }
+      result = await onTerminal(`cratylus ${args.join(' ')}`, {
+        ...h,
+        answer: (output) => {
+          let keys = '';
+          if (
+            !chose &&
+            output.includes('Rules: context-engineering') &&
+            output.includes('rule by rule')
+          ) {
+            chose = true;
+            keys += '\x1b[B\r';
+          }
+          if (!confirmed && output.includes('Install this?')) {
+            confirmed = true;
+            keys += '\r';
+          }
+          return keys;
+        },
       });
-      child.stderr.on('data', (chunk) => {
-        stderr += String(chunk);
-      });
-      child.on('error', reject);
-      child.on('close', (code) => resolve({ code, stdout, stderr }));
-      result = await promise;
     } else {
       // h.command pipes stdin/stdout: there is no terminal and no --rules.
       result = h.command(args);
@@ -335,57 +299,30 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
 
     let result: CommandResult;
     if (terminal) {
-      let resolve!: (result: CommandResult) => void;
-      let reject!: (reason: unknown) => void;
-      const promise = new Promise<CommandResult>((onResolve, onReject) => {
-        resolve = onResolve;
-        reject = onReject;
-      });
-      const child = spawn(
-        'script',
-        [
-          '--quiet',
-          '--return',
-          '--command',
-          `stty cols 200 rows 50; cratylus ${args.join(' ')}`,
-          '/dev/null',
-        ],
-        {
-          cwd: h.cwd,
-          env: h.env,
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 30_000,
-        },
-      );
-      let stdout = '';
-      let stderr = '';
       const answered = new Set<string>();
       let confirmed = false;
-      child.stdout.on('data', (chunk) => {
-        stdout += String(chunk);
-        const output = stripVTControlCharacters(stdout);
-        for (const name of newRules) {
-          const prompt = output.lastIndexOf(`Rules: ${name} —`);
-          if (
-            !answered.has(name) &&
-            prompt !== -1 &&
-            output.indexOf('rule by rule', prompt) !== -1
-          ) {
-            answered.add(name);
-            child.stdin.write('\x1b[B\r');
+      result = await onTerminal(`cratylus ${args.join(' ')}`, {
+        ...h,
+        answer: (output) => {
+          let keys = '';
+          for (const name of newRules) {
+            const prompt = output.lastIndexOf(`Rules: ${name} —`);
+            if (
+              !answered.has(name) &&
+              prompt !== -1 &&
+              output.indexOf('rule by rule', prompt) !== -1
+            ) {
+              answered.add(name);
+              keys += '\x1b[B\r';
+            }
           }
-        }
-        if (!confirmed && output.includes('Install this?')) {
-          confirmed = true;
-          child.stdin.write('\r');
-        }
+          if (!confirmed && output.includes('Install this?')) {
+            confirmed = true;
+            keys += '\r';
+          }
+          return keys;
+        },
       });
-      child.stderr.on('data', (chunk) => {
-        stderr += String(chunk);
-      });
-      child.on('error', reject);
-      child.on('close', (code) => resolve({ code, stdout, stderr }));
-      result = await promise;
     } else {
       result = h.command(args);
     }
