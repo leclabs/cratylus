@@ -23,12 +23,11 @@ When install runs again on a terminal without --rules
 Then it keeps the recorded choice and asks only about the newly offered rules
 And without a terminal it keeps the recorded choice and names the rules it did not offer
 
-### offers green-field and clean-cutover as rulesets of their own
+### offers green-field and clean-cutover apart
 
 Given cratylus's rulesets
 When install offers them
-Then it offers the green-field ruleset, holding only the green-field rule
-And the clean-cutover ruleset, holding only the clean-cutover rule
+Then green-field and clean-cutover are rulesets of one rule each
 
 ### drops a recorded rule no longer offered
 
