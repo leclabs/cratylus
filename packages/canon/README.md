@@ -50,8 +50,8 @@ practice itself, behaviour-driven development, is adopted by the project's conve
 model's records: decision rights as one RAPID letter per decision class, autonomy as mission
 command, reach open by default and narrowed where harm is observed (writing the domain model,
 the `write-domain-model` action scope, is the business analyst's alone), the domain model as every
-reader's memory and develop's first-parent merges, the record of what is built, as the tech lead's
-beside it, a user story free-form and unestimated, sign-off and tailoring as cratylus records them.
+reader's memory, a user story free-form and unestimated, sign-off and tailoring as cratylus records
+them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
@@ -104,23 +104,24 @@ Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVER
 the value's term). Composition copies the pair onto the agent as `contract`. Each handoff states
 what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
-| Role              | Assignment                                                                                                       | Deliverable                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| tech-lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, examples?}`, or a task with no story (below) | outcome `{story, joined, criteria[≥1], meaningQuestions, followUps}`       |
-| software-engineer | task `{task, story?, goal, changes, done, realizedBy: [{commit, header, realization}]}`                          | change `{change, tests, verified}`                                         |
-| test-engineer     | examples `{story, examples[≥1]}`                                                                                 | acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}` |
-| code-reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                | code review `{verdict, findings, meaningQuestions}`                        |
+| Role              | Assignment                                                                                                                  | Deliverable                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| tech-lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, examples?, replaces?}`, or a task with no story (below) | outcome `{story, joined, criteria[≥1], meaningQuestions, followUps}`       |
+| software-engineer | task `{task, story?, goal, changes, done, replaces?}`                                                                       | change `{change, tests, verified}`                                         |
+| test-engineer     | examples `{story, examples[≥1]}`                                                                                            | acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}` |
+| code-reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                           | code review `{verdict, findings, meaningQuestions}`                        |
 
 An example is named `<context>/<concept>`, standing for all the examples of a concept file of
 `design/model/`, or `<context>/<concept>: <example name>` for one, such as
 `delivery/install: installs the industry roles`. The tech lead's assignment takes either form,
 stated as alternatives (`anyOf`); it fits when it fits any one, a task with no story being the
-software engineer's task without `realizedBy`. Its outcome names the user story, or
+software engineer's task without `replaces`. Its outcome names the user story, or
 for a task with no story the task, says whether the work was `merged` or `dropped`, and holds each
 acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. A
-software engineer's task names in `realizedBy` each merge into develop that realized a concept the
-task touches, by its short sha (`commit`) and `header`, its `realization` `change` where the
-concept's meaning holds and `replace` where it changed; it is empty where the task touches none. An
+user story and a software engineer's task carry in `replaces` the concepts the story replaces, the
+business analyst's decision, each as `<context>/<concept>`: none of a replaced concept's meaning
+carries over, so its realization is deleted whole and built anew from its examples; every other
+concept the story touches has its realization changed in place. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
 `changes`, approving only where each concept the change touches has exactly one realization after
 it. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief

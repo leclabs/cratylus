@@ -58,7 +58,12 @@ const meaningQuestions = said(
 );
 
 // The story and the task, each a form of its own: the tech lead takes either, a
-// software engineer a task naming the realization it touches.
+// software engineer a task carrying the concepts its story replaces.
+const replaces = (whose: string): JsonSchema =>
+  said(
+    texts,
+    `The concepts ${whose} replaces, none of their meaning carried over, each as \`<context>/<concept>\`: each one's realization is deleted whole, its code, every test of it and their fixtures, and built anew from its examples alone; absent where it replaces none, every concept it touches then changed in place.`,
+  );
 const storyForm = record(
   {
     story: storyField,
@@ -79,8 +84,9 @@ const storyForm = record(
       texts,
       'The concepts and examples the story adds or changes',
     ),
+    replaces: replaces('the story'),
   },
-  ['examples'],
+  ['examples', 'replaces'],
 );
 const taskFields: Record<string, JsonSchema> = {
   task: said(text, 'The task, by its name (a kebab-case id).'),
@@ -93,20 +99,6 @@ const taskFields: Record<string, JsonSchema> = {
   done: said(text, 'What done means for the task.'),
 };
 const taskForm = record(taskFields, ['story']);
-const realizedBy = said(
-  {
-    type: 'array',
-    items: record({
-      commit: said(text, 'The merge commit, by its short sha.'),
-      header: said(text, "The merge commit's header."),
-      realization: said(
-        { type: 'string', enum: ['change', 'replace'] },
-        "`change` where the story's examples leave the concept's meaning as it is: its realization is changed in place. `replace` where they change it: the old realization is deleted whole in the same change, its code, every test of it and their fixtures; the new meaning's tests are written from its examples alone; a test that fails because it asserts the replaced meaning is deleted with it.",
-      ),
-    }),
-  },
-  'Each merge into develop that realized a concept the task touches, empty where it touches none; the software engineer opens each with `git show <sha> --stat` and follows its paths at HEAD.',
-);
 
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
@@ -121,7 +113,13 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
       ],
     },
   ],
-  [task, record({ ...taskFields, realizedBy }, ['story'])],
+  [
+    task,
+    record({ ...taskFields, replaces: replaces("the task's story") }, [
+      'story',
+      'replaces',
+    ]),
+  ],
   [
     reviewRequest,
     record(

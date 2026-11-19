@@ -134,14 +134,9 @@ describe('typed handoffs', () => {
       ['task', 'goal', 'changes', 'done'],
     ]);
     expect(required('softwareEngineer')).toEqual({
-      assignment: ['task', 'goal', 'changes', 'done', 'realizedBy'],
+      assignment: ['task', 'goal', 'changes', 'done'],
       deliverable: ['change', 'tests', 'verified'],
     });
-    expect(
-      softwareEngineer.contract?.assignment?.properties?.realizedBy?.items
-        ?.required,
-      'each realization a task touches names its merge and how it is treated',
-    ).toEqual(['commit', 'header', 'realization']);
     expect(required('codeReviewer')).toEqual({
       assignment: ['change'],
       deliverable: ['verdict', 'findings', 'meaningQuestions'],
@@ -158,9 +153,12 @@ describe('typed handoffs', () => {
         (field) => !schema?.required?.includes(field),
       );
     const [story, task] = techLead.contract?.assignment?.anyOf ?? [];
-    expect(optional(story)).toEqual(['examples']);
+    expect(optional(story)).toEqual(['examples', 'replaces']);
     expect(optional(task)).toEqual(['story']);
-    expect(optional(softwareEngineer.contract?.assignment)).toEqual(['story']);
+    expect(optional(softwareEngineer.contract?.assignment)).toEqual([
+      'story',
+      'replaces',
+    ]);
     expect(optional(codeReviewer.contract?.assignment)).toEqual([
       'story',
       'acceptanceCriteria',
