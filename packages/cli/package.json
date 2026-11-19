@@ -30,6 +30,7 @@
     "@types/node": "catalog:",
     "ajv": "^8.20.0",
     "js-yaml": "catalog:",
+    "node-pty": "1.2.0-beta.18",
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
