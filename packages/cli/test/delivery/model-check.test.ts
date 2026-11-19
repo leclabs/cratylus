@@ -6,7 +6,7 @@
 // The scratch tests are composed from parts (`${call}(…)`), never written out: the
 // model check over this repository would otherwise read them as acceptance tests.
 
-import { mkdirSync, realpathSync, writeFileSync } from 'node:fs';
+import { mkdirSync, realpathSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { type Host, host } from '../capability-port/fixture.js';
@@ -288,5 +288,73 @@ it('delivery/model-check: an example judged in review needs no test', () => {
       concept: 'shop/returns',
       example: 'refunds a return',
     }),
+  ]);
+});
+
+it('delivery/model-check: binds tests in any language, and only tests', () => {
+  const name = 'adds an item';
+  const title = `shop/basket: ${name}`;
+  concept('shop/basket', 'basket', 'The goods a shopper has chosen to buy', [
+    { name },
+  ]);
+
+  const quoted = `\`\`\`ts\n${titled(title)}\n\`\`\`\n`;
+  const subTest = `${'self.subTest'}("${title}")`;
+  put('CHANGELOG.md', `# Changelog\n\n${quoted}`);
+  put('docs/basket-spec.md', `# Basket specification\n\n${quoted}`);
+  put('test/test_notes.py', `# with ${subTest}:\n`);
+
+  // Each declaration must bind with no other test source present.
+  for (const [path, source] of [
+    [
+      'test/test_basket.py',
+      `import unittest
+
+class BasketTest(unittest.TestCase):
+    def test_basket(self):
+        with ${subTest}:
+            pass
+`,
+    ],
+    [
+      'test/basket_test.go',
+      `package basket
+
+import "testing"
+
+func TestBasket(t *testing.T) {
+    ${'t.Run'}("${title}", func(t *testing.T) {})
+}
+`,
+    ],
+    [
+      'test/basket_spec.rb',
+      `RSpec.describe "Basket" do
+  ${'it'} "${title}" do
+  end
+end
+`,
+    ],
+    [
+      'test/basket.feature',
+      `Feature: Basket
+  ${'Scenario'}: ${title}
+    Given an empty basket
+    When a shopper adds an item
+    Then the basket contains the item
+`,
+    ],
+  ] as const) {
+    put(path, source);
+    const bound = check();
+    expect(bound.report.failures, path).toEqual([]);
+    expect(bound.code, path).toBe(0);
+    unlinkSync(join(root, path));
+  }
+
+  const unbound = check();
+  expect(unbound.code).toBe(1);
+  expect(unbound.report.failures).toEqual([
+    { concept: 'shop/basket', example: name, message: expect.any(String) },
   ]);
 });
