@@ -203,41 +203,222 @@ describe('finding acceptance tests', () => {
     );
     expect(acceptanceTests(root).map((t) => t.test)).toEqual(['a.test.ts:5']);
   });
+
+  describe('in any language', () => {
+    const read = () => acceptanceTests(root).map((t) => t.test);
+
+    it('reads the titled declaration of each test file, by the convention of its language', () => {
+      const python = `import unittest\nwith self.${'sub'}Test("${title}"):\n    pass\n`;
+      write('test_basket.py', python);
+      write(
+        'basket_test.go',
+        `package basket\nt.${'R'}un("${title}", func(t *testing.T) {})\n`,
+      );
+      write(
+        'basket_spec.rb',
+        `describe Basket do\n  ${call} "${title}" do\n  end\nend\n`,
+      );
+      write(
+        'BasketTest.java',
+        `class BasketTest {\n  @${'Display'}Name("${title}")\n  void adds() {}\n}\n`,
+      );
+      write(
+        'BasketTests.cs',
+        `public class BasketTests {\n  [Fact(${'Display'}Name = "${title}")]\n  public void Adds() {}\n}\n`,
+      );
+      write(
+        'basket.feature',
+        `Feature: Basket\n\n  ${'Scen'}ario: ${title}\n    Given an empty basket\n`,
+      );
+      write(
+        'BasketSpec.hs',
+        `main = hspec $ do\n  ${call} "${title}" $ do\n    pure ()\n`,
+      );
+      write(
+        'basket_test.zig',
+        `const std = @import("std");\n${other} "${title}" {\n}\n`,
+      );
+      expect(acceptanceTests(root)).toEqual(
+        [
+          'BasketSpec.hs:2',
+          'BasketTest.java:2',
+          'BasketTests.cs:2',
+          'basket.feature:3',
+          'basket_spec.rb:2',
+          'basket_test.go:2',
+          'basket_test.zig:2',
+          'test_basket.py:2',
+        ].map((test) => ({
+          test,
+          context: 'shop',
+          concept: 'basket',
+          example: 'adds an item',
+        })),
+      );
+    });
+
+    it('reads a Gherkin scenario, outline, template and example, outside comments and doc strings', () => {
+      const doc = '"'.repeat(3);
+      write(
+        'basket.feature',
+        [
+          'Feature: Basket',
+          `  # ${'Scen'}ario: shop/basket: in a comment`,
+          `  ${'Scen'}ario Outline: shop/basket: an outline `,
+          '    Given a doc string',
+          `      ${doc}`,
+          `      ${'Scen'}ario: shop/basket: in a doc string`,
+          `      ${doc}`,
+          `  ${'Scen'}ario Template: shop/basket: a template`,
+          `  ${'Ex'}ample: shop/basket: an example`,
+          `  ${'Ex'}amples:`,
+          '    | a |',
+          `  ${'Scen'}ario: plain title`,
+          '',
+        ].join('\n'),
+      );
+      expect(acceptanceTests(root)).toEqual(
+        [
+          [3, 'an outline'],
+          [8, 'a template'],
+          [9, 'an example'],
+        ].map(([line, example]) => ({
+          test: `basket.feature:${line}`,
+          context: 'shop',
+          concept: 'basket',
+          example,
+        })),
+      );
+    });
+
+    it('binds a prose file and a source not named a test to nothing', () => {
+      for (const file of [
+        'CHANGELOG.md',
+        'docs/x.md',
+        'test-plan.md',
+        'tests.txt',
+        'spec.rst',
+        'basket.ts',
+        'basket.py',
+        'attest.ts',
+        'Contest.java',
+      ]) {
+        write(file, source(title));
+      }
+      expect(read()).toEqual([]);
+    });
+
+    it('reads no title in a comment of the file’s language, a nested block comment included', () => {
+      const declared = `${call}("${title}")`;
+      write('test_basket.py', `# ${declared}\n${declared}\n`);
+      write('basket_spec.lua', `-- ${declared}\n${declared}\n`);
+      write('basket_test.clj', `; ${declared}\n${declared}\n`);
+      write('basket_test.erl', `% ${declared}\n${declared}\n`);
+      write(
+        'BasketSpec.hs',
+        `{- ${declared} {- ${declared} -} ${declared} -}\n${declared}\n`,
+      );
+      write(
+        'basket_test.xyz',
+        `# ${declared}\n// ${declared}\n/* ${declared} */\n${declared}\n`,
+      );
+      expect(read()).toEqual([
+        'BasketSpec.hs:2',
+        'basket_spec.lua:2',
+        'basket_test.clj:2',
+        'basket_test.erl:2',
+        'basket_test.xyz:4',
+        'test_basket.py:2',
+      ]);
+    });
+
+    it('reads no title joined to another by an operator, in a command or a named argument', () => {
+      write(
+        'basket_spec.rb',
+        [
+          `${call} "shop/basket: adds" + " an item" do`,
+          `${call} "shop/basket: adds an item" "more" do`,
+          `${call} "shop/basket: adds an item".strip do`,
+          '',
+        ].join('\n'),
+      );
+      write(
+        'BasketTests.cs',
+        `[Fact(${'Display'}Name = "shop/basket: adds" + " an item")]\n`,
+      );
+      expect(read()).toEqual([]);
+    });
+  });
 });
 
 describe('blanking comments', () => {
   it('blanks a line comment and a block comment, keeping lines and columns', () => {
     const code = 'a; // b\n/* c\nd */ e;\n';
-    expect(uncommented(code)).toBe('a;     \n    \n     e;\n');
-    expect(uncommented('a /* b')).toBe('a'.padEnd(6));
+    expect(uncommented(code, 'ts')).toBe('a;     \n    \n     e;\n');
+    expect(uncommented('a /* b', 'ts')).toBe('a'.padEnd(6));
   });
 
   it('keeps a comment marker in a string', () => {
     const code = `f('http://x', "/* y */", 'a\\' // b'); // c`;
-    expect(uncommented(code)).toBe(
+    expect(uncommented(code, 'ts')).toBe(
       `f('http://x', "/* y */", 'a\\' // b');     `,
     );
   });
 
   it('keeps a template’s text and blanks the comments in its substitutions', () => {
     const code = 'f(`a // b ${g(/* c */ `d // e ${h}`)} /* f */`); // g';
-    expect(uncommented(code)).toBe(
+    expect(uncommented(code, 'ts')).toBe(
       'f(`a // b ${g(        `d // e ${h}`)} /* f */`);     ',
     );
-    expect(uncommented('`${{ a: 1 }.a} // x` // y')).toBe(
+    expect(uncommented('`${{ a: 1 }.a} // x` // y', 'ts')).toBe(
       '`${{ a: 1 }.a} // x`     ',
     );
   });
 
   it('keeps a regular expression whole, and a division a division', () => {
-    expect(uncommented("x.replace(/\\/\\/'[/]/g, ''); // c")).toBe(
+    expect(uncommented("x.replace(/\\/\\/'[/]/g, ''); // c", 'ts')).toBe(
       "x.replace(/\\/\\/'[/]/g, '');     ",
     );
     const division = 'a = b / c; // d / e';
-    expect(uncommented(division)).toBe('a = b / c;'.padEnd(division.length));
-    expect(uncommented("return /'/.test(s); // q")).toBe(
+    expect(uncommented(division, 'ts')).toBe(
+      'a = b / c;'.padEnd(division.length),
+    );
+    expect(uncommented("return /'/.test(s); // q", 'ts')).toBe(
       "return /'/.test(s);     ",
     );
+  });
+
+  it('blanks the comments of the language an extension names', () => {
+    expect(uncommented('x = "# a" # b', 'py')).toBe('x = "# a" '.padEnd(13));
+    expect(uncommented('a -- b\nc', 'sql')).toBe('a     \nc');
+    expect(uncommented('a ; b', 'clj')).toBe('a    ');
+    expect(uncommented('a % b', 'erl')).toBe('a    ');
+    expect(uncommented('a (* b *) c', 'ml')).toBe(`a${' '.repeat(9)}c`);
+    expect(uncommented('a --[[ b\nc ]] d', 'lua')).toBe(
+      `a${' '.repeat(7)}\n${' '.repeat(5)}d`,
+    );
+    expect(uncommented('a # b // c /* d */', 'xyz')).toBe('a'.padEnd(18));
+  });
+
+  it('closes a block comment where its language does: nested, or at the first closer', () => {
+    const code = '/* a /* b */ c */ d';
+    expect(uncommented(code, 'rs')).toBe(`${' '.repeat(18)}d`);
+    expect(uncommented(code, 'c')).toBe(`${' '.repeat(12)} c */ d`);
+    expect(uncommented('{- a {- b -} c -} d', 'hs')).toBe(`${' '.repeat(18)}d`);
+  });
+
+  it('keeps a lifetime, a prime and a character literal from hiding a comment', () => {
+    expect(uncommented("fn f<'a>(x: &'a str) {} // c", 'rs')).toBe(
+      "fn f<'a>(x: &'a str) {}     ",
+    );
+    expect(uncommented(`let c = '"'; // c`, 'rs')).toBe(`let c = '"';     `);
+    expect(uncommented("f' x' = y -- c", 'hs')).toBe("f' x' = y     ");
+    expect(uncommented('a --> b', 'hs')).toBe('a --> b');
+  });
+
+  it('keeps a PHP attribute and a shell argument count, which only look like comments', () => {
+    expect(uncommented('#[Test] # c', 'php')).toBe('#[Test]    ');
+    expect(uncommented('echo $# # c', 'sh')).toBe('echo $#    ');
   });
 });
 

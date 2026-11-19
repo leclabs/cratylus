@@ -1,5 +1,6 @@
-// The comments of a script, blanked, so a test title only in a comment — a test
-// that cannot run — binds nothing. A small scanner, not a parser: it knows the
+// The comments of a source file, blanked, so a test title only in a comment — a
+// test that cannot run — binds nothing. A small scanner, not a parser: it knows
+// the comment syntax of a language by the extension of its files, and the
 // string, template and regular-expression literals a comment marker may sit in
 // (`'http://x'`, `/\/\//`), and nothing else of the language.
 
@@ -21,16 +22,240 @@ const BEFORE_EXPRESSION = new Set([
   'await',
 ]);
 
+/** The extensions of the languages whose strings, templates and regular
+ *  expressions are scanned whole. */
+const SCRIPTS = new Set(['js', 'jsx', 'mjs', 'cjs', 'ts', 'tsx', 'mts', 'cts']);
+
+/** How a language writes its comments, and the literals a marker may sit in. */
+interface Syntax {
+  /** Each way a line comment opens, tried at a position by a sticky match. */
+  readonly line: readonly RegExp[];
+  /** Each block comment, by its opening and closing marker. */
+  readonly block: readonly (readonly [open: string, close: string])[];
+  /** Whether a block comment opened in a block comment is closed on its own. */
+  readonly nested: boolean;
+  /** The characters a string literal is quoted by, ended by an unescaped one on
+   *  its own line. */
+  readonly quotes: string;
+  /** The characters a literal is quoted by with no escape, across lines. */
+  readonly raw: string;
+  /** Whether `'x'` is a character literal, so a lone `'` (a lifetime, a prime)
+   *  begins nothing. */
+  readonly character: boolean;
+}
+
+/** The sticky expression matching `marker` at a position. */
+const literally = (marker: string): RegExp =>
+  new RegExp(marker.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&'), 'y');
+
+const syntax = (
+  s: {
+    line?: readonly (string | RegExp)[];
+    block?: readonly (readonly [string, string])[];
+    nested?: boolean;
+    quotes?: string;
+    raw?: string;
+    character?: boolean;
+  } = {},
+): Syntax => ({
+  line: (s.line ?? []).map((m) =>
+    typeof m === 'string' ? literally(m) : new RegExp(m.source, 'y'),
+  ),
+  block: s.block ?? [],
+  nested: s.nested ?? false,
+  quotes: s.quotes ?? `'"`,
+  raw: s.raw ?? '',
+  character: s.character ?? false,
+});
+
+const C_BLOCK = [['/*', '*/']] as const;
+
+/** `//`, `/* *\/`, `#`: what a file of an extension the check does not know is
+ *  read with. */
+const FALLBACK = syntax({ line: ['//', '#'], block: C_BLOCK });
+
+/** The syntax of each extension, lowercase and without its dot. */
+const SYNTAXES = new Map<string, Syntax>();
+
+const define = (extensions: string, s: Syntax): void => {
+  for (const extension of extensions.split(' ')) SYNTAXES.set(extension, s);
+};
+
+// C family
+define(
+  'c h cc cpp cxx hh hpp hxx java groovy cs dart',
+  syntax({ line: ['//'], block: C_BLOCK }),
+);
+define('go', syntax({ line: ['//'], block: C_BLOCK, raw: '`' }));
+define('zig', syntax({ line: ['//'] }));
+define('kt kts', syntax({ line: ['//'], block: C_BLOCK, nested: true }));
+define(
+  'scala rs',
+  syntax({
+    line: ['//'],
+    block: C_BLOCK,
+    nested: true,
+    quotes: '"',
+    character: true,
+  }),
+);
+define(
+  'swift',
+  syntax({ line: ['//'], block: C_BLOCK, nested: true, quotes: '"' }),
+);
+define('php', syntax({ line: ['//', /#(?!\[)/], block: C_BLOCK }));
+
+// `#`
+define('py rb ex exs pl pm t r cr yaml yml toml', syntax({ line: ['#'] }));
+define('sh bash zsh ksh', syntax({ line: [/(?<![$\w{])#/] }));
+define('coffee', syntax({ line: ['#'], block: [['###', '###']] }));
+define('ps1', syntax({ line: ['#'], block: [['<#', '#>']] }));
+define('nim', syntax({ line: ['#'], block: [['#[', ']#']], nested: true }));
+define(
+  'jl',
+  syntax({
+    line: ['#'],
+    block: [['#=', '=#']],
+    nested: true,
+    quotes: '"',
+    character: true,
+  }),
+);
+
+// `--`
+define('lua', syntax({ line: ['--'], block: [['--[[', ']]']] }));
+define('sql', syntax({ line: ['--'], block: C_BLOCK }));
+/** `--` opens a comment unless it is part of an operator (`-->`, `|--`). */
+const DASHES = /--+(?![!#$%&*+./<=>?@\\^|~:])/;
+define(
+  'hs elm',
+  syntax({
+    line: [DASHES],
+    block: [['{-', '-}']],
+    nested: true,
+    quotes: '"',
+    character: true,
+  }),
+);
+
+// `;`
+define('clj cljs cljc edn el', syntax({ line: [';'], quotes: '"' }));
+define(
+  'lisp cl lsp scm ss rkt',
+  syntax({ line: [';'], block: [['#|', '|#']], nested: true, quotes: '"' }),
+);
+
+// `%`
+define('erl hrl', syntax({ line: ['%'] }));
+
+// `(* *)`
+define(
+  'ml mli',
+  syntax({ block: [['(*', '*)']], nested: true, quotes: '"', character: true }),
+);
+define(
+  'fs fsi fsx',
+  syntax({
+    line: ['//'],
+    block: [['(*', '*)']],
+    nested: true,
+    quotes: '"',
+    character: true,
+  }),
+);
+
+/** From inside a string quoted by `q` at `from` in `s`: the index after its
+ *  end, or at the line break an unclosed one stops at. */
+function stringEnd(s: string, from: number, q: string): number {
+  const n = s.length;
+  let k = from;
+  while (k < n) {
+    const c = s[k];
+    if (c === '\\') k += 2;
+    else if (c === q) return k + 1;
+    else if (c === '\n') return k;
+    else k++;
+  }
+  return n;
+}
+
+/** Each character of `out` from `from` up to `to` made a space, but a line break. */
+function blanked(out: string[], from: number, to: number): void {
+  for (let k = from; k < to; k++) if (out[k] !== '\n') out[k] = ' ';
+}
+
 /** `source` with each comment blanked, every character of it but a line break
- *  made a space, so what is left keeps its lines and columns. String, template
- *  and regular-expression literals are kept whole. */
-export function uncommented(source: string): string {
-  const s = source;
+ *  made a space, so what is left keeps its lines and columns. The comments are
+ *  those of the language the file `extension` (lowercase, without its dot)
+ *  names; an extension the check does not know reads `//`, `/* *\/` and `#`
+ *  comments. String literals are kept whole, and in a script (`js`, `ts` and
+ *  their kin) template and regular-expression literals too. */
+export function uncommented(source: string, extension: string): string {
+  return SCRIPTS.has(extension)
+    ? uncommentedScript(source)
+    : uncommentedBy(source, SYNTAXES.get(extension) ?? FALLBACK);
+}
+
+/** A character literal: one character or one escape between `'`s. */
+const CHARACTER =
+  /'(?:[^'\\\n]|\\(?:u\{[0-9a-fA-F]+\}|x[0-9a-fA-F]{2}|\d+|[^\n]))'/y;
+
+function uncommentedBy(s: string, language: Syntax): string {
   const n = s.length;
   const out = s.split('');
-  const blank = (from: number, to: number) => {
-    for (let k = from; k < to; k++) if (out[k] !== '\n') out[k] = ' ';
+  /** The index after the block comment `[open, close]` begun at `from`. */
+  const blockEnd = (from: number, [open, close]: readonly [string, string]) => {
+    let k = from + open.length;
+    let level = 1;
+    while (k < n) {
+      if (language.nested && s.startsWith(open, k)) {
+        level++;
+        k += open.length;
+      } else if (s.startsWith(close, k)) {
+        level--;
+        k += close.length;
+        if (level === 0) return k;
+      } else k++;
+    }
+    return n;
   };
+  const lineStartsAt = (i: number) =>
+    language.line.some((marker) => {
+      marker.lastIndex = i;
+      return marker.test(s);
+    });
+
+  let i = 0;
+  while (i < n) {
+    const c = s[i] as string;
+    const block = language.block.find(([open]) => s.startsWith(open, i));
+    if (block !== undefined) {
+      const to = blockEnd(i, block);
+      blanked(out, i, to);
+      i = to;
+    } else if (lineStartsAt(i)) {
+      const end = s.indexOf('\n', i);
+      const to = end < 0 ? n : end;
+      blanked(out, i, to);
+      i = to;
+    } else if (language.raw.includes(c)) {
+      const end = s.indexOf(c, i + 1);
+      i = end < 0 ? n : end + 1;
+    } else if (c === "'" && language.character) {
+      CHARACTER.lastIndex = i;
+      const literal = CHARACTER.exec(s);
+      i += literal === null ? 1 : literal[0].length;
+    } else if (language.quotes.includes(c)) {
+      i = stringEnd(s, i + 1, c);
+    } else i++;
+  }
+  return out.join('');
+}
+
+function uncommentedScript(s: string): string {
+  const n = s.length;
+  const out = s.split('');
+  const blank = (from: number, to: number) => blanked(out, from, to);
   /** The brace depth outside each open `${` of a template. */
   const substitutions: number[] = [];
   let depth = 0;
@@ -50,20 +275,6 @@ export function uncommented(source: string): string {
         depth = 0;
         return k + 2;
       } else k++;
-    }
-    return n;
-  };
-
-  /** From inside a string quoted by `q` at `from`: the index after its end, or at
-   *  the line break an unclosed one stops at. */
-  const string = (from: number, q: string): number => {
-    let k = from;
-    while (k < n) {
-      const c = s[k];
-      if (c === '\\') k += 2;
-      else if (c === q) return k + 1;
-      else if (c === '\n') return k;
-      else k++;
     }
     return n;
   };
@@ -105,7 +316,7 @@ export function uncommented(source: string): string {
       i = regex(i + 1);
       operand = false;
     } else if (c === "'" || c === '"') {
-      i = string(i + 1, c);
+      i = stringEnd(s, i + 1, c);
       operand = false;
     } else if (c === '`') {
       i = template(i + 1);
