@@ -1,5 +1,22 @@
 # @cratylus/forge
 
+## 0.23.0
+
+### Minor Changes
+
+- fe2fc62: The Assignment forms omp's extension shows every session render each field's shape as the deliverable section does (`list of objects`, enum values as `` `a` or `b` ``, `at least N` or `may be empty`) and nest the fields of an object or of a list of objects beneath it, two spaces deeper, each with its need and meaning.
+- 36a3697: Only the business analyst writes the domain model. On omp, `cratylus install` places `extensions/cratylus-reach.ts`, which refuses a write to `design/model/` by a subagent of any other agent (omp's own agents included) and by a main session started with `omp --agent` as any other agent of cratylus; the refusal says to raise a meaning question to the business analyst. The product owner's own session is never judged. `write`, `edit` and `ast_edit` are judged by the paths they name, and no other tool is: the tools that read pass, and `bash` and `eval` pass whether they read or write.
+
+  `@cratylus/schema` adds `ProtectedPath` and the optional `Agent.writes`. `@cratylus/canon` adds `PROTECTED_PATHS`, gives the business analyst the action scope `write-domain-model`, and copies its protected path onto the business analyst and every persona over it as `writes`. `@cratylus/forge` adds `OMP_REACH_MODULE` and `ompReachExtensions`, and omp's `launchSurface` emits the reach module beside the dispatch isolation module.
+
+### Patch Changes
+
+- Updated dependencies [36a3697]
+- Updated dependencies [f678e1e]
+- Updated dependencies [46e77f6]
+  - @cratylus/schema@0.15.0
+  - @cratylus/runtime@0.21.0
+
 ## 0.22.0
 
 ### Minor Changes
