@@ -29,25 +29,17 @@ it('behaviour-driven-development/integration-branch: gitflow integrates into the
     'gitflow-release-branches',
   ]);
 
-  // One rule names the integration branch: the one AGENTS.md names, develop where it names none,
-  // and the product owner's call where neither exists.
-  const named = rules['gitflow-main-and-integration-branch']!;
-  expect(named).toContain(
-    "The integration branch is the branch the project's AGENTS.md names as its integration branch, and `develop` where AGENTS.md names none.",
-  );
-  expect(named).toContain(
-    'Where AGENTS.md names none and `develop` does not exist, the product owner names the integration branch: escalate to the product owner before branching or merging.',
-  );
-
-  // Every other rule integrates into the integration branch so named, never into develop by name.
+  // Each rule is taken on its own, so each names the integration branch: the one AGENTS.md
+  // names, develop where it names none, and the product owner's call where that does not exist.
+  for (const [name, text] of Object.entries(rules)) {
+    expect(text, name).toContain(
+      "The integration branch is the branch the project's AGENTS.md names as its integration branch, or `develop` where it names none; where that branch does not exist, escalate to the product owner, who names it, before branching or merging.",
+    );
+  }
   expect(rules['gitflow-feature-branches']).toContain(
     'branched from the integration branch',
   );
   expect(rules['gitflow-feature-branches']).toContain(
     'merge it back into the integration branch with `git merge --no-ff`',
   );
-  for (const [name, text] of Object.entries(rules)) {
-    if (name === 'gitflow-main-and-integration-branch') continue;
-    expect(text, name).not.toMatch(/\bdevelop\b/);
-  }
 });
