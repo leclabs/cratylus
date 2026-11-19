@@ -273,44 +273,34 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
   }
 });
 
-it('delivery/install: offers clean-cutover in place of green-field', () => {
+it('delivery/install: offers green-field and clean-cutover apart', () => {
   h = emptyHome();
   const offered = h.command(['install', '--harness', 'omp']);
   expect(offered.code, said(offered)).toBe(0);
   const hint = /rulesets: ([^)]+)\)/.exec(said(offered));
   expect(hint, 'install names the offered rulesets').not.toBeNull();
   const sets = hint![1]!.split(', ');
-  expect.soft(sets).toContain('clean-cutover');
-  expect.soft(sets).not.toContain('green-field');
+  for (const name of ['green-field', 'clean-cutover']) {
+    expect.soft(sets).toContain(name);
+    expect
+      .soft(
+        canon.rulesets
+          ?.find((set) => set.name === name)
+          ?.rules.map((rule) => rule.name),
+      )
+      .toEqual([name]);
 
-  const chosen = h.command([
-    'install',
-    '--harness',
-    'omp',
-    '--rules',
-    'clean-cutover',
-  ]);
-  expect.soft(chosen.code, said(chosen)).toBe(0);
-  expect
-    .soft(entries(join(h.home, '.cratylus/omp/rules')))
-    .toEqual(['clean-cutover.md']);
-  const all = h.command([
-    'install',
-    '--harness',
-    'omp',
-    '--rules',
-    sets.join(','),
-  ]);
-  expect(all.code, said(all)).toBe(0);
-  expect(
-    entries(join(h.home, '.cratylus/omp/rules')).filter((name) =>
-      name.startsWith('green-field'),
-    ),
-  ).toEqual([]);
+    const chosen = h.command(['install', '--harness', 'omp', '--rules', name]);
+    expect.soft(chosen.code, said(chosen)).toBe(0);
+    expect
+      .soft(entries(join(h.home, '.cratylus/omp/rules')))
+      .toEqual([`${name}.md`]);
+  }
 });
 
 it('delivery/install: drops a recorded rule no longer offered', async () => {
   const obsolete = 'green-field-declared-constraints';
+  const newRules = ['green-field', 'clean-cutover'];
   const args = [
     'install',
     '--harness',
@@ -337,7 +327,7 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
     record.offeredRules = [
       ...canon
         .rulesets!.flatMap((set) => set.rules.map((rule) => rule.name))
-        .filter((name) => name !== 'clean-cutover'),
+        .filter((name) => !newRules.includes(name)),
       obsolete,
     ];
     writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`);
@@ -369,18 +359,21 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
       );
       let stdout = '';
       let stderr = '';
-      let chose = false;
+      const answered = new Set<string>();
       let confirmed = false;
       child.stdout.on('data', (chunk) => {
         stdout += String(chunk);
         const output = stripVTControlCharacters(stdout);
-        if (
-          !chose &&
-          output.includes('Rules: clean-cutover') &&
-          output.includes('rule by rule')
-        ) {
-          chose = true;
-          child.stdin.write('\x1b[B\r');
+        for (const name of newRules) {
+          const prompt = output.lastIndexOf(`Rules: ${name} —`);
+          if (
+            !answered.has(name) &&
+            prompt !== -1 &&
+            output.indexOf('rule by rule', prompt) !== -1
+          ) {
+            answered.add(name);
+            child.stdin.write('\x1b[B\r');
+          }
         }
         if (!confirmed && output.includes('Install this?')) {
           confirmed = true;
@@ -399,7 +392,7 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
     const output = stripVTControlCharacters(said(result));
     const after = JSON.parse(readFileSync(recordPath, 'utf8'));
     expect.soft(result.code, output).toBe(0);
-    const chosen = terminal ? [...keptRules, 'clean-cutover'] : keptRules;
+    const chosen = terminal ? [...keptRules, ...newRules] : keptRules;
     expect.soft(after.rules, output).toEqual(chosen);
     expect
       .soft(entries(join(root, 'rules')), output)
@@ -414,15 +407,16 @@ it('delivery/install: drops a recorded rule no longer offered', async () => {
     expect
       .soft(summary, output)
       .toContain(`dropped ${obsolete}, no longer offered`);
-    if (terminal) {
-      const asked = [...output.matchAll(/Rules: ([\w-]+) —/g)].map(
-        (match) => match[1],
-      );
-      expect.soft([...new Set(asked)], output).toEqual(['clean-cutover']);
-    } else {
-      expect.soft(summary, output).toContain('clean-cutover');
-      expect.soft(summary, output).toContain('offered since your choice');
-      expect.soft(output).not.toContain('Rules: clean-cutover');
+    const asked = [
+      ...new Set(
+        [...output.matchAll(/Rules: ([\w-]+) —/g)].map((match) => match[1]),
+      ),
+    ];
+    expect.soft(asked, output).toEqual(terminal ? newRules : []);
+    if (!terminal) {
+      expect
+        .soft(summary, output)
+        .toContain(`offered since your choice: ${newRules.join(', ')}`);
     }
     h.dispose();
     h = undefined;

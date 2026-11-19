@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import canon, { RULESETS } from '../src/index.js';
 
 describe('canon rulesets', () => {
-  it('offers the seven rulesets on the plugin, behaviour-driven-development first', () => {
+  it('offers the eight rulesets on the plugin, behaviour-driven-development first', () => {
     expect(RULESETS.map((r) => r.name)).toEqual([
       'behaviour-driven-development',
       'context-engineering',
@@ -16,6 +16,7 @@ describe('canon rulesets', () => {
       'conventional-commits',
       'commit-discipline',
       'established-libraries',
+      'green-field',
       'clean-cutover',
     ]);
     expect(canon.rulesets).toBe(RULESETS);

@@ -26,11 +26,11 @@ import { cratylicContextDesign } from '../factors/procedure/cratylic-context-des
 import { orchestratorWorkers } from '../factors/procedure/orchestrator-workers.js';
 import { rectificationOfNames } from '../factors/procedure/rectification-of-names.js';
 import { businessAnalyst } from '../factors/role/business-analyst.js';
-import { cleanCutover } from '../factors/stance/clean-cutover.js';
 import { conceptualThinking } from '../factors/stance/conceptual-thinking.js';
 import { cratylism } from '../factors/stance/cratylism.js';
 import { decisive } from '../factors/stance/decisive.js';
 import { firstPrinciples } from '../factors/stance/first-principles.js';
+import { greenField } from '../factors/stance/green-field.js';
 import { mece } from '../factors/stance/mece.js';
 import { simplicity } from '../factors/stance/simplicity.js';
 import { tailoring } from '../factors/stance/tailoring.js';
@@ -58,7 +58,7 @@ export const businessAnalystRole: RoleProfile = {
       conceptualThinking,
       cratylism,
       firstPrinciples,
-      cleanCutover,
+      greenField,
       tailoring,
       trustButVerify,
       simplicity,
