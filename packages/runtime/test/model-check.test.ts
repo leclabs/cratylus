@@ -14,7 +14,7 @@ import { dirname, join } from 'node:path';
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
-import { lex } from '../src/capabilities/model/comments.js';
+import { lex, uncommented } from '../src/capabilities/model/comments.js';
 import {
   acceptanceTests,
   checkModel,
@@ -31,10 +31,6 @@ const named = (concept: string, text: string) => `${concept}: ${text}`;
 
 /** The title of the example every fixture binds. */
 const ADDS = named('shop/basket', 'adds an item');
-
-/** The blanked code of `source` in the language of `extension`. */
-const uncommented = (source: string, extension: string) =>
-  lex(source, extension).code;
 
 /** A test source with one test titled `title`, through `fn` quoted by `q`. */
 const source = (title: string, fn = call, q = "'") =>
@@ -430,12 +426,19 @@ describe('finding acceptance tests', () => {
       );
       expect(read()).toEqual(['test_x.py:3']);
     });
+
+    it('reads no multi-line literal that begins as a title', () => {
+      write('a.test.ts', `const t = \`${title}\nmore\`;\n`);
+      write('test_x.py', `x = """${title}\nmore"""\n`);
+      write('basket_test.go', `t.Run(\`${title}\nmore\`, f)\n`);
+      expect(read()).toEqual([]);
+    });
   });
 });
 
 describe('lexing literals', () => {
   const texts = (source: string, extension: string) =>
-    lex(source, extension).literals.map((l) => l.text);
+    lex(source, extension).map((l) => l.text);
 
   it('yields each whole literal outside comments, its escapes read, in a script', () => {
     const code = "f('a', \"b\\'c\", `d`, `e${x}`); // 'z'\n/* \"y\" */ g(`h`);";
@@ -446,7 +449,7 @@ describe('lexing literals', () => {
     expect(texts('x = "a" # "b"\ny = \'c\'', 'py')).toEqual(['a', 'c']);
     expect(texts('fn f<\'a>(x: &\'a str) { g("x") }', 'rs')).toEqual(['x']);
     expect(texts('a "b\nc "d"', 'xyz')).toEqual(['d']);
-    expect(lex('ab "c"', 'xyz').literals).toEqual([{ index: 3, text: 'c' }]);
+    expect(lex('ab "c"', 'xyz')).toEqual([{ index: 3, text: 'c' }]);
   });
 
   it('yields a Go raw literal as written, and none with a substitution', () => {
@@ -459,6 +462,16 @@ describe('lexing literals', () => {
     expect(texts(code, 'py')).toEqual(['x\n"y" ', 'z']);
     expect(texts('f("""a "b" c""", "d")', 'kt')).toEqual(['a "b" c', 'd']);
     expect(texts('"""a\nb', 'py')).toEqual([]);
+  });
+
+  it('reads Kotlin and Scala tripled literals as written, Java, Swift and Python ones with escapes', () => {
+    const raw = 'f("""a\\""", "b")';
+    expect(texts(raw, 'kt')).toEqual(['a\\', 'b']);
+    expect(texts(raw, 'scala')).toEqual(['a\\', 'b']);
+    const escaped = 'f("""a\\"""b""")';
+    for (const extension of ['java', 'swift', 'jl', 'py']) {
+      expect(texts(escaped, extension)).toEqual(['a"""b']);
+    }
   });
 });
 

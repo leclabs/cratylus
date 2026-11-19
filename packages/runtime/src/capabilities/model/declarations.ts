@@ -74,7 +74,7 @@ export function testTitles(name: string, text: string): TestTitle[] {
   if (extension === 'feature') return scenarios(text);
   let line = 1;
   let at = 0;
-  return lex(text, extension).literals.map(({ index, text: title }) => {
+  return lex(text, extension).map(({ index, text: title }) => {
     for (; at < index; at++) if (text.charCodeAt(at) === 10) line++;
     return { line, title };
   });

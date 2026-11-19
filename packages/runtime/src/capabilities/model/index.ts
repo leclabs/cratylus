@@ -69,7 +69,7 @@ const STEP = /^(Given|When|Then|And)\b/;
 const UNSEARCHED = new Set(['node_modules', 'dist']);
 
 /** The title an acceptance test gives: the concept and the example name. */
-const ACCEPTANCE_TITLE = /^([\w.-]+)\/([\w.-]+): (.+)$/s;
+const ACCEPTANCE_TITLE = /^([\w.-]+)\/([\w.-]+): (.+)$/;
 
 /** What fails the check: a concept (or a context, as `<context>/context`), and
  *  where it applies, the example and the test, or every test naming an example

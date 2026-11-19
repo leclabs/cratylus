@@ -49,6 +49,8 @@ interface Syntax {
   /** The quote characters that also quote a literal tripled, across lines, as
    *  Python's `"""…"""`. */
   readonly triple: string;
+  /** Whether a tripled literal has no escapes, as Kotlin's and Scala's. */
+  readonly tripleRaw: boolean;
   /** Whether `'x'` is a character literal, so a lone `'` (a lifetime, a prime)
    *  begins nothing. */
   readonly character: boolean;
@@ -68,6 +70,7 @@ const syntax = (
     quotes?: string;
     raw?: string;
     triple?: string;
+    tripleRaw?: boolean;
     character?: boolean;
   } = {},
 ): Syntax => ({
@@ -81,6 +84,7 @@ const syntax = (
   quotes: s.quotes ?? `'"`,
   raw: s.raw ?? '',
   triple: s.triple ?? '',
+  tripleRaw: s.tripleRaw ?? false,
   character: s.character ?? false,
 });
 
@@ -99,14 +103,21 @@ const define = (extensions: string, s: Syntax): void => {
 
 // C family
 define(
-  'c h cc cpp cxx hh hpp hxx java groovy cs dart',
+  'c h cc cpp cxx hh hpp hxx groovy cs dart',
   syntax({ line: ['//'], block: C_BLOCK }),
 );
+define('java', syntax({ line: ['//'], block: C_BLOCK, triple: '"' }));
 define('go', syntax({ line: ['//'], block: C_BLOCK, raw: '`' }));
 define('zig', syntax({ line: ['//'] }));
 define(
   'kt kts',
-  syntax({ line: ['//'], block: C_BLOCK, nested: true, triple: '"' }),
+  syntax({
+    line: ['//'],
+    block: C_BLOCK,
+    nested: true,
+    triple: '"',
+    tripleRaw: true,
+  }),
 );
 define(
   'scala',
@@ -116,6 +127,7 @@ define(
     nested: true,
     quotes: '"',
     triple: '"',
+    tripleRaw: true,
     character: true,
   }),
 );
@@ -234,53 +246,47 @@ export interface Literal {
   readonly text: string;
 }
 
-/** A source file lexed: each whole literal in the order it opens, and the code
- *  with each comment blanked, built only when asked for. */
-export interface Lexed {
-  readonly literals: Literal[];
-  readonly code: string;
-}
-
-/** The lexed form of `s`, whose comments are the `from, to` pairs of `spans`:
- *  `code` is `s` with each comment's every character but a line break made a
- *  space, so what is left keeps its lines and columns. */
-function lexed(s: string, spans: number[], literals: Literal[]): Lexed {
-  return {
-    literals,
-    get code() {
-      const out = s.split('');
-      for (let m = 0; m < spans.length; m += 2) {
-        for (let k = spans[m] as number; k < (spans[m + 1] as number); k++) {
-          if (out[k] !== '\n') out[k] = ' ';
-        }
-      }
-      return out.join('');
-    },
-  };
-}
-
-/** `source` lexed. The comments are those of the language the file `extension`
- *  (lowercase, without its dot) names, which `code` blanks; an extension the
- *  check does not know reads `//`, `/* *\/` and `#` comments. A literal is one
- *  `'…'` or `"…"` in the quotes of the language, closed on its line, or a
- *  tripled one (`"""…"""`) where the language has it, across lines, or a
- *  backtick literal with no `${`; its escapes are read as what they escape, a
- *  raw one (Go's backtick) as written. A title quoted inside a longer literal
- *  is no literal. In a script (`js`, `ts` and their kin) template and
- *  regular-expression literals are scanned whole too. */
-export function lex(source: string, extension: string): Lexed {
+/** `source` lexed: each whole literal in the order it opens. The comments are
+ *  those of the language the file `extension` (lowercase, without its dot)
+ *  names; an extension the check does not know reads `//`, `/* *\/` and `#`
+ *  comments. A literal is one `'…'` or `"…"` in the quotes of the language,
+ *  closed on its line, or a tripled one (`"""…"""`) where the language has it,
+ *  across lines, or a backtick literal with no `${`; its escapes are read as
+ *  what they escape, a raw one (Go's backtick, Kotlin's and Scala's `"""`) as
+ *  written. A title quoted inside a longer literal is no literal. In a script
+ *  (`js`, `ts` and their kin) template and regular-expression literals are
+ *  scanned whole too. Where a caller passes `comments`, the `from, to` of each
+ *  comment is pushed to it; otherwise none is recorded. */
+export function lex(
+  source: string,
+  extension: string,
+  comments?: number[],
+): Literal[] {
   return SCRIPTS.has(extension)
-    ? lexScript(source)
-    : lexBy(source, SYNTAXES.get(extension) ?? FALLBACK);
+    ? lexScript(source, comments)
+    : lexBy(source, SYNTAXES.get(extension) ?? FALLBACK, comments);
+}
+
+/** `source` with each comment blanked, every character of it but a line break
+ *  made a space, so what is left keeps its lines and columns. */
+export function uncommented(source: string, extension: string): string {
+  const comments: number[] = [];
+  lex(source, extension, comments);
+  const out = source.split('');
+  for (let m = 0; m < comments.length; m += 2) {
+    for (let k = comments[m] as number; k < (comments[m + 1] as number); k++) {
+      if (out[k] !== '\n') out[k] = ' ';
+    }
+  }
+  return out.join('');
 }
 
 /** A character literal: one character or one escape between `'`s. */
 const CHARACTER =
   /'(?:[^'\\\n]|\\(?:u\{[0-9a-fA-F]+\}|x[0-9a-fA-F]{2}|\d+|[^\n]))'/y;
 
-function lexBy(s: string, language: Syntax): Lexed {
+function lexBy(s: string, language: Syntax, comments?: number[]): Literal[] {
   const n = s.length;
-  const spans: number[] = [];
   const literals: Literal[] = [];
   /** The index after the block comment `[open, close]` begun at `from`. */
   const blockEnd = (from: number, [open, close]: readonly [string, string]) => {
@@ -344,19 +350,19 @@ function lexBy(s: string, language: Syntax): Lexed {
     const longEnd = longBracketEnd(i);
     if (block !== undefined) {
       const to = blockEnd(i, block);
-      spans.push(i, to);
+      comments?.push(i, to);
       i = to;
     } else if (lineBlock !== undefined) {
       const to = lineBlockEnd(i, lineBlock[1]);
-      spans.push(i, to);
+      comments?.push(i, to);
       i = to;
     } else if (longEnd !== undefined) {
-      spans.push(i, longEnd);
+      comments?.push(i, longEnd);
       i = longEnd;
     } else if (lineStartsAt(i)) {
       const end = s.indexOf('\n', i);
       const to = end < 0 ? n : end;
-      spans.push(i, to);
+      comments?.push(i, to);
       i = to;
     } else if (language.raw.includes(c)) {
       const end = s.indexOf(c, i + 1);
@@ -372,9 +378,15 @@ function lexBy(s: string, language: Syntax): Lexed {
     } else if (language.triple.includes(c) && s.startsWith(c.repeat(3), i)) {
       const close = c.repeat(3);
       let k = i + 3;
-      while (k < n && !s.startsWith(close, k)) k += s[k] === '\\' ? 2 : 1;
+      while (k < n && !s.startsWith(close, k)) {
+        k += s[k] === '\\' && !language.tripleRaw ? 2 : 1;
+      }
       if (k < n) {
-        literals.push({ index: i, text: unescaped(s.slice(i + 3, k)) });
+        const body = s.slice(i + 3, k);
+        literals.push({
+          index: i,
+          text: language.tripleRaw ? body : unescaped(body),
+        });
       }
       i = k < n ? k + 3 : n;
     } else if (language.quotes.includes(c)) {
@@ -385,14 +397,13 @@ function lexBy(s: string, language: Syntax): Lexed {
       i = end;
     } else i++;
   }
-  return lexed(s, spans, literals);
+  return literals;
 }
 
-function lexScript(s: string): Lexed {
+function lexScript(s: string, comments?: number[]): Literal[] {
   const n = s.length;
-  const spans: number[] = [];
   const literals: Literal[] = [];
-  const blank = (from: number, to: number) => spans.push(from, to);
+  const blank = (from: number, to: number) => comments?.push(from, to);
   /** The brace depth outside each open `${` of a template. */
   const substitutions: number[] = [];
   let depth = 0;
@@ -494,5 +505,5 @@ function lexScript(s: string): Lexed {
       i++;
     }
   }
-  return lexed(s, spans, literals);
+  return literals;
 }
