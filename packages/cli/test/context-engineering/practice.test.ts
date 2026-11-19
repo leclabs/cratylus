@@ -31,28 +31,39 @@ it('context-engineering/practice: a practice is adopted by its name', () => {
   const rules = join(h.home, '.cratylus/omp/rules');
   expect(existsSync(rules) ? readdirSync(rules) : []).toEqual([]);
 
-  // Taking the ruleset, or its one rule, adopts the same practice by name alone.
-  for (const choice of [
-    'behaviour-driven-development',
-    'behaviour-driven-development-adopted',
-  ]) {
-    success(h.command(['install', '--harness', 'omp', '--rules', choice]));
-    expect(readdirSync(rules)).toEqual([
-      'behaviour-driven-development-adopted.md',
-    ]);
-    const text = readFileSync(
-      join(rules, 'behaviour-driven-development-adopted.md'),
-      'utf8',
-    );
-    const front = /^---\n([\s\S]*?)\n---\n/.exec(text);
-    expect(front, 'the adopted practice has rule front-matter').not.toBeNull();
-    expect(parseYaml(front![1]!)).toEqual({
+  // Taking each ruleset, or its one rule, adopts its practice by name alone, gitflow precised
+  // only by its integration branch.
+  const practices = [
+    {
+      ruleset: 'behaviour-driven-development',
+      rule: 'behaviour-driven-development-adopted',
       description: 'The project practises behaviour-driven development.',
-      alwaysApply: true,
-    });
-    expect(text.slice(front![0].length).trim()).toBe(
-      'This project practises behaviour-driven development.\n\n' +
+      body:
+        'This project practises behaviour-driven development.\n\n' +
         "Why: Its name carries the practice whole, each role's participation included.",
-    );
+    },
+    {
+      ruleset: 'gitflow',
+      rule: 'gitflow-adopted',
+      description:
+        "The project follows gitflow, its integration branch develop unless the project's AGENTS.md names another.",
+      body:
+        "This project follows gitflow. Its integration branch is `develop` unless the project's AGENTS.md names another; a missing integration branch is escalated to the product owner.\n\n" +
+        "Why: Its name carries the branching model whole; only the integration branch is the project's own, and naming a missing one is the product owner's decision.",
+    },
+  ];
+  for (const { ruleset, rule, description, body } of practices) {
+    for (const choice of [ruleset, rule]) {
+      success(h.command(['install', '--harness', 'omp', '--rules', choice]));
+      expect(readdirSync(rules)).toEqual([`${rule}.md`]);
+      const text = readFileSync(join(rules, `${rule}.md`), 'utf8');
+      const front = /^---\n([\s\S]*?)\n---\n/.exec(text);
+      expect(
+        front,
+        'the adopted practice has rule front-matter',
+      ).not.toBeNull();
+      expect(parseYaml(front![1]!)).toEqual({ description, alwaysApply: true });
+      expect(text.slice(front![0].length).trim()).toBe(body);
+    }
   }
 });

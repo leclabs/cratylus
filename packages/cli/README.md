@@ -116,7 +116,9 @@ A rule is stated with why it holds, and your agents follow it in every session o
 ruleset is a named set of rules offered together (`behaviour-driven-development`,
 `context-engineering`, `gitflow`, `conventional-commits`, `commit-discipline`,
 `established-libraries`, `green-field`, `clean-cutover`). `behaviour-driven-development` adopts that practice by its
-name alone, and `context-engineering` adopts ten principles of context engineering, each by its name.
+name alone; `gitflow` adopts gitflow by its name, its integration branch `develop` unless your
+project's AGENTS.md names another, a missing one escalated to you; and `context-engineering` adopts
+ten principles of context engineering, each by its name.
 On a terminal, install offers each ruleset in turn: all its rules, rule by rule, or none, which is
 the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
