@@ -98,14 +98,26 @@ const TEST_ATTRIBUTE =
   /^<?(?:[\s\S]*,)?\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
 
 /** Whether the `[` at `list` in `text` opens an attribute list: F#'s `[<`, or
- *  a `[` that follows, past whitespace, the start of the file or the end of a
- *  statement, block or attribute list (`;`, `{`, `}`, `]`), where an indexer's
- *  `[` follows an operand. */
+ *  a `[` that follows, past whitespace and directive lines (`#region …`), the
+ *  start of the file or the end of a statement, block or attribute list (`;`,
+ *  `{`, `}`, `]`), where an indexer's `[` follows an operand. */
 function opensAttributes(text: string, list: number): boolean {
   if (text[list + 1] === '<') return true;
   let k = list - 1;
-  while (k >= 0 && /\s/.test(text[k] as string)) k--;
-  return k < 0 || ';{}]'.includes(text[k] as string);
+  for (;;) {
+    while (k >= 0 && /\s/.test(text[k] as string)) k--;
+    if (k < 0) return true;
+    const start = text.lastIndexOf('\n', k) + 1;
+    if (
+      !text
+        .slice(start, k + 1)
+        .trimStart()
+        .startsWith('#')
+    )
+      break;
+    k = start - 1;
+  }
+  return ';{}]'.includes(text[k] as string);
 }
 
 /** What follows a literal that joins it to another: a concatenation or

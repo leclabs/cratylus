@@ -390,6 +390,9 @@ describe('finding acceptance tests', () => {
           `[Xunit.Fact${' '.repeat(201)}(${display})]`,
           `var item = items[Fact(${display})];`,
           `[Trait("group", "[smoke]"), Fact(${display})]`,
+          'public void Adds() {}',
+          '#region Adding items',
+          `[Fact(${display})]`,
           '',
         ].join('\n'),
       );
@@ -402,6 +405,7 @@ describe('finding acceptance tests', () => {
         'BasketTests.cs:9',
         'BasketTests.cs:10',
         'BasketTests.cs:12',
+        'BasketTests.cs:15',
         'BasketTests.fs:1',
       ]);
     });
