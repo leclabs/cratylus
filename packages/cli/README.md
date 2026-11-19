@@ -226,13 +226,12 @@ assignment of each agent that takes one.
 
 Writing the domain model, `design/model/`, is the business analyst's alone (it and its personas
 kino, mav and nico). The installed extension refuses a `write`, `edit` or `ast_edit` reaching
-`design/model/`, and a `bash` or `eval` call whose input names it, in a dispatched session whose
-agent is not one of them, omp's own agents included, and in a session started as another installed
-agent (`omp --agent tech-lead`); the refusal says to raise a meaning question to the business
-analyst. Your own session, started with no `--agent` or as an agent cratylus did not install, is
-not refused. Reading is never refused: read the model with the `read`, `grep` or `glob` tool, since
-a shell command naming the path is refused whether it reads or writes, and one building the path at
-run time is not caught (`design/decisions/a-protected-path-is-guarded-in-the-extension.md`).
+`design/model/` in a dispatched session whose agent is not one of them, omp's own agents included,
+and in a session started as another installed agent (`omp --agent tech-lead`); the refusal says to
+raise a meaning question to the business analyst. Your own session, started with no `--agent` or as
+an agent cratylus did not install, is not refused. No other tool is judged: reading is never
+refused, and `bash` and `eval` are not judged, whether they read or write
+(`design/decisions/a-protected-path-is-guarded-in-the-extension.md`).
 
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed

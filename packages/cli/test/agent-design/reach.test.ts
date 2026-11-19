@@ -15,7 +15,6 @@ type Handler = (
 
 const fileReason =
   'design/model/ is the domain model, which only the business analyst writes. To change it, raise a meaning question to the business analyst.';
-const shellReason = `${fileReason} A shell or eval call naming design/model/ is refused whether it reads or writes; read the domain model with the read, grep or glob tool.`;
 const modelPath = 'design/model/delivery/install.md';
 let h: Host | undefined;
 afterEach(() => {
@@ -90,20 +89,6 @@ it("agent-design/reach: the tech lead's write to the domain model is refused", a
     { toolName: 'ast_edit', input: { path: modelPath } },
     { toolName: 'ast_edit', input: { paths: ['notes.md', modelPath] } },
   ];
-  const shellCalls: Event[] = [
-    { toolName: 'bash', input: { command: `printf 'meaning' > ${modelPath}` } },
-    {
-      toolName: 'bash',
-      input: { command: `sed -i 's/old/new/' ${modelPath}` },
-    },
-    { toolName: 'bash', input: { command: `rm ${modelPath}` } },
-    { toolName: 'bash', input: { command: `cat ${modelPath}` } },
-    {
-      toolName: 'eval',
-      input: { code: `write('${modelPath}', 'changed meaning')` },
-    },
-    { toolName: 'eval', input: { code: `read('${modelPath}')` } },
-  ];
   for (const kind of ['sub', 'main'] as const) {
     const agent = { kind, name: kind === 'sub' ? 'tech-lead' : 'main' };
     const flag = kind === 'main' ? 'tech-lead' : undefined;
@@ -112,12 +97,6 @@ it("agent-design/reach: the tech lead's write to the domain model is refused", a
         await reach.call(event, agent, flag),
         JSON.stringify({ kind, event }),
       ).toEqual({ block: true, reason: fileReason });
-    }
-    for (const event of shellCalls) {
-      expect(
-        await reach.call(event, agent, flag),
-        JSON.stringify({ kind, event }),
-      ).toEqual({ block: true, reason: shellReason });
     }
   }
   // Subagents are judged by their own identity, even under an analyst main session.
@@ -170,6 +149,9 @@ it('agent-design/reach: every agent reads the domain model', async () => {
       toolName: 'find',
       input: { path: 'design/model/', query: 'domain meaning' },
     },
+    { toolName: 'bash', input: { command: `cat ${modelPath}` } },
+    { toolName: 'bash', input: { command: 'ls', cwd: 'design/model' } },
+    { toolName: 'eval', input: { code: `read('${modelPath}')` } },
   ];
   for (const name of [
     'tech-lead',
