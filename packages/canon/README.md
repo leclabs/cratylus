@@ -48,8 +48,10 @@ name, as the context-engineering ruleset's Cratylic context design and maxim of 
 practice itself, behaviour-driven development, is adopted by the project's conventions (the offered
 `behaviour-driven-development` ruleset), not by the agents. The departures follow the domain
 model's records: decision rights as one RAPID letter per decision class, autonomy as mission
-command, reach open by default (so no role narrows it), the domain model as every reader's memory,
-a user story free-form and unestimated, sign-off and tailoring as cratylus records them.
+command, reach open by default and narrowed where harm is observed (writing the domain model,
+the `write-domain-model` action scope, is the business analyst's alone), the domain model as every
+reader's memory, a user story free-form and unestimated, sign-off and tailoring as cratylus records
+them.
 
 - **business-analyst** — holds the domain model, `design/model/`: turns the product owner's intent
   into concepts, user stories and examples, answers meaning questions, and confirms a realization
@@ -87,7 +89,10 @@ than its reach, is made, and composition warns (a `CompositionWarning`), naming 
 harm from one is on record.
 
 A composed agent also says, for the projector, the role it holds (`holds`), its model's tier and
-effort (`routing`) and its typed handoff (`contract`). Nothing narrows its tools or whom it may
+effort (`routing`), its typed handoff (`contract`) and the protected paths it writes (`writes`): each
+action scope that reserves a path carries it, with the refusal another agent's write to it is told
+(`src/protected-paths.ts`, exported as `PROTECTED_PATHS` by the value's term), so the business
+analyst and its personas carry `design/model/`. Nothing else narrows its tools or whom it may
 dispatch: every agent keeps the agent harness's defaults. Its `key` is reserved for ipseic
 agents and is empty. `holder`, `persona`, `CompositionRefusal`, the five role profiles and `MANIFEST` are
 also named exports, for a plugin that composes agents of its own over these roles.
@@ -99,21 +104,27 @@ Schema data (`src/contracts.ts`, exported as `ASSIGNMENT_CONTRACTS` and `DELIVER
 the value's term). Composition copies the pair onto the agent as `contract`. Each handoff states
 what it must contain (`?` marks an optional field, `[≥1]` a list that may not be empty):
 
-| Role              | Assignment                                                                                                       | Deliverable                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| tech-lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, examples?}`, or a task with no story (below) | outcome `{story, joined, criteria[≥1], meaningQuestions, followUps}`       |
-| software-engineer | task `{task, story?, goal, changes, done}`                                                                       | change `{change, tests, verified}`                                         |
-| test-engineer     | examples `{story, examples[≥1]}`                                                                                 | acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}` |
-| code-reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                | code review `{verdict, findings, meaningQuestions}`                        |
+| Role              | Assignment                                                                                                                  | Deliverable                                                                |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| tech-lead         | user story `{story, slice, why, acceptanceCriteria[≥1], outOfScope, examples?, replaces?}`, or a task with no story (below) | outcome `{story, joined, criteria[≥1], meaningQuestions, followUps}`       |
+| software-engineer | task `{task, story?, goal, changes, done, replaces?}`                                                                       | change `{change, tests, verified}`                                         |
+| test-engineer     | examples `{story, examples[≥1]}`                                                                                            | acceptance tests `{story, tests: [{example, test, seenFailing, passes?}]}` |
+| code-reviewer     | review request `{change, story?, acceptanceCriteria?, examples?}`                                                           | code review `{verdict, findings, meaningQuestions}`                        |
 
 An example is named `<context>/<concept>`, standing for all the examples of a concept file of
 `design/model/`, or `<context>/<concept>: <example name>` for one, such as
 `delivery/install: installs the industry roles`. The tech lead's assignment takes either form,
-stated as alternatives (`anyOf`); it fits when it fits any one. Its outcome names the user story, or
+stated as alternatives (`anyOf`); it fits when it fits any one, a task with no story being the
+software engineer's task without `replaces`. Its outcome names the user story, or
 for a task with no story the task, says whether the work was `merged` or `dropped`, and holds each
-acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. An
+acceptance criterion (or, for a task, what done means) with whether it holds and its evidence. A
+user story and a software engineer's task carry in `replaces` the concepts the story replaces, the
+business analyst's decision, each as `<context>/<concept>`: none of a replaced concept's meaning
+carries over, so its realization is deleted whole and built anew from its examples; every other
+concept the story touches has its realization changed in place. An
 acceptance test's `passes` is absent before the build. A code review's `verdict` is `approve` or
-`changes`. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
+`changes`, approving only where each concept the change touches has exactly one realization after
+it. The business analyst's handoffs are the product owner's — free-text intent in, a backbrief
 out — so it carries no contract. An agent
 harness binds the deliverable as its own output schema and
 shows every session, each turn, the assignment form of each agent that takes one: one fenced

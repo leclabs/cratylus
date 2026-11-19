@@ -5,6 +5,7 @@
 
 import type { Ruleset } from '@cratylus/schema';
 import { behaviourDrivenDevelopment } from './rules/behaviour-driven-development.js';
+import { cleanCutover } from './rules/clean-cutover.js';
 import { commitDiscipline } from './rules/commit-discipline.js';
 import { contextEngineering } from './rules/context-engineering.js';
 import { conventionalCommits } from './rules/conventional-commits.js';
@@ -20,4 +21,5 @@ export const RULESETS: readonly Ruleset[] = [
   commitDiscipline,
   establishedLibraries,
   greenField,
+  cleanCutover,
 ];

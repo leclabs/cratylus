@@ -1,6 +1,6 @@
 // Shared install-test scaffolding: temp dirs, fixture agents and scripted answers.
 
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { kebabToCamel } from '@cratylus/schema';
@@ -15,8 +15,10 @@ afterAll(() => {
   for (const d of scratch) rmSync(d, { recursive: true, force: true });
 });
 
+/** A scratch dir under the temp dir, by its canonical path, as installation
+ *  reports a path: the temp dir may sit behind a symlink (macOS /var → /private/var). */
 export function tmp(prefix: string): string {
-  const d = mkdtempSync(join(tmpdir(), prefix));
+  const d = realpathSync(mkdtempSync(join(tmpdir(), prefix)));
   scratch.push(d);
   return d;
 }

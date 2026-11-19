@@ -58,7 +58,12 @@ const meaningQuestions = said(
 );
 
 // The story and the task, each a form of its own: the tech lead takes either, a
-// software engineer a task.
+// software engineer a task carrying the concepts its story replaces.
+const replaces = (whose: string): JsonSchema =>
+  said(
+    texts,
+    `The concepts ${whose} replaces, none of their meaning carried over, each as \`<context>/<concept>\`: each one's realization is deleted whole, its code, every test of it and their fixtures, and built anew from its examples alone; absent where it replaces none, every concept it touches then changed in place.`,
+  );
 const storyForm = record(
   {
     story: storyField,
@@ -79,22 +84,21 @@ const storyForm = record(
       texts,
       'The concepts and examples the story adds or changes',
     ),
+    replaces: replaces('the story'),
   },
-  ['examples'],
+  ['examples', 'replaces'],
 );
-const taskForm = record(
-  {
-    task: said(text, 'The task, by its name (a kebab-case id).'),
-    story: said(
-      text,
-      'The user story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
-    ),
-    goal: said(text, "What the task is for, in its user story's terms."),
-    changes: said(text, 'What the task changes.'),
-    done: said(text, 'What done means for the task.'),
-  },
-  ['story'],
-);
+const taskFields: Record<string, JsonSchema> = {
+  task: said(text, 'The task, by its name (a kebab-case id).'),
+  story: said(
+    text,
+    'The user story the task serves, by its name; absent for a change that alters no meaning, a task with no story.',
+  ),
+  goal: said(text, "What the task is for, in its user story's terms."),
+  changes: said(text, 'What the task changes.'),
+  done: said(text, 'What done means for the task.'),
+};
+const taskForm = record(taskFields, ['story']);
 
 const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
   [
@@ -109,7 +113,13 @@ const assignments: readonly (readonly [Assignment, JsonSchema])[] = [
       ],
     },
   ],
-  [task, taskForm],
+  [
+    task,
+    record({ ...taskFields, replaces: replaces("the task's story") }, [
+      'story',
+      'replaces',
+    ]),
+  ],
   [
     reviewRequest,
     record(
@@ -196,7 +206,7 @@ const deliverables: readonly (readonly [Deliverable, JsonSchema])[] = [
     record({
       verdict: said(
         { type: 'string', enum: ['approve', 'changes'] },
-        'Whether the code review approves the change or asks for changes.',
+        'Whether the code review approves the change or asks for changes; it approves only where each concept the change touches has exactly one realization after it.',
       ),
       findings: said(
         texts,

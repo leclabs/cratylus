@@ -2,17 +2,25 @@
 // acceptance test binds an example, what fails and what only warns, where it
 // finds the repository, and how the command prints and exits.
 //
-// A fixture test source is composed from parts (`${call}(…)`), so this file never
-// holds a call titled the way an acceptance test is, which the model check over
-// this repository would read as a test naming an example the model lacks.
+// This file is itself a test file, and the model check reads every whole string
+// literal in one that is a title (`<context>/<concept>: <example name>`) as a
+// test. So no literal here is one: a title, and a message that begins as one, is
+// composed with `named`, and a fixture source holds its title through a
+// substitution.
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { Command } from 'commander';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CLI_BIN } from '../src/bin-name.js';
-import { uncommented } from '../src/capabilities/model/comments.js';
+import { lex, uncommented } from '../src/capabilities/model/comments.js';
 import {
   acceptanceTests,
   checkModel,
@@ -23,6 +31,12 @@ import { capabilityCommands } from '../src/main.js';
 
 const call = 'it';
 const other = 'test';
+
+/** `concept` and `text` as a title or a message gives them: `<concept>: <text>`. */
+const named = (concept: string, text: string) => `${concept}: ${text}`;
+
+/** The title of the example every fixture binds. */
+const ADDS = named('shop/basket', 'adds an item');
 
 /** A test source with one test titled `title`, through `fn` quoted by `q`. */
 const source = (title: string, fn = call, q = "'") =>
@@ -48,7 +62,8 @@ const CONTEXT = '# shop\n\n**Subject:** selling books\n\n**Relation:** none\n';
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'model-check-'));
+  // Canonical, as the command reports it: the temp dir may sit behind a symlink.
+  root = realpathSync(mkdtempSync(join(tmpdir(), 'model-check-')));
   mkdirSync(join(root, '.git'));
   write('design/model/purpose.md', '# Purpose\n\nTo sell books.\n');
   write('design/model/shop/context.md', CONTEXT);
@@ -68,7 +83,7 @@ const check = () => checkModel(root, join(root, 'design/model'));
 describe('binding examples to acceptance tests', () => {
   it('passes where every example has a test naming it', () => {
     write('design/model/shop/basket.md', BASKET);
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     expect(check()).toEqual({
       model: join(root, 'design/model'),
       passed: true,
@@ -94,10 +109,10 @@ describe('binding examples to acceptance tests', () => {
     write(
       'packages/a/test/basket.spec.ts',
       [
-        source('shop/basket: adds an item'),
-        source('shop/basket: removes an item'),
-        source('shop/till: rings up', other),
-        source('stock/shelf: fills', call, '"'),
+        source(ADDS),
+        source(named('shop/basket', 'removes an item')),
+        source(named('shop/till', 'rings up'), other),
+        source(named('stock/shelf', 'fills'), call, '"'),
       ].join(''),
     );
     const report = check();
@@ -137,21 +152,22 @@ describe('binding examples to acceptance tests', () => {
       'design/model/shop/basket.md',
       BASKET.replace('### adds an item', '### adds an item (judged in review)'),
     );
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     expect(check()).toMatchObject({ passed: true, failures: [] });
   });
 });
 
 describe('finding acceptance tests', () => {
-  const title = 'shop/basket: adds an item';
+  const title = ADDS;
+  const read = () => acceptanceTests(root).map((t) => t.test);
 
-  it('reads it( and test( titled in any quote, by file and line', () => {
+  it('reads a title in any quote, by file and line', () => {
     write(
       'a.test.ts',
       `// one\n${source(title)}${source(title, other, '"')}${source(title, call, '`')}`,
     );
     write('b.spec.mjs', source(title));
-    expect(acceptanceTests(root).map((t) => t.test)).toEqual([
+    expect(read()).toEqual([
       'a.test.ts:2',
       'a.test.ts:3',
       'a.test.ts:4',
@@ -159,15 +175,52 @@ describe('finding acceptance tests', () => {
     ]);
   });
 
-  it('reads no skipped, todo or table test, nor one in an unsearched place', () => {
+  it('reads a title held by any call, wrapper or assignment', () => {
     write(
       'a.test.ts',
       [
         source(title, `${call}.skip`),
-        source(title, `${call}.todo`),
         source(title, `${call}.each([])`),
-        source(title, `x${call}`),
+        source(title, 'scenario'),
+        source(title, 'check'),
+        source(title, 'expect(x).toBe'),
+        `const name = '${title}';\n`,
+      ].join(''),
+    );
+    expect(read()).toEqual([
+      'a.test.ts:1',
+      'a.test.ts:2',
+      'a.test.ts:3',
+      'a.test.ts:4',
+      'a.test.ts:5',
+      'a.test.ts:6',
+    ]);
+  });
+
+  it('reads a title quoted twice in one file as two tests, and several on one line', () => {
+    write('a.test.ts', `${source(title)}expect(name).toBe('${title}');\n`);
+    write(
+      'b.test.ts',
+      `${call}("${title}"); ${other}("${title}");\n${call}("${title}")\n`,
+    );
+    expect(read()).toEqual([
+      'a.test.ts:1',
+      'a.test.ts:2',
+      'b.test.ts:1',
+      'b.test.ts:1',
+      'b.test.ts:2',
+    ]);
+  });
+
+  it('reads no literal that is not a whole title, nor one in an unsearched place', () => {
+    const head = named('shop/basket', '');
+    write(
+      'a.test.ts',
+      [
         `${call}('shop/' + 'basket: adds an item', () => {});\n`,
+        `${call}('${head}' + 'adds an item', () => {});\n`,
+        `${call}("${head}"${' '.repeat(100)}+ "adds an item", () => {});\n`,
+        `${call}("${head}"\n  + "adds an item", () => {});\n`,
         `${call}(\`shop/basket: \${name}\`, () => {});\n`,
         source('plain title'),
       ].join(''),
@@ -176,11 +229,11 @@ describe('finding acceptance tests', () => {
     write('dist/a.test.js', source(title));
     write('.hidden/a.test.ts', source(title));
     write('notes.ts', source(title));
-    expect(acceptanceTests(root)).toEqual([]);
+    expect(read()).toEqual([]);
   });
 
   it('reads an escaped quote in a title as the quote', () => {
-    write('a.test.ts', source("shop/basket: the shopper\\'s book"));
+    write('a.test.ts', source(named('shop/basket', "the shopper\\'s book")));
     expect(acceptanceTests(root)).toEqual([
       {
         test: 'a.test.ts:1',
@@ -201,43 +254,316 @@ describe('finding acceptance tests', () => {
         `const u = 'http://x'; ${source(title)}`,
       ].join(''),
     );
-    expect(acceptanceTests(root).map((t) => t.test)).toEqual(['a.test.ts:5']);
+    expect(read()).toEqual(['a.test.ts:5']);
+  });
+
+  describe('in any language', () => {
+    it('reads the literal of each test file, however its language holds a test', () => {
+      write('test_basket.py', `import unittest\nnames = ["${title}"]\n`);
+      write(
+        'basket_test.go',
+        `package basket\nt.Run("${title}", func(t *testing.T) {})\n`,
+      );
+      write(
+        'basket_spec.rb',
+        `describe Basket do\n  scenario "${title}" do\n  end\nend\n`,
+      );
+      write(
+        'BasketTest.java',
+        `class BasketTest {\n  @DisplayName("${title}")\n  void adds() {}\n}\n`,
+      );
+      write(
+        'BasketTests.cs',
+        `public class BasketTests {\n  [Fact(DisplayName = "${title}")]\n  public void Adds() {}\n}\n`,
+      );
+      write(
+        'BasketSpec.hs',
+        `main = hspec $ do\n  specify "${title}" $ do\n    pure ()\n`,
+      );
+      write(
+        'basket_test.zig',
+        `const std = @import("std");\ntest "${title}" {\n}\n`,
+      );
+      write(
+        'basket_test.rs',
+        `#[test]\nfn adds<'a>(x: &'a str) { check("${title}"); }\n`,
+      );
+      write(
+        'basket.feature',
+        `Feature: Basket\n\n  ${'Scen'}ario: ${title}\n    Given an empty basket\n`,
+      );
+      expect(acceptanceTests(root)).toEqual(
+        [
+          'BasketSpec.hs:2',
+          'BasketTest.java:2',
+          'BasketTests.cs:2',
+          'basket.feature:3',
+          'basket_spec.rb:2',
+          'basket_test.go:2',
+          'basket_test.rs:2',
+          'basket_test.zig:2',
+          'test_basket.py:2',
+        ].map((test) => ({
+          test,
+          context: 'shop',
+          concept: 'basket',
+          example: 'adds an item',
+        })),
+      );
+    });
+
+    it('reads a Gherkin scenario, outline, template and example, outside comments and doc strings', () => {
+      const doc = '"'.repeat(3);
+      const inside = (what: string) => named('shop/basket', what);
+      write(
+        'basket.feature',
+        [
+          'Feature: Basket',
+          `  # ${'Scen'}ario: ${inside('in a comment')}`,
+          `  ${'Scen'}ario Outline: ${inside('an outline')} `,
+          '    Given a doc string',
+          `      ${doc}`,
+          `      ${'Scen'}ario: ${inside('in a doc string')}`,
+          `      ${doc}`,
+          `  ${'Scen'}ario Template: ${inside('a template')}`,
+          `  ${'Ex'}ample: ${inside('an example')}`,
+          `  ${'Ex'}amples:`,
+          '    | a |',
+          `  ${'Scen'}ario: plain title`,
+          '',
+        ].join('\n'),
+      );
+      expect(acceptanceTests(root)).toEqual(
+        [
+          [3, 'an outline'],
+          [8, 'a template'],
+          [9, 'an example'],
+        ].map(([line, example]) => ({
+          test: `basket.feature:${line}`,
+          context: 'shop',
+          concept: 'basket',
+          example,
+        })),
+      );
+    });
+
+    it('binds a prose file and a source not named a test to nothing', () => {
+      for (const file of [
+        'CHANGELOG.md',
+        'docs/x.md',
+        'test-plan.md',
+        'tests.txt',
+        'spec.rst',
+        'basket.ts',
+        'basket.py',
+        'attest.ts',
+        'Contest.java',
+      ]) {
+        write(file, source(title));
+      }
+      expect(read()).toEqual([]);
+    });
+
+    it('reads no title in a comment of the file’s language, a nested block comment included', () => {
+      const declared = `${call}("${title}")`;
+      write('test_basket.py', `# ${declared}\n${declared}\n`);
+      write('basket_spec.lua', `-- ${declared}\n${declared}\n`);
+      write('basket_test.clj', `; ${declared}\n${declared}\n`);
+      write('basket_test.erl', `% ${declared}\n${declared}\n`);
+      write(
+        'BasketSpec.hs',
+        `{- ${declared} {- ${declared} -} ${declared} -}\n${declared}\n`,
+      );
+      write(
+        'basket_test.xyz',
+        `# ${declared}\n// ${declared}\n/* ${declared} */\n${declared}\n`,
+      );
+      expect(read()).toEqual([
+        'BasketSpec.hs:2',
+        'basket_spec.lua:2',
+        'basket_test.clj:2',
+        'basket_test.erl:2',
+        'basket_test.xyz:4',
+        'test_basket.py:2',
+      ]);
+    });
+
+    it('reads no title in a Visual Basic apostrophe or REM comment', () => {
+      const method = `<${'Test'}Method("${title}")>`;
+      write(
+        'BasketTests.vb',
+        `' ${method}\nREM ${method}\nDim s = "it's" ' ${method}\n${method}\n`,
+      );
+      expect(read()).toEqual(['BasketTests.vb:4']);
+    });
+
+    it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {
+      write(
+        'basket_spec.rb',
+        `=begin\n=endpoint\n${call} "${title}" do\n=end\n`,
+      );
+      write('basket_spec.lua', `--[==[\n${call}("${title}")\n]]\n]==]\n`);
+      write('other_spec.lua', `--[=[ ]] ${call}("${title}") ]=]\n`);
+      expect(read()).toEqual([]);
+      write('again_spec.rb', `=begin\nnote\n=end\n${call} "${title}" do\n`);
+      write('again_spec.lua', `--[=[ a ]=] ${call}("${title}")\n`);
+      expect(read()).toEqual(['again_spec.lua:1', 'again_spec.rb:4']);
+    });
+
+    it('keeps the backslashes of a Go raw string title, and reads none with a substitution', () => {
+      write(
+        'basket_test.go',
+        [
+          `t.Run(\`${named('shop/basket', 'matches \\d')}\`, func(t *testing.T) {})`,
+          `t.Run(\`${named('shop/basket', 'ends with \\')}\`, func(t *testing.T) {})`,
+          `t.Run(\`${named('shop/basket', '${x}')}\`, func(t *testing.T) {})`,
+          '',
+        ].join('\n'),
+      );
+      expect(acceptanceTests(root).map((t) => [t.test, t.example])).toEqual([
+        ['basket_test.go:1', 'matches \\d'],
+        ['basket_test.go:2', 'ends with \\'],
+      ]);
+    });
+
+    it('reads a title once in a Python test, and none quoted in its docstring', () => {
+      write(
+        'test_x.py',
+        `"""See "${title}" for details\nand '${title}' too"""\nnames = ["${title}"]\n`,
+      );
+      expect(read()).toEqual(['test_x.py:3']);
+    });
+
+    it('reads no multi-line literal that begins as a title', () => {
+      write('a.test.ts', `const t = \`${title}\nmore\`;\n`);
+      write('test_x.py', `x = """${title}\nmore"""\n`);
+      write('basket_test.go', `t.Run(\`${title}\nmore\`, f)\n`);
+      expect(read()).toEqual([]);
+    });
+  });
+});
+
+describe('lexing literals', () => {
+  const texts = (source: string, extension: string) =>
+    lex(source, extension).map((l) => l.text);
+
+  it('yields each whole literal outside comments, its escapes read, in a script', () => {
+    const code = "f('a', \"b\\'c\", `d`, `e${x}`); // 'z'\n/* \"y\" */ g(`h`);";
+    expect(texts(code, 'ts')).toEqual(['a', "b'c", 'd', 'h']);
+  });
+
+  it('yields the literal of the quotes of the language, and none unclosed', () => {
+    expect(texts('x = "a" # "b"\ny = \'c\'', 'py')).toEqual(['a', 'c']);
+    expect(texts('fn f<\'a>(x: &\'a str) { g("x") }', 'rs')).toEqual(['x']);
+    expect(texts('a "b\nc "d"', 'xyz')).toEqual(['d']);
+    expect(lex('ab "c"', 'xyz')).toEqual([{ index: 3, text: 'c' }]);
+  });
+
+  it('yields a Go raw literal as written, and none with a substitution', () => {
+    const code = 'a(`b\\d`, `c${d}`, "e\\"f")';
+    expect(texts(code, 'go')).toEqual(['b\\d', 'e"f']);
+  });
+
+  it('yields a tripled literal whole across lines, so a title quoted in it is none', () => {
+    const code = 'a = """x\n"y" """ + \'\'\'z\'\'\'';
+    expect(texts(code, 'py')).toEqual(['x\n"y" ', 'z']);
+    expect(texts('f("""a "b" c""", "d")', 'kt')).toEqual(['a "b" c', 'd']);
+    expect(texts('"""a\nb', 'py')).toEqual([]);
+  });
+
+  it('reads Kotlin and Scala tripled literals as written, Java, Swift and Python ones with escapes', () => {
+    const raw = 'f("""a\\""", "b")';
+    expect(texts(raw, 'kt')).toEqual(['a\\', 'b']);
+    expect(texts(raw, 'scala')).toEqual(['a\\', 'b']);
+    const escaped = 'f("""a\\"""b""")';
+    for (const extension of ['java', 'swift', 'jl', 'py']) {
+      expect(texts(escaped, extension)).toEqual(['a"""b']);
+    }
   });
 });
 
 describe('blanking comments', () => {
   it('blanks a line comment and a block comment, keeping lines and columns', () => {
     const code = 'a; // b\n/* c\nd */ e;\n';
-    expect(uncommented(code)).toBe('a;     \n    \n     e;\n');
-    expect(uncommented('a /* b')).toBe('a'.padEnd(6));
+    expect(uncommented(code, 'ts')).toBe('a;     \n    \n     e;\n');
+    expect(uncommented('a /* b', 'ts')).toBe('a'.padEnd(6));
   });
 
   it('keeps a comment marker in a string', () => {
     const code = `f('http://x', "/* y */", 'a\\' // b'); // c`;
-    expect(uncommented(code)).toBe(
+    expect(uncommented(code, 'ts')).toBe(
       `f('http://x', "/* y */", 'a\\' // b');     `,
     );
   });
 
   it('keeps a template’s text and blanks the comments in its substitutions', () => {
     const code = 'f(`a // b ${g(/* c */ `d // e ${h}`)} /* f */`); // g';
-    expect(uncommented(code)).toBe(
+    expect(uncommented(code, 'ts')).toBe(
       'f(`a // b ${g(        `d // e ${h}`)} /* f */`);     ',
     );
-    expect(uncommented('`${{ a: 1 }.a} // x` // y')).toBe(
+    expect(uncommented('`${{ a: 1 }.a} // x` // y', 'ts')).toBe(
       '`${{ a: 1 }.a} // x`     ',
     );
   });
 
   it('keeps a regular expression whole, and a division a division', () => {
-    expect(uncommented("x.replace(/\\/\\/'[/]/g, ''); // c")).toBe(
+    expect(uncommented("x.replace(/\\/\\/'[/]/g, ''); // c", 'ts')).toBe(
       "x.replace(/\\/\\/'[/]/g, '');     ",
     );
     const division = 'a = b / c; // d / e';
-    expect(uncommented(division)).toBe('a = b / c;'.padEnd(division.length));
-    expect(uncommented("return /'/.test(s); // q")).toBe(
+    expect(uncommented(division, 'ts')).toBe(
+      'a = b / c;'.padEnd(division.length),
+    );
+    expect(uncommented("return /'/.test(s); // q", 'ts')).toBe(
       "return /'/.test(s);     ",
     );
+  });
+
+  it('blanks the comments of the language an extension names', () => {
+    expect(uncommented('x = "# a" # b', 'py')).toBe('x = "# a" '.padEnd(13));
+    expect(uncommented('a -- b\nc', 'sql')).toBe('a     \nc');
+    expect(uncommented('a ; b', 'clj')).toBe('a    ');
+    expect(uncommented('a % b', 'erl')).toBe('a    ');
+    expect(uncommented('a (* b *) c', 'ml')).toBe(`a${' '.repeat(9)}c`);
+    expect(uncommented('a --[[ b\nc ]] d', 'lua')).toBe(
+      `a${' '.repeat(7)}\n${' '.repeat(5)}d`,
+    );
+    expect(uncommented('a # b // c /* d */', 'xyz')).toBe('a'.padEnd(18));
+  });
+
+  it('closes a block comment where its language does: nested, or at the first closer', () => {
+    const code = '/* a /* b */ c */ d';
+    expect(uncommented(code, 'rs')).toBe(`${' '.repeat(18)}d`);
+    expect(uncommented(code, 'c')).toBe(`${' '.repeat(12)} c */ d`);
+    expect(uncommented('{- a {- b -} c -} d', 'hs')).toBe(`${' '.repeat(18)}d`);
+  });
+
+  it('keeps a lifetime, a prime and a character literal from hiding a comment', () => {
+    expect(uncommented("fn f<'a>(x: &'a str) {} // c", 'rs')).toBe(
+      "fn f<'a>(x: &'a str) {}     ",
+    );
+    expect(uncommented(`let c = '"'; // c`, 'rs')).toBe(`let c = '"';     `);
+    expect(uncommented("f' x' = y -- c", 'hs')).toBe("f' x' = y     ");
+    expect(uncommented('a --> b', 'hs')).toBe('a --> b');
+  });
+
+  it('keeps a PHP attribute and a shell argument count, which only look like comments', () => {
+    expect(uncommented('#[Test] # c', 'php')).toBe('#[Test]    ');
+    expect(uncommented('echo $# # c', 'sh')).toBe('echo $#    ');
+  });
+
+  it('blanks a Ruby =begin block at line starts, and a Lua long comment of any level', () => {
+    expect(uncommented('a\n=begin\nb\n=end\nc', 'rb')).toBe(
+      `a\n${' '.repeat(6)}\n \n${' '.repeat(4)}\nc`,
+    );
+    expect(uncommented('x =begin\n', 'rb')).toBe('x =begin\n');
+    expect(uncommented('=begin\n=endpoint\nb\n=end\nc', 'rb')).toBe(
+      `${' '.repeat(6)}\n${' '.repeat(9)}\n \n${' '.repeat(4)}\nc`,
+    );
+    expect(uncommented('--[==[ a ]] b ]==] c', 'lua')).toBe(
+      `${' '.repeat(18)} c`,
+    );
+    expect(uncommented('--[ a\nb', 'lua')).toBe(`${' '.repeat(5)}\nb`);
   });
 });
 
@@ -248,16 +574,16 @@ describe('malformed records and contexts', () => {
     write('design/model/shop/a.md', 'A precising definition with no name\n');
     write('design/model/shop/b.md', '# b\n\n## Examples\n');
     expect(messages()).toEqual([
-      'shop/a: has no # Cratylic name',
-      'shop/b: has no precising definition',
+      named('shop/a', 'has no # Cratylic name'),
+      named('shop/b', 'has no precising definition'),
     ]);
   });
 
   it('fails a section other than Examples', () => {
     write('design/model/shop/basket.md', `${BASKET}\n## Notes\n\nmore\n`);
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     expect(messages()).toEqual([
-      'shop/basket: has a section other than ## Examples: ## Notes',
+      named('shop/basket', 'has a section other than ## Examples: ## Notes'),
     ]);
   });
 
@@ -282,12 +608,12 @@ describe('malformed records and contexts', () => {
       {
         concept: 'shop/basket',
         example: 'empties',
-        message: 'shop/basket: example "empties" has no Then line',
+        message: named('shop/basket', 'example "empties" has no Then line'),
       },
       {
         concept: 'shop/basket',
         example: 'empties',
-        message: 'shop/basket: has two examples named "empties"',
+        message: named('shop/basket', 'has two examples named "empties"'),
       },
       {
         concept: 'shop/basket',
@@ -301,10 +627,13 @@ describe('malformed records and contexts', () => {
     write('design/model/stock/shelf.md', '# shelf\n\nWhere books wait\n');
     write('design/model/shop/context.md', '**Relation:** none\n');
     expect(check().failures).toEqual([
-      { concept: 'shop/context', message: 'shop/context: has no # name' },
       {
         concept: 'shop/context',
-        message: 'shop/context: has no **Subject:**',
+        message: named('shop/context', 'has no # name'),
+      },
+      {
+        concept: 'shop/context',
+        message: named('shop/context', 'has no **Subject:**'),
       },
       { concept: 'stock/context', message: 'stock: has no context.md' },
     ]);
@@ -353,16 +682,20 @@ describe('malformed records and contexts', () => {
       {
         concept: 'shop/basket',
         example: 'a stray line',
-        message:
-          'shop/basket: example "a stray line" has a line that is no Given, When, Then or And: But slowly',
+        message: named(
+          'shop/basket',
+          'example "a stray line" has a line that is no Given, When, Then or And: But slowly',
+        ),
       },
     ]);
   });
 
   it('fails a record anywhere but purpose.md, a context.md or a concept’s file', () => {
     write('design/model/shop/basket.md', BASKET);
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     write('design/model/notes.md', '# notes\n\nLoose\n');
+    // Alone at the root: beside purpose.md, a case-insensitive disk holds one file.
+    rmSync(join(root, 'design/model/purpose.md'));
     write('design/model/Purpose.MD', '# Purpose\n\nTwice\n');
     write('design/model/shop/till.MD', '# till\n\nWhere a shopper pays\n');
     write('design/model/shop/drafts/old.md', '# old\n\nGone\n');
@@ -394,7 +727,7 @@ describe('where the check runs', () => {
 
   it('checks the model of the repository the working directory is in', () => {
     write('design/model/shop/basket.md', BASKET);
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     mkdirSync(join(root, 'packages/a'), { recursive: true });
     expect(dispatchModel(['check'], join(root, 'packages/a'))).toMatchObject({
       model: join(root, 'design/model'),
@@ -447,7 +780,7 @@ describe('the command', () => {
 
   it('prints a passing report and exits 0', async () => {
     write('design/model/shop/basket.md', BASKET);
-    write('test/basket.test.ts', source('shop/basket: adds an item'));
+    write('test/basket.test.ts', source(ADDS));
     const { code, out, err } = await run(['model', 'check']);
     expect({ code, err }).toEqual({ code: 0, err: '' });
     expect(out).toBe(`${JSON.stringify(check(), null, 2)}\n`);

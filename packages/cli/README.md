@@ -115,8 +115,10 @@ reads the project installation; elsewhere it reads yours.
 A rule is stated with why it holds, and your agents follow it in every session of every project; a
 ruleset is a named set of rules offered together (`behaviour-driven-development`,
 `context-engineering`, `gitflow`, `conventional-commits`, `commit-discipline`,
-`established-libraries`, `green-field`). `behaviour-driven-development` adopts that practice by its
-name alone, and `context-engineering` adopts ten principles of context engineering, each by its name.
+`established-libraries`, `green-field`, `clean-cutover`). `behaviour-driven-development` adopts that practice by its
+name alone; `gitflow` adopts gitflow by its name, its integration branch `develop` unless your
+project's AGENTS.md names another, a missing one escalated to you; and `context-engineering` adopts
+ten principles of context engineering, each by its name.
 On a terminal, install offers each ruleset in turn: all its rules, rule by rule, or none, which is
 the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
@@ -165,7 +167,7 @@ Everything install places for you lives under one root it owns: at user scope `~
   skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
-  extensions/…              the session hooks the canon declares, and the dispatch isolation where an agent needs it
+  extensions/…              the session hooks the canon declares, the dispatch isolation where an agent needs it, and the guard that refuses a write to the domain model (`design/model/`) by any agent but the business analyst
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
   runtime.json              each capability's configuration, where the canon declares any
@@ -218,9 +220,18 @@ Install places no launcher and links no command for it: `--agent` is cratylus's 
 what install places), and it starts any agent definition omp discovers, not only the installed
 agents. An `omp --agent` session starts with the full instructions of the skills its agent
 definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
-through omp's own skill discovery, as any omp session does. Nothing judges an agent's acts or
-replies: an agent's behaviour is evaluated in real use. Every turn shows the typed
+through omp's own skill discovery, as any omp session does. Nothing judges an agent's replies or,
+but for a write to the domain model below, its acts: an agent's behaviour is evaluated in real use. Every turn shows the typed
 assignment of each agent that takes one.
+
+Writing the domain model, `design/model/`, is the business analyst's alone (it and its personas
+kino, mav and nico). The installed extension refuses a `write`, `edit` or `ast_edit` reaching
+`design/model/` in a dispatched session whose agent is not one of them, omp's own agents included,
+and in a session started as another installed agent (`omp --agent tech-lead`); the refusal says to
+raise a meaning question to the business analyst. Your own session, started with no `--agent` or as
+an agent cratylus did not install, is not refused. No other tool is judged: reading is never
+refused, and `bash` and `eval` are not judged, whether they read or write
+(`design/decisions/a-protected-path-is-guarded-in-the-extension.md`).
 
 An earlier install placed a launcher (`~/.omp/agent/omp-agent`), and per agent under
 `~/.omp/agent/personas/` a `--config` overlay, a badge module and the modules of the guards composed
@@ -369,9 +380,9 @@ What the model check is for, when to reach for it and the concept its verb acts 
 
 The domain model is `design/model` at the top of the git repository you run it in (the nearest directory at or above the working directory holding `.git`, else the working directory). It is plain files, and version control is its history: `purpose.md`, what the project is for; then a directory per bounded context, holding `context.md` (`# <context name>`, then `**Subject:** …` and `**Relation:** …`) and one file per concept, `<concept>.md`. A concept's file opens with `# <Cratylic name>`, then its precising definition, then, where it has any, `## Examples`: each example a `### <example name>` heading, or `### <example name> (judged in review)`, followed by its `Given`, `When` and `Then` lines (and any `And`). A concept is named `<context>/<concept>`, its directory and its file's stem, as `delivery/model-check`.
 
-An acceptance test binds an example by its title: a vitest `it(…)` or `test(…)` titled exactly `<context>/<concept>: <example name>`, the example's heading without `(judged in review)`, as `it('delivery/model-check: an example with no acceptance test fails', …)`. The check reads every test file (`*.test.*`, `*.spec.*`) in the repository, but for those under `node_modules`, `dist` and every directory whose name starts with `.`.
+An acceptance test binds an example by its title: a test, in any language and test framework, whose title is exactly `<context>/<concept>: <example name>`, the example's heading without `(judged in review)`. The check reads source text and runs nothing and knows no test framework: in a test file (a file whose name marks it a test by its language's convention, `basket.test.ts`, `test_basket.py`, `basket_test.go`, `BasketTest.java`, …, outside `node_modules`, `dist` and every directory whose name starts with `.`), a test is any whole string literal outside comments equal to a title, whatever call, attribute or wrapper holds it; in a Gherkin `*.feature` file it is a `Scenario:` line. A title quoted in a changelog, the docs or a comment binds nothing, and a file that quotes its title twice holds two tests. `design/decisions/acceptance-tests-name-their-examples.md` in the cratylus repository states the rule.
 
-`check` prints its report as JSON, `{ "model", "passed", "failures" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its Cratylic name or its precising definition, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, and says why. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
+`check` prints its report as JSON, `{ "model", "passed", "failures" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its Cratylic name or its precising definition, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; for an example more than one acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, or for an example more than one test names every one of them as `tests`, and says why. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
 
 #### `cratylus model check`
 

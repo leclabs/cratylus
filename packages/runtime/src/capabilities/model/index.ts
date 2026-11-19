@@ -11,13 +11,16 @@
 // the directory and the file stem. Beside them is `purpose.md`, and no other
 // record.
 //
-// An acceptance test is a plain `it(`/`test(` call, outside comments, whose title
-// is exactly `<context>/<concept>: <example name>`, in any test file under the
-// repository, outside `node_modules`, `dist` and hidden directories.
+// An acceptance test is a whole string literal, outside comments, in a test file
+// of any language, or a scenario line of a feature file, equal to
+// `<context>/<concept>: <example name>`; the rule is
+// design/decisions/acceptance-tests-name-their-examples.md, read by
+// `declarations.ts` and `comments.ts`.
 //
 // The check FAILS for a malformed record or context, a misplaced record, an
-// example no acceptance test names and not judged in review, and an acceptance
-// test naming an example the model does not have.
+// example no acceptance test names and not judged in review, an example more than
+// one acceptance test names, and an acceptance test naming an example the model
+// does not have.
 //
 // Pure: it reads files and nothing else — no network, no subprocess.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -29,7 +32,7 @@ import { CAPABILITY_SUMMARIES } from '../../capability.js';
 import type { CapabilityInterface, ExplainedVerb } from '../../explanation.js';
 import type { Verbs } from '../../verbs.js';
 import { verbOf } from '../plan/argv.js';
-import { uncommented } from './comments.js';
+import { isTestFile, testTitles } from './declarations.js';
 
 export const VERBS = {
   check: {
@@ -62,26 +65,20 @@ const STEPS = ['Given', 'When', 'Then'] as const;
 /** The step a line of an example opens. */
 const STEP = /^(Given|When|Then|And)\b/;
 
-/** A test file: any `.test` or `.spec` script. */
-const TEST_FILE = /\.(test|spec)\.[cm]?[jt]sx?$/;
-
 /** Directories never searched for tests. */
 const UNSEARCHED = new Set(['node_modules', 'dist']);
 
-/** A plain `it(`/`test(` call whose title is one whole string literal: the
- *  title is the quoted text, its escapes still in it. */
-const TEST_CALL =
-  /(?<![\w.$])(?:it|test)\(\s*(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|`((?:[^`\\$]|\\.|\$(?!\{))*)`)\s*[,)]/g;
-
 /** The title an acceptance test gives: the concept and the example name. */
-const ACCEPTANCE_TITLE = /^([\w.-]+)\/([\w.-]+): (.+)$/s;
+const ACCEPTANCE_TITLE = /^([\w.-]+)\/([\w.-]+): (.+)$/;
 
 /** What fails the check: a concept (or a context, as `<context>/context`), and
- *  where it applies, the example and the test. */
+ *  where it applies, the example and the test, or every test naming an example
+ *  more than one names. */
 export interface ModelFailure {
   readonly concept: string;
   readonly example?: string;
   readonly test?: string;
+  readonly tests?: readonly string[];
   readonly message: string;
 }
 
@@ -240,8 +237,7 @@ interface AcceptanceTest {
   readonly example: string;
 }
 
-/** The acceptance tests in the test files under `root`, by file, then line:
- *  calls in comments are none. */
+/** The acceptance tests in the test files under `root`, by file, then line. */
 export function acceptanceTests(root: string): AcceptanceTest[] {
   const found: AcceptanceTest[] = [];
   const walk = (dir: string) => {
@@ -251,15 +247,14 @@ export function acceptanceTests(root: string): AcceptanceTest[] {
         if (!UNSEARCHED.has(name)) walk(path);
         continue;
       }
-      if (!TEST_FILE.test(name)) continue;
-      const text = uncommented(readFileSync(path, 'utf8'));
+      if (!isTestFile(name)) continue;
       const file = relative(root, path).split(sep).join('/');
-      for (const match of text.matchAll(TEST_CALL)) {
-        const quoted = match[1] ?? match[2] ?? match[3] ?? '';
-        const title = quoted.replace(/\\(.)/gs, '$1');
+      for (const { line, title } of testTitles(
+        name,
+        readFileSync(path, 'utf8'),
+      )) {
         const named = ACCEPTANCE_TITLE.exec(title);
         if (named === null) continue;
-        const line = text.slice(0, match.index).split('\n').length;
         found.push({
           test: `${file}:${line}`,
           context: named[1] as string,
@@ -340,7 +335,8 @@ export function checkModel(root: string, model: string): ModelReport {
     records.set(context, concepts);
   }
 
-  const bound = new Set<Example>();
+  /** Each example's acceptance tests, by `<path>:<line>`. */
+  const bound = new Map<Example, string[]>();
   const unknown: ModelFailure[] = [];
   for (const test of acceptanceTests(root)) {
     const concept = `${test.context}/${test.concept}`;
@@ -348,7 +344,7 @@ export function checkModel(root: string, model: string): ModelReport {
     const examples = concepts?.get(test.concept);
     const example = examples?.find((e) => e.name === test.example);
     if (example !== undefined) {
-      bound.add(example);
+      bound.set(example, [...(bound.get(example) ?? []), test.test]);
       continue;
     }
     const missing =
@@ -366,13 +362,22 @@ export function checkModel(root: string, model: string): ModelReport {
   }
   for (const [context, concepts] of records)
     for (const [concept, examples] of concepts)
-      for (const example of examples)
-        if (!example.judged && !bound.has(example))
+      for (const example of examples) {
+        const tests = bound.get(example) ?? [];
+        if (tests.length === 0 && !example.judged)
           failures.push({
             concept: `${context}/${concept}`,
             example: example.name,
             message: `${context}/${concept}: example "${example.name}" has no acceptance test naming it and is not judged in review`,
           });
+        if (tests.length > 1)
+          failures.push({
+            concept: `${context}/${concept}`,
+            example: example.name,
+            tests,
+            message: `${context}/${concept}: example "${example.name}" is named by more than one acceptance test, where one binds it: ${tests.join(', ')}`,
+          });
+      }
   failures.push(...unknown);
   return { model, passed: failures.length === 0, failures };
 }

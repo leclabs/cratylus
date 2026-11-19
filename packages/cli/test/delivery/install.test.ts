@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -17,8 +16,8 @@ import {
   type CommandResult,
   type Host,
   host,
-  run,
 } from '../capability-port/fixture.js';
+import { onTerminal } from '../terminal.js';
 import { parseYaml } from '../yaml.js';
 
 const INDUSTRY_ROLES = [
@@ -109,22 +108,14 @@ function canonSkills(): string[] {
 
 const said = (r: CommandResult) => `${r.stdout}\n${r.stderr}`;
 
-it('delivery/install: installs the industry roles', () => {
+it('delivery/install: installs the industry roles', async () => {
   h = emptyHome();
   // On a terminal, deciding nothing: whatever install may ask, `--yes` takes its
   // default, so the agents offered are the ones every user installation places.
   // (The run without a terminal is bound by the next example.)
-  const r = run(
-    'script',
-    [
-      '--quiet',
-      '--return',
-      '--command',
-      'cratylus install --harness omp --scope user --yes',
-      '/dev/null',
-    ],
-    h.cwd,
-    h.env,
+  const r = await onTerminal(
+    'cratylus install --harness omp --scope user --yes',
+    h,
   );
   expect(r.code, said(r)).toBe(0);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
@@ -185,57 +176,30 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
 
     let result: CommandResult;
     if (terminal) {
-      // As in the industry-roles example, util-linux script supplies a real
-      // terminal to the installed command. Answer only after clack renders the
-      // question: down + enter chooses the whole added ruleset; enter confirms.
-      let resolve!: (result: CommandResult) => void;
-      let reject!: (reason: unknown) => void;
-      const promise = new Promise<CommandResult>((onResolve, onReject) => {
-        resolve = onResolve;
-        reject = onReject;
-      });
-      const child = spawn(
-        'script',
-        [
-          '--quiet',
-          '--return',
-          '--command',
-          `stty cols 200 rows 50; cratylus ${args.join(' ')}`,
-          '/dev/null',
-        ],
-        {
-          cwd: h.cwd,
-          env: h.env,
-          stdio: ['pipe', 'pipe', 'pipe'],
-          timeout: 30_000,
-        },
-      );
-      let stdout = '';
-      let stderr = '';
+      // As in the industry-roles example, a pseudo-terminal of its own runs the
+      // installed command. Answer only after clack renders the question:
+      // down + enter chooses the whole added ruleset; enter confirms.
       let chose = false;
       let confirmed = false;
-      child.stdout.on('data', (chunk) => {
-        stdout += String(chunk);
-        const output = stripVTControlCharacters(stdout);
-        if (
-          !chose &&
-          output.includes('Rules: context-engineering') &&
-          output.includes('rule by rule')
-        ) {
-          chose = true;
-          child.stdin.write('\x1b[B\r');
-        }
-        if (!confirmed && output.includes('Install this?')) {
-          confirmed = true;
-          child.stdin.write('\r');
-        }
+      result = await onTerminal(`cratylus ${args.join(' ')}`, {
+        ...h,
+        answer: (output) => {
+          let keys = '';
+          if (
+            !chose &&
+            output.includes('Rules: context-engineering') &&
+            output.includes('rule by rule')
+          ) {
+            chose = true;
+            keys += '\x1b[B\r';
+          }
+          if (!confirmed && output.includes('Install this?')) {
+            confirmed = true;
+            keys += '\r';
+          }
+          return keys;
+        },
       });
-      child.stderr.on('data', (chunk) => {
-        stderr += String(chunk);
-      });
-      child.on('error', reject);
-      child.on('close', (code) => resolve({ code, stdout, stderr }));
-      result = await promise;
     } else {
       // h.command pipes stdin/stdout: there is no terminal and no --rules.
       result = h.command(args);
@@ -267,6 +231,129 @@ it('delivery/install: offers a ruleset added since the recorded choice', async (
       expect.soft(summary, output).toMatch(/terminal/i);
       expect.soft(summary, output).toContain('--rules');
       expect.soft(output).not.toContain('Rules: context-engineering');
+    }
+    h.dispose();
+    h = undefined;
+  }
+});
+
+it('delivery/install: offers green-field and clean-cutover apart', () => {
+  h = emptyHome();
+  const offered = h.command(['install', '--harness', 'omp']);
+  expect(offered.code, said(offered)).toBe(0);
+  const hint = /rulesets: ([^)]+)\)/.exec(said(offered));
+  expect(hint, 'install names the offered rulesets').not.toBeNull();
+  const sets = hint![1]!.split(', ');
+  for (const name of ['green-field', 'clean-cutover']) {
+    expect.soft(sets).toContain(name);
+    expect
+      .soft(
+        canon.rulesets
+          ?.find((set) => set.name === name)
+          ?.rules.map((rule) => rule.name),
+      )
+      .toEqual([name]);
+
+    const chosen = h.command(['install', '--harness', 'omp', '--rules', name]);
+    expect.soft(chosen.code, said(chosen)).toBe(0);
+    expect
+      .soft(entries(join(h.home, '.cratylus/omp/rules')))
+      .toEqual([`${name}.md`]);
+  }
+});
+
+it('delivery/install: drops a recorded rule no longer offered', async () => {
+  const obsolete = 'green-field-declared-constraints';
+  const newRules = ['green-field', 'clean-cutover'];
+  const args = [
+    'install',
+    '--harness',
+    'omp',
+    '--scope',
+    'user',
+    '--model-roles',
+    'default',
+    '--agent-status',
+    'hide',
+  ];
+  const kept = canon.rulesets!.find(
+    (set) => set.name === 'behaviour-driven-development',
+  )!;
+  const keptRules = kept.rules.map((rule) => rule.name);
+  for (const terminal of [true, false]) {
+    h = emptyHome();
+    const first = h.command([...args, '--rules', kept.name]);
+    expect(first.code, said(first)).toBe(0);
+    const root = join(h.home, '.cratylus/omp');
+    const recordPath = join(root, 'installation.json');
+    const record = JSON.parse(readFileSync(recordPath, 'utf8'));
+    record.rules = [...keptRules, obsolete];
+    record.offeredRules = [
+      ...canon
+        .rulesets!.flatMap((set) => set.rules.map((rule) => rule.name))
+        .filter((name) => !newRules.includes(name)),
+      obsolete,
+    ];
+    writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`);
+    writeFileSync(join(root, 'rules', `${obsolete}.md`), '# Earlier rule\n');
+
+    let result: CommandResult;
+    if (terminal) {
+      const answered = new Set<string>();
+      let confirmed = false;
+      result = await onTerminal(`cratylus ${args.join(' ')}`, {
+        ...h,
+        answer: (output) => {
+          let keys = '';
+          for (const name of newRules) {
+            const prompt = output.lastIndexOf(`Rules: ${name} —`);
+            if (
+              !answered.has(name) &&
+              prompt !== -1 &&
+              output.indexOf('rule by rule', prompt) !== -1
+            ) {
+              answered.add(name);
+              keys += '\x1b[B\r';
+            }
+          }
+          if (!confirmed && output.includes('Install this?')) {
+            confirmed = true;
+            keys += '\r';
+          }
+          return keys;
+        },
+      });
+    } else {
+      result = h.command(args);
+    }
+    const output = stripVTControlCharacters(said(result));
+    const after = JSON.parse(readFileSync(recordPath, 'utf8'));
+    expect.soft(result.code, output).toBe(0);
+    const chosen = terminal ? [...keptRules, ...newRules] : keptRules;
+    expect.soft(after.rules, output).toEqual(chosen);
+    expect
+      .soft(entries(join(root, 'rules')), output)
+      .toEqual(chosen.map((name) => `${name}.md`).sort());
+    // The last rules: line is the summary of what was placed; on a terminal the
+    // preview before it says what would be.
+    const summary =
+      output
+        .split('\n')
+        .filter((line) => /^\s*rules:/.test(line))
+        .at(-1) ?? '';
+    expect
+      .soft(summary, output)
+      .toContain(`dropped ${obsolete}, no longer offered`);
+    const asked = [
+      ...new Set(
+        [...output.matchAll(/Rules: ([\w-]+) —/g)].map((match) => match[1]),
+      ),
+    ];
+    expect.soft(asked, output).toEqual(terminal ? newRules : []);
+    if (!terminal) {
+      expect
+        .soft(summary, output)
+        .toContain(`offered since your choice: ${newRules.join(', ')}`);
     }
     h.dispose();
     h = undefined;

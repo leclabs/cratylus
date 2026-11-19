@@ -2,8 +2,8 @@
 // end to end: the installed extension, loaded in process with a fake omp API, runs
 // the installed command over a scratch repository's domain model.
 //
-// The scratch test is composed from parts (`${call}(…)`), never written out: the
-// model check over this repository would otherwise read it as an acceptance test.
+// The fixture title is composed from parts so the repository's own model check
+// leaves this test unbound to the scratch example.
 
 import { mkdirSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -35,6 +35,7 @@ it('runs the model check over the session’s repository, its report the tool’
   h = host();
   success(h.install);
   const project = h.cwd;
+  const example = 'adds an item';
   put(
     project,
     'design/model/shop/context.md',
@@ -50,7 +51,7 @@ it('runs the model check over the session’s repository, its report the tool’
       '',
       '## Examples',
       '',
-      '### adds an item',
+      `### ${example}`,
       '',
       'Given an empty basket',
       'When the shopper adds a book',
@@ -62,7 +63,7 @@ it('runs the model check over the session’s repository, its report the tool’
   put(
     project,
     'test/basket.test.ts',
-    `${call}('shop/basket: adds an item', () => {});\n`,
+    `${call}('shop/basket: ${example}', () => {});\n`,
   );
   session = await load(h);
 
@@ -81,7 +82,7 @@ it('runs the model check over the session’s repository, its report the tool’
     failures: [
       expect.objectContaining({
         concept: 'shop/basket',
-        example: 'adds an item',
+        example,
       }),
     ],
   });
