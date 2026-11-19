@@ -8,7 +8,13 @@
 // composed with `named`, and a fixture source holds its title through a
 // substitution.
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { Command } from 'commander';
@@ -56,7 +62,8 @@ const CONTEXT = '# shop\n\n**Subject:** selling books\n\n**Relation:** none\n';
 let root: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'model-check-'));
+  // Canonical, as the command reports it: the temp dir may sit behind a symlink.
+  root = realpathSync(mkdtempSync(join(tmpdir(), 'model-check-')));
   mkdirSync(join(root, '.git'));
   write('design/model/purpose.md', '# Purpose\n\nTo sell books.\n');
   write('design/model/shop/context.md', CONTEXT);
@@ -687,6 +694,8 @@ describe('malformed records and contexts', () => {
     write('design/model/shop/basket.md', BASKET);
     write('test/basket.test.ts', source(ADDS));
     write('design/model/notes.md', '# notes\n\nLoose\n');
+    // Alone at the root: beside purpose.md, a case-insensitive disk holds one file.
+    rmSync(join(root, 'design/model/purpose.md'));
     write('design/model/Purpose.MD', '# Purpose\n\nTwice\n');
     write('design/model/shop/till.MD', '# till\n\nWhere a shopper pays\n');
     write('design/model/shop/drafts/old.md', '# old\n\nGone\n');

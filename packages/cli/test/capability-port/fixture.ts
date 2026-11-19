@@ -89,7 +89,8 @@ export function snapshot(root: string) {
 export function host(): Host {
   // The setup's npm install is shared; each test copies the installed artifact,
   // not a workspace tree. Upgrade tests cannot mutate another test's runtime.
-  const root = mkdtempSync(join(tmpdir(), 'capability-host-'));
+  // Canonical, as the command reports it: a temp dir may sit behind a symlink (macOS /var → /private/var).
+  const root = realpathSync(mkdtempSync(join(tmpdir(), 'capability-host-')));
   try {
     return hostIn(root);
   } catch (error) {
