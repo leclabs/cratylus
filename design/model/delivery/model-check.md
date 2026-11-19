@@ -1,6 +1,6 @@
 # model check
 
-Deterministic, in the project's one check: each record in its form, each example bound to the acceptance test titled by its context, concept and name, or to code review where marked judged in review
+Deterministic, in the project's one check: each record in its form, each example bound to the acceptance test, in any language, titled by its context, concept and name, or to code review where marked judged in review
 
 ## Examples
 
@@ -27,3 +27,9 @@ Then it fails, naming the example and both tests
 Given a concept whose only example is marked judged in review
 When the model check runs
 Then it passes for that concept
+
+### binds tests in any language, and only tests
+
+Given an example's acceptance test in any language, and its title quoted in a changelog
+When the model check runs
+Then the test alone binds the example
