@@ -88,6 +88,14 @@ const RAW = patternsFor(RAW_BACKTICKS);
  *  being text. */
 const RAW_BACKTICKS_IN = new Set(['go']);
 
+/** Extensions of the .NET languages, whose test attributes take a named title. */
+const ATTRIBUTED_IN = new Set(['cs', 'fs', 'fsi', 'fsx', 'vb']);
+
+/** The text before a test attribute's `(`: its name, opening the attribute
+ *  list (`[`, F#'s `[<`) or following another attribute in it (`,`). */
+const TEST_ATTRIBUTE =
+  /[[<,]\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
+
 /** What follows a literal that joins it to another: a concatenation or
  *  formatting operator after any whitespace, line breaks included, a second
  *  literal beside it, or a word on it. */
@@ -140,17 +148,17 @@ function literalEnd(text: string, from: number, q: string): number {
   return text.length;
 }
 
-/** One forward scan of `text`, asked ascending offsets: the brackets open
- *  before each, outside literals, innermost last. */
-function openBracketScan(text: string): (index: number) => readonly string[] {
-  const open: string[] = [];
+/** One forward scan of `text`, asked ascending offsets: where each bracket open
+ *  before it opens, outside literals, innermost last. */
+function openBracketScan(text: string): (index: number) => readonly number[] {
+  const open: number[] = [];
   let at = 0;
   return (index) => {
     while (at < index) {
       const c = text[at] as string;
       if (c === '"' || c === "'" || c === '`') at = literalEnd(text, at + 1, c);
       else {
-        if (c === '(' || c === '[' || c === '{') open.push(c);
+        if (c === '(' || c === '[' || c === '{') open.push(at);
         else if (c === ')' || c === ']' || c === '}') open.pop();
         at++;
       }
@@ -191,17 +199,22 @@ function declarations(text: string, extension: string): TestTitle[] {
     DECLARERS.has((match[1] as string).toLowerCase().replaceAll('_', ''));
   read(patterns.call, declarer, false);
   read(patterns.command, declarer, true);
-  const openBrackets = openBracketScan(text);
-  read(
-    patterns.argument,
-    (match) => {
-      // An attribute's arguments, `[Fact(DisplayName = "…")]`: a `(` directly
-      // inside a `[`.
-      const open = openBrackets(match.index as number);
-      return open.at(-1) === '(' && open.at(-2) === '[';
-    },
-    true,
-  );
+  if (ATTRIBUTED_IN.has(extension)) {
+    const openBrackets = openBracketScan(text);
+    read(
+      patterns.argument,
+      (match) => {
+        // A test attribute's arguments, `[Fact(DisplayName = "…")]`.
+        const call = openBrackets(match.index as number).at(-1);
+        return (
+          call !== undefined &&
+          text[call] === '(' &&
+          TEST_ATTRIBUTE.test(text.slice(Math.max(0, call - 200), call))
+        );
+      },
+      true,
+    );
+  }
   let line = 1;
   let at = 0;
   return found

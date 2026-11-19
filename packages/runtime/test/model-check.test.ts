@@ -373,20 +373,27 @@ describe('finding acceptance tests', () => {
       expect(read()).toEqual(['a.test.ts:1', 'a.test.ts:1', 'a.test.ts:2']);
     });
 
-    it('reads DisplayName = and TestName = only as an attribute’s named argument ending it', () => {
+    it('reads DisplayName = and TestName = only as a .NET test attribute’s named argument ending it', () => {
+      const display = `${'Display'}Name = "${title}"`;
       write(
         'BasketTests.cs',
         [
-          `const ${'Display'}Name = "${title}";`,
-          `const helper = 1, ${'Display'}Name = "${title}";`,
-          `Console.WriteLine(${'Display'}Name = "${title}");`,
-          `[Fact(${'Display'}Name = "${title}" != "" ? "actual" : "fallback")]`,
-          '[TestCase(1,',
+          `const ${display};`,
+          `const helper = 1, ${display};`,
+          `Console.WriteLine(${display});`,
+          `var values = new[] { String(${display}) };`,
+          `[String(${display})]`,
+          `[Fact(${display} != "" ? "actual" : "fallback")]`,
+          '[Trait("a", "b"), TestCase(1,',
           `    ${'Test'}Name = "${title}")]`,
           '',
         ].join('\n'),
       );
-      expect(read()).toEqual(['BasketTests.cs:6']);
+      write(
+        'basket.test.ts',
+        `let ${'Display'}Name;\nconst values = [String(${display})];\n`,
+      );
+      expect(read()).toEqual(['BasketTests.cs:8']);
     });
 
     it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {
