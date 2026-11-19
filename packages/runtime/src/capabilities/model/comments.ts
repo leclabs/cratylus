@@ -114,6 +114,9 @@ define(
 );
 define('php', syntax({ line: ['//', /#(?!\[)/], block: C_BLOCK }));
 
+// `'`
+define('vb', syntax({ line: ["'", /(?<!\w)[Rr][Ee][Mm](?!\w)/], quotes: '"' }));
+
 // `#`
 define('py ex exs pl pm t r cr yaml yml toml', syntax({ line: ['#'] }));
 define('rb', syntax({ line: ['#'], lineBlock: [['=begin', '=end']] }));

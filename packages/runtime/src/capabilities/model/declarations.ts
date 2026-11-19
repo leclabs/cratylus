@@ -88,13 +88,13 @@ const RAW = patternsFor(RAW_BACKTICKS);
  *  being text. */
 const RAW_BACKTICKS_IN = new Set(['go']);
 
-/** Extensions of the .NET languages, whose test attributes take a named title. */
-const ATTRIBUTED_IN = new Set(['cs', 'fs', 'fsi', 'fsx', 'vb']);
+/** Extensions of C# and F#, whose test attributes take a named title. */
+const ATTRIBUTED_IN = new Set(['cs', 'fs', 'fsi', 'fsx']);
 
-/** The text before a test attribute's `(`: its name, opening the attribute
- *  list (`[`, F#'s `[<`) or following another attribute in it (`,`). */
+/** The text of an attribute list from after its `[` to a test attribute's `(`:
+ *  F#'s `<`, any attributes before it, each ended by `,`, then its name. */
 const TEST_ATTRIBUTE =
-  /[[<,]\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
+  /^<?(?:[^[\]]*,)?\s*(?:[\w.]+\.)?(?:Fact|Theory|Test|TestCase|TestMethod|DataTestMethod)(?:Attribute)?\s*$/;
 
 /** What follows a literal that joins it to another: a concatenation or
  *  formatting operator after any whitespace, line breaks included, a second
@@ -204,12 +204,17 @@ function declarations(text: string, extension: string): TestTitle[] {
     read(
       patterns.argument,
       (match) => {
-        // A test attribute's arguments, `[Fact(DisplayName = "…")]`.
-        const call = openBrackets(match.index as number).at(-1);
+        // A test attribute's arguments, `[Fact(DisplayName = "…")]`: a `(`
+        // directly inside an attribute list's `[`.
+        const open = openBrackets(match.index as number);
+        const call = open.at(-1);
+        const list = open.at(-2);
         return (
           call !== undefined &&
+          list !== undefined &&
           text[call] === '(' &&
-          TEST_ATTRIBUTE.test(text.slice(Math.max(0, call - 200), call))
+          text[list] === '[' &&
+          TEST_ATTRIBUTE.test(text.slice(list + 1, call))
         );
       },
       true,

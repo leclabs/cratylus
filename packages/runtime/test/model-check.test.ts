@@ -373,7 +373,7 @@ describe('finding acceptance tests', () => {
       expect(read()).toEqual(['a.test.ts:1', 'a.test.ts:1', 'a.test.ts:2']);
     });
 
-    it('reads DisplayName = and TestName = only as a .NET test attribute’s named argument ending it', () => {
+    it('reads DisplayName = and TestName = only as a C# or F# test attribute’s named argument ending it', () => {
       const display = `${'Display'}Name = "${title}"`;
       write(
         'BasketTests.cs',
@@ -384,16 +384,32 @@ describe('finding acceptance tests', () => {
           `var values = new[] { String(${display}) };`,
           `[String(${display})]`,
           `[Fact(${display} != "" ? "actual" : "fallback")]`,
+          `Record(0, Fact(${display}));`,
           '[Trait("a", "b"), TestCase(1,',
           `    ${'Test'}Name = "${title}")]`,
+          `[Xunit.Fact${' '.repeat(201)}(${display})]`,
           '',
         ].join('\n'),
       );
+      write('BasketTests.fs', `[<Fact(${display})>]\n`);
       write(
         'basket.test.ts',
         `let ${'Display'}Name;\nconst values = [String(${display})];\n`,
       );
-      expect(read()).toEqual(['BasketTests.cs:8']);
+      expect(read()).toEqual([
+        'BasketTests.cs:9',
+        'BasketTests.cs:10',
+        'BasketTests.fs:1',
+      ]);
+    });
+
+    it('reads no title in a Visual Basic apostrophe or REM comment', () => {
+      const method = `<${'Test'}Method("${title}")>`;
+      write(
+        'BasketTests.vb',
+        `' ${method}\nREM ${method}\nDim s = "it's" ' ${method}\n${method}\n`,
+      );
+      expect(read()).toEqual(['BasketTests.vb:4']);
     });
 
     it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {
