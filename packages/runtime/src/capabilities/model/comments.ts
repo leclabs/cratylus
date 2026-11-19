@@ -34,6 +34,11 @@ interface Syntax {
   readonly block: readonly (readonly [open: string, close: string])[];
   /** Whether a block comment opened in a block comment is closed on its own. */
   readonly nested: boolean;
+  /** Each block comment whose markers each begin a line (Ruby's `=begin`). */
+  readonly lineBlock: readonly (readonly [open: string, close: string])[];
+  /** Whether `--[`, any number of `=`, `[` opens a block comment closed by `]`,
+   *  as many `=`, `]` (Lua's long comments). */
+  readonly longBrackets: boolean;
   /** The characters a string literal is quoted by, ended by an unescaped one on
    *  its own line. */
   readonly quotes: string;
@@ -53,6 +58,8 @@ const syntax = (
     line?: readonly (string | RegExp)[];
     block?: readonly (readonly [string, string])[];
     nested?: boolean;
+    lineBlock?: readonly (readonly [string, string])[];
+    longBrackets?: boolean;
     quotes?: string;
     raw?: string;
     character?: boolean;
@@ -62,6 +69,8 @@ const syntax = (
     typeof m === 'string' ? literally(m) : new RegExp(m.source, 'y'),
   ),
   block: s.block ?? [],
+  lineBlock: s.lineBlock ?? [],
+  longBrackets: s.longBrackets ?? false,
   nested: s.nested ?? false,
   quotes: s.quotes ?? `'"`,
   raw: s.raw ?? '',
@@ -106,7 +115,8 @@ define(
 define('php', syntax({ line: ['//', /#(?!\[)/], block: C_BLOCK }));
 
 // `#`
-define('py rb ex exs pl pm t r cr yaml yml toml', syntax({ line: ['#'] }));
+define('py ex exs pl pm t r cr yaml yml toml', syntax({ line: ['#'] }));
+define('rb', syntax({ line: ['#'], lineBlock: [['=begin', '=end']] }));
 define('sh bash zsh ksh', syntax({ line: [/(?<![$\w{])#/] }));
 define('coffee', syntax({ line: ['#'], block: [['###', '###']] }));
 define('ps1', syntax({ line: ['#'], block: [['<#', '#>']] }));
@@ -123,7 +133,7 @@ define(
 );
 
 // `--`
-define('lua', syntax({ line: ['--'], block: [['--[[', ']]']] }));
+define('lua', syntax({ line: ['--'], longBrackets: true }));
 define('sql', syntax({ line: ['--'], block: C_BLOCK }));
 /** `--` opens a comment unless it is part of an operator (`-->`, `|--`). */
 const DASHES = /--+(?![!#$%&*+./<=>?@\\^|~:])/;
@@ -219,6 +229,29 @@ function uncommentedBy(s: string, language: Syntax): string {
     }
     return n;
   };
+  /** The index after the line-start block comment closed by `close`, begun on
+   *  the line at `from`: the end of the line `close` begins. */
+  const lineBlockEnd = (from: number, close: string) => {
+    let k = s.indexOf('\n', from);
+    while (k >= 0) {
+      if (s.startsWith(close, k + 1)) {
+        const end = s.indexOf('\n', k + 1);
+        return end < 0 ? n : end;
+      }
+      k = s.indexOf('\n', k + 1);
+    }
+    return n;
+  };
+  /** The index after the long comment begun at `from`, if one is. */
+  const longBracketEnd = (from: number): number | undefined => {
+    if (!language.longBrackets || !s.startsWith('--[', from)) return undefined;
+    let k = from + 3;
+    while (s[k] === '=') k++;
+    if (s[k] !== '[') return undefined;
+    const close = `]${'='.repeat(k - from - 3)}]`;
+    const end = s.indexOf(close, k + 1);
+    return end < 0 ? n : end + close.length;
+  };
   const lineStartsAt = (i: number) =>
     language.line.some((marker) => {
       marker.lastIndex = i;
@@ -229,10 +262,25 @@ function uncommentedBy(s: string, language: Syntax): string {
   while (i < n) {
     const c = s[i] as string;
     const block = language.block.find(([open]) => s.startsWith(open, i));
+    const lineBlock =
+      i === 0 || s[i - 1] === '\n'
+        ? language.lineBlock.find(
+            ([open]) =>
+              s.startsWith(open, i) && /\s|^$/.test(s[i + open.length] ?? ''),
+          )
+        : undefined;
+    const longEnd = longBracketEnd(i);
     if (block !== undefined) {
       const to = blockEnd(i, block);
       blanked(out, i, to);
       i = to;
+    } else if (lineBlock !== undefined) {
+      const to = lineBlockEnd(i, lineBlock[1]);
+      blanked(out, i, to);
+      i = to;
+    } else if (longEnd !== undefined) {
+      blanked(out, i, longEnd);
+      i = longEnd;
     } else if (lineStartsAt(i)) {
       const end = s.indexOf('\n', i);
       const to = end < 0 ? n : end;

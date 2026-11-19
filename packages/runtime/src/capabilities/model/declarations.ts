@@ -50,31 +50,47 @@ const DECLARERS = new Set([
   'testdox',
 ]);
 
-/** A title as one whole string literal, in `'…'`, `"…"` or a backtick literal
- *  with no `${`: three groups, of which the one that matched holds the text. */
-const LITERAL = String.raw`(?:'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"|\x60((?:[^\x60\\$]|\\.|\$(?!\{))*)\x60)`;
+/** The quoted literals a title is: `'…'` and `"…"`, in groups 2 and 3. */
+const QUOTED = String.raw`'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"`;
 
-/** A call, `name(…` or `@name(…`, its first argument a literal ending it. */
-const CALL = new RegExp(
-  String.raw`(?<![\w$])@?([\w$]+)\s*\(\s*${LITERAL}(?=\s*[,)])`,
-  'g',
-);
+/** A backtick literal with no `${`, escapes in it, as group 4. */
+const ESCAPED_BACKTICKS = String.raw`\x60((?:[^\x60\\$]|\\.|\$(?!\{))*)\x60`;
 
-/** A command, `name "…"`, its literal not joined to another by an operator. */
-const COMMAND = new RegExp(
-  String.raw`(?<![\w$])@?([\w$]+)[ \t]+${LITERAL}`,
-  'g',
-);
+/** A backtick literal with no escape, as group 4. */
+const RAW_BACKTICKS = String.raw`\x60([^\x60]*)\x60`;
 
-/** A named argument, `DisplayName = "…"` or `TestName = "…"`. */
-const ARGUMENT = new RegExp(
-  String.raw`(?<![\w$])(DisplayName|TestName)\s*=\s*${LITERAL}`,
-  'g',
-);
+/** The expressions finding the three forms of test declaration, for a language
+ *  whose backtick literal is as `backticks` says. A title is one whole string
+ *  literal; the callee is group 1 of a call or a command. */
+function patternsFor(backticks: string) {
+  const literal = `(?:${QUOTED}|${backticks})`;
+  return {
+    /** A call, `name(…` or `@name(…`, its first argument a literal ending it. */
+    call: new RegExp(
+      String.raw`(?<![\w$])@?([\w$]+)\s*\(\s*${literal}(?=\s*[,)])`,
+      'g',
+    ),
+    /** A command, `name "…"`. */
+    command: new RegExp(String.raw`(?<![\w$])@?([\w$]+)[ \t]+${literal}`, 'g'),
+    /** A named argument, `DisplayName = "…"` or `TestName = "…"`, after `(` or `,`. */
+    argument: new RegExp(
+      String.raw`(?<=[(,]\s*)(DisplayName|TestName)\s*=\s*${literal}`,
+      'g',
+    ),
+  };
+}
+
+const ESCAPING = patternsFor(ESCAPED_BACKTICKS);
+const RAW = patternsFor(RAW_BACKTICKS);
+
+/** Extensions of the languages whose backtick literal is raw, escapes and `${`
+ *  being text. */
+const RAW_BACKTICKS_IN = new Set(['go']);
 
 /** What follows a literal that joins it to another: a concatenation or
- *  formatting operator, a second literal beside it, or a word on it. */
-const JOINED = /^(?:[ \t]*(?:[+.^&*%/\\]|-(?!>)|<>|['"`])|[\w$])/;
+ *  formatting operator after any run of spaces, a second literal beside it, or
+ *  a word on it. */
+const JOINED = /(?:[ \t]*(?:[+.^&*%/\\]|-(?!>)|<>|['"`])|[\w$])/y;
 
 /** The scenario lines of a Gherkin feature file. */
 const SCENARIO =
@@ -111,8 +127,11 @@ function scenarios(text: string): TestTitle[] {
 }
 
 /** The test declarations in `text`, comments already blanked, by position. */
-function declarations(text: string): TestTitle[] {
+function declarations(text: string, extension: string): TestTitle[] {
+  const raw = RAW_BACKTICKS_IN.has(extension);
+  const patterns = raw ? RAW : ESCAPING;
   const found: { index: number; title: string }[] = [];
+  const unescaped = (quoted: string) => quoted.replace(/\\(.)/gs, '$1');
   const read = (
     pattern: RegExp,
     declares: (match: RegExpMatchArray) => boolean,
@@ -120,26 +139,41 @@ function declarations(text: string): TestTitle[] {
   ) => {
     for (const match of text.matchAll(pattern)) {
       if (!declares(match)) continue;
-      const end = (match.index as number) + match[0].length;
-      if (joinable && JOINED.test(text.slice(end, end + 64))) continue;
-      const quoted = match[2] ?? match[3] ?? match[4] ?? '';
+      JOINED.lastIndex = (match.index as number) + match[0].length;
+      if (joinable && JOINED.test(text)) continue;
+      const quoted = match[2] ?? match[3];
+      const backticked = match[4] ?? '';
       found.push({
         index: match.index as number,
-        title: quoted.replace(/\\(.)/gs, '$1'),
+        title:
+          quoted !== undefined
+            ? unescaped(quoted)
+            : raw
+              ? backticked
+              : unescaped(backticked),
       });
     }
   };
   const declarer = (match: RegExpMatchArray) =>
     DECLARERS.has((match[1] as string).toLowerCase().replaceAll('_', ''));
-  read(CALL, declarer, false);
-  read(COMMAND, declarer, true);
-  read(ARGUMENT, () => true, true);
+  read(patterns.call, declarer, false);
+  read(patterns.command, declarer, true);
+  read(patterns.argument, () => true, true);
+  let line = 1;
+  let from = 0;
   return found
     .sort((a, b) => a.index - b.index)
-    .map(({ index, title }) => ({
-      line: text.slice(0, index).split('\n').length,
-      title,
-    }));
+    .map(({ index, title }) => {
+      for (
+        let k = text.indexOf('\n', from);
+        k >= 0 && k < index;
+        k = text.indexOf('\n', from)
+      ) {
+        line++;
+        from = k + 1;
+      }
+      return { line, title };
+    });
 }
 
 /** The tests in the test file `name` holding `text`: each title it gives, by
@@ -148,5 +182,5 @@ export function testTitles(name: string, text: string): TestTitle[] {
   const extension = extensionOf(name);
   return extension === 'feature'
     ? scenarios(text)
-    : declarations(uncommented(text, extension));
+    : declarations(uncommented(text, extension), extension);
 }

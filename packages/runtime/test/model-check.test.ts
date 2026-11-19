@@ -348,6 +348,47 @@ describe('finding acceptance tests', () => {
       );
       expect(read()).toEqual([]);
     });
+
+    it('reads a title joined across any run of spaces to nothing', () => {
+      write(
+        'basket_spec.rb',
+        `${call} "shop/basket: adds an item"${' '.repeat(100)}+ "more" do\n`,
+      );
+      expect(read()).toEqual([]);
+    });
+
+    it('reads DisplayName = and TestName = only as a named argument', () => {
+      write(
+        'BasketTests.cs',
+        `const ${'Display'}Name = "${title}";\n[TestCase(1,\n    ${'Test'}Name = "${title}")]\n`,
+      );
+      expect(read()).toEqual(['BasketTests.cs:3']);
+    });
+
+    it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {
+      write('basket_spec.rb', `=begin\n${call} "${title}" do\n=end\n`);
+      write('basket_spec.lua', `--[==[\n${call}("${title}")\n]]\n]==]\n`);
+      write('other_spec.lua', `--[=[ ]] ${call}("${title}") ]=]\n`);
+      expect(read()).toEqual([]);
+      write('again_spec.rb', `=begin\nnote\n=end\n${call} "${title}" do\n`);
+      write('again_spec.lua', `--[=[ a ]=] ${call}("${title}")\n`);
+      expect(read()).toEqual(['again_spec.lua:1', 'again_spec.rb:4']);
+    });
+
+    it('keeps the backslashes of a Go raw string title', () => {
+      write(
+        'basket_test.go',
+        [
+          `${'t.R'}un(\`shop/basket: matches \\d\`, func(t *testing.T) {})`,
+          `${'t.R'}un(\`shop/basket: ends with \\\`, func(t *testing.T) {})`,
+          '',
+        ].join('\n'),
+      );
+      expect(acceptanceTests(root).map((t) => [t.test, t.example])).toEqual([
+        ['basket_test.go:1', 'matches \\d'],
+        ['basket_test.go:2', 'ends with \\'],
+      ]);
+    });
   });
 });
 
@@ -419,6 +460,17 @@ describe('blanking comments', () => {
   it('keeps a PHP attribute and a shell argument count, which only look like comments', () => {
     expect(uncommented('#[Test] # c', 'php')).toBe('#[Test]    ');
     expect(uncommented('echo $# # c', 'sh')).toBe('echo $#    ');
+  });
+
+  it('blanks a Ruby =begin block at line starts, and a Lua long comment of any level', () => {
+    expect(uncommented('a\n=begin\nb\n=end\nc', 'rb')).toBe(
+      `a\n${' '.repeat(6)}\n \n${' '.repeat(4)}\nc`,
+    );
+    expect(uncommented('x =begin\n', 'rb')).toBe('x =begin\n');
+    expect(uncommented('--[==[ a ]] b ]==] c', 'lua')).toBe(
+      `${' '.repeat(18)} c`,
+    );
+    expect(uncommented('--[ a\nb', 'lua')).toBe(`${' '.repeat(5)}\nb`);
   });
 });
 
