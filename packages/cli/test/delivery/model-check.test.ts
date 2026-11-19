@@ -3,8 +3,8 @@
 // same repository with its one defect mended (or introduced), so a check that always
 // passes or always fails regardless of the model cannot satisfy it.
 //
-// The scratch tests are composed from parts (`${call}(…)`), never written out: the
-// model check over this repository would otherwise read them as acceptance tests.
+// Fixture titles are composed from parts so the repository's own model check
+// binds only the acceptance tests declared here.
 
 import { mkdirSync, realpathSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -30,6 +30,11 @@ interface Example {
 
 let h: Host;
 let root: string;
+
+const adds = `shop/basket: ${'adds an item'}`;
+const removes = `shop/basket: ${'removes an item'}`;
+const empties = `shop/basket: ${'empties the basket'}`;
+const takesPayment = `shop/till: ${'takes payment'}`;
 
 beforeEach(() => {
   h = host();
@@ -124,7 +129,7 @@ it('delivery/model-check: an example with no acceptance test fails', () => {
     { name: 'adds an item' },
     { name: 'removes an item' },
   ]);
-  acceptanceTests('test/basket.test.ts', ['shop/basket: adds an item']);
+  acceptanceTests('test/basket.test.ts', [adds]);
 
   const unbound = check();
   expect(unbound.code).toBe(1);
@@ -139,18 +144,14 @@ it('delivery/model-check: an example with no acceptance test fails', () => {
 
   // Nor does a title only in a comment name it, nor one that only starts with
   // its name or differs from it in case.
-  const removes = 'shop/basket: removes an item';
   for (const unnamed of [
     `// ${titled(removes)}`,
     `/* ${titled(removes)} */`,
     `/*\n${titled(removes)}\n*/`,
     titled(`${removes} twice`),
-    titled('shop/basket: Removes an item'),
+    titled(`shop/basket: ${'Removes an item'}`),
   ]) {
-    testFile('test/basket.test.ts', [
-      titled('shop/basket: adds an item'),
-      unnamed,
-    ]);
+    testFile('test/basket.test.ts', [titled(adds), unnamed]);
     const still = check();
     expect(still.code, unnamed).toBe(1);
     expect(
@@ -165,10 +166,7 @@ it('delivery/model-check: an example with no acceptance test fails', () => {
   }
 
   // Mended: once a test names it, the same model passes.
-  acceptanceTests('test/basket.test.ts', [
-    'shop/basket: adds an item',
-    'shop/basket: removes an item',
-  ]);
+  acceptanceTests('test/basket.test.ts', [adds, removes]);
   const bound = check();
   expect(bound.code).toBe(0);
   expect(bound.report.failures).toEqual([]);
@@ -179,9 +177,9 @@ it('delivery/model-check: a test naming a missing example fails', () => {
     { name: 'adds an item' },
   ]);
   const at = acceptanceTests('test/basket.test.ts', [
-    'shop/basket: adds an item',
-    'shop/basket: empties the basket',
-    'shop/till: takes payment',
+    adds,
+    empties,
+    takesPayment,
   ]);
 
   const missing = check();
@@ -193,13 +191,13 @@ it('delivery/model-check: a test naming a missing example fails', () => {
       expect.objectContaining({
         concept: 'shop/basket',
         example: 'empties the basket',
-        test: at['shop/basket: empties the basket'],
+        test: at[empties],
         message: expect.any(String),
       }),
       expect.objectContaining({
         concept: 'shop/till',
         example: 'takes payment',
-        test: at['shop/till: takes payment'],
+        test: at[takesPayment],
         message: expect.any(String),
       }),
     ]),
@@ -207,13 +205,10 @@ it('delivery/model-check: a test naming a missing example fails', () => {
 
   // A title only in a comment names nothing, so nothing missing.
   for (const commented of [
-    `// ${titled('shop/basket: empties the basket')}`,
-    `/* ${titled('shop/basket: empties the basket')} */`,
+    `// ${titled(empties)}`,
+    `/* ${titled(empties)} */`,
   ]) {
-    testFile('test/basket.test.ts', [
-      titled('shop/basket: adds an item'),
-      commented,
-    ]);
+    testFile('test/basket.test.ts', [titled(adds), commented]);
     const quiet = check();
     expect(quiet.code, commented).toBe(0);
     expect(quiet.report.failures, commented).toEqual([]);
@@ -223,9 +218,9 @@ it('delivery/model-check: a test naming a missing example fails', () => {
   // it or differs from it in case, names an example the model lacks and leaves
   // shop/basket's unbound.
   for (const [title, named, example] of [
-    ['shop/till: adds an item', 'shop/till', 'adds an item'],
-    ['shop/basket: adds an item twice', 'shop/basket', 'adds an item twice'],
-    ['shop/basket: Adds an item', 'shop/basket', 'Adds an item'],
+    [`shop/till: ${'adds an item'}`, 'shop/till', 'adds an item'],
+    [`${adds} twice`, 'shop/basket', 'adds an item twice'],
+    [`shop/basket: ${'Adds an item'}`, 'shop/basket', 'Adds an item'],
   ] as const) {
     testFile('test/basket.test.ts', [titled(title)]);
     const wrong = check();
@@ -256,7 +251,7 @@ it('delivery/model-check: a test naming a missing example fails', () => {
   }
 
   // Mended: the tests naming what the model has pass.
-  acceptanceTests('test/basket.test.ts', ['shop/basket: adds an item']);
+  acceptanceTests('test/basket.test.ts', [adds]);
   const named = check();
   expect(named.code).toBe(0);
   expect(named.report.failures).toEqual([]);
@@ -267,13 +262,8 @@ it('delivery/model-check: an example two tests name fails', () => {
     { name: 'adds an item' },
     { name: 'removes an item' },
   ]);
-  const first = acceptanceTests('test/basket.test.ts', [
-    'shop/basket: adds an item',
-    'shop/basket: removes an item',
-  ]);
-  const second = acceptanceTests('test/basket-again.test.ts', [
-    'shop/basket: adds an item',
-  ]);
+  const first = acceptanceTests('test/basket.test.ts', [adds, removes]);
+  const second = acceptanceTests('test/basket-again.test.ts', [adds]);
 
   const twice = check();
   expect(twice.code).toBe(1);
@@ -286,17 +276,14 @@ it('delivery/model-check: an example two tests name fails', () => {
     }),
   ]);
   expect([...(twice.report.failures[0]!.tests ?? [])].sort()).toEqual(
-    [
-      first['shop/basket: adds an item'],
-      second['shop/basket: adds an item'],
-    ].sort(),
+    [first[adds], second[adds]].sort(),
   );
 
   // Two tests in one file name it as surely as two in two files.
   testFile('test/basket.test.ts', [
-    titled('shop/basket: adds an item'),
-    titled('shop/basket: removes an item'),
-    titled('shop/basket: adds an item'),
+    titled(adds),
+    titled(removes),
+    titled(adds),
   ]);
   testFile('test/basket-again.test.ts', []);
   const inOneFile = check();
@@ -310,10 +297,7 @@ it('delivery/model-check: an example two tests name fails', () => {
   ]);
 
   // Mended: once one test names it, the same model passes.
-  acceptanceTests('test/basket.test.ts', [
-    'shop/basket: adds an item',
-    'shop/basket: removes an item',
-  ]);
+  acceptanceTests('test/basket.test.ts', [adds, removes]);
   const once = check();
   expect(once.code).toBe(0);
   expect(once.report.failures).toEqual([]);
@@ -362,7 +346,7 @@ it('delivery/model-check: binds tests in any language, and only tests', () => {
   put('docs/basket-spec.md', `# Basket specification\n\n${quoted}`);
   put('test/test_notes.py', `# with ${subTest}:\n`);
 
-  // Each declaration must bind with no other test source present.
+  // Each fixture is the sole test naming the example when the check runs.
   for (const [path, source] of [
     [
       'test/test_basket.py',
@@ -372,6 +356,29 @@ class BasketTest(unittest.TestCase):
     def test_basket(self):
         with ${subTest}:
             pass
+`,
+    ],
+    [
+      'test/test_basket_wrapper.py',
+      `def check_basket(title):
+    basket = []
+    basket.append("apple")
+    assert basket == ["apple"], title
+
+
+def test_basket():
+    ${'check_basket'}("${title}")
+`,
+    ],
+    [
+      'test/basket_test.rs',
+      `#[test]
+fn adds_an_item() {
+    let title = "${title}";
+    let mut basket = Vec::new();
+    basket.push("apple");
+    assert_eq!(basket, vec!["apple"], "{}", title);
+}
 `,
     ],
     [

@@ -98,7 +98,7 @@ describe('typed handoff — binding (delivered declarations and extension)', () 
         tests: [
           {
             example: 'film-production/approval',
-            test: 'film-production/approval: the creative approves',
+            test: `film-production/approval: ${'the creative approves'}`,
             seenFailing: true,
           },
         ],
