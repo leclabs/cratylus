@@ -373,12 +373,20 @@ describe('finding acceptance tests', () => {
       expect(read()).toEqual(['a.test.ts:1', 'a.test.ts:1', 'a.test.ts:2']);
     });
 
-    it('reads DisplayName = and TestName = only as a named argument', () => {
+    it('reads DisplayName = and TestName = only as an attribute’s named argument ending it', () => {
       write(
         'BasketTests.cs',
-        `const ${'Display'}Name = "${title}";\nconst helper = 1, ${'Display'}Name = "${title}";\n[TestCase(1,\n    ${'Test'}Name = "${title}")]\n`,
+        [
+          `const ${'Display'}Name = "${title}";`,
+          `const helper = 1, ${'Display'}Name = "${title}";`,
+          `Console.WriteLine(${'Display'}Name = "${title}");`,
+          `[Fact(${'Display'}Name = "${title}" != "" ? "actual" : "fallback")]`,
+          '[TestCase(1,',
+          `    ${'Test'}Name = "${title}")]`,
+          '',
+        ].join('\n'),
       );
-      expect(read()).toEqual(['BasketTests.cs:4']);
+      expect(read()).toEqual(['BasketTests.cs:6']);
     });
 
     it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {

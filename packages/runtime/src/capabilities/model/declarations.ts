@@ -72,9 +72,10 @@ function patternsFor(backticks: string) {
     ),
     /** A command, `name "…"`. */
     command: new RegExp(String.raw`(?<![\w$])@?([\w$]+)[ \t]+${literal}`, 'g'),
-    /** A named argument, `DisplayName = "…"` or `TestName = "…"`, after `(` or `,`. */
+    /** A named argument, `DisplayName = "…"` or `TestName = "…"`, after `(` or
+     *  `,`, its literal ending the argument. */
     argument: new RegExp(
-      String.raw`(?<=[(,]\s*)(DisplayName|TestName)\s*=\s*${literal}`,
+      String.raw`(?<=[(,]\s*)(DisplayName|TestName)\s*=\s*${literal}(?=\s*[,)])`,
       'g',
     ),
   };
@@ -139,9 +140,9 @@ function literalEnd(text: string, from: number, q: string): number {
   return text.length;
 }
 
-/** One forward scan of `text`, asked ascending offsets: the nearest bracket
- *  open before each, outside literals. */
-function openBracketScan(text: string): (index: number) => string | undefined {
+/** One forward scan of `text`, asked ascending offsets: the brackets open
+ *  before each, outside literals, innermost last. */
+function openBracketScan(text: string): (index: number) => readonly string[] {
   const open: string[] = [];
   let at = 0;
   return (index) => {
@@ -154,7 +155,7 @@ function openBracketScan(text: string): (index: number) => string | undefined {
         at++;
       }
     }
-    return open[open.length - 1];
+    return open;
   };
 }
 
@@ -190,12 +191,14 @@ function declarations(text: string, extension: string): TestTitle[] {
     DECLARERS.has((match[1] as string).toLowerCase().replaceAll('_', ''));
   read(patterns.call, declarer, false);
   read(patterns.command, declarer, true);
-  const openBracket = openBracketScan(text);
+  const openBrackets = openBracketScan(text);
   read(
     patterns.argument,
     (match) => {
-      const bracket = openBracket(match.index as number);
-      return bracket === '(' || bracket === '[';
+      // An attribute's arguments, `[Fact(DisplayName = "…")]`: a `(` directly
+      // inside a `[`.
+      const open = openBrackets(match.index as number);
+      return open.at(-1) === '(' && open.at(-2) === '[';
     },
     true,
   );
