@@ -11,6 +11,7 @@ import { domainModel } from '../src/factors/memory/domain-model.js';
 import { cratylicContextDesign } from '../src/factors/procedure/cratylic-context-design.js';
 import { rectificationOfNames } from '../src/factors/procedure/rectification-of-names.js';
 import { cratylism } from '../src/factors/stance/cratylism.js';
+import { greenField } from '../src/factors/stance/green-field.js';
 import canon from '../src/index.js';
 import { type Factor, MANIFEST, type Value } from '../src/manifest.js';
 
@@ -36,7 +37,7 @@ const decided: Record<string, [string, (line: string) => boolean]> = {
     Object.entries({
       memory: { domainModel },
       procedure: { cratylicContextDesign, rectificationOfNames },
-      stance: { cratylism },
+      stance: { cratylism, greenField },
       deliverable: { backbrief },
     }).flatMap(([section, values]) =>
       Object.entries(values).map(([key, value]) => {
