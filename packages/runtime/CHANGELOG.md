@@ -1,5 +1,15 @@
 # @cratylus/runtime
 
+## 0.21.0
+
+### Minor Changes
+
+- f678e1e: A user story names the concepts it replaces, the business analyst's decision: the tech lead's user story and the software engineer's task carry an optional `replaces`, each concept as `<context>/<concept>`, none of a replaced concept's meaning carried over, so its realization is deleted whole, its code, every test of it and their fixtures, and built anew from its examples; every other concept the story touches has its realization changed in place. The tech lead's task with no story carries none. The tech lead's memory is the domain model alone.
+
+  `cratylus model check` fails for an example more than one acceptance test names, one failure naming the example and, as `tests`, every test naming it (`<path>:<line>`): an example binds exactly one acceptance test, which records its realization.
+
+- 46e77f6: `cratylus model check` binds an example to its acceptance test in any language and test framework, and only to a test. A test file is one its language's convention names a test (`basket.test.ts`, `test_basket.py`, `basket_test.go`, `basket_spec.rb`, `BasketTest.java`, …) or a Gherkin `*.feature` file; a test is any whole string literal in it, outside comments, equal to `<context>/<concept>: <example name>` (whatever call, attribute or wrapper holds it; no framework is known), or a Gherkin `Scenario:` line. Comments are read out by the comment syntax of the file's language. A title quoted in prose (a changelog, the docs) or in a comment binds nothing; see `design/decisions/acceptance-tests-name-their-examples.md`.
+
 ## 0.20.1
 
 ### Patch Changes
