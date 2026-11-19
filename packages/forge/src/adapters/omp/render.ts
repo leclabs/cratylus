@@ -542,39 +542,32 @@ export function ompIsolationExtensions(
  * its path lines (a hashline header `[PATH#TAG]` and `MV DEST`; apply_patch's
  * `*** Add File:`, `*** Update File:`, `*** Delete File:` and `*** Move to:`).
  * Its other lines but the body lines, which carry file content, are judged as text.
- * A write to `xd://<tool>` is the call of `<tool>` its content is. `bash` and `eval`
- * by every text of their input, refused whether they read or write, so a path a call
- * builds at run time passes: that is the guard's known limit. No other tool is
- * judged, so every tool that only reads passes.
+ * A write to `xd://<tool>` is the call of `<tool>` its content is. No other tool is
+ * judged: every tool that only reads passes, and `bash` and `eval` pass whether they
+ * read or write, since reach narrows only where harm is observed and the observed
+ * harm is a file tool's write.
  */
 export function ompReachExtensions(
   agents: readonly Agent[],
 ): HarnessProjection[] {
-  const byPath = new Map<
-    string,
-    { writers: string[]; name: string; refusal: string }
-  >();
+  const byPath = new Map<string, { writers: string[]; refusal: string }>();
   for (const a of agents)
-    for (const { path, name, refusal } of a.writes ?? []) {
+    for (const { path, refusal } of a.writes ?? []) {
       const held = byPath.get(path);
-      if (held === undefined)
-        byPath.set(path, { writers: [a.name], name, refusal });
-      else if (held.refusal !== refusal || held.name !== name)
+      if (held === undefined) byPath.set(path, { writers: [a.name], refusal });
+      else if (held.refusal !== refusal)
         throw new Error(
-          `the agents writing '${path}' say two different refusals for it: '${held.name}: ${held.refusal}' and '${name}: ${refusal}'`,
+          `the agents writing '${path}' say two different refusals for it: '${held.refusal}' and '${refusal}'`,
         );
       else if (!held.writers.includes(a.name)) held.writers.push(a.name);
     }
   if (byPath.size === 0) return [];
   const guarded = [...byPath]
     .sort(([a], [b]) => (a < b ? -1 : 1))
-    .map(([path, { writers, name, refusal }]) => ({
+    .map(([path, { writers, refusal }]) => ({
       path,
       writers: writers.sort(),
       refusal,
-      // A shell or eval call is judged by its text alone, which cannot tell a read
-      // from a write: what it is told names the tools that read.
-      shellRefusal: `${refusal} A shell or eval call naming ${path} is refused whether it reads or writes; read ${name} with the read, grep or glob tool.`,
     }));
   return [
     {
@@ -588,9 +581,8 @@ export function ompReachExtensions(
         '//',
         "// A subagent session is judged as the agent omp dispatched, omp's own agents included;",
         `// a main session only when started as an agent of ${CLI_BIN} (\`omp --agent <name>\`), so`,
-        "// the product owner's own session is never judged. A file tool is judged by the paths",
-        '// it names; a shell or eval call by the text of its input, whether it reads or writes,',
-        '// so a path it builds at run time passes. No other tool is judged.',
+        "// the product owner's own session is never judged. A file tool that writes is judged by",
+        '// the paths it names. No other tool is judged, bash and eval included.',
         '',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
         "import { resolve, sep } from 'node:path';",
@@ -599,13 +591,12 @@ export function ompReachExtensions(
         '  path: string;',
         '  writers: readonly string[];',
         '  refusal: string;',
-        '  shellRefusal: string;',
         '}',
         "// What the handler reads off its context: the session's directory and the agent it runs as.",
         'type Session = { cwd?: string; agent?: { kind?: string; name?: string } };',
-        '// What a judged call names: resolved paths, judged by their components; texts,',
-        '// judged by their spelling; and whether it is a shell or eval call.',
-        'type Named = { paths: string[]; texts: string[]; shell: boolean };',
+        '// What a judged call names: resolved paths, judged by their components, and texts,',
+        '// judged by their spelling.',
+        'type Named = { paths: string[]; texts: string[] };',
         '',
         `// Every agent of ${CLI_BIN}, by name: a main session started as one of them is judged.`,
         `const AGENTS: readonly string[] = ${JSON.stringify(agents.map((a) => a.name).sort())};`,
@@ -647,13 +638,6 @@ export function ompReachExtensions(
         '  return false;',
         '}',
         '',
-        '/** Every string under `value`, at any depth. */',
-        'function strings(value: unknown, texts: string[]): void {',
-        '  if (typeof value === "string") texts.push(value);',
-        '  else if (typeof value === "object" && value !== null)',
-        '    for (const item of Object.values(value)) strings(item, texts);',
-        '}',
-        '',
         '/** The path a line of an edit grammar names, unquoted, or nothing where it names none. */',
         'function pathOf(line: string): string | undefined {',
         '  for (const form of PATH_LINES) {',
@@ -688,7 +672,7 @@ export function ompReachExtensions(
         '  if (tool === "write") {',
         '    if (typeof args.path !== "string") return undefined;',
         '    const device = DEVICE.exec(args.path);',
-        '    if (device === null) return { paths: [resolve(cwd, args.path)], texts: [], shell: false };',
+        '    if (device === null) return { paths: [resolve(cwd, args.path)], texts: [] };',
         '    let call: unknown;',
         '    try {',
         '      call = JSON.parse(String(args.content));',
@@ -698,14 +682,8 @@ export function ompReachExtensions(
         '    return named(device[1] as string, call, cwd);',
         '  }',
         '  if (tool === "edit" || tool === "ast_edit") {',
-        '    const call: Named = { paths: [], texts: [], shell: false };',
+        '    const call: Named = { paths: [], texts: [] };',
         '    edited(args, "", cwd, call);',
-        '    return call;',
-        '  }',
-        '  if (tool === "bash" || tool === "eval") {',
-        '    const call: Named = { paths: [], texts: [], shell: true };',
-        '    strings(args, call.texts);',
-        '    if (typeof args.cwd === "string") call.paths.push(resolve(cwd, args.cwd));',
         '    return call;',
         '  }',
         '  return undefined;',
@@ -731,7 +709,7 @@ export function ompReachExtensions(
         '        call.paths.some((path) => holds(path, guard.segments)) ||',
         '        call.texts.some((text) => guard.names.test(text))',
         '      )',
-        '        return { block: true, reason: call.shell ? guard.shellRefusal : guard.refusal };',
+        '        return { block: true, reason: guard.refusal };',
         '    }',
         '    return undefined;',
         '  });',

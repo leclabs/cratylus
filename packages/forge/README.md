@@ -67,9 +67,9 @@ states no departure and renders no section, nor does a group all of whose factor
 writes (`writes`, copied by the canon from its action scope) is guarded on OMP by the reach module,
 `extensions/cratylus-reach.ts`: it refuses a write there by a subagent of any agent that does not
 write it, OMP's own included, and by a main session started as such an agent of cratylus with
-`omp --agent`; the product owner's own session is never judged. The file tools are judged by the
-paths they name; a shell or eval call by the text of its input, whether it reads or writes, so a
-path a call builds at run time passes; the tools that read are never judged. On OMP the
+`omp --agent`; the product owner's own session is never judged. The file tools that write are
+judged by the paths they name, and no other tool is: the tools that read, and `bash` and `eval`
+whether they read or write, are never judged. On OMP the
 definition's front matter carries `model: "@<name>"`, the model
 role named for the agent, and `spawns: "*"`: every agent keeps omp's default tools and may dispatch
 any agent. `key: null` reserves the key of an ipseic agent. The tree reports each agent's tier

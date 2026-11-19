@@ -538,9 +538,7 @@ describe('omp launch', () => {
 /** What a write to the domain model is told, as the canon says it. */
 const MODEL_REFUSAL =
   'design/model/ is the domain model, which only the business analyst writes. To change it, raise a meaning question to the business analyst.';
-const MODEL_WRITES = [
-  { path: 'design/model/', name: 'the domain model', refusal: MODEL_REFUSAL },
-];
+const MODEL_WRITES = [{ path: 'design/model/', refusal: MODEL_REFUSAL }];
 
 describe('omp reach', () => {
   const agents = [
@@ -720,28 +718,18 @@ describe('omp reach', () => {
     ).toEqual(refused);
   });
 
-  it('refuses a shell or eval call naming the domain model, naming the tools that read it', () => {
-    const shell = {
-      block: true,
-      reason: `${MODEL_REFUSAL} A shell or eval call naming design/model/ is refused whether it reads or writes; read the domain model with the read, grep or glob tool.`,
-    };
-    expect(
-      verdict({ sub: 'tech-lead' }, 'bash', {
-        command: 'cat design/model/a.md',
-      }),
-    ).toEqual(shell);
-    expect(
-      verdict({ sub: 'tech-lead' }, 'bash', {
-        command: 'ls',
-        cwd: 'design/model',
-      }),
-    ).toEqual(shell);
-    expect(
-      verdict({ sub: 'tech-lead' }, 'eval', {
-        language: 'py',
-        code: 'x = 1\ndesign/model',
-      }),
-    ).toEqual(shell);
+  it('never judges a shell or eval call, whether it reads or writes', () => {
+    for (const [tool, input] of [
+      ['bash', { command: 'cat design/model/a.md' }],
+      ['bash', { command: "printf 'x' > design/model/a.md" }],
+      ['bash', { command: 'rm a.md', cwd: 'design/model' }],
+      ['eval', { language: 'py', code: "write('design/model/a.md', 'x')" }],
+      [
+        'write',
+        { path: 'xd://bash', content: '{"command":"rm design/model/a.md"}' },
+      ],
+    ] as const)
+      expect(verdict({ sub: 'tech-lead' }, tool, input), tool).toBeUndefined();
   });
 
   it('never judges a tool that reads', () => {
@@ -776,13 +764,7 @@ describe('omp reach', () => {
         agent({ name: 'a', writes: MODEL_WRITES }),
         agent({
           name: 'b',
-          writes: [
-            {
-              path: 'design/model/',
-              name: 'the domain model',
-              refusal: 'another',
-            },
-          ],
+          writes: [{ path: 'design/model/', refusal: 'another' }],
         }),
       ]),
     ).toThrow(/design\/model\//);

@@ -590,9 +590,6 @@ export interface Agent {
 export interface ProtectedPath {
   /** A directory relative to the repository root, ending in `/`. */
   readonly path: string;
-  /** What the path holds, as a sentence names it (`the domain model`), so a harness
-   *  can say how to read it where it refuses a call that only might read. */
-  readonly name: string;
   /** What a refused write is told: whose the path is and how to have it changed. */
   readonly refusal: string;
 }
