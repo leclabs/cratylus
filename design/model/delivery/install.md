@@ -23,16 +23,16 @@ When install runs again on a terminal without --rules
 Then it keeps the recorded choice and asks only about the newly offered rules
 And without a terminal it keeps the recorded choice and names the rules it did not offer
 
-### offers clean-cutover in place of green-field
+### offers green-field and clean-cutover as rulesets of their own
 
 Given cratylus's rulesets
 When install offers them
-Then it offers the clean-cutover ruleset, holding only the clean-cutover rule
-And it offers no green-field rule
+Then it offers the green-field ruleset, holding only the green-field rule
+And the clean-cutover ruleset, holding only the clean-cutover rule
 
 ### drops a recorded rule no longer offered
 
 Given an installation whose recorded choice names green-field-declared-constraints
 When install runs again
 Then it drops that rule and names it as no longer offered
-And it asks about clean-cutover as a newly offered rule
+And it asks about green-field and clean-cutover as newly offered rules
