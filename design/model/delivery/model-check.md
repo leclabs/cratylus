@@ -16,6 +16,12 @@ Given an acceptance test naming an example the domain model does not have
 When the model check runs
 Then it fails, naming the test and the missing example
 
+### an example two tests name fails
+
+Given an example two acceptance tests name
+When the model check runs
+Then it fails, naming the example and both tests
+
 ### an example judged in review needs no test
 
 Given a concept whose only example is marked judged in review
