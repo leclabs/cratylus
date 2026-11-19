@@ -1,5 +1,44 @@
 # @cratylus/invoke
 
+## 0.23.0
+
+### Minor Changes
+
+- fe2fc62: The Assignment forms omp's extension shows every session render each field's shape as the deliverable section does (`list of objects`, enum values as `` `a` or `b` ``, `at least N` or `may be empty`) and nest the fields of an object or of a list of objects beneath it, two spaces deeper, each with its need and meaning.
+- 731dc1a: The `green-field` ruleset now holds one rule, `green-field`: existing work constrains only where declared. `clean-cutover` is a new ruleset of one rule, `clean-cutover`: make the change the work calls for and migrate every caller with it, removing what it makes obsolete, keeping compatibility with earlier forms only where it is declared a goal. The rules `green-field-declared-constraints` and `green-field-clean-cutover` are no longer offered.
+
+  `cratylus install` over an installation whose recorded choice names `green-field-declared-constraints` or `green-field-clean-cutover` drops them from the choice and names them as no longer offered; on a terminal it asks about `green-field` and `clean-cutover` as newly offered. `--rules green-field,clean-cutover` takes them.
+
+  The business analyst's stance names green-field ≜ existing work constrains only where declared, and so do the personas over it.
+
+  `@cratylus/canon`'s `RULESETS` lists `green-field` and then `clean-cutover`, last.
+
+- 36a3697: Only the business analyst writes the domain model. On omp, `cratylus install` places `extensions/cratylus-reach.ts`, which refuses a write to `design/model/` by a subagent of any other agent (omp's own agents included) and by a main session started with `omp --agent` as any other agent of cratylus; the refusal says to raise a meaning question to the business analyst. The product owner's own session is never judged. `write`, `edit` and `ast_edit` are judged by the paths they name, and no other tool is: the tools that read pass, and `bash` and `eval` pass whether they read or write.
+
+  `@cratylus/schema` adds `ProtectedPath` and the optional `Agent.writes`. `@cratylus/canon` adds `PROTECTED_PATHS`, gives the business analyst the action scope `write-domain-model`, and copies its protected path onto the business analyst and every persona over it as `writes`. `@cratylus/forge` adds `OMP_REACH_MODULE` and `ompReachExtensions`, and omp's `launchSurface` emits the reach module beside the dispatch isolation module.
+
+- f678e1e: A user story names the concepts it replaces, the business analyst's decision: the tech lead's user story and the software engineer's task carry an optional `replaces`, each concept as `<context>/<concept>`, none of a replaced concept's meaning carried over, so its realization is deleted whole, its code, every test of it and their fixtures, and built anew from its examples; every other concept the story touches has its realization changed in place. The tech lead's task with no story carries none. The tech lead's memory is the domain model alone.
+
+  `cratylus model check` fails for an example more than one acceptance test names, one failure naming the example and, as `tests`, every test naming it (`<path>:<line>`): an example binds exactly one acceptance test, which records its realization.
+
+- ada96eb: The `gitflow` ruleset holds one rule, `gitflow-adopted`: the project follows gitflow, adopted by its name, its integration branch `develop` unless the project's AGENTS.md names another; a missing integration branch is escalated to the product owner. The rules `gitflow-main-and-develop`, `gitflow-feature-branches`, `gitflow-release-branches` and `gitflow-hotfix-branches` are no longer offered.
+
+  `cratylus install` over an installation whose recorded choice names any of them drops them from the choice and names them as no longer offered; on a terminal it asks about `gitflow-adopted` as a newly offered rule. `--rules gitflow` or `--rules gitflow-adopted` takes it.
+
+- 46e77f6: `cratylus model check` binds an example to its acceptance test in any language and test framework, and only to a test. A test file is one its language's convention names a test (`basket.test.ts`, `test_basket.py`, `basket_test.go`, `basket_spec.rb`, `BasketTest.java`, …) or a Gherkin `*.feature` file; a test is any whole string literal in it, outside comments, equal to `<context>/<concept>: <example name>` (whatever call, attribute or wrapper holds it; no framework is known), or a Gherkin `Scenario:` line. Comments are read out by the comment syntax of the file's language. A title quoted in prose (a changelog, the docs) or in a comment binds nothing; see `design/decisions/acceptance-tests-name-their-examples.md`.
+
+### Patch Changes
+
+- Updated dependencies [fe2fc62]
+- Updated dependencies [731dc1a]
+- Updated dependencies [36a3697]
+- Updated dependencies [f678e1e]
+- Updated dependencies [ada96eb]
+- Updated dependencies [46e77f6]
+  - @cratylus/forge@0.23.0
+  - @cratylus/canon@0.25.0
+  - @cratylus/runtime@0.21.0
+
 ## 0.22.0
 
 ### Minor Changes
