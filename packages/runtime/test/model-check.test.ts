@@ -357,16 +357,35 @@ describe('finding acceptance tests', () => {
       expect(read()).toEqual([]);
     });
 
+    it('reads a title joined to another across a line break to nothing', () => {
+      write(
+        'BasketTests.cs',
+        `[Fact(${'Display'}Name = "${title}"\n    + " more")]\n`,
+      );
+      expect(read()).toEqual([]);
+    });
+
+    it('reads every declaration of a one-line file at its line', () => {
+      write(
+        'a.test.ts',
+        `${call}("${title}"); ${other}("${title}");\n${call}("${title}")\n`,
+      );
+      expect(read()).toEqual(['a.test.ts:1', 'a.test.ts:1', 'a.test.ts:2']);
+    });
+
     it('reads DisplayName = and TestName = only as a named argument', () => {
       write(
         'BasketTests.cs',
-        `const ${'Display'}Name = "${title}";\n[TestCase(1,\n    ${'Test'}Name = "${title}")]\n`,
+        `const ${'Display'}Name = "${title}";\nconst helper = 1, ${'Display'}Name = "${title}";\n[TestCase(1,\n    ${'Test'}Name = "${title}")]\n`,
       );
-      expect(read()).toEqual(['BasketTests.cs:3']);
+      expect(read()).toEqual(['BasketTests.cs:4']);
     });
 
     it('reads no title in a Ruby =begin block or a Lua long comment of any level', () => {
-      write('basket_spec.rb', `=begin\n${call} "${title}" do\n=end\n`);
+      write(
+        'basket_spec.rb',
+        `=begin\n=endpoint\n${call} "${title}" do\n=end\n`,
+      );
       write('basket_spec.lua', `--[==[\n${call}("${title}")\n]]\n]==]\n`);
       write('other_spec.lua', `--[=[ ]] ${call}("${title}") ]=]\n`);
       expect(read()).toEqual([]);
@@ -381,6 +400,7 @@ describe('finding acceptance tests', () => {
         [
           `${'t.R'}un(\`shop/basket: matches \\d\`, func(t *testing.T) {})`,
           `${'t.R'}un(\`shop/basket: ends with \\\`, func(t *testing.T) {})`,
+          `${'t.R'}un(\`shop/basket: \${x}\`, func(t *testing.T) {})`,
           '',
         ].join('\n'),
       );
@@ -467,6 +487,9 @@ describe('blanking comments', () => {
       `a\n${' '.repeat(6)}\n \n${' '.repeat(4)}\nc`,
     );
     expect(uncommented('x =begin\n', 'rb')).toBe('x =begin\n');
+    expect(uncommented('=begin\n=endpoint\nb\n=end\nc', 'rb')).toBe(
+      `${' '.repeat(6)}\n${' '.repeat(9)}\n \n${' '.repeat(4)}\nc`,
+    );
     expect(uncommented('--[==[ a ]] b ]==] c', 'lua')).toBe(
       `${' '.repeat(18)} c`,
     );

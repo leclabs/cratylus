@@ -230,11 +230,14 @@ function uncommentedBy(s: string, language: Syntax): string {
     return n;
   };
   /** The index after the line-start block comment closed by `close`, begun on
-   *  the line at `from`: the end of the line `close` begins. */
+   *  the line at `from`: the end of the line a `close` ending its word begins. */
   const lineBlockEnd = (from: number, close: string) => {
     let k = s.indexOf('\n', from);
     while (k >= 0) {
-      if (s.startsWith(close, k + 1)) {
+      if (
+        s.startsWith(close, k + 1) &&
+        /\s|^$/.test(s[k + 1 + close.length] ?? '')
+      ) {
         const end = s.indexOf('\n', k + 1);
         return end < 0 ? n : end;
       }

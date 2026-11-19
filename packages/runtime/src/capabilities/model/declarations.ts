@@ -56,8 +56,8 @@ const QUOTED = String.raw`'((?:[^'\\\n]|\\.)*)'|"((?:[^"\\\n]|\\.)*)"`;
 /** A backtick literal with no `${`, escapes in it, as group 4. */
 const ESCAPED_BACKTICKS = String.raw`\x60((?:[^\x60\\$]|\\.|\$(?!\{))*)\x60`;
 
-/** A backtick literal with no escape, as group 4. */
-const RAW_BACKTICKS = String.raw`\x60([^\x60]*)\x60`;
+/** A backtick literal with no `${` and no escape, as group 4. */
+const RAW_BACKTICKS = String.raw`\x60((?:[^\x60$]|\$(?!\{))*)\x60`;
 
 /** The expressions finding the three forms of test declaration, for a language
  *  whose backtick literal is as `backticks` says. A title is one whole string
@@ -88,9 +88,9 @@ const RAW = patternsFor(RAW_BACKTICKS);
 const RAW_BACKTICKS_IN = new Set(['go']);
 
 /** What follows a literal that joins it to another: a concatenation or
- *  formatting operator after any run of spaces, a second literal beside it, or
- *  a word on it. */
-const JOINED = /(?:[ \t]*(?:[+.^&*%/\\]|-(?!>)|<>|['"`])|[\w$])/y;
+ *  formatting operator after any whitespace, line breaks included, a second
+ *  literal beside it, or a word on it. */
+const JOINED = /(?:\s*(?:[+.^&*%/\\]|-(?!>)|<>)|[ \t]*['"`]|[\w$])/y;
 
 /** The scenario lines of a Gherkin feature file. */
 const SCENARIO =
@@ -126,6 +126,38 @@ function scenarios(text: string): TestTitle[] {
   return found;
 }
 
+/** From inside a literal quoted by `q` at `from` in `text`: the index after its
+ *  end, or at the line break an unclosed one but a backtick one stops at. */
+function literalEnd(text: string, from: number, q: string): number {
+  for (let k = from; k < text.length; ) {
+    const c = text[k];
+    if (c === '\\') k += 2;
+    else if (c === q) return k + 1;
+    else if (c === '\n' && q !== '`') return k;
+    else k++;
+  }
+  return text.length;
+}
+
+/** One forward scan of `text`, asked ascending offsets: the nearest bracket
+ *  open before each, outside literals. */
+function openBracketScan(text: string): (index: number) => string | undefined {
+  const open: string[] = [];
+  let at = 0;
+  return (index) => {
+    while (at < index) {
+      const c = text[at] as string;
+      if (c === '"' || c === "'" || c === '`') at = literalEnd(text, at + 1, c);
+      else {
+        if (c === '(' || c === '[' || c === '{') open.push(c);
+        else if (c === ')' || c === ']' || c === '}') open.pop();
+        at++;
+      }
+    }
+    return open[open.length - 1];
+  };
+}
+
 /** The test declarations in `text`, comments already blanked, by position. */
 function declarations(text: string, extension: string): TestTitle[] {
   const raw = RAW_BACKTICKS_IN.has(extension);
@@ -158,20 +190,21 @@ function declarations(text: string, extension: string): TestTitle[] {
     DECLARERS.has((match[1] as string).toLowerCase().replaceAll('_', ''));
   read(patterns.call, declarer, false);
   read(patterns.command, declarer, true);
-  read(patterns.argument, () => true, true);
+  const openBracket = openBracketScan(text);
+  read(
+    patterns.argument,
+    (match) => {
+      const bracket = openBracket(match.index as number);
+      return bracket === '(' || bracket === '[';
+    },
+    true,
+  );
   let line = 1;
-  let from = 0;
+  let at = 0;
   return found
     .sort((a, b) => a.index - b.index)
     .map(({ index, title }) => {
-      for (
-        let k = text.indexOf('\n', from);
-        k >= 0 && k < index;
-        k = text.indexOf('\n', from)
-      ) {
-        line++;
-        from = k + 1;
-      }
+      for (; at < index; at++) if (text.charCodeAt(at) === 10) line++;
       return { line, title };
     });
 }
