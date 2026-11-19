@@ -14,7 +14,6 @@ import { outcome } from '../factors/deliverable/outcome.js';
 import { inUse } from '../factors/evaluation/in-use.js';
 import { honesty } from '../factors/guardrails/honesty.js';
 import { domainModel } from '../factors/memory/domain-model.js';
-import { realization } from '../factors/memory/realization.js';
 import { frontier } from '../factors/model/frontier.js';
 import { high } from '../factors/model/high.js';
 import { satisfice } from '../factors/objective/satisfice.js';
@@ -56,7 +55,7 @@ export const techLeadRole: RoleProfile = {
       { value: frontier, slot: 'tier' },
       { value: high, slot: 'effort' },
     ],
-    memory: [domainModel, realization],
+    memory: [domainModel],
     assignment: [userStory],
     deliverable: [outcome],
     guardrails: [honesty],

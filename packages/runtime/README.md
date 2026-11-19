@@ -33,9 +33,10 @@ repository: `purpose.md`, then a directory per bounded context holding its `cont
 file per concept, its Cratylic name, its precising definition and its examples, each written as
 given–when–then. Version control is its history, so the files state only what holds now. `check`
 reads the model and every test file of the repository, and fails for a record that is not in its
-form, for an example no acceptance test names (unless it is marked judged in review), and for an
-acceptance test naming an example the model does not have; an acceptance test, in any language and
-test framework, names its example by its title, `<context>/<concept>: <example name>`, as
+form, for an example no acceptance test names (unless it is marked judged in review), for an
+example more than one acceptance test names, and for an acceptance test naming an example the
+model does not have; an acceptance test, in any language and test framework, names its example by
+its title, `<context>/<concept>: <example name>`, as
 `design/decisions/acceptance-tests-name-their-examples.md` states. It
 records nothing; its result is the same every time for the same files.
 

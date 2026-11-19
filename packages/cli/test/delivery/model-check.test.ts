@@ -15,6 +15,7 @@ interface Failure {
   concept: string;
   example?: string;
   test?: string;
+  tests?: string[];
   message: string;
 }
 interface Report {
@@ -259,6 +260,63 @@ it('delivery/model-check: a test naming a missing example fails', () => {
   const named = check();
   expect(named.code).toBe(0);
   expect(named.report.failures).toEqual([]);
+});
+
+it('delivery/model-check: an example two tests name fails', () => {
+  concept('shop/basket', 'basket', 'The goods a shopper has chosen to buy', [
+    { name: 'adds an item' },
+    { name: 'removes an item' },
+  ]);
+  const first = acceptanceTests('test/basket.test.ts', [
+    'shop/basket: adds an item',
+    'shop/basket: removes an item',
+  ]);
+  const second = acceptanceTests('test/basket-again.test.ts', [
+    'shop/basket: adds an item',
+  ]);
+
+  const twice = check();
+  expect(twice.code).toBe(1);
+  expect(twice.report.passed).toBe(false);
+  expect(twice.report.failures).toEqual([
+    expect.objectContaining({
+      concept: 'shop/basket',
+      example: 'adds an item',
+      message: expect.any(String),
+    }),
+  ]);
+  expect([...(twice.report.failures[0]!.tests ?? [])].sort()).toEqual(
+    [
+      first['shop/basket: adds an item'],
+      second['shop/basket: adds an item'],
+    ].sort(),
+  );
+
+  // Two tests in one file name it as surely as two in two files.
+  testFile('test/basket.test.ts', [
+    titled('shop/basket: adds an item'),
+    titled('shop/basket: removes an item'),
+    titled('shop/basket: adds an item'),
+  ]);
+  testFile('test/basket-again.test.ts', []);
+  const inOneFile = check();
+  expect(inOneFile.code).toBe(1);
+  expect(inOneFile.report.failures).toEqual([
+    expect.objectContaining({
+      concept: 'shop/basket',
+      example: 'adds an item',
+      tests: ['test/basket.test.ts:3', 'test/basket.test.ts:5'],
+    }),
+  ]);
+
+  // Mended: once one test names it, the same model passes.
+  acceptanceTests('test/basket.test.ts', [
+    'shop/basket: adds an item',
+    'shop/basket: removes an item',
+  ]);
+  const once = check();
+  expect(once.code).toBe(0);
+  expect(once.report.failures).toEqual([]);
 });
 
 it('delivery/model-check: an example judged in review needs no test', () => {

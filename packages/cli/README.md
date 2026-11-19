@@ -115,8 +115,10 @@ reads the project installation; elsewhere it reads yours.
 A rule is stated with why it holds, and your agents follow it in every session of every project; a
 ruleset is a named set of rules offered together (`behaviour-driven-development`,
 `context-engineering`, `gitflow`, `conventional-commits`, `commit-discipline`,
-`established-libraries`, `clean-cutover`). `behaviour-driven-development` adopts that practice by its
-name alone, and `context-engineering` adopts ten principles of context engineering, each by its name.
+`established-libraries`, `green-field`, `clean-cutover`). `behaviour-driven-development` adopts that practice by its
+name alone; `gitflow` adopts gitflow by its name, its integration branch `develop` unless your
+project's AGENTS.md names another, a missing one escalated to you; and `context-engineering` adopts
+ten principles of context engineering, each by its name.
 On a terminal, install offers each ruleset in turn: all its rules, rule by rule, or none, which is
 the default. `--rules <name,…>`
 settles it instead: a ruleset's name takes all its rules, a rule's name only that rule
@@ -381,7 +383,7 @@ The domain model is `design/model` at the top of the git repository you run it i
 
 An acceptance test binds an example by its title: a test, in any language and test framework, titled exactly `<context>/<concept>: <example name>`, the example's heading without `(judged in review)`, as `it('delivery/model-check: an example with no acceptance test fails', …)` in vitest, `t.Run("delivery/model-check: …", …)` in Go, `it "delivery/model-check: …" do` in RSpec or `Scenario: delivery/model-check: …` in a Gherkin feature file. The check reads source text and runs nothing: it reads the test files of the repository, those a file name marks a test (`basket.test.ts`, `test_basket.py`, `basket_test.go`, `BasketTest.java`, …) and `*.feature` files, but for those under `node_modules`, `dist` and every directory whose name starts with `.`, and in them the titled test declarations outside comments. A title quoted in a changelog, the docs or a comment binds nothing. What a test file and a test declaration are is stated by `design/decisions/acceptance-tests-name-their-examples.md` in the cratylus repository.
 
-`check` prints its report as JSON, `{ "model", "passed", "failures" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its Cratylic name or its precising definition, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, and says why. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
+`check` prints its report as JSON, `{ "model", "passed", "failures" }`, and exits `0` when there are no failures, else `1`, the report printed all the same. It fails for a concept's file without its Cratylic name or its precising definition, with a section other than `## Examples`, with an example missing its Given, When or Then, or with two examples of one name; for a context's directory without `context.md`, or a `context.md` without its name or subject; for an example not judged in review that no acceptance test names; for an example more than one acceptance test names; and for an acceptance test naming an example the model does not have. Each failure names its `concept`, the `example` and the `test` (`<path>:<line>`) where they apply, or for an example more than one test names every one of them as `tests`, and says why. Where there is no `design/model` it is refused, `cratylus model check: no domain model at <path>`, exit `1`.
 
 #### `cratylus model check`
 
