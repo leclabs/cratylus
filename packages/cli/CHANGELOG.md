@@ -1,5 +1,17 @@
 # @cratylus/invoke
 
+## 0.24.0
+
+### Minor Changes
+
+- 35a180c: On omp, an agent cratylus installed, launched with `omp --agent` or dispatched, has a system prompt that opens with its definition, followed by omp's own prompt as the installed omp builds it each turn, without the passages cratylus judged contrary to the persona or bloat; every other passage is kept, a newer omp's included. A judged passage the installed omp no longer holds is named in a warning at session start.
+
+### Patch Changes
+
+- Updated dependencies [4004d9b]
+  - @cratylus/forge@0.24.0
+  - @cratylus/canon@0.25.0
+
 ## 0.23.0
 
 ### Minor Changes
