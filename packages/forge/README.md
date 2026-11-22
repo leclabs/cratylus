@@ -126,8 +126,13 @@ declaration as dispatch resolves it for a child: its text, model, effort, `autol
 `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
-to drift. Every turn carries the handover form of each agent that takes a typed one. The
-extension records nothing of a dispatch or its return.
+to drift. The definition opens the system prompt of a cratylus agent, launched or dispatched, and
+omp's own prompt follows it as omp builds it each turn, with the passages cratylus judged contrary to
+the persona or bloat removed (omp's identity line, its engineering practice, its `Workflow`,
+`Delivery` and `Critical` sections, the push to keep going in a dispatched child's completion) and
+every other section kept, a newer omp's included; a passage the installed omp no longer holds is named
+once, in a warning at session start. Every turn carries the handover form of each agent that takes a
+typed one. The extension records nothing of a dispatch or its return.
 
 ## The harness adapter port
 
