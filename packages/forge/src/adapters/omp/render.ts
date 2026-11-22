@@ -1414,9 +1414,10 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
  * compares the prompt a cratylus agent's model receives with omp's own. A session without
  * the flag writes nothing; a dispatched child never writes, so it never overwrites the main
  * session's file; where omp binds no `ctx.getSystemPrompt` nothing is written or said. A
- * write that fails is named once as a warning, naming the flag, the path and the error,
- * and the session proceeds, each later turn trying again silently. What omp adds after
- * extensions run is not in the file.
+ * write that fails is named once as a warning, naming the flag, the path and the error, through
+ * `ui.notify`, or on stderr as one line where omp has no UI (`ctx.hasUI` false, as in print
+ * mode), whose `ui.notify` says nothing; the session proceeds, each later turn trying again
+ * silently. What omp adds after extensions run is not in the file.
  *
  * ONE KNOWN omp LIMITATION, where launch holds what the declaration says and omp's
  * own dispatch does not: `read-summarize: true` (omp's dispatch applies only
@@ -1654,6 +1655,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  agent?: { kind: string; name?: string };',
         '  model?: { provider: string; id: string };',
         '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
+        '  hasUI?: boolean;',
         '  getSystemPrompt?(): readonly string[];',
         '  ui: {',
         '    setStatus(key: string, text: string | undefined): void;',
@@ -2086,6 +2088,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "  // session dumps, so a dispatched child never overwrites the main session's file; a session",
         '  // without the flag writes nothing, and nothing is written or said where omp binds no prompt.',
         '  // A failed write is warned once and the session proceeds; each later turn tries again, silently.',
+        '  // The warning goes to `ui.notify`, or to stderr where omp has no UI (`hasUI` false), whose notify says nothing.',
         '  let dumpWarned = false;',
         '  pi.on("turn_start", (_event, ctx) => {',
         '    const session = ctx as unknown as Session;',
@@ -2099,7 +2102,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    } catch (error) {',
         '      if (dumpWarned) return;',
         '      dumpWarned = true;',
-        '      session.ui.notify(`${COMMAND}: --${DUMP_FLAG} could not write ${path}: ${messageOf(error)}`, "warning");',
+        '      const message = `${COMMAND}: --${DUMP_FLAG} could not write ${path}: ${messageOf(error)}`;',
+        "      // omp's notify says nothing where it has no UI (print mode): stderr then.",
+        '      if (session.hasUI === false) process.stderr.write(`${message}\\n`);',
+        '      else session.ui.notify(message, "warning");',
         '    }',
         '  });',
         '',

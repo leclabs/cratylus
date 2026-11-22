@@ -250,7 +250,7 @@ removes them too.
 omp --agent business-analyst --dump-system-prompt /tmp/prompt.md
 ```
 
-On every turn of the session the file is overwritten with the system prompt that turn carries, once every extension's changes to it are made, its blocks marked apart by a line `<!-- ===== block ===== -->`. Compare it with the file of a session without `--agent` to see what cratylus changes of omp's own prompt. A session without the flag writes nothing, a dispatched agent's session never writes (so it never overwrites yours), and a write that fails is warned once and the session goes on. What omp adds after extensions run is not in the file.
+On every turn of the session the file is overwritten with the system prompt that turn carries, once every extension's changes to it are made, its blocks marked apart by a line `<!-- ===== block ===== -->`. Compare it with the file of a session without `--agent` to see what cratylus changes of omp's own prompt. A session without the flag writes nothing, a dispatched agent's session never writes (so it never overwrites yours), and a write that fails is warned once (on stderr where omp has no UI, as in `--print`) and the session goes on. What omp adds after extensions run is not in the file.
 
 ## The badge on the status line
 

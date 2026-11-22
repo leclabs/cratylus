@@ -3110,11 +3110,19 @@ describe('omp tool definitions', () => {
     describe('dumped to a file', () => {
       const MARK = '\n\n<!-- ===== block ===== -->\n\n';
 
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
       /** The emitted module loaded into a stand-in omp run with
        *  `--dump-system-prompt <path>` (or without it), a main or a dispatched
        *  session; each `turnStart` fires `turn_start` with the prompt that turn
        *  carries, `undefined` where omp binds none, and each warning is recorded. */
-      async function dumping(kind: 'main' | 'sub', path?: string) {
+      async function dumping(
+        kind: 'main' | 'sub',
+        path?: string,
+        hasUI = true,
+      ) {
         const factory = await emitted({
           name: 'stand in',
           purpose: 'p',
@@ -3142,6 +3150,7 @@ describe('omp tool definitions', () => {
             {
               cwd: '/the/session/cwd',
               agent: kind === 'main' ? { kind } : { kind, name: NAME },
+              hasUI,
               ui: {
                 setStatus: () => {},
                 notify: (message: unknown, type: unknown) =>
@@ -3230,6 +3239,9 @@ describe('omp tool definitions', () => {
       it('names a failed write once as a warning and lets the session proceed', async () => {
         const file = join(dirname(target()), 'missing', 'prompt.md');
         const { turnStart, notices } = await dumping('main', file);
+        const stderr = vi
+          .spyOn(process.stderr, 'write')
+          .mockImplementation(() => true);
         await expect(turnStart(['A block.'])).resolves.not.toThrow();
         await expect(turnStart(['A block.'])).resolves.not.toThrow();
         expect(notices).toEqual([
@@ -3240,11 +3252,31 @@ describe('omp tool definitions', () => {
             'warning',
           ],
         ]);
+        expect(stderr).not.toHaveBeenCalled();
         // A later turn that can write does, the warning not repeated.
         mkdirSync(dirname(file));
         await turnStart(['A block.']);
         expect(readFileSync(file, 'utf8')).toBe('A block.');
         expect(notices).toHaveLength(1);
+      });
+
+      it('names a failed write once on stderr where omp has no UI, whose notify says nothing', async () => {
+        const file = join(dirname(target()), 'missing', 'prompt.md');
+        const { turnStart, notices } = await dumping('main', file, false);
+        const stderr = vi
+          .spyOn(process.stderr, 'write')
+          .mockImplementation(() => true);
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        expect(notices).toEqual([]);
+        expect(stderr).toHaveBeenCalledTimes(1);
+        expect(stderr).toHaveBeenCalledWith(
+          expect.stringMatching(
+            new RegExp(
+              `^cratylus: --dump-system-prompt could not write ${file}: .*ENOENT.*\\n$`,
+            ),
+          ),
+        );
       });
     });
   });
