@@ -9,3 +9,5 @@ Three standing choices:
 - Each removal applies only in its own place of the prompt: the template, the project-context footer, or the `⁂ Completion` section of a dispatched child's per-spawn block (the last block that begins `⁂ Role`, whatever another extension appended after it). A context file, or an assignment's `⁂ Context`, quoting a passage keeps it. What a section says of how a result is handed back stays.
 
 The removals are judged against one omp release, named once in the extension. A removal whose passage the installed omp's prompt no longer holds is named in one warning at session start, and nothing fails: the session runs on what omp builds.
+
+With omp 19.1.0, the wake turns of a warm-revived dispatched child run on omp's prompt as omp built it: omp discards the prompt its revival replay of `before_agent_start` returns, and turns an agent starts itself skip the hook, so no extension reaches them.

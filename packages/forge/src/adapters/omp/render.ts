@@ -1188,7 +1188,7 @@ const OMP_COMPLETION_SECTION =
 
 /**
  * The passages cratylus removes from the prompt of its agents, judged against
- * {@link OMP_PROMPT_JUDGED_VERSION}: omp's identity line, three lines of engineering
+ * {@link OMP_PROMPT_JUDGED_VERSION}: omp's identity line, its `# Engineering` heading and three lines of engineering
  * practice, the sections `⁂ Workflow`, `⁂ Delivery` and `⁂ Critical`, the critical
  * element after the project context, and, in a dispatched child's `⁂ Completion`, the
  * sentences that push it to keep going. What a section says of how a result is handed
@@ -1199,6 +1199,11 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
     passage: 'the identity line',
     block: 'template',
     pattern: `^${literal("You are omp's trusted coding assistant.")}$\\n*`,
+  },
+  {
+    passage: 'the Engineering heading',
+    block: 'template',
+    pattern: lineOf('# Engineering'),
   },
   {
     passage: 'the engineering line on maintainability',

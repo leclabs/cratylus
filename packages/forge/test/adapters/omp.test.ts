@@ -1753,10 +1753,9 @@ describe('omp tool definitions', () => {
       '- Compiled code: NEVER avoidable allocation, copying, computation.',
       "- Unexpected repo changes are the user's; adapt. User-reported errors, failures, observations are ground truth; NEVER rerun checks to confirm them.",
     ];
-    /** What of the template stays; `# Engineering` is its first line, the three engineering
-     *  lines go under it, and a section omp added since is among what stays. */
+    /** What of the template stays; the identity line, the `# Engineering` heading and the
+     *  three engineering lines go, and a section omp added since is among what stays. */
     const KEPT_TEMPLATE_LINES = [
-      '# Engineering',
       '- Final chat MAY use LaTeX math (`$`, `$$`) and color (\\textcolor, \\colorbox, \\fcolorbox).',
       '',
       '⁂ Runtime',
@@ -1802,9 +1801,9 @@ describe('omp tool definitions', () => {
     const TEMPLATE = [
       IDENTITY,
       '',
-      ...KEPT_TEMPLATE_LINES.slice(0, 1),
+      '# Engineering',
       ...ENGINEERING,
-      ...KEPT_TEMPLATE_LINES.slice(1),
+      ...KEPT_TEMPLATE_LINES,
       '',
       ...WORKFLOW,
       '',
@@ -2850,7 +2849,7 @@ describe('omp tool definitions', () => {
       '# Tool I/O',
       '- Prefer relative paths.',
     ].join('\n');
-    const KEPT_TEMPLATE = ['# Engineering', ENGINEERING, RUNTIME, TOOL_POLICY];
+    const KEPT_TEMPLATE = [ENGINEERING, RUNTIME, TOOL_POLICY];
     const PROJECT_CONTEXT = [
       '<project-context>',
       '<workstation>',
