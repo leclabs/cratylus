@@ -166,7 +166,7 @@ Everything install places for you lives under one root it owns: at user scope `~
   agents/<name>.md          the canon's agent definitions
   skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
-  extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, version skew
+  extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, `omp --dump-system-prompt`, version skew
   extensions/…              the session hooks the canon declares, the dispatch isolation where an agent needs it, and the guard that refuses a write to the domain model (`design/model/`) by any agent but the business analyst
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
@@ -241,6 +241,16 @@ them: the files are pruned as files the deploy manifest records and this install
 and each linked command the manifest records under `personaLinks` is unlinked while it still points
 into the harness's home (one you have since pointed elsewhere is left and reported). `cratylus uninstall`
 removes them too.
+
+### Dumping the system prompt
+
+`--dump-system-prompt <file>` is cratylus's extension's second flag, and works in any omp session, started with `--agent` or plain:
+
+```sh
+omp --agent business-analyst --dump-system-prompt /tmp/prompt.md
+```
+
+On every turn of the session the file is overwritten with the system prompt that turn carries, once every extension's changes to it are made, its blocks marked apart by a line `<!-- ===== block ===== -->`. Compare it with the file of a session without `--agent` to see what cratylus changes of omp's own prompt. A session without the flag writes nothing, a dispatched agent's session never writes (so it never overwrites yours), and a write that fails is warned once and the session goes on. What omp adds after extensions run is not in the file.
 
 ## The badge on the status line
 

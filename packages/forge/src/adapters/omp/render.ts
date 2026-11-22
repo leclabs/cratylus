@@ -153,6 +153,18 @@ const OMP_AGENT_FLAG = 'agent';
 const OMP_AGENT_FLAG_DESCRIPTION =
   'Start the session as the agent definition omp discovers by this name';
 
+/** The omp flag the CRATYLUS module registers: `omp --dump-system-prompt <file>`
+ *  writes each turn's system prompt of the main session to that file. Only the CRATYLUS
+ *  module reads it, so only it registers it. */
+const OMP_DUMP_FLAG = 'dump-system-prompt';
+
+/** What omp says of {@link OMP_DUMP_FLAG}. */
+const OMP_DUMP_FLAG_DESCRIPTION =
+  'Write the system prompt each turn carries to this file, its blocks marked apart, overwritten on every turn';
+
+/** What marks one block of the system prompt apart from the next in the dumped file. */
+const OMP_PROMPT_BLOCK_MARK = '\n\n<!-- ===== block ===== -->\n\n';
+
 /** The status-line slot the CRATYLUS module shows a launched agent's mark and
  *  name in, named from the bin so a rename carries it. */
 const OMP_AGENT_STATUS_KEY = `${CLI_BIN}-agent`;
@@ -1394,6 +1406,18 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
  * the declaration overrides, as for a child; the product owner's explicit `--advisor` and
  * `--prewalk` / `--no-prewalk` / `--prewalk-into` win their own setting.
  *
+ * THE SYSTEM PROMPT, DUMPED. The module registers the flag `--dump-system-prompt <file>`
+ * ({@link OMP_DUMP_FLAG}). In a session run with it, launched with `--agent` or plain,
+ * every `turn_start` overwrites the file with `ctx.getSystemPrompt()`, the session's
+ * effective prompt after every extension's `before_agent_start`, its blocks (a string
+ * taken as one block) joined by {@link OMP_PROMPT_BLOCK_MARK}, so the product owner
+ * compares the prompt a cratylus agent's model receives with omp's own. A session without
+ * the flag writes nothing; a dispatched child never writes, so it never overwrites the main
+ * session's file; where omp binds no `ctx.getSystemPrompt` nothing is written or said. A
+ * write that fails is named once as a warning, naming the flag, the path and the error,
+ * and the session proceeds, each later turn trying again silently. What omp adds after
+ * extensions run is not in the file.
+ *
  * ONE KNOWN omp LIMITATION, where launch holds what the declaration says and omp's
  * own dispatch does not: `read-summarize: true` (omp's dispatch applies only
  * `false`, so a dispatched child keeps the session's setting). For every other
@@ -1431,9 +1455,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "// declaration is the one omp's own discovery finds, read afresh for each session. Every",
         "// session's prompt carries the installed command's orientation as `--explain` answers it,",
         "// right after omp's own; nothing here words it.",
+        '//',
+        '// `omp --dump-system-prompt <file>` writes, on every turn of the main session, the system prompt',
+        "// that turn carries to that file, its blocks marked apart, once every extension's changes to it",
+        '// are made; a session without the flag writes nothing.',
         '',
         'import { execFile } from "node:child_process";',
-        'import { existsSync, readFileSync, realpathSync } from "node:fs";',
+        'import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";',
         'import { dirname, isAbsolute, join, sep } from "node:path";',
         'import { fileURLToPath } from "node:url";',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
@@ -1475,6 +1503,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `const CAPABILITIES: readonly string[] = ${JSON.stringify(OMP_CAPABILITY_TOOLS)};`,
         `const ASSIGNMENT_KEY = ${JSON.stringify(OMP_ASSIGNMENT_KEY)};`,
         `const AGENT_FLAG = ${JSON.stringify(OMP_AGENT_FLAG)};`,
+        `const DUMP_FLAG = ${JSON.stringify(OMP_DUMP_FLAG)};`,
+        `const BLOCK_MARK = ${JSON.stringify(OMP_PROMPT_BLOCK_MARK)};`,
         `const AGENT_STATUS = ${JSON.stringify(OMP_AGENT_STATUS_KEY)};`,
         '// omp exports no module path to its advisor settings; its settings registry holds the handle.',
         'const ADVISOR_ENABLED = lookup("advisor.enabled") as Overridable<boolean>;',
@@ -1857,6 +1887,10 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         `    description: ${JSON.stringify(OMP_AGENT_FLAG_DESCRIPTION)},`,
         '    type: "string",',
         '  });',
+        '  pi.registerFlag(DUMP_FLAG, {',
+        `    description: ${JSON.stringify(OMP_DUMP_FLAG_DESCRIPTION)},`,
+        '    type: "string",',
+        '  });',
         '  let launched: Launched | undefined;',
         "  // The reached command's orientation, asked once, at load, beside the capabilities' own",
         '  // explanations, and shown as it says it.',
@@ -1944,7 +1978,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const scope = findScopedSettings() ?? settings;',
         "    // The product owner's own `--model`, `--thinking`, `--advisor` and `--prewalk` family, read as",
         '    // omp reads its command line, win; the declaration applies where the product owner gave none.',
-        '    const productOwner = parseArgs(process.argv.slice(2), new Map([[AGENT_FLAG, { type: "string" }]]));',
+        '    const productOwner = parseArgs(',
+        '      process.argv.slice(2),',
+        '      new Map([',
+        '        [AGENT_FLAG, { type: "string" }],',
+        '        [DUMP_FLAG, { type: "string" }],',
+        '      ]),',
+        '    );',
         '    const current = ctx.model === undefined ? undefined : `${ctx.model.provider}/${ctx.model.id}`;',
         "    // The model and effort exactly as omp's task dispatch resolves them for this declaration:",
         '    // its selectors (role aliases expanded, `task.agentModelOverrides` first), falling back to',
@@ -2038,6 +2078,29 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...formed,',
         '      ],',
         '    };',
+        '  });',
+        '',
+        '  // The system prompt each turn carries, dumped to the file the product owner names with',
+        "  // `--dump-system-prompt`: at `turn_start`, after every extension's `before_agent_start`, so the file",
+        '  // holds the effective prompt, its blocks (a string is one block) marked apart. Only the main',
+        "  // session dumps, so a dispatched child never overwrites the main session's file; a session",
+        '  // without the flag writes nothing, and nothing is written or said where omp binds no prompt.',
+        '  // A failed write is warned once and the session proceeds; each later turn tries again, silently.',
+        '  let dumpWarned = false;',
+        '  pi.on("turn_start", (_event, ctx) => {',
+        '    const session = ctx as unknown as Session;',
+        '    if (session.agent?.kind === "sub") return;',
+        '    const path = pi.getFlag(DUMP_FLAG);',
+        '    if (typeof path !== "string" || path === "") return;',
+        '    const prompt: string | readonly string[] | undefined = session.getSystemPrompt?.();',
+        '    if (prompt === undefined) return;',
+        '    try {',
+        '      writeFileSync(path, (typeof prompt === "string" ? [prompt] : prompt).join(BLOCK_MARK));',
+        '    } catch (error) {',
+        '      if (dumpWarned) return;',
+        '      dumpWarned = true;',
+        '      session.ui.notify(`${COMMAND}: --${DUMP_FLAG} could not write ${path}: ${messageOf(error)}`, "warning");',
+        '    }',
         '  });',
         '',
         '  // The assignment form of each agent that takes a typed one. None: no section.',
