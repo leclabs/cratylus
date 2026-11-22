@@ -2194,6 +2194,25 @@ describe('omp tool definitions', () => {
         KEPT_FOOTER,
         keptPerSpawn(KEPT_NO_YIELD),
       ]);
+      // The whole Role body decides: the other declaration's body quoted in an assignment does not.
+      const quoting = [
+        '⁂ Role',
+        BRIEF,
+        '',
+        '⁂ Context',
+        'Other.',
+        '',
+        ...COOP,
+        '',
+        ...COMPLETION_NO_YIELD,
+      ].join('\n');
+      const quoted = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: [...blocks, quoting] },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(quoted?.systemPrompt[0]).toBe(DEFINITION);
     });
 
     it("takes the last block whose first line is `⁂ Role` for a child's per-spawn block, whatever another extension appended after it", async () => {
