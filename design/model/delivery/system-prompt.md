@@ -1,6 +1,6 @@
 # system prompt
 
-The one the installed harness builds each turn, opened by the agent's definition; the sections cratylus judged contrary to the persona or bloat removed, every other section kept, a newer harness's included
+The one the installed harness builds each turn, opened by the agent's definition; the passages cratylus judged contrary to the persona or bloat removed, every other passage kept, a newer harness's included; a judged passage the installed harness no longer holds named at session start
 
 ## Examples
 
@@ -8,13 +8,13 @@ The one the installed harness builds each turn, opened by the agent's definition
 
 Given cratylus installed
 When an agent launches with --agent
-Then its system prompt is the agent's definition, then the harness's prompt without the sections cratylus removes
+Then its system prompt is the agent's definition, then the harness's prompt without the passages cratylus removes
 
 ### a dispatched agent's system prompt
 
 Given cratylus installed
 When an agent dispatches another
-Then the dispatched agent's system prompt is its definition, then the harness's prompt without the sections cratylus removes
+Then the dispatched agent's system prompt is its definition, then the harness's prompt without the passages cratylus removes
 
 ### keeps what a newer harness adds
 
