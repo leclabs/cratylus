@@ -1180,9 +1180,11 @@ const sectionOf = (banner: string): string =>
  *  now opens the prompt. */
 const OMP_CHILD_ROLE_SECTION = `^${literal(CHILD_ROLE_BANNER)}$[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))`;
 
-/** The `⁂ Completion` section of a dispatched child's per-spawn block: the one place its
- *  removals apply, so a `⁂ Context` or `⁂ Plan` quoting a passage keeps it. */
-const OMP_COMPLETION_SECTION = '^⁂ Completion$[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))';
+/** The `⁂ Completion` section of a dispatched child's per-spawn block, the last one it holds:
+ *  the one place its removals apply, so a `⁂ Context` or `⁂ Plan` quoting a passage, or the
+ *  heading itself, keeps it. */
+const OMP_COMPLETION_SECTION =
+  '^⁂ Completion$(?![\\s\\S]*^⁂ Completion$)[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))';
 
 /**
  * The passages cratylus removes from the prompt of its agents, judged against
@@ -1743,13 +1745,19 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '}',
         '',
+        '// The per-spawn block of a dispatched child: the last block whose first line is its role',
+        '// banner, whatever another extension appended after it.',
+        'function perSpawn(blocks: readonly string[]): number {',
+        `  const banner = ${JSON.stringify(CHILD_ROLE_BANNER)};`,
+        '  return blocks.findLastIndex((block) => block === banner || block.startsWith(`${banner}\\n`));',
+        '}',
+        '',
         "// The block of omp's prompt each role names: the template is the first; the footer the one",
-        '// holding the project context; the per-spawn block the last block of a dispatched child that',
-        '// begins with its role, whatever another extension appended after it. A completion removal is',
-        '// confined to the `⁂ Completion` section of that block.',
+        '// holding the project context; the per-spawn block of a dispatched child. A completion removal',
+        "// is confined to that block's own `⁂ Completion` section, its last one.",
         'function holders(blocks: readonly string[], child: boolean): Record<PromptBlock, number | undefined> {',
         '  const footer = blocks.findIndex((block) => block.includes("</project-context>"));',
-        `  const role = blocks.findLastIndex((block) => block.startsWith(${JSON.stringify(CHILD_ROLE_BANNER)}));`,
+        '  const role = perSpawn(blocks);',
         '  return {',
         '    template: blocks.length === 0 ? undefined : 0,',
         '    footer: footer < 0 ? undefined : footer,',
@@ -1985,13 +1993,18 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const oriented = orientation === undefined ? [] : [orientation];',
         '    const formed = forms === undefined ? [] : [forms];',
         '    const kind = session.agent?.kind;',
-        '    // The declaration a dispatched child runs: the one named exactly, else, only where none is,',
-        '    // the one named in any case.',
+        '    // The declaration a dispatched child runs. omp hands an extension its name lowercased, so',
+        '    // where two declarations share it in different cases, the one is taken whose body omp',
+        "    // carries in the child's `⁂ Role` section, else the one named exactly.",
         '    const named = session.agent?.name;',
+        '    const candidates =',
+        '      kind === "sub" && named !== undefined ? agents.filter((a) => a.name.toLowerCase() === named.toLowerCase()) : [];',
+        '    const role = event.systemPrompt[perSpawn(event.systemPrompt)];',
         '    const dispatched =',
-        '      kind === "sub" && named !== undefined',
-        '        ? (agents.find((a) => a.name === named) ?? agents.find((a) => a.name.toLowerCase() === named.toLowerCase()))',
-        '        : undefined;',
+        '      candidates.length === 1',
+        '        ? candidates[0]',
+        '        : (candidates.find((a) => role?.includes(a.systemPrompt.trim()) === true) ??',
+        '          candidates.find((a) => a.name === named));',
         '    if (kind === "main" && now !== undefined && isCratylusAgent(now.declaration))',
         '      return {',
         '        systemPrompt: [',

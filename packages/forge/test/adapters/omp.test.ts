@@ -2122,7 +2122,7 @@ describe('omp tool definitions', () => {
       expect(unresolved?.systemPrompt).toEqual([TEMPLATE, FOOTER, DEFINITION]);
     });
 
-    it('runs a dispatched child as the declaration its name equals exactly, a name in another case only where none is', async () => {
+    it('runs a dispatched child as the declaration omp carries in its role section, else the one its name equals exactly, a name in another case only where none is', async () => {
       const blocks = [TEMPLATE, FOOTER];
       const session = await started();
       // A declaration of another agent named in another case comes first; the exact one wins.
@@ -2160,10 +2160,44 @@ describe('omp tool definitions', () => {
         KEPT_TEMPLATE,
         KEPT_FOOTER,
       ]);
+      // Two declarations share the lowercased name omp hands over: the one whose body the
+      // per-spawn `⁂ Role` section carries is the one dispatched.
+      omp.agents = [
+        declare({ name: 'Cartographer', description: 'Another.' }, 'Other.'),
+        installed(session.root),
+      ];
+      const other = [
+        '⁂ Role',
+        'Other.',
+        '',
+        ...COOP,
+        '',
+        ...COMPLETION_NO_YIELD,
+      ].join('\n');
+      expect(
+        await session.fire(
+          'before_agent_start',
+          'sub',
+          { systemPrompt: [...blocks, other] },
+          asChild('cartographer'),
+        ),
+      ).toBeUndefined();
+      const ours = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: [...blocks, perSpawn(COMPLETION_NO_YIELD)] },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(ours?.systemPrompt).toEqual([
+        DEFINITION,
+        KEPT_TEMPLATE,
+        KEPT_FOOTER,
+        keptPerSpawn(KEPT_NO_YIELD),
+      ]);
     });
 
-    it("takes the last block that begins `⁂ Role` for a child's per-spawn block, whatever another extension appended after it", async () => {
-      const appended = 'A block another extension appended.';
+    it("takes the last block whose first line is `⁂ Role` for a child's per-spawn block, whatever another extension appended after it", async () => {
+      const appended = '⁂ Roleplaying\nA block another extension appended.';
       const prompt = [
         TEMPLATE,
         FOOTER,
@@ -2200,13 +2234,18 @@ describe('omp tool definitions', () => {
       expect(checked.did.notices).toEqual([]);
     });
 
-    it("removes a child's completion passages in its `⁂ Completion` section only: an assignment quoting them keeps them", async () => {
+    it("removes a child's completion passages in its own `⁂ Completion` section only: an assignment quoting them, or the heading, keeps them", async () => {
       const quoted = [
         'While work remains, you MUST continue with another tool call — investigate, edit.',
         'NEVER end on a plan, a promise of further work, or a question.',
         'Quote: Giving up is a last resort. It is the assignment that says so.',
         NEVER_GIVE_UP,
         KEEP_GOING,
+        '```',
+        '⁂ Completion',
+        'Giving up is a last resort.',
+        KEEP_GOING,
+        '```',
       ];
       const withContext = (completion: string[]) =>
         [
