@@ -6,6 +6,6 @@ Three standing choices:
 
 - omp's prompt is changed by removal alone, at run time. Cratylus ships no copy of omp's prompt or template, adds no counter-instruction and restates nothing the persona carries.
 - Cratylus changes no omp setting for it: todo, personality, memory and tools stay as omp configures them. The launch's own `personality: none` hold, which mirrors a dispatched child, is as before.
-- Each removal applies only in its own block of the prompt (the template, the project-context footer, a dispatched child's per-spawn block), so a context file quoting a passage keeps it. What a section says of how a result is handed back stays.
+- Each removal applies only in its own place of the prompt: the template, the project-context footer, or the `⁂ Completion` section of a dispatched child's per-spawn block (the last block that begins `⁂ Role`, whatever another extension appended after it). A context file, or an assignment's `⁂ Context`, quoting a passage keeps it. What a section says of how a result is handed back stays.
 
 The removals are judged against one omp release, named once in the extension. A removal whose passage the installed omp's prompt no longer holds is named in one warning at session start, and nothing fails: the session runs on what omp builds.

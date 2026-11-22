@@ -2106,13 +2106,150 @@ describe('omp tool definitions', () => {
         KEPT_TEMPLATE,
         KEPT_FOOTER,
       ]);
-      omp.agents = [{ ...real, filePath: '/nowhere/agents/cartographer.md' }];
+      // A path in the installation's `agents/` that does not resolve: no cratylus agent.
       const lost = await started('cartographer');
+      mkdirSync(join(lost.root, 'agents'), { recursive: true });
+      omp.agents = [
+        {
+          ...real,
+          filePath: join(lost.root, 'agents', 'vanished.md'),
+        },
+      ];
       await lost.fire('session_start');
       const unresolved = (await lost.fire('before_agent_start', 'main', {
         systemPrompt: [TEMPLATE, FOOTER],
       })) as Turn;
       expect(unresolved?.systemPrompt).toEqual([TEMPLATE, FOOTER, DEFINITION]);
+    });
+
+    it('runs a dispatched child as the declaration its name equals exactly, a name in another case only where none is', async () => {
+      const blocks = [TEMPLATE, FOOTER];
+      const session = await started();
+      // A declaration of another agent named in another case comes first; the exact one wins.
+      omp.agents = [
+        declare({ name: 'Cartographer', description: 'Another.' }, 'Other.'),
+        installed(session.root),
+      ];
+      await session.fire(
+        'session_start',
+        'sub',
+        undefined,
+        asChild('cartographer'),
+      );
+      const exact = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: blocks },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(exact?.systemPrompt).toEqual([
+        DEFINITION,
+        KEPT_TEMPLATE,
+        KEPT_FOOTER,
+      ]);
+      // With none named exactly, the one named in any case.
+      omp.agents = [installed(session.root, 'Cartographer')];
+      const folded = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: blocks },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(folded?.systemPrompt).toEqual([
+        `You are the agent Cartographer: Charts the estuary.\n\n${BRIEF}`,
+        KEPT_TEMPLATE,
+        KEPT_FOOTER,
+      ]);
+    });
+
+    it("takes the last block that begins `⁂ Role` for a child's per-spawn block, whatever another extension appended after it", async () => {
+      const appended = 'A block another extension appended.';
+      const prompt = [
+        TEMPLATE,
+        FOOTER,
+        perSpawn(COMPLETION_NO_YIELD),
+        appended,
+      ];
+      const session = await started(undefined, undefined, ORIENT);
+      omp.agents = [installed(session.root)];
+      await session.fire(
+        'session_start',
+        'sub',
+        undefined,
+        asChild('cartographer'),
+      );
+      const turn = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: prompt },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(turn?.systemPrompt).toEqual([
+        DEFINITION,
+        KEPT_TEMPLATE,
+        KEPT_FOOTER,
+        keptPerSpawn(KEPT_NO_YIELD),
+        appended,
+        ORIENT,
+      ]);
+      // Its drift is checked there too: nothing is missing from it.
+      const checked = await started();
+      await checked.fire('session_start', 'sub', undefined, {
+        getSystemPrompt: () => prompt,
+      });
+      expect(checked.did.notices).toEqual([]);
+    });
+
+    it("removes a child's completion passages in its `⁂ Completion` section only: an assignment quoting them keeps them", async () => {
+      const quoted = [
+        'While work remains, you MUST continue with another tool call — investigate, edit.',
+        'NEVER end on a plan, a promise of further work, or a question.',
+        'Quote: Giving up is a last resort. It is the assignment that says so.',
+        NEVER_GIVE_UP,
+        KEEP_GOING,
+      ];
+      const withContext = (completion: string[]) =>
+        [
+          '⁂ Role',
+          BRIEF,
+          '',
+          '⁂ Context',
+          ...quoted,
+          '',
+          ...COOP,
+          '',
+          ...completion,
+        ].join('\n');
+      const session = await started();
+      omp.agents = [installed(session.root)];
+      await session.fire(
+        'session_start',
+        'sub',
+        undefined,
+        asChild('cartographer'),
+      );
+      const turn = (await session.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: [TEMPLATE, FOOTER, withContext(COMPLETION_NO_YIELD)] },
+        asChild('cartographer'),
+      )) as Turn;
+      expect(turn?.systemPrompt.at(-1)).toBe(
+        ['⁂ Context', ...quoted, '', ...COOP, '', ...KEPT_NO_YIELD].join('\n'),
+      );
+      // The drift check looks in `⁂ Completion` alone: a passage omp's Completion lost is
+      // missing though the assignment quotes it.
+      const without = COMPLETION_NO_YIELD.filter(
+        (line) => line !== NEVER_GIVE_UP,
+      );
+      const checked = await started();
+      await checked.fire('session_start', 'sub', undefined, {
+        getSystemPrompt: () => [TEMPLATE, FOOTER, withContext(without)],
+      });
+      expect(checked.did.notices).toHaveLength(1);
+      expect(String(checked.did.notices[0])).toContain(
+        'the completion line against giving up',
+      );
     });
 
     describe('warns of a passage omp no longer holds', () => {

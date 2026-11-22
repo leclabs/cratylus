@@ -1144,10 +1144,10 @@ const OMP_PROMPT_JUDGED_VERSION = '19.1.0';
  *  `⁂ Role` section holds the declaration's body. */
 const CHILD_ROLE_BANNER = '⁂ Role';
 
-/** The block of omp's prompt a passage lives in: `template` the first block; `footer`
- *  the block holding `</project-context>`; `child` the last block of a dispatched
- *  child, the one that begins `⁂ Role`. */
-type OmpPromptBlock = 'template' | 'footer' | 'child';
+/** Where in omp's prompt a passage lives: `template` the first block; `footer` the block
+ *  holding `</project-context>`; `completion` the `⁂ Completion` section of a dispatched
+ *  child's per-spawn block, the last block that begins `⁂ Role`. */
+type OmpPromptBlock = 'template' | 'footer' | 'completion';
 
 /** A passage of omp's prompt that cratylus removes from the prompt of its own agents:
  *  judged contrary to the persona or bloat. */
@@ -1179,6 +1179,10 @@ const sectionOf = (banner: string): string =>
 /** The `⁂ Role` section of a dispatched child's per-spawn block, cut where the definition
  *  now opens the prompt. */
 const OMP_CHILD_ROLE_SECTION = `^${literal(CHILD_ROLE_BANNER)}$[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))`;
+
+/** The `⁂ Completion` section of a dispatched child's per-spawn block: the one place its
+ *  removals apply, so a `⁂ Context` or `⁂ Plan` quoting a passage keeps it. */
+const OMP_COMPLETION_SECTION = '^⁂ Completion$[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))';
 
 /**
  * The passages cratylus removes from the prompt of its agents, judged against
@@ -1237,14 +1241,14 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
   },
   {
     passage: 'the completion sentence to keep going while work remains',
-    block: 'child',
+    block: 'completion',
     pattern: sentenceOf(
       'While work remains, you MUST continue with another tool call — investigate, edit.',
     ),
   },
   {
     passage: 'the completion sentence against ending on a plan',
-    block: 'child',
+    block: 'completion',
     pattern: sentenceOf(
       'NEVER end on a plan, a promise of further work, or a question.',
     ),
@@ -1252,19 +1256,19 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
   },
   {
     passage: 'the completion sentence that giving up is a last resort',
-    block: 'child',
+    block: 'completion',
     pattern: sentenceOf('Giving up is a last resort.'),
   },
   {
     passage: 'the completion line against giving up',
-    block: 'child',
+    block: 'completion',
     pattern: lineOf(
       'You NEVER give up due to uncertainty, missing information obtainable via tools or repo context, or needing a design decision you can derive yourself.',
     ),
   },
   {
     passage: 'the completion line to keep going until the ticket is closed',
-    block: 'child',
+    block: 'completion',
     pattern: `\\n*^${literal('You MUST keep going until this ticket is closed. This matters.')}$`,
   },
 ];
@@ -1341,9 +1345,10 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
  * definition (the agent's name and description in a sentence, then its body, never the raw
  * front matter) opens it, the passages cratylus judged contrary to the persona or bloat
  * ({@link OMP_PROMPT_REMOVALS}, judged against omp {@link OMP_PROMPT_JUDGED_VERSION}) are
- * removed, and every other section stays. A removal applies only in its own block (the
- * template, the project-context footer, a child's per-spawn block), so a context file
- * quoting a passage keeps it; a child's per-spawn `⁂ Role` section, whose body now opens
+ * removed, and every other section stays. A removal applies only in its own place (the
+ * template, the project-context footer, the `⁂ Completion` section of a child's per-spawn
+ * block, the last block that begins `⁂ Role`), so a context file, or a `⁂ Context` of an
+ * assignment, quoting a passage keeps it; a child's per-spawn `⁂ Role` section, whose body now opens
  * the prompt, is cut. The module ships no copy of omp's prompt, adds no counter-instruction
  * and changes no omp setting. The main session's prompt is the definition, omp's prompt so
  * changed, the orientation, the full instructions of each skill its `autoload-skills`
@@ -1482,8 +1487,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         `// The persona opens the prompt of a ${CLI_BIN} agent's session; omp's own prompt is changed by`,
-        '// removal alone. A removal applies only in its own block of the prompt.',
-        'type PromptBlock = "template" | "footer" | "child";',
+        '// removal alone. A removal applies only in its own place of the prompt.',
+        'type PromptBlock = "template" | "footer" | "completion";',
         'interface Removal {',
         '  passage: string;',
         '  block: PromptBlock;',
@@ -1492,6 +1497,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         `const REMOVALS: readonly Removal[] = ${JSON.stringify(OMP_PROMPT_REMOVALS)};`,
         `const CHILD_ROLE_SECTION = ${JSON.stringify(OMP_CHILD_ROLE_SECTION)};`,
+        `const COMPLETION_SECTION = ${JSON.stringify(OMP_COMPLETION_SECTION)};`,
         `const PROMPT_JUDGED = ${JSON.stringify(OMP_PROMPT_JUDGED_VERSION)};`,
         `const AGENTS_DIR = ${JSON.stringify(OMP_AGENT_DEF_DIR)};`,
         '',
@@ -1738,27 +1744,32 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '}',
         '',
         "// The block of omp's prompt each role names: the template is the first; the footer the one",
-        '// holding the project context; the per-spawn block the last of a dispatched child, which',
-        '// begins with its role.',
+        '// holding the project context; the per-spawn block the last block of a dispatched child that',
+        '// begins with its role, whatever another extension appended after it. A completion removal is',
+        '// confined to the `⁂ Completion` section of that block.',
         'function holders(blocks: readonly string[], child: boolean): Record<PromptBlock, number | undefined> {',
         '  const footer = blocks.findIndex((block) => block.includes("</project-context>"));',
-        `  const role = blocks.at(-1)?.startsWith(${JSON.stringify(CHILD_ROLE_BANNER)}) === true;`,
+        `  const role = blocks.findLastIndex((block) => block.startsWith(${JSON.stringify(CHILD_ROLE_BANNER)}));`,
         '  return {',
         '    template: blocks.length === 0 ? undefined : 0,',
         '    footer: footer < 0 ? undefined : footer,',
-        '    child: child && role ? blocks.length - 1 : undefined,',
+        '    completion: child && role >= 0 ? role : undefined,',
         '  };',
         '}',
         '',
-        "// The prompt omp built with each removal made in its own block; a child's per-spawn `⁂ Role`",
+        "// The prompt omp built with each removal made in its own place; a child's per-spawn `⁂ Role`",
         '// section, whose body now opens the prompt, is cut too.',
         'function removed(blocks: readonly string[], child: boolean): string[] {',
         '  const at = holders(blocks, child);',
         '  return blocks.map((block, i) => {',
         '    let text = block;',
         '    for (const removal of REMOVALS)',
-        '      if (at[removal.block] === i) text = text.replace(new RegExp(removal.pattern, "m"), "");',
-        '    return at.child === i ? text.replace(new RegExp(CHILD_ROLE_SECTION, "m"), "") : text;',
+        '      if (removal.block !== "completion" && at[removal.block] === i) text = text.replace(new RegExp(removal.pattern, "m"), "");',
+        '    if (at.completion !== i) return text;',
+        '    text = text.replace(new RegExp(COMPLETION_SECTION, "m"), (section) =>',
+        '      REMOVALS.reduce((kept, removal) => (removal.block === "completion" ? kept.replace(new RegExp(removal.pattern, "m"), "") : kept), section),',
+        '    );',
+        '    return text.replace(new RegExp(CHILD_ROLE_SECTION, "m"), "");',
         '  });',
         '}',
         '',
@@ -1771,11 +1782,12 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  const child = kind === "sub";',
         '  const at = holders(blocks, child);',
         '  const gone = REMOVALS.filter((removal) => {',
-        '    if (removal.block === "child" && !child) return false;',
+        '    if (removal.block === "completion" && !child) return false;',
         '    const index = at[removal.block];',
         '    const block = index === undefined ? undefined : blocks[index];',
-        '    if (removal.beside !== undefined && block?.includes(removal.beside) !== true) return false;',
-        '    return block === undefined || !new RegExp(removal.pattern, "m").test(block);',
+        '    const place = removal.block === "completion" ? block?.match(new RegExp(COMPLETION_SECTION, "m"))?.[0] : block;',
+        '    if (removal.beside !== undefined && place?.includes(removal.beside) !== true) return false;',
+        '    return place === undefined || !new RegExp(removal.pattern, "m").test(place);',
         '  }).map((removal) => removal.passage);',
         '  if (gone.length === 0) return;',
         '  session.ui.notify(',
@@ -1973,8 +1985,13 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '    const oriented = orientation === undefined ? [] : [orientation];',
         '    const formed = forms === undefined ? [] : [forms];',
         '    const kind = session.agent?.kind;',
+        '    // The declaration a dispatched child runs: the one named exactly, else, only where none is,',
+        '    // the one named in any case.',
+        '    const named = session.agent?.name;',
         '    const dispatched =',
-        '      kind === "sub" ? agents.find((a) => a.name.toLowerCase() === session.agent?.name?.toLowerCase()) : undefined;',
+        '      kind === "sub" && named !== undefined',
+        '        ? (agents.find((a) => a.name === named) ?? agents.find((a) => a.name.toLowerCase() === named.toLowerCase()))',
+        '        : undefined;',
         '    if (kind === "main" && now !== undefined && isCratylusAgent(now.declaration))',
         '      return {',
         '        systemPrompt: [',
