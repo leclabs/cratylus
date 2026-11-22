@@ -1385,10 +1385,16 @@ describe('omp tool definitions', () => {
     type Handler = (event: unknown, ctx: unknown) => unknown;
     const BASE = ['the base prompt'];
 
-    /** A declaration file as omp would discover it, and omp's parse of it. */
-    function declare(fields: Record<string, unknown>, body: string) {
-      const dir = mkdtempSync(join(tmpdir(), 'omp-agent-'));
-      tmp.push(dir);
+    /** A declaration file as omp would discover it, and omp's parse of it; written into
+     *  `into` where given, else a directory of its own. */
+    function declare(
+      fields: Record<string, unknown>,
+      body: string,
+      into?: string,
+    ) {
+      const dir = into ?? mkdtempSync(join(tmpdir(), 'omp-agent-'));
+      if (into === undefined) tmp.push(dir);
+      else mkdirSync(dir, { recursive: true });
       const filePath = join(dir, `${String(fields.name)}.md`);
       writeFileSync(
         filePath,
@@ -1450,6 +1456,9 @@ describe('omp tool definitions', () => {
         verbs: [],
         ...(orientation === undefined ? {} : { orientation }),
       });
+      // The installation root `emitted` placed the module in: a cratylus agent's file lies in
+      // its `agents/`.
+      const root = join(tmp.at(-1) ?? '', 'root');
       const handlers = new Map<string, Handler>();
       const did = {
         flags: [] as [string, unknown][],
@@ -1485,8 +1494,9 @@ describe('omp tool definitions', () => {
         event: string,
         kind?: string,
         payload: unknown = { systemPrompt: BASE },
-      ) => handlers.get(event)?.(payload, ctx(kind));
-      return { did, fire };
+        extra: object = {},
+      ) => handlers.get(event)?.(payload, { ...ctx(kind), ...extra });
+      return { did, fire, root };
     }
 
     it('registers the string flag `agent`', async () => {
@@ -1729,6 +1739,491 @@ describe('omp tool definitions', () => {
         )) as { systemPrompt: string[] };
         expect(systemPrompt, `${flag ?? 'plain'} ${kind}`).toContain(forms);
       }
+    });
+
+    // ── The persona opens the system prompt ──
+    //
+    // omp 19.1.0's prompt as `before_agent_start` hands it over: the template, an eval
+    // guidance block, the project-context footer and, for a dispatched child, the per-spawn
+    // block. Its text is quoted from `src/prompts/system/` of omp v19.1.0.
+
+    const IDENTITY = "You are omp's trusted coding assistant.";
+    const ENGINEERING = [
+      '- Correctness, then six-month maintainability. Delete dead weight; prefer boring design to needless abstraction.',
+      '- Compiled code: NEVER avoidable allocation, copying, computation.',
+      "- Unexpected repo changes are the user's; adapt. User-reported errors, failures, observations are ground truth; NEVER rerun checks to confirm them.",
+    ];
+    /** What of the template stays; `# Engineering` is its first line, the three engineering
+     *  lines go under it, and a section omp added since is among what stays. */
+    const KEPT_TEMPLATE_LINES = [
+      '# Engineering',
+      '- Final chat MAY use LaTeX math (`$`, `$$`) and color (\\textcolor, \\colorbox, \\fcolorbox).',
+      '',
+      '⁂ Runtime',
+      '# Internal URLs',
+      'Most FS/bash tools resolve these; path selectors: `read` docs.',
+      '',
+      '⁂ Hindsight',
+      'A section a newer omp adds, which cratylus has not judged.',
+      '',
+      '⁂ Tool Policy',
+      '# General',
+      'Every turn costs seconds: batch all independent reads/searches/checks into one turn. Once the change is verified, stop and report; no extra audits, broad suites, or repo-wide checks unless asked.',
+      '',
+      '# Exploration',
+      'NEVER open guessed files. Read small files whole; ranges only for large files. NEVER re-read content you already have.',
+    ];
+    const WORKFLOW = [
+      '⁂ Workflow',
+      '# 1. Before Editing',
+      '- Reuse existing patterns; NEVER add a second convention.',
+      '- Tool failed or file changed underneath? Re-read first.',
+      '',
+      '# 2. Hand-off',
+      '- NEVER run builds, tests, linters, formatters or smoke runs unless your assignment says to; the main agent verifies once all subagents land.',
+      '- Done → yield, naming the checks to run.',
+      '',
+      '# 3. Cleanup',
+      'Permanent fix/feature: update docs/changelog; delete throwaway scripts.',
+    ];
+    const DELIVERY = [
+      '⁂ Delivery',
+      '- NEVER fabricate output; unobserved claims = `[INFERENCE]`; report only verification you ran.',
+      '- Clean cutover: migrate every caller; remove obsolete code, comments, aliases, re-exports; no shims.',
+      '- Match the requested output format.',
+    ];
+    const CRITICAL = [
+      '⁂ Critical',
+      '<critical>',
+      '- NEVER yield while actionable work remains; a finished phase or todo is not a stop.',
+      '- NEVER re-audit applied edits or run git to validate them; tool results are verification.',
+      '</critical>',
+    ];
+    const TEMPLATE = [
+      IDENTITY,
+      '',
+      ...KEPT_TEMPLATE_LINES.slice(0, 1),
+      ...ENGINEERING,
+      ...KEPT_TEMPLATE_LINES.slice(1),
+      '',
+      ...WORKFLOW,
+      '',
+      ...DELIVERY,
+      '',
+      ...CRITICAL,
+    ].join('\n');
+    const KEPT_TEMPLATE = KEPT_TEMPLATE_LINES.join('\n');
+    const EVAL_GUIDANCE =
+      "Binary analysis lives in eval's `dsm` namespace; read `help://eval/dsm` before use. Bare executable reads show metadata only.";
+    /** A repository's own text quoting passages of omp's prompt: in `<repo-rules>`, it is
+     *  not omp's. */
+    const FOOTER_HEAD = [
+      '<project-context>',
+      '<workstation>',
+      '- OS: darwin 27.2.0',
+      '</workstation>',
+      '',
+      '<repo-rules>',
+      'MUST follow these context files for all tasks:',
+      '<file path="/repo/AGENTS.md">',
+      "# What omp's prompt says, quoted from omp 19.1.0",
+      '- Compiled code: NEVER avoidable allocation, copying, computation.',
+      '⁂ Workflow',
+      'While work remains, you MUST continue with another tool call — investigate, edit.',
+      '</file>',
+      '</repo-rules>',
+      '</project-context>',
+    ];
+    const FOOTER_CRITICAL = [
+      '<critical>',
+      '- Each response MUST advance the task; completion only stopping condition.',
+      '- MUST default to informed action; do not ask for confirmation when tools or repo context can answer.',
+      '- Before yielding, MUST verify significant behavioral changes: run the specific test, command, or scenario covering the change.',
+      '</critical>',
+    ];
+    const APPEND = 'Text the product owner appended stays.';
+    const FOOTER = [...FOOTER_HEAD, '', ...FOOTER_CRITICAL, '', APPEND].join(
+      '\n',
+    );
+    const KEPT_FOOTER = [...FOOTER_HEAD, '', APPEND].join('\n');
+
+    const COOP = [
+      '⁂ Coop',
+      'You are operating on a piece of work assigned to you by the main agent.',
+      '',
+      '# Peers',
+      'Message peers via `write` with `path: "agent://<id>"` and `content`. Your id is `Lead.Engineer`.',
+      '',
+      'Your assignment sets your files and scope; stay inside it. Address peers by exact roster id; NEVER invent names.',
+    ];
+    const NEVER_GIVE_UP =
+      'You NEVER give up due to uncertainty, missing information obtainable via tools or repo context, or needing a design decision you can derive yourself.';
+    const KEEP_GOING =
+      'You MUST keep going until this ticket is closed. This matters.';
+    /** `⁂ Completion` of a child with no `yield` tool, and what stays of it. */
+    const COMPLETION_NO_YIELD = [
+      '⁂ Completion',
+      'No TODO tracking, no progress updates. Execute; your final message is your result.',
+      '',
+      'While work remains, you MUST continue with another tool call — investigate, edit. A reply without a tool call ends the run; its text reaches Main verbatim as your complete result. NEVER end on a plan, a promise of further work, or a question.',
+      '',
+      'No `yield` tool exists: ROLE mentions of `yield`, sections, or output fields describe what your final message covers.',
+      '',
+      'Giving up is a last resort. If truly blocked, your final message MUST describe what you tried and the exact blocker.',
+      NEVER_GIVE_UP,
+      '',
+      KEEP_GOING,
+    ];
+    const KEPT_NO_YIELD = [
+      '⁂ Completion',
+      'No TODO tracking, no progress updates. Execute; your final message is your result.',
+      '',
+      'A reply without a tool call ends the run; its text reaches Main verbatim as your complete result.',
+      '',
+      'No `yield` tool exists: ROLE mentions of `yield`, sections, or output fields describe what your final message covers.',
+      '',
+      'If truly blocked, your final message MUST describe what you tried and the exact blocker.',
+    ];
+    /** `⁂ Completion` of a child with a `yield` tool, and what stays of it. */
+    const COMPLETION_YIELD = [
+      '⁂ Completion',
+      'No TODO tracking, no progress updates. Execute; report results with `yield`.',
+      '',
+      'While work remains, you MUST continue with another tool call — investigate, edit. Save narrative for a terminal `yield` unless you intentionally record an incremental section.',
+      '',
+      'Yield protocol:',
+      '- Omit `type` for the normal single terminal structured result in `data`.',
+      '- Use non-empty `type: string[]` for incremental, non-terminal sections; calls accumulate by section.',
+      '- A data-less terminal `type: "result"` only finalizes previously submitted incremental sections; it NEVER substitutes for `data`.',
+      '',
+      'This is your only way to return a final result. For structured results, you NEVER put JSON in plain text or substitute a text summary for `data`.',
+      '',
+      'Giving up is a last resort. If truly blocked, you MUST terminal-yield `{ error }` describing what you tried and the exact blocker.',
+      NEVER_GIVE_UP,
+      '',
+      KEEP_GOING,
+    ];
+    const KEPT_YIELD = [
+      '⁂ Completion',
+      'No TODO tracking, no progress updates. Execute; report results with `yield`.',
+      '',
+      'Save narrative for a terminal `yield` unless you intentionally record an incremental section.',
+      '',
+      'Yield protocol:',
+      '- Omit `type` for the normal single terminal structured result in `data`.',
+      '- Use non-empty `type: string[]` for incremental, non-terminal sections; calls accumulate by section.',
+      '- A data-less terminal `type: "result"` only finalizes previously submitted incremental sections; it NEVER substitutes for `data`.',
+      '',
+      'This is your only way to return a final result. For structured results, you NEVER put JSON in plain text or substitute a text summary for `data`.',
+      '',
+      'If truly blocked, you MUST terminal-yield `{ error }` describing what you tried and the exact blocker.',
+    ];
+    const BRIEF = 'Map the estuary before drawing its shipping routes.';
+    /** The per-spawn block omp renders for a child whose declaration body is `BRIEF`. */
+    const perSpawn = (completion: string[]) =>
+      ['⁂ Role', BRIEF, '', ...COOP, '', ...completion].join('\n');
+    const keptPerSpawn = (completion: string[]) =>
+      [...COOP, '', ...completion].join('\n');
+
+    const ORIENT = 'What it is for.\nHow it starts.\nWhy it works.';
+    const FORMS = `# Assignment forms\n\nGive a dispatch of these agents its assignment in its task text so:\n\n${TECH_LEAD_FORM}`;
+    const DEFINITION = `You are the agent cartographer: Charts the estuary.\n\n${BRIEF}`;
+    /** A cratylus agent: a declaration whose file lies in the installation's `agents/`. */
+    const installed = (root: string, name = 'cartographer') =>
+      declare(
+        { name, description: 'Charts the estuary.' },
+        BRIEF,
+        join(root, 'agents'),
+      );
+    /** The session of a dispatched child named `name`. */
+    const asChild = (name: string) => ({ agent: { kind: 'sub', name } });
+    type Turn = { systemPrompt: string[] } | undefined;
+
+    it("opens a launched cratylus agent's prompt with its definition, then omp's prompt without the judged passages, the orientation and the assignment forms", async () => {
+      const session = await started('cartographer', undefined, ORIENT);
+      omp.agents = [installed(session.root), TECH_LEAD()];
+      await session.fire('session_start');
+      for (const turn of [1, 2]) {
+        const answered = (await session.fire('before_agent_start', 'main', {
+          systemPrompt: [TEMPLATE, EVAL_GUIDANCE, FOOTER],
+        })) as Turn;
+        expect(answered?.systemPrompt, `turn ${turn}`).toEqual([
+          DEFINITION,
+          KEPT_TEMPLATE,
+          EVAL_GUIDANCE,
+          KEPT_FOOTER,
+          ORIENT,
+          FORMS,
+        ]);
+      }
+    });
+
+    it('removes a passage in its own block only: a repository quoting omp keeps what it quotes', async () => {
+      const session = await started('cartographer');
+      omp.agents = [installed(session.root)];
+      await session.fire('session_start');
+      const main = (await session.fire('before_agent_start', 'main', {
+        systemPrompt: [TEMPLATE, EVAL_GUIDANCE, FOOTER],
+      })) as Turn;
+      const child = await started(undefined);
+      omp.agents = [installed(child.root)];
+      await child.fire(
+        'session_start',
+        'sub',
+        undefined,
+        asChild('cartographer'),
+      );
+      const dispatched = (await child.fire(
+        'before_agent_start',
+        'sub',
+        { systemPrompt: [TEMPLATE, FOOTER, perSpawn(COMPLETION_NO_YIELD)] },
+        asChild('cartographer'),
+      )) as Turn;
+      for (const [who, turn] of [
+        ['launched', main],
+        ['dispatched', dispatched],
+      ] as const) {
+        const text = turn?.systemPrompt.join('\n') ?? '';
+        for (const quoted of [
+          '- Compiled code: NEVER avoidable allocation, copying, computation.',
+          '⁂ Workflow\nWhile work remains, you MUST continue with another tool call — investigate, edit.',
+        ])
+          expect(text, who).toContain(quoted);
+        // omp's own text of the passage is gone: the quote is the only one left.
+        expect(text.split(ENGINEERING[1] ?? '').length, who).toBe(2);
+        expect(text, who).not.toContain('⁂ Delivery');
+        expect(text, who).not.toContain(IDENTITY);
+      }
+    });
+
+    it("opens a dispatched cratylus agent's prompt with its definition, its role section cut and the hand-back mechanics of its completion kept, with a yield tool or without", async () => {
+      for (const [form, completion, kept] of [
+        ['without a yield tool', COMPLETION_NO_YIELD, KEPT_NO_YIELD],
+        ['with a yield tool', COMPLETION_YIELD, KEPT_YIELD],
+      ] as const) {
+        const session = await started(undefined, undefined, ORIENT);
+        omp.agents = [installed(session.root), TECH_LEAD()];
+        await session.fire(
+          'session_start',
+          'sub',
+          undefined,
+          asChild('cartographer'),
+        );
+        const turn = (await session.fire(
+          'before_agent_start',
+          'sub',
+          {
+            systemPrompt: [
+              TEMPLATE,
+              EVAL_GUIDANCE,
+              FOOTER,
+              perSpawn([...completion]),
+            ],
+          },
+          asChild('cartographer'),
+        )) as Turn;
+        expect(turn?.systemPrompt, form).toEqual([
+          DEFINITION,
+          KEPT_TEMPLATE,
+          EVAL_GUIDANCE,
+          KEPT_FOOTER,
+          keptPerSpawn([...kept]),
+          ORIENT,
+          FORMS,
+        ]);
+        const text = turn?.systemPrompt.join('\n') ?? '';
+        // The body opens the prompt once; its role section is cut.
+        expect(text.split(BRIEF).length, form).toBe(2);
+        for (const handBack of [
+          'If truly blocked,',
+          'its text reaches Main verbatim',
+          'No `yield` tool exists',
+          'Yield protocol:',
+        ]) {
+          if (completion.join('\n').includes(handBack))
+            expect(text, `${form}: ${handBack}`).toContain(handBack);
+        }
+      }
+    });
+
+    it('leaves a dispatched child of any other agent, a child no declaration names and a plain session as they are', async () => {
+      const session = await started(undefined, undefined, ORIENT);
+      omp.agents = [
+        installed(session.root),
+        declare({ name: 'pilot', description: 'd' }, BRIEF),
+        TECH_LEAD(),
+      ];
+      const blocks = [TEMPLATE, EVAL_GUIDANCE, FOOTER];
+      const child = [...blocks, perSpawn(COMPLETION_NO_YIELD)];
+      for (const [who, kind, prompt, extra] of [
+        ['bundled child', 'sub', child, asChild('pilot')],
+        ['unnamed child', 'sub', child, asChild('ghost')],
+        ['child without a name', 'sub', child, {}],
+        ['plain session', 'main', blocks, {}],
+      ] as const) {
+        await session.fire('session_start', kind, undefined, extra);
+        const turn = (await session.fire(
+          'before_agent_start',
+          kind,
+          { systemPrompt: prompt },
+          extra,
+        )) as Turn;
+        expect(turn?.systemPrompt, who).toEqual([...prompt, ORIENT, FORMS]);
+      }
+    });
+
+    it("keeps omp's prompt whole for a launch of any other declaration, its definition after the orientation as before", async () => {
+      const session = await started('pilot', undefined, ORIENT);
+      omp.agents = [declare({ name: 'pilot', description: 'd' }, 'Fly.')];
+      await session.fire('session_start');
+      const turn = (await session.fire('before_agent_start', 'main', {
+        systemPrompt: [TEMPLATE, EVAL_GUIDANCE, FOOTER],
+      })) as Turn;
+      expect(turn?.systemPrompt).toEqual([
+        TEMPLATE,
+        EVAL_GUIDANCE,
+        FOOTER,
+        ORIENT,
+        'You are the agent pilot: d\n\nFly.',
+      ]);
+    });
+
+    it('knows a cratylus agent by the real path of its file, and a file that does not resolve is none', async () => {
+      const session = await started('cartographer');
+      const linked = mkdtempSync(join(tmpdir(), 'omp-linked-'));
+      tmp.push(linked);
+      symlinkSync(join(session.root, 'agents'), join(linked, 'agents'));
+      const real = installed(session.root);
+      omp.agents = [
+        { ...real, filePath: join(linked, 'agents', 'cartographer.md') },
+      ];
+      await session.fire('session_start');
+      const through = (await session.fire('before_agent_start', 'main', {
+        systemPrompt: [TEMPLATE, FOOTER],
+      })) as Turn;
+      expect(through?.systemPrompt).toEqual([
+        DEFINITION,
+        KEPT_TEMPLATE,
+        KEPT_FOOTER,
+      ]);
+      omp.agents = [{ ...real, filePath: '/nowhere/agents/cartographer.md' }];
+      const lost = await started('cartographer');
+      await lost.fire('session_start');
+      const unresolved = (await lost.fire('before_agent_start', 'main', {
+        systemPrompt: [TEMPLATE, FOOTER],
+      })) as Turn;
+      expect(unresolved?.systemPrompt).toEqual([TEMPLATE, FOOTER, DEFINITION]);
+    });
+
+    describe('warns of a passage omp no longer holds', () => {
+      /** omp's prompt after a release that dropped the compiled-code line and the Workflow
+       *  section from the template, and the critical element from the footer. */
+      const NEWER_TEMPLATE = TEMPLATE.replace(
+        `${ENGINEERING[1]}\n`,
+        '',
+      ).replace(`${WORKFLOW.join('\n')}\n\n`, '');
+      const NEWER_FOOTER = FOOTER.replace(
+        `${FOOTER_CRITICAL.join('\n')}\n\n`,
+        '',
+      );
+      const LOST = [
+        'the engineering line on compiled code',
+        'the Workflow section',
+        'the critical element after the project context',
+      ];
+
+      it('once at session start, naming each missing passage and the release judged against, the session proceeding', async () => {
+        omp.agents = [declare({ name: 'pilot', description: 'd' }, 'Fly.')];
+        for (const flag of [undefined, 'pilot']) {
+          const session = await started(flag);
+          await session.fire('session_start', 'main', undefined, {
+            getSystemPrompt: () => [
+              NEWER_TEMPLATE,
+              EVAL_GUIDANCE,
+              NEWER_FOOTER,
+            ],
+          });
+          expect(session.did.notices, flag ?? 'plain').toHaveLength(1);
+          const notice = String(session.did.notices[0]);
+          for (const passage of LOST) expect(notice).toContain(passage);
+          expect(notice).not.toContain('the Delivery section');
+          expect(notice).toContain('19.1.0');
+          expect(notice).toContain('keeps the rest as omp builds it');
+          // The session proceeds: the launch is made.
+          expect(session.did.status).toEqual(
+            flag === undefined ? [] : [['cratylus-agent', 'pilot']],
+          );
+        }
+      });
+
+      it('for a dispatched child, which holds the sentences of its completion too', async () => {
+        for (const [form, completion, lost] of [
+          [
+            'without a yield tool',
+            COMPLETION_NO_YIELD.map((line) =>
+              line
+                .replace('Giving up is a last resort. ', '')
+                .replace(
+                  ' NEVER end on a plan, a promise of further work, or a question.',
+                  '',
+                ),
+            ),
+            [
+              'the completion sentence that giving up is a last resort',
+              'the completion sentence against ending on a plan',
+            ],
+          ],
+          [
+            'with a yield tool',
+            COMPLETION_YIELD.filter((line) => line !== NEVER_GIVE_UP),
+            ['the completion line against giving up'],
+          ],
+        ] as const) {
+          const session = await started();
+          await session.fire('session_start', 'sub', undefined, {
+            getSystemPrompt: () => [
+              TEMPLATE,
+              FOOTER,
+              perSpawn([...completion]),
+            ],
+          });
+          expect(session.did.notices, form).toHaveLength(1);
+          const notice = String(session.did.notices[0]);
+          for (const passage of lost) expect(notice, form).toContain(passage);
+          expect(notice, form).not.toContain('the Workflow section');
+        }
+      });
+
+      it('for a passage a form of the block does not render, only where the block holds the form', async () => {
+        // The sentence against ending on a plan is rendered without a yield tool alone: its
+        // absence beside the yield form is no drift.
+        const session = await started();
+        await session.fire('session_start', 'sub', undefined, {
+          getSystemPrompt: () => [TEMPLATE, FOOTER, perSpawn(COMPLETION_YIELD)],
+        });
+        expect(session.did.notices).toEqual([]);
+      });
+
+      it('by a main session of the template and footer passages alone', async () => {
+        for (const flag of [undefined, 'cartographer']) {
+          const session = await started(flag);
+          omp.agents = [installed(session.root)];
+          await session.fire('session_start', 'main', undefined, {
+            getSystemPrompt: () => [TEMPLATE, EVAL_GUIDANCE, FOOTER],
+          });
+          expect(session.did.notices, flag ?? 'plain').toEqual([]);
+        }
+      });
+
+      it('nowhere where omp binds no system prompt, or one without a block', async () => {
+        for (const getSystemPrompt of [undefined, () => []]) {
+          const session = await started();
+          await session.fire('session_start', 'main', undefined, {
+            ...(getSystemPrompt === undefined ? {} : { getSystemPrompt }),
+          });
+          expect(session.did.notices).toEqual([]);
+        }
+      });
     });
 
     it('nests the fields of a list of objects beneath it in the assignment form, each with its shape, need and meaning', async () => {
@@ -2133,6 +2628,266 @@ describe('omp tool definitions', () => {
       await fire('session_switch');
       expect(omp.runtime).toEqual(before);
       expect(await fire('before_agent_start')).toBeUndefined();
+    });
+  });
+
+  describe('system prompt of an installed cratylus agent', () => {
+    const NAME = 'cartographer';
+    const DESCRIPTION = 'Charts the estuary.';
+    const BODY = 'Map the estuary before drawing its shipping routes.';
+    const DEFINITION = `You are the agent ${NAME}: ${DESCRIPTION}\n\n${BODY}`;
+    const ORIENTATION = 'What cratylus is for.\nHow to start.';
+    const SKILL = '<autoload skill tides: its instructions>';
+    const FORMS = /^# Assignment forms\n[\s\S]*\n {2}\{"chart": …\}\n/;
+
+    // Excerpts of omp 19.1.0's rendered system, project and subagent templates.
+    const ENGINEERING = [
+      '- Final chat MAY use LaTeX math (`$`, `$$`) and color (\\textcolor, \\colorbox, \\fcolorbox).',
+      '- Visuals: first fit wins; one form per idea, NEVER the same content twice.',
+    ].join('\n');
+    const RUNTIME = [
+      '⁂ Runtime',
+      '# Internal URLs',
+      'Most FS/bash tools resolve these; path selectors: `read` docs. Further sub-paths, queries, limits: help://read/urls.',
+    ].join('\n');
+    const TOOL_POLICY = [
+      '⁂ Tool Policy',
+      '# Tool I/O',
+      '- Prefer relative paths.',
+    ].join('\n');
+    const KEPT_TEMPLATE = ['# Engineering', ENGINEERING, RUNTIME, TOOL_POLICY];
+    const PROJECT_CONTEXT = [
+      '<project-context>',
+      '<workstation>',
+      '- OS: linux',
+      '</workstation>',
+      '</project-context>',
+    ].join('\n');
+    const APPEND = 'Use the estuary survey notes.';
+    const KEPT_FOOTER = [PROJECT_CONTEXT, APPEND].join('\n\n');
+
+    function harnessPrompt(
+      kind: 'main' | 'sub',
+      added?: { heading: string; banner: string },
+    ): string[] {
+      const template = [
+        [
+          "You are omp's trusted coding assistant.",
+          '',
+          '# Engineering',
+          '- Correctness, then six-month maintainability. Delete dead weight; prefer boring design to needless abstraction.',
+          '- Compiled code: NEVER avoidable allocation, copying, computation.',
+          "- Unexpected repo changes are the user's; adapt. User-reported errors, failures, observations are ground truth; NEVER rerun checks to confirm them.",
+          ENGINEERING,
+        ].join('\n'),
+        RUNTIME,
+        TOOL_POLICY,
+        ...(added ? [added.heading] : []),
+        [
+          '⁂ Workflow',
+          '# 1. Before Editing',
+          '- Reuse existing patterns; NEVER add a second convention.',
+          '',
+          ...(kind === 'main'
+            ? [
+                '# 2. Verify',
+                'Run the narrowest check that exercises the change, once. Investigation: the output is the proof; no tests.',
+              ]
+            : ['# 2. Hand-off', '- Done → yield, naming the checks to run.']),
+          '',
+          '# 3. Cleanup',
+          kind === 'main'
+            ? 'After smoke proof: permanent fix/feature: update docs/changelog; delete throwaway scripts.'
+            : 'Permanent fix/feature: update docs/changelog; delete throwaway scripts.',
+        ].join('\n'),
+        [
+          '⁂ Delivery',
+          '- NEVER fabricate output; unobserved claims = `[INFERENCE]`; report only verification you ran.',
+        ].join('\n'),
+        [
+          '⁂ Critical',
+          '<critical>',
+          '- NEVER yield while actionable work remains; a finished phase or todo is not a stop.',
+          '</critical>',
+        ].join('\n'),
+        ...(added ? [added.banner] : []),
+      ].join('\n\n');
+      const footer = [
+        PROJECT_CONTEXT,
+        '',
+        '<critical>',
+        '- Each response MUST advance the task; completion only stopping condition.',
+        '- MUST default to informed action; do not ask for confirmation when tools or repo context can answer.',
+        kind === 'main'
+          ? '- Before yielding, MUST verify significant behavioral changes: run the specific test, command, or scenario covering the change.'
+          : "- Changes complete → yield; verification is main agent's job. NEVER run it yourself unless your assignment explicitly instructs it.",
+        '</critical>',
+        '',
+        APPEND,
+      ].join('\n');
+      return [template, footer];
+    }
+
+    const COOP = [
+      '⁂ Coop',
+      'You are operating on a piece of work assigned to you by the main agent.',
+    ].join('\n');
+    const COMPLETION = [
+      '⁂ Completion',
+      'No TODO tracking, no progress updates. Execute; your final message is your result.',
+    ].join('\n');
+    const HAND_BACK =
+      'A reply without a tool call ends the run; its text reaches Main verbatim as your complete result.';
+    const YIELD =
+      'No `yield` tool exists: ROLE mentions of `yield`, sections, or output fields describe what your final message covers.';
+    const BLOCKED =
+      'If truly blocked, your final message MUST describe what you tried and the exact blocker.';
+
+    afterEach(() => {
+      omp.agents = [];
+      omp.discovered.length = 0;
+      omp.parsed.length = 0;
+      omp.selections.length = 0;
+      omp.skills = [];
+      for (const key of Object.keys(omp.runtime)) delete omp.runtime[key];
+      omp.writes.length = 0;
+    });
+
+    async function turn(kind: 'main' | 'sub', systemPrompt: string[]) {
+      const factory = await emitted({
+        name: 'stand in',
+        purpose: 'p',
+        when: 'w',
+        verbs: [],
+        orientation: ORIENTATION,
+      });
+      // emitted() stages its extension and command in the last temp directory.
+      const dir = tmp.at(-1);
+      if (dir === undefined)
+        throw new Error('The installation was not staged.');
+      const agents = join(dir, 'root', 'agents');
+      mkdirSync(agents);
+      const filePath = join(agents, `${NAME}.md`);
+      const fields = {
+        name: NAME,
+        description: DESCRIPTION,
+        autoloadSkills: ['tides'],
+        assignment: {
+          type: 'object',
+          properties: { chart: { type: 'string' } },
+          required: ['chart'],
+        },
+      };
+      writeFileSync(
+        filePath,
+        `---\n${Object.entries(fields)
+          .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
+          .join('\n')}\n---\n${BODY}\n`,
+      );
+      omp.agents = [
+        {
+          name: NAME,
+          description: DESCRIPTION,
+          systemPrompt: BODY,
+          autoloadSkills: fields.autoloadSkills,
+          source: 'user',
+          filePath,
+        },
+      ];
+      omp.skills = [{ name: 'tides', filePath: '/skills/tides/SKILL.md' }];
+
+      type Handler = (event: unknown, ctx: unknown) => unknown;
+      const handlers = new Map<string, Handler>();
+      await factory({
+        typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+        registerTool: () => {},
+        registerFlag: () => {},
+        getFlag: (name: string) =>
+          name === 'agent' && kind === 'main' ? NAME : undefined,
+        on: (event: string, handler: Handler) => handlers.set(event, handler),
+        setModel: async () => {},
+        setThinkingLevel: () => {},
+      });
+      const ctx = {
+        cwd: dir,
+        agent: kind === 'main' ? { kind } : { kind, name: NAME },
+        model: { provider: 'fixture', id: 'base' },
+        modelRegistry: { standIn: 'registry' },
+        ui: { setStatus: () => {}, notify: () => {} },
+        getSystemPrompt: () => systemPrompt,
+      };
+      await handlers.get('session_start')?.({}, ctx);
+      const result = (await handlers.get('before_agent_start')?.(
+        { systemPrompt },
+        ctx,
+      )) as { systemPrompt: string[] };
+      return result.systemPrompt;
+    }
+
+    // Compare every substantive line in the retained blocks, permitting
+    // paragraph spacing to change when a passage is removed.
+    function lines(block: string) {
+      return block.split('\n').filter((line) => line.trim() !== '');
+    }
+
+    it("delivery/system-prompt: a launched agent's system prompt", async () => {
+      const [definition, template, footer, ...added] = await turn(
+        'main',
+        harnessPrompt('main'),
+      );
+      expect(definition).toBe(DEFINITION);
+      expect(lines(template ?? '')).toEqual(lines(KEPT_TEMPLATE.join('\n')));
+      expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
+      expect(added).toEqual([ORIENTATION, SKILL, expect.stringMatching(FORMS)]);
+    });
+
+    it("delivery/system-prompt: a dispatched agent's system prompt", async () => {
+      const perSpawn = [
+        `⁂ Role\n${BODY}`,
+        '⁂ Context\nSurvey the eastern channel.',
+        COOP,
+        COMPLETION,
+        `While work remains, you MUST continue with another tool call — investigate, edit. ${HAND_BACK} NEVER end on a plan, a promise of further work, or a question.`,
+        YIELD,
+        `Giving up is a last resort. ${BLOCKED}`,
+        'You NEVER give up due to uncertainty, missing information obtainable via tools or repo context, or needing a design decision you can derive yourself.',
+        'You MUST keep going until this ticket is closed. This matters.',
+      ].join('\n\n');
+      const [definition, template, footer, spawn, ...added] = await turn(
+        'sub',
+        [...harnessPrompt('sub'), perSpawn],
+      );
+      expect(definition).toBe(DEFINITION);
+      expect(lines(template ?? '')).toEqual(lines(KEPT_TEMPLATE.join('\n')));
+      expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
+      expect(lines(spawn ?? '')).toEqual(
+        lines(
+          [
+            '⁂ Context\nSurvey the eastern channel.',
+            COOP,
+            COMPLETION,
+            HAND_BACK,
+            YIELD,
+            BLOCKED,
+          ].join('\n'),
+        ),
+      );
+      expect(added).toEqual([ORIENTATION, expect.stringMatching(FORMS)]);
+    });
+
+    it('delivery/system-prompt: keeps what a newer harness adds', async () => {
+      const heading = '# Tide data\nRead the current tide table.';
+      const banner = '⁂ Survey Data\nThe survey coordinates are in WGS 84.';
+      const [definition, template, footer, ...added] = await turn(
+        'main',
+        harnessPrompt('main', { heading, banner }),
+      );
+      expect(definition).toBe(DEFINITION);
+      expect(lines(template ?? '')).toEqual(
+        lines([...KEPT_TEMPLATE, heading, banner].join('\n')),
+      );
+      expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
+      expect(added).toEqual([ORIENTATION, SKILL, expect.stringMatching(FORMS)]);
     });
   });
 });

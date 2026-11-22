@@ -9,8 +9,9 @@
 // whole projection of an agent, and BOTH ways of reaching it read it through omp's own
 // discovery — dispatched as a subagent, omp runs it itself; started as a MAIN session
 // by `omp --agent <name>`, the cratylus extension ({@link ompCapabilityExtensions})
-// resolves the same declaration and carries it into the session
-// (design/decisions/agent-launch-through-the-extension.md).
+// resolves the same declaration and opens the session's prompt with it
+// (design/decisions/agent-launch-through-the-extension.md,
+// design/decisions/omp-prompt-is-changed-by-removal.md).
 // One declaration, nothing outside the harness wrapping it, nothing to drift.
 //
 // IDENTITY IS NOT THE PROFILE. omp's own `--profile <name>` silos AUTH, MCP,
@@ -1134,6 +1135,140 @@ const SESSION_PLACEMENT: readonly string[] = [
 
 // ── Capability interface and agent launch → extensions/<bin>.ts ──────────────
 
+// ── The persona opens the system prompt ──────────────────────────────────────
+
+/** The omp release whose system prompt {@link OMP_PROMPT_REMOVALS} were judged against. */
+const OMP_PROMPT_JUDGED_VERSION = '19.1.0';
+
+/** The banner that begins the per-spawn block of a dispatched child's prompt: its
+ *  `⁂ Role` section holds the declaration's body. */
+const CHILD_ROLE_BANNER = '⁂ Role';
+
+/** The block of omp's prompt a passage lives in: `template` the first block; `footer`
+ *  the block holding `</project-context>`; `child` the last block of a dispatched
+ *  child, the one that begins `⁂ Role`. */
+type OmpPromptBlock = 'template' | 'footer' | 'child';
+
+/** A passage of omp's prompt that cratylus removes from the prompt of its own agents:
+ *  judged contrary to the persona or bloat. */
+interface OmpPromptRemoval {
+  /** What the passage is, as a warning names it. */
+  readonly passage: string;
+  /** The block the removal applies in, and only there. */
+  readonly block: OmpPromptBlock;
+  /** The source of a regular expression, built with the flag `m`: its first match in
+   *  the block is the passage with the whitespace that goes with it. */
+  readonly pattern: string;
+  /** Text of the same block that must be held for the passage to be expected: a
+   *  passage omp renders in one form of the block only. */
+  readonly beside?: string;
+}
+
+const literal = (text: string): string =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/** A line, with its newline. */
+const lineOf = (text: string): string => `^${literal(text)}$\\n?`;
+/** A sentence, with the spaces after it on its line, or, at the end of its line, those before. */
+const sentenceOf = (text: string): string =>
+  `[ \\t]+${literal(text)}$|${literal(text)}[ \\t]*`;
+/** A `⁂` section, from its banner line to the next `⁂` line or the block's end, with the blank
+ *  lines before it. */
+const sectionOf = (banner: string): string =>
+  `\\n*^⁂ ${banner}$[\\s\\S]*?(?=\\n*^⁂ |\\n*(?![\\s\\S]))`;
+
+/** The `⁂ Role` section of a dispatched child's per-spawn block, cut where the definition
+ *  now opens the prompt. */
+const OMP_CHILD_ROLE_SECTION = `^${literal(CHILD_ROLE_BANNER)}$[\\s\\S]*?(?=^⁂ |(?![\\s\\S]))`;
+
+/**
+ * The passages cratylus removes from the prompt of its agents, judged against
+ * {@link OMP_PROMPT_JUDGED_VERSION}: omp's identity line, three lines of engineering
+ * practice, the sections `⁂ Workflow`, `⁂ Delivery` and `⁂ Critical`, the critical
+ * element after the project context, and, in a dispatched child's `⁂ Completion`, the
+ * sentences that push it to keep going. What a section says of how a result is handed
+ * back stays. The one home of the table: the emitted module carries it as JSON.
+ */
+const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
+  {
+    passage: 'the identity line',
+    block: 'template',
+    pattern: `^${literal("You are omp's trusted coding assistant.")}$\\n*`,
+  },
+  {
+    passage: 'the engineering line on maintainability',
+    block: 'template',
+    pattern: lineOf(
+      '- Correctness, then six-month maintainability. Delete dead weight; prefer boring design to needless abstraction.',
+    ),
+  },
+  {
+    passage: 'the engineering line on compiled code',
+    block: 'template',
+    pattern: lineOf(
+      '- Compiled code: NEVER avoidable allocation, copying, computation.',
+    ),
+  },
+  {
+    passage: 'the engineering line on unexpected repo changes',
+    block: 'template',
+    pattern: lineOf(
+      "- Unexpected repo changes are the user's; adapt. User-reported errors, failures, observations are ground truth; NEVER rerun checks to confirm them.",
+    ),
+  },
+  {
+    passage: 'the Workflow section',
+    block: 'template',
+    pattern: sectionOf('Workflow'),
+  },
+  {
+    passage: 'the Delivery section',
+    block: 'template',
+    pattern: sectionOf('Delivery'),
+  },
+  {
+    passage: 'the Critical section',
+    block: 'template',
+    pattern: sectionOf('Critical'),
+  },
+  {
+    passage: 'the critical element after the project context',
+    block: 'footer',
+    pattern: '(?<=</project-context>)\\s*<critical>[\\s\\S]*?</critical>',
+  },
+  {
+    passage: 'the completion sentence to keep going while work remains',
+    block: 'child',
+    pattern: sentenceOf(
+      'While work remains, you MUST continue with another tool call — investigate, edit.',
+    ),
+  },
+  {
+    passage: 'the completion sentence against ending on a plan',
+    block: 'child',
+    pattern: sentenceOf(
+      'NEVER end on a plan, a promise of further work, or a question.',
+    ),
+    beside: 'A reply without a tool call ends the run',
+  },
+  {
+    passage: 'the completion sentence that giving up is a last resort',
+    block: 'child',
+    pattern: sentenceOf('Giving up is a last resort.'),
+  },
+  {
+    passage: 'the completion line against giving up',
+    block: 'child',
+    pattern: lineOf(
+      'You NEVER give up due to uncertainty, missing information obtainable via tools or repo context, or needing a design decision you can derive yourself.',
+    ),
+  },
+  {
+    passage: 'the completion line to keep going until the ticket is closed',
+    block: 'child',
+    pattern: `\\n*^${literal('You MUST keep going until this ticket is closed. This matters.')}$`,
+  },
+];
+
 /**
  * The CRATYLUS module: ONE omp extension, at the SESSION scope, which omp loads in
  * any plain session, offering every capability that explains itself as one tool,
@@ -1166,8 +1301,8 @@ const SESSION_PLACEMENT: readonly string[] = [
  * (design/decisions/orientation-is-the-commands-self-description.md). At load the module runs the
  * reached `<bin> --explain` once, beside the capabilities' own, and keeps the
  * `orientation` it answers; every turn of every session, launched or not, main or
- * dispatched, carries it verbatim right after omp's own system prompt, before the
- * declaration, skills and assignment forms. The module restates no word of it; a
+ * dispatched, carries it verbatim right after omp's own system prompt, as that session
+ * holds it, before the skills and assignment forms. The module restates no word of it; a
  * command that cannot explain itself adds nothing and fails nothing.
  *
  * NO CALL IS REFUSED HERE FOR WHAT IT CHANGES. A protected path is guarded by the
@@ -1197,17 +1332,36 @@ const SESSION_PLACEMENT: readonly string[] = [
  * `parseArgs`, win over the declaration's — each for its own setting — and the
  * declaration's body is carried either way.
  *
- * THE DECLARATION'S TEXT FOLLOWS omp's own system prompt and the command's orientation
- * in every turn of a main session launched as a declaration (never a plain one), which
- * keeps omp's prompt whole.
+ * THE PERSONA OPENS THE PROMPT (design/decisions/omp-prompt-is-changed-by-removal.md). A
+ * cratylus agent is a declaration omp's discovery finds in this installation's `agents/`
+ * directory, compared by real path; omp's bundled declarations and a user's own are not.
+ * Every turn of a main session launched as a cratylus agent, and of a child dispatched as
+ * one, starts from the prompt omp builds that turn, its blocks as `before_agent_start`
+ * hands them over, a newer omp's included, and changes it by removal alone: the
+ * definition (the agent's name and description in a sentence, then its body, never the raw
+ * front matter) opens it, the passages cratylus judged contrary to the persona or bloat
+ * ({@link OMP_PROMPT_REMOVALS}, judged against omp {@link OMP_PROMPT_JUDGED_VERSION}) are
+ * removed, and every other section stays. A removal applies only in its own block (the
+ * template, the project-context footer, a child's per-spawn block), so a context file
+ * quoting a passage keeps it; a child's per-spawn `⁂ Role` section, whose body now opens
+ * the prompt, is cut. The module ships no copy of omp's prompt, adds no counter-instruction
+ * and changes no omp setting. The main session's prompt is the definition, omp's prompt so
+ * changed, the orientation, the full instructions of each skill its `autoload-skills`
+ * names (found among the skills omp discovered for the session, an unknown name skipped as
+ * dispatch skips it, rendered by omp's own `buildSkillPromptMessage` in the autoload form a
+ * dispatched child receives) and the assignment forms; a child's, the definition, omp's
+ * prompt so changed, the orientation and the assignment forms (omp loads a child's skills
+ * itself). A main session launched as any other declaration keeps omp's prompt whole, the
+ * declaration and its skills following the orientation, and so does every other session. All of
+ * it is made in `before_agent_start`, so a rebuilt base prompt never drops it.
  *
- * Every turn's system prompt carries the declaration as prose — its name and
- * description in a sentence, then its body, never the raw front matter — then the
- * full instructions of each skill its `autoload-skills` names, found among the
- * skills omp discovered for the session (an unknown name skipped, as dispatch skips
- * it) and rendered by omp's own `buildSkillPromptMessage` in the autoload form a
- * dispatched child receives; all appended in `before_agent_start`, so a rebuilt
- * base prompt never drops them. The status line reads `<mark> <name>`, or `<name>`
+ * A PASSAGE OMP'S PROMPT NO LONGER HOLDS is said once, at session start, in one warning
+ * naming each one and the omp release the removals were judged against; the rest of the
+ * prompt is kept as omp builds it, and nothing fails. A main session checks the template
+ * and footer removals, a dispatched child all of them, and neither checks nor says anything
+ * where omp binds no `ctx.getSystemPrompt`.
+ *
+ * The status line reads `<mark> <name>`, or `<name>`
  * without a mark (where the host hid extension status, install lists omp's `status`
  * segment so it renders).
  *
@@ -1236,7 +1390,7 @@ const SESSION_PLACEMENT: readonly string[] = [
  * The active tools are never touched: the session holds exactly what omp grants for
  * the product owner's selection, and nothing here limits whom it dispatches. An unknown
  * name ends startup with a non-zero exit before any turn. A subagent session, or a
- * session without the flag, gets nothing of this.
+ * session without the flag, is never launched.
  */
 export function ompCapabilityExtensions(): HarnessProjection[] {
   return [
@@ -1253,6 +1407,12 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "// and pre-planning, and no default personality; the product owner's own flags win. One value",
         "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
         '//',
+        `// The session of a ${CLI_BIN} agent, launched or dispatched, opens its prompt with the`,
+        "// agent's definition, then omp's own prompt as omp builds it each turn, minus the passages",
+        "// judged contrary to the persona or bloat; every other section is kept, a newer omp's",
+        "// included. Nothing of omp's prompt is shipped here: it is changed at run time, by removal",
+        "// alone, and a passage omp's prompt no longer holds is warned once at session start.",
+        '//',
         '// Nothing here describes a capability: its name, purpose and verbs are the',
         "// installed command's own explanation, so a newer installed package changes the tools in",
         '// the next session and this file not at all. Nothing here names an agent either: the',
@@ -1261,8 +1421,8 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         "// right after omp's own; nothing here words it.",
         '',
         'import { execFile } from "node:child_process";',
-        'import { existsSync, readFileSync } from "node:fs";',
-        'import { dirname, isAbsolute } from "node:path";',
+        'import { existsSync, readFileSync, realpathSync } from "node:fs";',
+        'import { dirname, isAbsolute, join, sep } from "node:path";',
         'import { fileURLToPath } from "node:url";',
         "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
         'import { type Args, parseArgs } from "@oh-my-pi/pi-coding-agent/cli/args";',
@@ -1320,6 +1480,20 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  when: string;',
         '  verbs: Verb[];',
         '}',
+        '',
+        `// The persona opens the prompt of a ${CLI_BIN} agent's session; omp's own prompt is changed by`,
+        '// removal alone. A removal applies only in its own block of the prompt.',
+        'type PromptBlock = "template" | "footer" | "child";',
+        'interface Removal {',
+        '  passage: string;',
+        '  block: PromptBlock;',
+        '  pattern: string;',
+        '  beside?: string;',
+        '}',
+        `const REMOVALS: readonly Removal[] = ${JSON.stringify(OMP_PROMPT_REMOVALS)};`,
+        `const CHILD_ROLE_SECTION = ${JSON.stringify(OMP_CHILD_ROLE_SECTION)};`,
+        `const PROMPT_JUDGED = ${JSON.stringify(OMP_PROMPT_JUDGED_VERSION)};`,
+        `const AGENTS_DIR = ${JSON.stringify(OMP_AGENT_DEF_DIR)};`,
         '',
         "// A program's output; its own message, when it refuses.",
         'function execOf(file: string, args: string[], cwd?: string, signal?: AbortSignal, env?: NodeJS.ProcessEnv): Promise<string> {',
@@ -1437,6 +1611,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  agent?: { kind: string; name?: string };',
         '  model?: { provider: string; id: string };',
         '  modelRegistry: Parameters<typeof resolveModelOverrideWithAuthFallback>[2];',
+        '  getSystemPrompt?(): readonly string[];',
         '  ui: {',
         '    setStatus(key: string, text: string | undefined): void;',
         '    notify(message: string, type?: "info" | "warning" | "error"): void;',
@@ -1548,6 +1723,65 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// prose, then its body.',
         'function instructions({ name, description, systemPrompt }: AgentDefinition): string {',
         '  return `You are the agent ${name}: ${description}\\n\\n${systemPrompt}`;',
+        '}',
+        '',
+        `// A ${CLI_BIN} agent: a declaration whose file lies in this installation's agents directory, by`,
+        `// real path. A bundled declaration has no file, and a path that does not resolve is no ${CLI_BIN}`,
+        '// agent.',
+        'function isCratylusAgent(declaration: AgentDefinition): boolean {',
+        '  try {',
+        '    const agents = realpathSync(join(INSTALLATION, AGENTS_DIR));',
+        '    return realpathSync(declaration.filePath).startsWith(`${agents}${sep}`);',
+        '  } catch {',
+        '    return false;',
+        '  }',
+        '}',
+        '',
+        "// The block of omp's prompt each role names: the template is the first; the footer the one",
+        '// holding the project context; the per-spawn block the last of a dispatched child, which',
+        '// begins with its role.',
+        'function holders(blocks: readonly string[], child: boolean): Record<PromptBlock, number | undefined> {',
+        '  const footer = blocks.findIndex((block) => block.includes("</project-context>"));',
+        `  const role = blocks.at(-1)?.startsWith(${JSON.stringify(CHILD_ROLE_BANNER)}) === true;`,
+        '  return {',
+        '    template: blocks.length === 0 ? undefined : 0,',
+        '    footer: footer < 0 ? undefined : footer,',
+        '    child: child && role ? blocks.length - 1 : undefined,',
+        '  };',
+        '}',
+        '',
+        "// The prompt omp built with each removal made in its own block; a child's per-spawn `⁂ Role`",
+        '// section, whose body now opens the prompt, is cut too.',
+        'function removed(blocks: readonly string[], child: boolean): string[] {',
+        '  const at = holders(blocks, child);',
+        '  return blocks.map((block, i) => {',
+        '    let text = block;',
+        '    for (const removal of REMOVALS)',
+        '      if (at[removal.block] === i) text = text.replace(new RegExp(removal.pattern, "m"), "");',
+        '    return at.child === i ? text.replace(new RegExp(CHILD_ROLE_SECTION, "m"), "") : text;',
+        '  });',
+        '}',
+        '',
+        '// DRIFT, said once at session start: each removal that applies to the session whose passage',
+        "// omp's prompt no longer holds. Nothing is checked or said where omp binds no prompt.",
+        'function warnDrift(session: Session): void {',
+        '  const kind = session.agent?.kind;',
+        '  const blocks = session.getSystemPrompt?.();',
+        '  if ((kind !== "main" && kind !== "sub") || !Array.isArray(blocks) || blocks.length === 0) return;',
+        '  const child = kind === "sub";',
+        '  const at = holders(blocks, child);',
+        '  const gone = REMOVALS.filter((removal) => {',
+        '    if (removal.block === "child" && !child) return false;',
+        '    const index = at[removal.block];',
+        '    const block = index === undefined ? undefined : blocks[index];',
+        '    if (removal.beside !== undefined && block?.includes(removal.beside) !== true) return false;',
+        '    return block === undefined || !new RegExp(removal.pattern, "m").test(block);',
+        '  }).map((removal) => removal.passage);',
+        '  if (gone.length === 0) return;',
+        '  session.ui.notify(',
+        '    `${COMMAND}: omp\'s system prompt no longer holds ${gone.join("; ")}. ${COMMAND} removes these passages from its agents\' prompts, as judged against omp ${PROMPT_JUDGED}, and keeps the rest as omp builds it.`,',
+        '    "warning",',
+        '  );',
         '}',
         '',
         '// The skills the declaration loads at start, found among those omp discovered for the session',
@@ -1720,21 +1954,40 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  }',
         '  pi.on("session_start", async (_event, ctx) => {',
         '    await warnSkew(ctx as unknown as Session);',
-        '    return launch(ctx as unknown as Session, true);',
+        '    await launch(ctx as unknown as Session, true);',
+        '    warnDrift(ctx as unknown as Session);',
         '  });',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
-        "  // Every turn's prompt is omp's own, then the reached command's orientation, then the",
-        '  // declaration and the full instructions of the skills it loads at start, so a rebuilt base',
-        '  // prompt drops none of them. In every session, launched or not, main or dispatched, the',
-        "  // turn carries the command's orientation and the assignment form of each agent that takes a",
-        '  // typed one.',
+        `  // Every turn's prompt: a ${CLI_BIN} agent's session opens with its definition, then omp's own`,
+        "  // prompt with the judged passages removed, then the reached command's orientation, then (a",
+        '  // main session) the full instructions of the skills the declaration loads at start, so a',
+        "  // rebuilt base prompt drops none of them. Any other launch keeps omp's prompt whole, the",
+        '  // orientation, then its declaration and skills. Every session, launched or not, main or',
+        "  // dispatched, carries the command's orientation and the assignment form of each agent that",
+        '  // takes a typed one.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
         '    const now = launched;',
         '    const session = ctx as unknown as Session;',
-        '    const forms = await dispatchForms(session);',
+        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '    const forms = formsOf(agents);',
         '    const oriented = orientation === undefined ? [] : [orientation];',
         '    const formed = forms === undefined ? [] : [forms];',
-        '    if (now === undefined || session.agent?.kind !== "main")',
+        '    const kind = session.agent?.kind;',
+        '    const dispatched =',
+        '      kind === "sub" ? agents.find((a) => a.name.toLowerCase() === session.agent?.name?.toLowerCase()) : undefined;',
+        '    if (kind === "main" && now !== undefined && isCratylusAgent(now.declaration))',
+        '      return {',
+        '        systemPrompt: [',
+        '          instructions(now.declaration),',
+        '          ...removed(event.systemPrompt, false),',
+        '          ...oriented,',
+        '          ...(await skills(now.declaration)),',
+        '          ...formed,',
+        '        ],',
+        '      };',
+        '    if (dispatched !== undefined && isCratylusAgent(dispatched))',
+        '      return { systemPrompt: [instructions(dispatched), ...removed(event.systemPrompt, true), ...oriented, ...formed] };',
+        '    if (now === undefined || kind !== "main")',
         '      return oriented.length + formed.length === 0',
         '        ? undefined',
         '        : { systemPrompt: [...event.systemPrompt, ...oriented, ...formed] };',
@@ -1750,8 +2003,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  });',
         '',
         '  // The assignment form of each agent that takes a typed one. None: no section.',
-        '  async function dispatchForms(session: Session): Promise<string | undefined> {',
-        '    const agents: AgentDefinition[] = (await discoverAgents(session.cwd)).agents;',
+        '  function formsOf(agents: readonly AgentDefinition[]): string | undefined {',
         '    const forms = agents.flatMap((a) => {',
         '      const schema = schemaOf(frontmatterOf(a));',
         '      return schema === undefined ? [] : [formOf(a.name, schema)];',
