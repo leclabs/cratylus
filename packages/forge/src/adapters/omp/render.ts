@@ -379,12 +379,15 @@ export function skillToOmpMd(s: ResolvedSkill): string {
 
 /**
  * The omp rule file for a rule: front-matter that has omp apply it in every session
- * (`alwaysApply`) and lists it by its description, then the rule and why it holds,
- * which omp injects whole.
+ * (`alwaysApply`) and lists it by its description, then the rule as one line, its
+ * why following on the same line (`<statement> Why: <why>`) where it has one, so that
+ * omp, which concatenates rule bodies one newline apart, shows each why attached to
+ * its own rule and never to the next.
  */
 export function ruleToOmpMd(r: Rule): string {
   const fm = [`description: ${yamlString(r.description)}`, 'alwaysApply: true'];
-  return `---\n${fm.join('\n')}\n---\n\n${r.statement.trim()}\n\nWhy: ${r.why.trim()}\n`;
+  const why = r.why === undefined ? '' : ` Why: ${r.why.trim()}`;
+  return `---\n${fm.join('\n')}\n---\n\n${r.statement.trim()}${why}\n`;
 }
 
 // ── Session hooks → extensions/<bin>-session.ts ──────────────────────────────

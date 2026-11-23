@@ -100,9 +100,35 @@ describe('projecting rules', () => {
         'alwaysApply: true',
         '---',
         '',
-        'Integrate on one trunk.',
+        'Integrate on one trunk. Why: One line to integrate on.',
         '',
-        'Why: One line to integrate on.',
+      ].join('\n'),
+    );
+  });
+
+  it('renders no Why for a rule with no why', async () => {
+    const adopted: Ruleset = {
+      name: 'adopted',
+      description: 'a fixture practice',
+      rules: [
+        {
+          name: 'adopted-practice',
+          description: 'This project adopts the practice.',
+          statement: 'This project adopts the practice.',
+        },
+      ],
+    };
+    const tree = await project([plugin([adopted])], ['adopted-practice']);
+    expect(
+      tree.files.find((f) => f.path === 'rules/adopted-practice.md')?.content,
+    ).toBe(
+      [
+        '---',
+        'description: "This project adopts the practice."',
+        'alwaysApply: true',
+        '---',
+        '',
+        'This project adopts the practice.',
         '',
       ].join('\n'),
     );

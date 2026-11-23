@@ -3,31 +3,23 @@ import type { Ruleset } from '@cratylus/schema';
 /** Commit discipline: what goes in a commit, and when to make one. */
 export const commitDiscipline: Ruleset = {
   name: 'commit-discipline',
-  description:
-    'Commit only the paths you changed, at natural boundaries, adding to the shared history.',
+  description: 'Own paths only, atomic commits, immutable history.',
   rules: [
     {
       name: 'commit-discipline-own-paths',
-      description: 'Stage and commit the paths you changed, by name.',
-      statement:
-        'Stage and commit the paths you changed yourself, naming each one, and leave every other change in the working tree as it is.',
-      why: 'The working tree may hold other people’s work in progress; naming your own paths keeps each commit to exactly the change it describes.',
+      description: 'Stage and commit only the paths you changed, each by name.',
+      statement: 'Stage and commit only the paths you changed, each by name.',
+      why: "The working tree holds others' work in progress.",
     },
     {
       name: 'commit-discipline-natural-boundaries',
-      description:
-        'Commit each coherent step once it is done and its checks pass.',
-      statement:
-        'Commit at each natural boundary — a coherent step finished and its checks passing — as you go.',
-      why: 'Each commit is then one reviewable, revertable step, and finished work is in the history as soon as it is finished.',
+      description: "Atomic commits, made as each step's checks pass.",
+      statement: "Atomic commits, made as each step's checks pass.",
     },
     {
       name: 'commit-discipline-shared-history',
-      description:
-        'Add new commits to shared history; published commits stay as they are.',
-      statement:
-        'Add to the shared history with new commits, and keep the commits others have already received as they are.',
-      why: 'Everyone working from the shared history can rely on what they have pulled; rewriting it breaks their clones and loses the record.',
+      description: 'Published history is immutable.',
+      statement: 'Published history is immutable.',
     },
   ],
 };
