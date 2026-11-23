@@ -108,6 +108,34 @@ describe('projecting rules', () => {
     );
   });
 
+  it('renders no Why line for a rule with no why', async () => {
+    const adopted: Ruleset = {
+      name: 'adopted',
+      description: 'a fixture practice',
+      rules: [
+        {
+          name: 'adopted-practice',
+          description: 'This project adopts the practice.',
+          statement: 'This project adopts the practice.',
+        },
+      ],
+    };
+    const tree = await project([plugin([adopted])], ['adopted-practice']);
+    expect(
+      tree.files.find((f) => f.path === 'rules/adopted-practice.md')?.content,
+    ).toBe(
+      [
+        '---',
+        'description: "This project adopts the practice."',
+        'alwaysApply: true',
+        '---',
+        '',
+        'This project adopts the practice.',
+        '',
+      ].join('\n'),
+    );
+  });
+
   it('reports the declared rulesets with their rules, whether or not any is named', async () => {
     const tree = await project([plugin([branching, commits])]);
     expect(tree.rulesets).toEqual([
