@@ -8,4 +8,4 @@ Adopted by name in a project's conventions, each role's participation included
 
 Given cratylus's rulesets
 When install offers them
-Then the behaviour-driven-development and gitflow rulesets each adopt their practice by its name, gitflow precised only by its integration branch
+Then the behaviour-driven-development, gitflow and conventional-commits rulesets each adopt their practice by its name, gitflow precised only by its integration branch

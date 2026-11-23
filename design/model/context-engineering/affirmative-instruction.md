@@ -1,3 +1,3 @@
 # affirmative instruction
 
-States what holds and why it holds, a prohibition stated as the state it protects
+States what holds, a prohibition stated as the state it protects
