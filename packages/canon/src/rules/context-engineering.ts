@@ -53,9 +53,9 @@ export const contextEngineering: Ruleset = {
     },
     {
       name: 'context-engineering-context-sharing',
-      description: 'Handoffs share context.',
+      description: "A handoff is a worker's assignment.",
       statement:
-        'Context sharing: a handoff is self-contained, carrying its purpose, its end state, the decisions already taken and the state of the work.',
+        "Context sharing: a handoff goes to a worker as its assignment, self-contained, carrying its purpose, its end state, the decisions already taken and the state of the work; a session's continuity is the project's persistent context.",
     },
     {
       name: 'context-engineering-progressive-disclosure',
