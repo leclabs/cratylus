@@ -100,15 +100,13 @@ describe('projecting rules', () => {
         'alwaysApply: true',
         '---',
         '',
-        'Integrate on one trunk.',
-        '',
-        'Why: One line to integrate on.',
+        'Integrate on one trunk. Why: One line to integrate on.',
         '',
       ].join('\n'),
     );
   });
 
-  it('renders no Why line for a rule with no why', async () => {
+  it('renders no Why for a rule with no why', async () => {
     const adopted: Ruleset = {
       name: 'adopted',
       description: 'a fixture practice',
