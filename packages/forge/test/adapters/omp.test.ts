@@ -7,9 +7,11 @@
 // incident that produced it, and one pinned to the incident is a museum piece.
 
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   realpathSync,
   rmSync,
   symlinkSync,
@@ -1503,6 +1505,7 @@ describe('omp tool definitions', () => {
       const { did } = await started();
       expect(did.flags).toEqual([
         ['agent', expect.objectContaining({ type: 'string' })],
+        ['dump-system-prompt', expect.objectContaining({ type: 'string' })],
       ]);
     });
 
@@ -1564,7 +1567,10 @@ describe('omp tool definitions', () => {
         'Map the estuary before drawing its shipping routes.',
       );
       expect(omp.parsed.at(-1)?.argv).toEqual(process.argv.slice(2));
-      expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual(['agent']);
+      expect([...(omp.parsed.at(-1)?.flags.keys() ?? [])]).toEqual([
+        'agent',
+        'dump-system-prompt',
+      ]);
       // Each flag wins its own setting only.
       omp.args = { thinking: 'low' };
       const effort = await started('cartographer');
@@ -2648,7 +2654,10 @@ describe('omp tool definitions', () => {
       expect(await plain.fire('before_agent_start')).toBeUndefined();
       for (const { did } of [sub, plain])
         expect(did).toEqual({
-          flags: [['agent', expect.anything()]],
+          flags: [
+            ['agent', expect.anything()],
+            ['dump-system-prompt', expect.anything()],
+          ],
           models: [],
           efforts: [],
           tools: [],
@@ -2947,7 +2956,11 @@ describe('omp tool definitions', () => {
       omp.writes.length = 0;
     });
 
-    async function turn(kind: 'main' | 'sub', systemPrompt: string[]) {
+    async function turn(
+      kind: 'main' | 'sub',
+      systemPrompt: string[],
+      dump?: string,
+    ) {
       const factory = await emitted({
         name: 'stand in',
         purpose: 'p',
@@ -2990,6 +3003,7 @@ describe('omp tool definitions', () => {
       ];
       omp.skills = [{ name: 'tides', filePath: '/skills/tides/SKILL.md' }];
 
+      let effective = systemPrompt;
       type Handler = (event: unknown, ctx: unknown) => unknown;
       const handlers = new Map<string, Handler>();
       await factory({
@@ -2997,7 +3011,11 @@ describe('omp tool definitions', () => {
         registerTool: () => {},
         registerFlag: () => {},
         getFlag: (name: string) =>
-          name === 'agent' && kind === 'main' ? NAME : undefined,
+          name === 'agent' && kind === 'main'
+            ? NAME
+            : name === 'dump-system-prompt'
+              ? dump
+              : undefined,
         on: (event: string, handler: Handler) => handlers.set(event, handler),
         setModel: async () => {},
         setThinkingLevel: () => {},
@@ -3008,13 +3026,18 @@ describe('omp tool definitions', () => {
         model: { provider: 'fixture', id: 'base' },
         modelRegistry: { standIn: 'registry' },
         ui: { setStatus: () => {}, notify: () => {} },
-        getSystemPrompt: () => systemPrompt,
+        getSystemPrompt: () => effective,
       };
       await handlers.get('session_start')?.({}, ctx);
       const result = (await handlers.get('before_agent_start')?.(
         { systemPrompt },
         ctx,
       )) as { systemPrompt: string[] };
+      // The session's effective prompt, once every extension has changed it.
+      if (dump !== undefined) {
+        effective = result.systemPrompt;
+        await handlers.get('turn_start')?.({ type: 'turn_start' }, ctx);
+      }
       return result.systemPrompt;
     }
 
@@ -3082,6 +3105,179 @@ describe('omp tool definitions', () => {
       );
       expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
       expect(added).toEqual([ORIENTATION, SKILL, expect.stringMatching(FORMS)]);
+    });
+
+    describe('dumped to a file', () => {
+      const MARK = '\n\n<!-- ===== block ===== -->\n\n';
+
+      afterEach(() => {
+        vi.restoreAllMocks();
+      });
+
+      /** The emitted module loaded into a stand-in omp run with
+       *  `--dump-system-prompt <path>` (or without it), a main or a dispatched
+       *  session; each `turnStart` fires `turn_start` with the prompt that turn
+       *  carries, `undefined` where omp binds none, and each warning is recorded. */
+      async function dumping(
+        kind: 'main' | 'sub',
+        path?: string,
+        hasUI = true,
+      ) {
+        const factory = await emitted({
+          name: 'stand in',
+          purpose: 'p',
+          when: 'w',
+          verbs: [],
+        });
+        type Handler = (event: unknown, ctx: unknown) => unknown;
+        const handlers = new Map<string, Handler>();
+        const flags: [string, unknown][] = [];
+        await factory({
+          typebox: { Type: { Unsafe: (schema: unknown) => schema } },
+          registerTool: () => {},
+          registerFlag: (name: string, options: unknown) =>
+            flags.push([name, options]),
+          getFlag: (name: string) =>
+            name === 'dump-system-prompt' ? path : undefined,
+          on: (event: string, handler: Handler) => handlers.set(event, handler),
+          setModel: async () => {},
+          setThinkingLevel: () => {},
+        });
+        const notices: [unknown, unknown][] = [];
+        const turnStart = async (prompt: string | string[] | undefined) =>
+          handlers.get('turn_start')?.(
+            { type: 'turn_start' },
+            {
+              cwd: '/the/session/cwd',
+              agent: kind === 'main' ? { kind } : { kind, name: NAME },
+              hasUI,
+              ui: {
+                setStatus: () => {},
+                notify: (message: unknown, type: unknown) =>
+                  notices.push([message, type]),
+              },
+              ...(prompt === undefined
+                ? {}
+                : { getSystemPrompt: () => prompt }),
+            },
+          );
+        return { flags, notices, turnStart };
+      }
+
+      function target() {
+        const dir = mkdtempSync(join(tmpdir(), 'omp-dump-'));
+        tmp.push(dir);
+        return join(dir, 'prompt.md');
+      }
+
+      it('registers the string flag `dump-system-prompt`', async () => {
+        const { flags } = await dumping('main');
+        expect(flags).toContainEqual([
+          'dump-system-prompt',
+          expect.objectContaining({
+            type: 'string',
+            description: expect.any(String),
+          }),
+        ]);
+      });
+
+      it('delivery/system-prompt: dumps the system prompt to a file', async () => {
+        const file = target();
+        const { turnStart } = await dumping('main', file);
+        const first = ['The definition.', 'omp, changed.', 'The orientation.'];
+        await turnStart(first);
+        expect(readFileSync(file, 'utf8')).toBe(first.join(MARK));
+        // Each turn overwrites the file with the prompt that turn carries.
+        await turnStart(['Only one block now.', 'And a second.']);
+        expect(readFileSync(file, 'utf8')).toBe(
+          `Only one block now.${MARK}And a second.`,
+        );
+      });
+
+      it("dumps a launched agent's turn: the prompt as every extension left it", async () => {
+        const file = target();
+        const systemPrompt = await turn('main', harnessPrompt('main'), file);
+        expect(systemPrompt.length).toBeGreaterThan(1);
+        expect(readFileSync(file, 'utf8')).toBe(systemPrompt.join(MARK));
+      });
+
+      it('takes a prompt that is a string as one block', async () => {
+        const file = target();
+        const { turnStart } = await dumping('main', file);
+        await turnStart('One block alone.');
+        expect(readFileSync(file, 'utf8')).toBe('One block alone.');
+      });
+
+      it('writes nothing without the flag, or with none given', async () => {
+        const file = target();
+        for (const path of [undefined, '']) {
+          const { turnStart, notices } = await dumping('main', path);
+          await turnStart(['A block.']);
+          expect(notices).toEqual([]);
+        }
+        expect(existsSync(file)).toBe(false);
+        expect(readdirSync(dirname(file))).toEqual([]);
+      });
+
+      it("writes nothing from a dispatched agent's session, so the main session's file stands", async () => {
+        const file = target();
+        writeFileSync(file, 'the main session wrote this');
+        const { turnStart, notices } = await dumping('sub', file);
+        await turnStart(['The child prompt.']);
+        expect(readFileSync(file, 'utf8')).toBe('the main session wrote this');
+        expect(notices).toEqual([]);
+      });
+
+      it('writes nothing, and says nothing, where omp binds no system prompt', async () => {
+        const file = target();
+        const { turnStart, notices } = await dumping('main', file);
+        await turnStart(undefined);
+        expect(existsSync(file)).toBe(false);
+        expect(notices).toEqual([]);
+      });
+
+      it('names a failed write once as a warning and lets the session proceed', async () => {
+        const file = join(dirname(target()), 'missing', 'prompt.md');
+        const { turnStart, notices } = await dumping('main', file);
+        const stderr = vi
+          .spyOn(process.stderr, 'write')
+          .mockImplementation(() => true);
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        expect(notices).toEqual([
+          [
+            expect.stringMatching(
+              new RegExp(`--dump-system-prompt.*${file}.*ENOENT`),
+            ),
+            'warning',
+          ],
+        ]);
+        expect(stderr).not.toHaveBeenCalled();
+        // A later turn that can write does, the warning not repeated.
+        mkdirSync(dirname(file));
+        await turnStart(['A block.']);
+        expect(readFileSync(file, 'utf8')).toBe('A block.');
+        expect(notices).toHaveLength(1);
+      });
+
+      it('names a failed write once on stderr where omp has no UI, whose notify says nothing', async () => {
+        const file = join(dirname(target()), 'missing', 'prompt.md');
+        const { turnStart, notices } = await dumping('main', file, false);
+        const stderr = vi
+          .spyOn(process.stderr, 'write')
+          .mockImplementation(() => true);
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        await expect(turnStart(['A block.'])).resolves.not.toThrow();
+        expect(notices).toEqual([]);
+        expect(stderr).toHaveBeenCalledTimes(1);
+        expect(stderr).toHaveBeenCalledWith(
+          expect.stringMatching(
+            new RegExp(
+              `^cratylus: --dump-system-prompt could not write ${file}: .*ENOENT.*\\n$`,
+            ),
+          ),
+        );
+      });
     });
   });
 });
