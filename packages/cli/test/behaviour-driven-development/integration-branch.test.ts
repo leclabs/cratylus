@@ -16,6 +16,6 @@ it('behaviour-driven-development/integration-branch: gitflow integrates into the
   expect(readdirSync(rules)).toEqual(['gitflow-adopted.md']);
   const text = readFileSync(join(rules, 'gitflow-adopted.md'), 'utf8');
   expect(text.replace(/^---\n[\s\S]*?\n---\n/, '')).toContain(
-    "Its integration branch is `develop` unless the project's AGENTS.md names another; a missing integration branch is escalated to the product owner.",
+    "its integration branch `develop` unless the project's AGENTS.md names another; a missing one is escalated to the product owner.",
   );
 });

@@ -26,17 +26,43 @@ describe('canon rulesets', () => {
     const [bdd] = RULESETS;
     expect(bdd).toEqual({
       name: 'behaviour-driven-development',
-      description:
-        "Adopts behaviour-driven development as the project's practice.",
+      description: 'Adopts behaviour-driven development.',
       rules: [
         {
           name: 'behaviour-driven-development-adopted',
-          description: 'The project practises behaviour-driven development.',
+          description: 'This project practises behaviour-driven development.',
           statement: 'This project practises behaviour-driven development.',
-          why: "Its name carries the practice whole, each role's participation included.",
         },
       ],
     });
+  });
+
+  it('describes each rule in no more characters than its statement, each ruleset in no more than its longest statement', () => {
+    for (const ruleset of RULESETS) {
+      const longest = Math.max(...ruleset.rules.map((r) => r.statement.length));
+      expect(
+        ruleset.description.length,
+        `ruleset ${ruleset.name}`,
+      ).toBeLessThanOrEqual(longest);
+      for (const rule of ruleset.rules)
+        expect(
+          rule.description.length,
+          `rule ${rule.name}`,
+        ).toBeLessThanOrEqual(rule.statement.length);
+    }
+  });
+
+  it('gives a why only to the rules whose names do not carry it', () => {
+    const withWhy = RULESETS.flatMap((r) => r.rules)
+      .filter((rule) => 'why' in rule)
+      .map((rule) => rule.name);
+    expect(withWhy).toEqual([
+      'context-engineering-cratylic-context-design',
+      'context-engineering-living-documentation',
+      'context-engineering-affirmative-instruction',
+      'commit-discipline-own-paths',
+      'green-field',
+    ]);
   });
 
   it('projects every offered rule to rules/<name>.md when all are chosen, and none by default', async () => {

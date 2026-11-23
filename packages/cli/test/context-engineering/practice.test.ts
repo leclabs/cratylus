@@ -37,19 +37,21 @@ it('context-engineering/practice: a practice is adopted by its name', () => {
     {
       ruleset: 'behaviour-driven-development',
       rule: 'behaviour-driven-development-adopted',
-      description: 'The project practises behaviour-driven development.',
-      body:
-        'This project practises behaviour-driven development.\n\n' +
-        "Why: Its name carries the practice whole, each role's participation included.",
+      description: 'This project practises behaviour-driven development.',
+      body: 'This project practises behaviour-driven development.',
     },
     {
       ruleset: 'gitflow',
       rule: 'gitflow-adopted',
       description:
-        "The project follows gitflow, its integration branch develop unless the project's AGENTS.md names another.",
-      body:
-        "This project follows gitflow. Its integration branch is `develop` unless the project's AGENTS.md names another; a missing integration branch is escalated to the product owner.\n\n" +
-        "Why: Its name carries the branching model whole; only the integration branch is the project's own, and naming a missing one is the product owner's decision.",
+        'This project follows gitflow, its integration branch `develop` unless AGENTS.md names another.',
+      body: "This project follows gitflow, its integration branch `develop` unless the project's AGENTS.md names another; a missing one is escalated to the product owner.",
+    },
+    {
+      ruleset: 'conventional-commits',
+      rule: 'conventional-commits-adopted',
+      description: 'Commit messages follow Conventional Commits 1.0.0.',
+      body: 'Commit messages follow Conventional Commits 1.0.0.',
     },
   ];
   for (const { ruleset, rule, description, body } of practices) {
