@@ -7,7 +7,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const materialize: Skill = {
   name: 'materialize',
-  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its precising definition, and each other concept by the terms of the concepts it is built from, in a form chosen before writing, separate files or one document. Reach for it once concepts have their Cratylic names and must become context.`,
+  description: `Write a set of named concepts out as the text a model reads — each primitive concept once, by its term with its precising definition, and each other concept by the terms of the concepts it is built from, in a form chosen before writing, separate files or one document. Reach for it to write anything into text an agent reads — a project's context file such as AGENTS.md, an agent profile, a rule, a skill, a dispatch's context, a concept record — a new file or an edit to one; a concept still unnamed takes its name by signify first, and restating what such text already says is exemplify's.`,
   formalBlock: `C ≜ concept lattice
 prim : C → 𝔹
 fac : C → ℘(℘(C))
