@@ -1,5 +1,11 @@
 # @cratylus/forge
 
+## 0.25.0
+
+### Minor Changes
+
+- 26ddee7: The cratylus omp extension registers `--dump-system-prompt <file>`: on every turn of a session run with it, the file holds the system prompt that turn carries, its blocks marked apart.
+
 ## 0.24.0
 
 ### Minor Changes
