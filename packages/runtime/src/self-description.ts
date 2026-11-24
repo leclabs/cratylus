@@ -11,7 +11,7 @@
 import { CLI_BIN } from './bin-name.js';
 
 /** What the command is for: the domain model's purpose, restated for its reader. */
-export const PURPOSE = `${CLI_BIN} installs a team of AI agents in industry roles, with its rules, skills and capabilities, into the agent harness you already use. The team holds your meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.`;
+export const PURPOSE = `${CLI_BIN} installs a team of AI agents in industry roles, with its rules and capabilities, into the agent harness you already use. The team holds your meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.`;
 
 /** How using it starts. */
 export const START = `To start, launch the business analyst with \`omp --agent business-analyst\` and say what you want: it holds the domain model and hands the work to the other agents ${CLI_BIN} installed, so you write none of your own.`;
