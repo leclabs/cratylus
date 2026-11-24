@@ -5,20 +5,23 @@ import {
   readdirSync,
   realpathSync,
   rmSync,
-  statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 import canon from '@cratylus/canon';
 import { afterEach, expect, it } from 'vitest';
 import {
   type CommandResult,
   type Host,
+  files,
   host,
 } from '../capability-port/fixture.js';
 import { onTerminal } from '../terminal.js';
 import { parseYaml } from '../yaml.js';
+import { earlier, put } from './fixture.js';
 
 const INDUSTRY_ROLES = [
   'business-analyst',
@@ -86,27 +89,74 @@ function offeredAgents(home: string): string[] {
     .sort();
 }
 
-// The skills omp offers the user: each `skills/<name>/SKILL.md` of an extension package.
+// The skills omp offers from its user directories and installed packages.
 function offeredSkills(home: string): string[] {
-  return pluginPackages(home)
-    .flatMap((p) =>
-      entries(join(p, 'skills')).filter((s) =>
-        existsSync(join(p, 'skills', s, 'SKILL.md')),
-      ),
+  return [
+    join(home, '.agents/skills'),
+    join(home, '.omp/agent/skills'),
+    ...pluginPackages(home).map((p) => join(p, 'skills')),
+  ]
+    .flatMap((dir) =>
+      entries(dir).filter((name) => existsSync(join(dir, name, 'SKILL.md'))),
     )
     .sort();
 }
 
-// Every skill the canon ships: one directory per skill under its skill dir.
-function canonSkills(): string[] {
-  const dir = canon.skills;
-  expect(dir, 'the canon declares a skill dir').toBeTypeOf('string');
-  return entries(dir!)
-    .filter((s) => statSync(join(dir!, s)).isDirectory())
-    .sort();
+const releasedSkills = [
+  'conceptualize',
+  'elicit',
+  'exemplify',
+  'formalize',
+  'materialize',
+  'probe',
+  'signify',
+];
+
+// Reconstruct the skill-bearing subset of a published cratylus 0.26.0
+// `install --harness omp --model-roles default` in an empty home.
+function seedReleasedSkills(home: string): string {
+  const version = '0.26.0';
+  const root = join(home, '.cratylus/omp');
+  const plugins = join(home, '.omp/plugins');
+  const name = 'cratylus-omp';
+  put(join(root, 'package.json'), JSON.stringify({ name, version }));
+  put(
+    join(root, 'installation.json'),
+    JSON.stringify({
+      version,
+      scope: 'user',
+      references: [
+        { kind: 'link', path: `plugins/node_modules/${name}` },
+        {
+          kind: 'dependency',
+          path: 'plugins/package.json',
+          name,
+          created: true,
+        },
+      ],
+    }),
+  );
+  put(
+    join(plugins, 'package.json'),
+    JSON.stringify({ dependencies: { [name]: pathToFileURL(root).href } }),
+  );
+  const modules = join(plugins, 'node_modules');
+  mkdirSync(modules);
+  symlinkSync(root, join(modules, name), 'dir');
+  const skills = join(root, 'skills');
+  for (const skill of releasedSkills)
+    put(
+      join(skills, skill, 'SKILL.md'),
+      `---\nname: ${skill}\ndescription: Earlier cratylus skill\n---\n`,
+    );
+  return skills;
 }
 
 const said = (r: CommandResult) => `${r.stdout}\n${r.stderr}`;
+const skillReports = (r: CommandResult) =>
+  stripVTControlCharacters(said(r))
+    .split('\n')
+    .filter((line) => /^\s*skills:/.test(line));
 
 it('delivery/install: installs the industry roles', async () => {
   h = emptyHome();
@@ -121,15 +171,64 @@ it('delivery/install: installs the industry roles', async () => {
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
 });
 
-it('delivery/install: installs every agent and skill unattended', () => {
+it('delivery/install: installs every agent unattended', () => {
   h = emptyHome();
   // No terminal: `run` hands the command an empty stdin pipe and pipes its output.
   const r = h.command(['install', '--harness', 'omp']);
   expect(r.code, said(r)).toBe(0);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
-  const skills = canonSkills();
-  expect(skills.length, 'the canon ships skills').toBeGreaterThan(0);
-  expect(offeredSkills(h.home)).toEqual(skills);
+  expect(offeredSkills(h.home)).toEqual([]);
+  expect(skillReports(r), said(r)).toEqual([]);
+});
+
+it('delivery/install: removes a skill an earlier installation placed', () => {
+  h = emptyHome();
+  const skills = seedReleasedSkills(h.home);
+  expect(offeredSkills(h.home)).toEqual(releasedSkills);
+  const args = ['install', '--harness', 'omp'];
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect
+    .soft(skillReports(preview), said(preview))
+    .toEqual([
+      `  skills: would remove ${releasedSkills.join(', ')}, no longer installed`,
+    ]);
+  expect(offeredSkills(h.home)).toEqual(releasedSkills);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect
+    .soft(existsSync(skills), 'the earlier owned skills directory')
+    .toBe(false);
+  expect.soft(offeredSkills(h.home)).toEqual([]);
+  expect.soft(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
+  expect
+    .soft(skillReports(installed), said(installed))
+    .toEqual([
+      `  skills: removed ${releasedSkills.join(', ')}, no longer installed`,
+    ]);
+});
+
+it('reports each removed skill once across the owned root and earlier deploy record', () => {
+  h = emptyHome();
+  earlier(h);
+  const legacy = join(h.home, '.agents/skills');
+  const legacyFiles = files(legacy);
+  const ownedSkills = seedReleasedSkills(h.home);
+  const offered = offeredSkills(h.home);
+  const names = [...new Set(offered)];
+  expect(names).toContain('event-tap');
+  expect(offered.length).toBeGreaterThan(names.length);
+
+  const installed = h.command(['install', '--harness', 'omp']);
+  expect(installed.code, said(installed)).toBe(0);
+  expect.soft(existsSync(ownedSkills), ownedSkills).toBe(false);
+  for (const file of legacyFiles)
+    expect.soft(existsSync(file), file).toBe(false);
+  expect.soft(offeredSkills(h.home)).toEqual([]);
+  expect
+    .soft(skillReports(installed), said(installed))
+    .toEqual([`  skills: removed ${names.join(', ')}, no longer installed`]);
 });
 
 it('delivery/install: offers a ruleset added since the recorded choice', async () => {
