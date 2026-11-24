@@ -256,6 +256,59 @@ it('keeps an earlier skill whose file the host edited, and does not name it as r
   expect(stripVTControlCharacters(said(installed))).toContain(edited);
 });
 
+it('names an earlier skill whose SKILL.md is removed though the host edited its helper script', () => {
+  h = emptyHome();
+  earlier(h);
+  const helper = join(h.home, '.agents/skills/event-tap/scripts/eventTap.mjs');
+  const skill = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(helper, 'Mira edited this helper');
+  const names = [...new Set(offeredSkills(h.home))];
+  expect(names).toContain('event-tap');
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(skill)).toBe(true);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(skill), 'the skill file').toBe(false);
+  expect(readFileSync(helper, 'utf8')).toBe('Mira edited this helper');
+});
+
+it('does not name a skill of the owned root while an edited SKILL.md of its name stays', () => {
+  h = emptyHome();
+  earlier(h);
+  const edited = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(edited, 'Mira edited this skill');
+  const ownedSkills = seedReleasedSkills(h.home);
+  put(join(ownedSkills, 'event-tap/SKILL.md'), '---\nname: event-tap\n---\n');
+  const names = [...new Set(offeredSkills(h.home))].filter(
+    (name) => name !== 'event-tap',
+  );
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(ownedSkills), 'the owned skills directory').toBe(false);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+});
+
 it('replaces an owned root whose `skills` is a file, and names only the skill directories', () => {
   h = emptyHome();
   const skills = seedReleasedSkills(h.home);

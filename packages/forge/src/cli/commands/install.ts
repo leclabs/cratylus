@@ -68,7 +68,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { START } from '@cratylus/runtime';
 import {
   INSTALLATION_RECORD_FILE,
@@ -701,6 +701,7 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     // below), and those in the owned root this one replaces whole.
     const recorded = scope === 'user' ? recordedSkills(adapter, opts.home) : [];
     const skills = new Set(rootSkills(root));
+    const remaining = new Set<string>();
     // An earlier installation first: what it placed on the harness's own surfaces is
     // taken back by its record, so what follows meets the host's own files. It was
     // only ever the user's, and a project install writes nothing under the home.
@@ -716,17 +717,19 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       for (const r of earlier.removed)
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
-      const taken = new Set(earlier.removed.map((r) => r.what));
+      // A skill an earlier installation placed is named as removed when no SKILL.md of
+      // its name remains in any of those places: the owned root goes whole, so only a
+      // recorded SKILL.md the host edited can stay.
       const kept = new Set(earlier.left.map((l) => l.what));
-      // A skill is named as removed when it lost a file and kept none.
-      for (const { name, files } of recorded)
+      for (const { name, files } of recorded) {
+        skills.add(name);
         if (
-          files.some((file) => taken.has(file)) &&
-          !files.some((file) => kept.has(file))
+          files.some((file) => basename(file) === 'SKILL.md' && kept.has(file))
         )
-          skills.add(name);
+          remaining.add(name);
+      }
     }
-    found.skills = [...skills].sort();
+    found.skills = [...skills].filter((name) => !remaining.has(name)).sort();
     // Whether the status line shows the session's agent: the product owner's answer, written
     // as the host's own setting and recorded nowhere as cratylus's.
     if (agentStatus === 'show' && statusFile !== undefined)
