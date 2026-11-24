@@ -309,6 +309,38 @@ it('does not name a skill of the owned root while an edited SKILL.md of its name
   expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
 });
 
+it('does not name an earlier skill that is only in the record, its SKILL.md already absent', () => {
+  const args = ['install', '--harness', 'omp'];
+  // Every legacy skill file gone: nothing to remove, so no skills line.
+  h = emptyHome();
+  earlier(h);
+  rmSync(join(h.home, '.agents/skills'), { recursive: true, force: true });
+  for (const argv of [[...args, '--dry-run'], args]) {
+    const r = h.command(argv);
+    expect(r.code, said(r)).toBe(0);
+    expect(skillReports(r), said(r)).toEqual([]);
+  }
+  h.dispose();
+
+  // One of them gone: the others are named, it is not.
+  h = emptyHome();
+  earlier(h);
+  rmSync(join(h.home, '.agents/skills/probe'), { recursive: true });
+  const names = [...new Set(offeredSkills(h.home))];
+  expect(names).not.toContain('probe');
+  expect(names.length).toBeGreaterThan(0);
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+});
+
 it('replaces an owned root whose `skills` is a file, and names only the skill directories', () => {
   h = emptyHome();
   const skills = seedReleasedSkills(h.home);

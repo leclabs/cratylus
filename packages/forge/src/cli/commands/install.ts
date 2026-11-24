@@ -717,16 +717,17 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       for (const r of earlier.removed)
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
-      // A skill an earlier installation placed is named as removed when no SKILL.md of
-      // its name remains in any of those places: the owned root goes whole, so only a
-      // recorded SKILL.md the host edited can stay.
+      // A legacy skill is named as removed when the run removes a SKILL.md of it; the
+      // owned root goes whole, so a name is out again only where the host kept a
+      // recorded SKILL.md of it.
+      const taken = new Set(earlier.removed.map((r) => r.what));
       const kept = new Set(earlier.left.map((l) => l.what));
       for (const { name, files } of recorded) {
-        skills.add(name);
-        if (
-          files.some((file) => basename(file) === 'SKILL.md' && kept.has(file))
-        )
-          remaining.add(name);
+        const skillFiles = files.filter(
+          (file) => basename(file) === 'SKILL.md',
+        );
+        if (skillFiles.some((file) => taken.has(file))) skills.add(name);
+        if (skillFiles.some((file) => kept.has(file))) remaining.add(name);
       }
     }
     found.skills = [...skills].filter((name) => !remaining.has(name)).sort();
