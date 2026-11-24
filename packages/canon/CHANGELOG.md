@@ -1,5 +1,22 @@
 # @cratylus/canon
 
+## 0.27.0
+
+### Minor Changes
+
+- 1f523cd: The business analyst's backbrief carries its moment and its source of intent: it opens each session and meets each new intent, stating its own profile's intent and then the product owner's, given by his words alone; a handoff, a recalled memory or a document read, at his request or not, states what holds and gives none of that intent. It acts on that intent without waiting, except at an escalation fork or with no intent given.
+- 6d7c400: BREAKING: cratylus installs agents, rules and capabilities, and no skills. The seven skills (conceptualize, elicit, exemplify, formalize, materialize, probe and signify) are removed from the canon, the schema's `Skill`, `SkillExpression`, `SkillDeploy` and `CapabilityName`, forge's projection, and the runtime's skill-sourced capability configuration (`runtime.json`, `loadRuntimeConfig`). The principle and its moment are stated in the Cratylic context design rule.
+
+  Install removes each skill an earlier installation placed, from the root it replaces and from the earlier deploy record, and names it as no longer installed: `skills: removed <name>, … , no longer installed` in its report.
+
+  The Cratylic context design rule states its scope, every text an agent reads: a project's context file, an agent's profile, a rule, a dispatch's context and a concept record among them. The command's purpose reads "with its rules and capabilities".
+
+### Patch Changes
+
+- f5d73be: The context-engineering rule `context-engineering-context-sharing` states that a handoff goes to a worker as its assignment, self-contained, and that a session's continuity is the project's persistent context, so a session writes no handoff for its own successor.
+- Updated dependencies [6d7c400]
+  - @cratylus/schema@0.17.0
+
 ## 0.26.0
 
 ### Minor Changes
