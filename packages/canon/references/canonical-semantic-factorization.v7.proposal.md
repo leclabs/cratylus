@@ -3,9 +3,8 @@
 > **A proposal, kept as a record.** This is the seventh statement of the factorization, in its
 > fullest notation: the reader R, its closure `cl_R`, its decoder `dec_R` and the round trip
 > `REC_R`. No code reads this file. The principle and its moment are stated in the Cratylic
-> context design rule, and each method (`signify`, `materialize`, `conceptualize`, `exemplify`)
-> is invoked by the name the agent profiles already give it. Where this text and the rule
-> differ, the rule is what runs.
+> context design rule; this text leaves the formal procedures as history. Where this text and
+> the rule differ, the rule is what runs.
 
 ```text
 R              — the reader; the priors that fix every meaning here

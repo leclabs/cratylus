@@ -6,7 +6,7 @@
 "cratylus": minor
 ---
 
-BREAKING: cratylus installs agents, rules and capabilities, and no skills. The seven skills (conceptualize, elicit, exemplify, formalize, materialize, probe and signify) are removed from the canon, the schema's `Skill`, `SkillExpression`, `SkillDeploy` and `CapabilityName`, forge's projection, and the runtime's skill-sourced capability configuration (`runtime.json`, `loadRuntimeConfig`). The principle and its moment are stated in the Cratylic context design rule, and each method is invoked by the name the agent profiles already give it.
+BREAKING: cratylus installs agents, rules and capabilities, and no skills. The seven skills (conceptualize, elicit, exemplify, formalize, materialize, probe and signify) are removed from the canon, the schema's `Skill`, `SkillExpression`, `SkillDeploy` and `CapabilityName`, forge's projection, and the runtime's skill-sourced capability configuration (`runtime.json`, `loadRuntimeConfig`). The principle and its moment are stated in the Cratylic context design rule.
 
 Install removes each skill an earlier installation placed, from the root it replaces and from the earlier deploy record, and names it as no longer installed: `skills: removed <name>, … , no longer installed` in its report.
 

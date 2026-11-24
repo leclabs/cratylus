@@ -1,10 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The INSTALLATION — what the projection told this host.
+// The INSTALLATION — the metadata the runtime reads of what install placed for this host.
 //
 // Everything cratylus places for a user on a harness lives under one root it owns,
-// `~/.cratylus/<harness>/` (the owned root): the canon's agents and rules, the
-// harness's adapters and the version of cratylus that projected them (`package.json`'s
-// `version`). The runtime reads them from there.
+// `~/.cratylus/<harness>/` (the owned root). The runtime reads two things of it: the
+// version of cratylus that projected it (the root's `package.json`'s `version`) and its
+// scope (`installation.json`).
 //
 // WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
 // call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
