@@ -9,11 +9,9 @@
 
 export { placedFileState } from './local.js';
 
-// The capability configuration install writes into the owned root, and the earlier
-// layout's host config beside the harness home, which an upgrade or uninstall takes
-// back while it is what was written.
+// The earlier layout's host config beside the harness home, which an upgrade or
+// uninstall takes back while it is what was written.
 export {
-  capabilityConfiguration,
   runtimeConfigTarget,
   serializeRuntimeConfig,
   withoutRuntimeParts,

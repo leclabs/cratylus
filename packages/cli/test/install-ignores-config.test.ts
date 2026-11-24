@@ -3,7 +3,7 @@
 //
 // `cratylus install` always installs the canon the command is built with. A
 // `cratylus.config.ts` where it runs, naming another plugin, is read by nothing: the
-// run succeeds and places the same agents and skills a run from an empty directory
+// run succeeds and places the same agents a run from an empty directory
 // does. The file writes a marker when it is loaded, so reading it is seen too.
 //
 // Held on the BUILT bin, as closed-pipe.test.ts is: the cli package's test task
@@ -28,7 +28,7 @@ const bin = join(here, '..', 'dist', 'cratylus.js');
 
 const CONFIG = `import { writeFileSync } from 'node:fs';
 writeFileSync(new URL('./config-was-read', import.meta.url), '');
-const acme = { name: 'acme', agents: './acme-agents', skills: './acme-skills' };
+const acme = { name: 'acme', agents: './acme-agents' };
 export default { extends: [acme] };
 `;
 
@@ -58,10 +58,10 @@ function installFrom(cwd: string, name: string) {
     { cwd, env: { ...process.env, HOME: home }, input: '', encoding: 'utf8' },
   );
   const owned = join(home, '.cratylus', 'omp');
-  const [agents = [], skills = []] = ['agents', 'skills'].map((dir) =>
-    existsSync(join(owned, dir)) ? readdirSync(join(owned, dir)).sort() : [],
-  );
-  return { code: r.status, output: r.stdout + r.stderr, agents, skills };
+  const agents = existsSync(join(owned, 'agents'))
+    ? readdirSync(join(owned, 'agents')).sort()
+    : [];
+  return { code: r.status, output: r.stdout + r.stderr, agents };
 }
 
 it('installs the canon cratylus ships from a directory whose cratylus.config.ts names another plugin, without reading it', () => {
@@ -74,11 +74,9 @@ it('installs the canon cratylus ships from a directory whose cratylus.config.ts 
   const bundled = installFrom(plain, 'plain');
   expect(bundled.code, bundled.output).toBe(0);
   expect(bundled.agents.length).toBeGreaterThan(0);
-  expect(bundled.skills.length).toBeGreaterThan(0);
 
   const ran = installFrom(configured, 'configured');
   expect(ran.code, ran.output).toBe(0);
   expect(ran.agents).toEqual(bundled.agents);
-  expect(ran.skills).toEqual(bundled.skills);
   expect(existsSync(join(configured, 'config-was-read'))).toBe(false);
 }, 60_000);

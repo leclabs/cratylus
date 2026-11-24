@@ -22,7 +22,6 @@ import {
   type ProjectionFacts,
   type Rule,
   type Ruleset,
-  type Skill,
   hookIrOf,
   mergeManifest,
   resolveWorker,
@@ -33,7 +32,6 @@ import {
   type PluginValueCatalogs,
   enumeratePluginValueCatalogs,
 } from '../catalog/index.js';
-import type { ResolvedSkill } from '../core/body.js';
 import { enforcingValuesOf } from '../core/exemplify/factor-fields.js';
 import {
   ENFORCING_STAGE_DIR,
@@ -42,8 +40,6 @@ import {
 } from '../core/harness-adapter.js';
 import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
 import { realizationOf } from './realization.js';
-import { resolveSkills, skillClosure } from './resolve-skills.js';
-import { runtimeShimContent } from './runtime-shim.js';
 
 /**
  * THE PROJECTOR'S FACT TABLE — every value a worker template may ask for by name.
@@ -77,11 +73,10 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
   };
 }
 
-/** The plugin fields projection consumes — the dirs a plugin contributes its agents, skills, values and hooks from. */
+/** The plugin fields projection consumes — the dirs a plugin contributes its agents, values and hooks from. */
 export interface ProjectablePlugin {
   readonly name: string;
   readonly agents?: string;
-  readonly skills?: string;
   /** Factors dir, holding each factor's values — scanned `<dir>/<factor>/*.ts` by `discoverValues`. */
   readonly factors?: string;
   /** Dir of hook declaration modules this plugin contributes. */
@@ -95,7 +90,7 @@ export interface ProjectablePlugin {
 export interface ProjectOpts {
   /** The resolved plugin set, in `extends` order. */
   readonly plugins: readonly ProjectablePlugin[];
-  /** The harness adapter that renders each agent, skill and hook. */
+  /** The harness adapter that renders each agent and hook. */
   readonly adapter: HarnessAdapter;
   /**
    * `term → HarnessMechanism` — the realization payloads for this canon's
@@ -119,14 +114,6 @@ export interface ProjectOpts {
    */
   readonly warn?: (line: string) => void;
   /**
-   * The home directory these definitions will be installed under, when the caller
-   * knows it, as `install` does. A harness whose main-session
-   * hook prints each skill's directory (`mainSessionSkillHook`) weighs a skill
-   * against its cap with this path, since a longer home is a longer output. Absent,
-   * the weighing is a lower bound.
-   */
-  readonly hostHome?: string;
-  /**
    * The rules to render, by name, each to `rules/<file>` as the adapter writes it
    * (`HarnessAdapter.ruleDef`). ABSENT or EMPTY ⇒ none: a rule is placed only where
    * it is chosen. A name that is no rule of the plugin set's offered rulesets is
@@ -144,21 +131,19 @@ interface AgentSrc {
 
 export interface ProjectReport {
   readonly agents: number;
-  readonly skills: number;
-  readonly shims: number;
   readonly hooks: number;
 }
 
 /**
  * ONE projected artifact: its path RELATIVE to the render-tree root, plus its bytes.
- * `HarnessAdapter` already hands back `{ filename, content }` per agent, skill or hook; this is that
+ * `HarnessAdapter` already hands back `{ filename, content }` per agent or hook; this is that
  * pair once the projection has decided which subtree it belongs under.
  */
 export interface ProjectedFile {
-  /** Path relative to the render-tree root, e.g. `skills/praxis/SKILL.md`. */
+  /** Path relative to the render-tree root, e.g. `agents/mav.md`. */
   readonly path: string;
   readonly content: string;
-  /** 0755 on write (shims, hook workers). Absent ⇒ ambient umask. */
+  /** 0755 on write (hook workers). Absent ⇒ ambient umask. */
   readonly executable?: boolean;
 }
 
@@ -332,19 +317,6 @@ export async function discoverValues(
     : enumeratePluginValueCatalogs(roots, mergeManifest(plugins));
 }
 
-/** A skill as the adapters render it. */
-function resolvedSkillOf(skill: Skill): ResolvedSkill {
-  return {
-    name: skill.name,
-    trigger: `/${skill.name}`,
-    description: skill.description,
-    formalBlock: skill.formalBlock,
-    composedFrom: skill.composition().map((c) => `/${c.name}`),
-    ...(skill.preamble ? { preamble: skill.preamble } : {}),
-    runtime: skill.runtime,
-  };
-}
-
 /**
  * The rulesets a plugin set offers, in declaration order. A later plugin's ruleset
  * of the same name REPLACES an earlier one's (and is logged), as an agent does. A
@@ -400,22 +372,22 @@ function selectRules(
 }
 
 /**
- * Project every agent, skill and hook contributed by the plugin set into an artifact
+ * Project every agent and hook contributed by the plugin set into an artifact
  * tree. Writes nothing.
  *
  * Later plugins in `extends` order win on a name collision, so a consumer can
- * override a canon AGENT or SKILL by shipping one of the same name. The winner is
+ * override a canon AGENT by shipping one of the same name. The winner is
  * reported, never silently applied.
  *
- * Agents and skills on one side and values on the other override ASYMMETRICALLY,
+ * Agents on one side and values on the other override ASYMMETRICALLY,
  * deliberately:
  *
- *   agent, skill — collides BY NAME, later plugin wins (here)
+ *   agent        — collides BY NAME, later plugin wins (here)
  *   value        — does NOT collide. `enumeratePluginValueCatalogs` mints a distinct node
  *                  per plugin (`catalog/index.ts`, id `<plugin>:<factor>/<export>`),
  *                  so two plugins naming `parsimony` yield two nodes, not a contest.
  *
- * The asymmetry is right and worth keeping. An agent or skill is a COMPOSITION — a
+ * The asymmetry is right and worth keeping. An agent is a COMPOSITION — a
  * local assembly choice, and overriding one changes only it. A value is
  * canonical VOCABULARY: overriding it by name would silently redefine a concept
  * everywhere any agent selects it, across the whole plugin set, with no site
@@ -439,12 +411,8 @@ export async function projectPluginSet(
   const manifest = mergeManifest(opts.plugins, log);
 
   // Collect by DECLARED name across plugins first, so an override is resolved BEFORE
-  // any agent or skill is rendered and can be logged rather than discovered as a clobbered file.
+  // any agent is rendered and can be logged rather than discovered as a clobbered file.
   const agentSrc = await declaredAgents(opts.plugins, log);
-  const allSkills = await resolveSkills(opts.plugins, log);
-  // The roster an agent's skill closure is read against: the skills that DEPLOY,
-  // so a later plugin's same-name override changes the closure too.
-  const roster = new Map(allSkills.map((s) => [s.name, s.skill]));
 
   // RULES. None is the default: a rule is rendered only where it is named, and a
   // name that is no offered rule is refused here, before a byte is rendered.
@@ -466,32 +434,15 @@ export async function projectPluginSet(
   for (const [name, { agent: bodied }] of [...agentSrc].sort(([a], [b]) =>
     a < b ? -1 : a > b ? 1 : 0,
   )) {
-    // THE CLOSURE, computed once and here: an agent is GIVEN its skills together
-    // with everything they compose, and every adapter renders the list it is
-    // handed rather than computing its own.
-    const skills = skillClosure(bodied.skills ?? [], roster);
-    const agent = skills.length > 0 ? { ...bodied, skills } : bodied;
-    composed.push({ name, agent });
+    composed.push({ name, agent: bodied });
     pending.push(name);
-  }
-
-  // A HARNESS THAT CANNOT PRELOAD A SKILL still gets the agent's skills, as a
-  // declaration its adapter renders into the definition: the floor is a steer,
-  // never silence. The shortfall is reported once per agent it costs.
-  if (!opts.adapter.preloadsSkills) {
-    for (const { name, agent } of composed) {
-      if (!agent.skills?.length) continue;
-      warn(
-        `agent '${name}' is given skills ${agent.skills.join(', ')}, but the '${opts.adapter.name}' adapter has no agent-definition field that preloads a skill. No native field is emitted; the skills reach the agent as a required-reading declaration in its definition — a steer, not a preload.`,
-      );
-    }
   }
 
   // A HARNESS THAT CANNOT START AN AGENT IN A WORKTREE OF ITS OWN runs the agent
   // where its dispatcher runs — or, where it can isolate a dispatched agent by other
   // means (`dispatchIsolation`), in the copy that isolation makes. The declaration is
   // not carried as a worktree, and the shortfall is reported once per agent it
-  // costs, beside the skill-preload shortfall above, and named in the tree for a
+  // costs, and named in the tree for a
   // consumer that tells the product owner what the harness lacks.
   const unisolated: string[] = [];
   if (!opts.adapter.startsInWorktree) {
@@ -503,31 +454,6 @@ export async function projectPluginSet(
         dispatchIsolation === undefined
           ? `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; the agent runs in the checkout its dispatcher runs in.`
           : `agent '${name}' runs in a git worktree of its own, but the '${opts.adapter.name}' adapter has no agent-definition field that starts an agent in one. No native field is emitted; a dispatch of it is made an isolated task, so it runs in an isolated copy of its dispatcher's checkout, ${dispatchIsolation.lacks}.`,
-      );
-    }
-  }
-
-  // A SKILL THE MAIN-SESSION HOOK CANNOT CARRY. Where a harness carries a persona's
-  // skills into its main session by a hook that prints each one, the harness caps
-  // what one hook may print — and a body over the cap arrives as a preview the
-  // model is not asked to read, in silence. So each skill an agent is given is
-  // weighed here against the cap, once, and one over it is handed to the adapter to
-  // name as required reading instead of hooking. It is never trimmed to fit.
-  const oversizedSkills = new Set<string>();
-  const mainSessionHook = opts.adapter.mainSessionSkillHook;
-  if (mainSessionHook) {
-    const given = new Set(composed.flatMap((c) => c.agent.skills ?? []));
-    for (const { name, skill } of allSkills) {
-      if (!given.has(name)) continue;
-      const size = mainSessionHook.size(
-        name,
-        opts.adapter.skillDef(resolvedSkillOf(skill)).content,
-        opts.hostHome,
-      );
-      if (size <= mainSessionHook.cap) continue;
-      oversizedSkills.add(name);
-      warn(
-        `skill '${name}' prints ${size} characters into a '${opts.adapter.name}' main session, over the harness's per-hook output cap of ${mainSessionHook.cap}. ${opts.hostHome === undefined ? '' : `Measured with the host home '${opts.hostHome}'. `}The hook names it as required reading in place of printing it, for each agent composing it, so the Skill tool loads it on demand.`,
       );
     }
   }
@@ -565,7 +491,6 @@ export async function projectPluginSet(
     const { filename, content } = opts.adapter.agentDef(agent, {
       manifest,
       ...(mechanisms ? { mechanisms } : {}),
-      ...(oversizedSkills.size > 0 ? { oversizedSkills } : {}),
     });
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
@@ -675,29 +600,6 @@ export async function projectPluginSet(
     const { filename, content } = opts.adapter.ruleDef(rule);
     files.push({ path: join('rules', filename), content });
     log(`EMIT rule ${rule.name}`);
-  }
-
-  let skills = 0;
-  let shims = 0;
-  for (const { name, skill } of allSkills) {
-    const resolved = resolvedSkillOf(skill);
-    const skillOut = join('skills', name);
-    const { filename, content } = opts.adapter.skillDef(resolved);
-    files.push({ path: join(skillOut, filename), content });
-    if (skill.runtime) {
-      files.push({
-        path: join(skillOut, 'scripts', `${skill.runtime.capability}.mjs`),
-        content: runtimeShimContent(skill.runtime.capability),
-        executable: true,
-      });
-      log(
-        `EMIT skill ${name} (+runtime shim scripts/${skill.runtime.capability}.mjs)`,
-      );
-      shims++;
-    } else {
-      log(`EMIT skill ${name}`);
-    }
-    skills++;
   }
 
   // Hooks. Only `harness`-substrate hooks register in settings.json; a
@@ -857,8 +759,6 @@ export async function projectPluginSet(
   return {
     files,
     agents,
-    skills,
-    shims,
     hooks,
     agentNames: [...agentNames].sort(),
     agentModels,
@@ -874,5 +774,3 @@ export async function projectPluginSet(
     })),
   };
 }
-
-export { emitRuntimeShim } from './runtime-shim.js';

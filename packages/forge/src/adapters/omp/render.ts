@@ -26,8 +26,6 @@
 //   - an AGENT is `agents/<name>.md`, discovered by omp from the package's
 //     `agents/` for every project, first-wins by exact name after a project's
 //     `.omp/agents` and the user's own `~/.omp/agent/agents`.
-//   - a SKILL is `skills/<name>/SKILL.md`, the AgentSkills shape, discovered from
-//     the package's `skills/`.
 //   - a RULE is `rules/<name>.md`, discovered from the package's `rules/`; its
 //     front-matter `alwaysApply: true` has omp inject it into every session.
 //   - ENFORCEMENT and the capability tools are TypeScript modules under
@@ -35,7 +33,7 @@
 //     No hook CONFIG exists at all: the package names its modules.
 //
 // At project scope the same layout lands under the project's `.omp/`, which omp reads
-// natively as `agents/`, `skills/` and `extensions/`.
+// natively as `agents/`, `rules/` and `extensions/`.
 //
 // NOTHING IS SCOPED PER AGENT. omp loads extension modules for every session, and
 // nothing in an agent declaration names a module of its own. So every module this
@@ -49,8 +47,8 @@
 // tools and may dispatch any agent.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's factor sections,
-// identical whichever harness carries them. So this module REUSES `agentBody` /
-// `skillBody` from core and adds only the omp-specific FRAMING.
+// identical whichever harness carries them. So this module REUSES `agentBody`
+// from core and adds only the omp-specific FRAMING.
 
 // The bin's ONE authored home. This artifact is named after the TOOL that emits
 // it, so a rename must carry it — the same reason a hook worker carries `{{fact:runtime-bin}}`
@@ -66,7 +64,7 @@ import {
 } from '@cratylus/runtime/runtime-config';
 import type { Agent, Rule } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
-import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
+import { agentBody } from '../../core/body.js';
 import {
   type AgentDefContext,
   type DispatchIsolation,
@@ -85,8 +83,6 @@ import {
   ompBindingOf,
 } from './events.js';
 
-export type { ResolvedSkill };
-
 /** The task-agent discovery dir of an omp extension package (and of a project's
  *  `.omp/`): `agents/`. */
 export const OMP_AGENT_DEF_DIR = 'agents';
@@ -96,16 +92,6 @@ export const OMP_AGENT_DEF_DIR = 'agents';
  *  project's `.omp/agents/`. One artifact serves dispatch and `omp --agent <name>`. */
 export function ompAgentRel(name: string): string {
   return `${OMP_AGENT_DEF_DIR}/${name}.md`;
-}
-
-/** Where skill `<name>` lands, relative to the root it is placed in: ONE path,
- *  `skills/<name>`, which omp discovers in an extension package and in a project's
- *  `.omp/`. `agents` goes unused: omp scopes no skill reader per agent. */
-export function ompSkillRel(
-  name: string,
-  _agents: readonly string[],
-): readonly string[] {
-  return [`skills/${name}`];
 }
 
 /** The directory every extension module lands in, relative to the root it is placed
@@ -278,7 +264,7 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  *
  * **FRONT-MATTER, in this order:** `name`, `description`, `mark` (only with one),
  * `key: null`, `model`, `spawns: "*"`, `output` and `assignment` (only with a typed
- * handoff), `autoloadSkills` (only with skills). No `tools`: every agent keeps omp's
+ * handoff). No `tools`: every agent keeps omp's
  * default tools, and `spawns` says outright that it may dispatch any agent,
  * whatever omp would infer from its tools.
  * `parseAgentFields` treats a missing `name` or `description` as a parse failure
@@ -302,18 +288,6 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * schema is {@link OMP_ASSIGNMENT_KEY}, whose form the extension shows every turn
  * to a session that may dispatch the agent.
  *
- * **`autoloadSkills` CARRIES THE SKILL CLOSURE.** Which skills
- * an agent operates through is a fact about the COMPOSED AGENT: the skills it
- * declares together with every skill they compose, the closure projection
- * computes and hands this adapter as `Agent.skills`, rendered here in the order
- * it arrives. Emitted only when that list is non-empty, so an agent given none
- * carries no such key. omp honours the field for a
- * DISPATCHED subagent — the skills are injected before the child's first
- * prompt. A MAIN session started by `omp --agent` has no native path for it, so
- * the cratylus extension inlines them: every turn's system prompt carries the full
- * instructions of each named skill in omp's own autoload form
- * ({@link ompCapabilityExtensions}).
- *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — every persona's description does ("Architect expert in
  * software engineering: models …"), which makes the document a scanner error.
@@ -321,9 +295,7 @@ export const OMP_ASSIGNMENT_KEY = 'assignment';
  * logging a warning on every discovery pass, so the defect is invisible right up
  * until a description grows a `#` or a newline and the fallback loses it too.
  * Double-quoted with `"` and `\` escaped, every description this canon can
- * produce is a legal one-line YAML scalar. Each skill name is quoted by the same
- * rule, which makes the emitted flow sequence identical in shape to the one omp's
- * own agent-definition template writes.
+ * produce is a legal one-line YAML scalar.
  *
  * **THE BODY IS forge's `agentBody`**, harness-neutral: the mark, name and
  * description as its heading, then the agent's text values by group. Reach and model
@@ -344,11 +316,6 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
     fm.push(`output: ${JSON.stringify(a.contract.deliverable)}`);
   if (a.contract?.assignment !== undefined)
     fm.push(`${OMP_ASSIGNMENT_KEY}: ${JSON.stringify(a.contract.assignment)}`);
-  // omp's own preload field. claude has one too (`skills`); a harness without one
-  // gets the list as a required-reading declaration instead.
-  if (a.skills?.length) {
-    fm.push(`autoloadSkills: [${a.skills.map(yamlString).join(', ')}]`);
-  }
   return `---\n${fm.join('\n')}\n---\n\n${agentBody(a, ctx.manifest).replace(/\n+$/, '')}\n`;
 }
 
@@ -358,21 +325,6 @@ export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
  *  line-based fallback parser omp reaches for when the real one fails. */
 function yamlString(s: string): string {
   return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\r?\n/g, ' ')}"`;
-}
-
-// ── Skill projection → skills/<name>/SKILL.md ────────────────────────────────
-
-/**
- * The omp SKILL.md for a resolved skill — the AgentSkills front-matter pair plus
- * the harness-neutral body, identical in shape to claude's projection because
- * both consume the same spec.
- */
-export function skillToOmpMd(s: ResolvedSkill): string {
-  const fm = [
-    `name: ${yamlString(s.name)}`,
-    `description: ${yamlString(s.description)}`,
-  ];
-  return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
 }
 
 // ── Rule projection → rules/<name>.md ────────────────────────────────────────
@@ -1328,7 +1280,7 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
  * reached `<bin> --explain` once, beside the capabilities' own, and keeps the
  * `orientation` it answers; every turn of every session, launched or not, main or
  * dispatched, carries it verbatim right after omp's own system prompt, as that session
- * holds it, before the skills and assignment forms. The module restates no word of it; a
+ * holds it, before the assignment forms. The module restates no word of it; a
  * command that cannot explain itself adds nothing and fails nothing.
  *
  * NO CALL IS REFUSED HERE FOR WHAT IT CHANGES. A protected path is guarded by the
@@ -1372,14 +1324,10 @@ const OMP_PROMPT_REMOVALS: readonly OmpPromptRemoval[] = [
  * block, the last block that begins `⁂ Role`), so a context file, or a `⁂ Context` of an
  * assignment, quoting a passage keeps it; a child's per-spawn `⁂ Role` section, whose body now opens
  * the prompt, is cut. The module ships no copy of omp's prompt, adds no counter-instruction
- * and changes no omp setting. The main session's prompt is the definition, omp's prompt so
- * changed, the orientation, the full instructions of each skill its `autoload-skills`
- * names (found among the skills omp discovered for the session, an unknown name skipped as
- * dispatch skips it, rendered by omp's own `buildSkillPromptMessage` in the autoload form a
- * dispatched child receives) and the assignment forms; a child's, the definition, omp's
- * prompt so changed, the orientation and the assignment forms (omp loads a child's skills
- * itself). A main session launched as any other declaration keeps omp's prompt whole, the
- * declaration and its skills following the orientation, and so does every other session. All of
+ * and changes no omp setting. The prompt of a main session launched as a cratylus agent, and
+ * of a dispatched child, is the definition, omp's prompt so changed, the orientation and the
+ * assignment forms. A main session launched as any other declaration keeps omp's prompt whole,
+ * the declaration following the orientation, and so does every other session. All of
  * it is made in `before_agent_start`, so a rebuilt base prompt never drops it.
  *
  * A PASSAGE OMP'S PROMPT NO LONGER HOLDS is said once, at session start, in one warning
@@ -1443,7 +1391,7 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '// tool, composed at session load from what the command explains of it, and run by that',
         '// command on every call; and starts the main session as an agent definition omp',
         '// discovers, by `omp --agent <name>`, holding the whole definition as a dispatched child',
-        '// holds it: its text, model, effort, skills loaded at start, read summarisation, advisor',
+        '// holds it: its text, model, effort, read summarisation, advisor',
         "// and pre-planning, and no default personality; the product owner's own flags win. One value",
         "// omp's own dispatch drops is held as declared: `read-summarize: true` (on).",
         '//',
@@ -1482,7 +1430,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         'import { cfgModelRoles } from "@oh-my-pi/pi-coding-agent/config/model-settings";',
         'import { lookup } from "@oh-my-pi/pi-coding-agent/config/registry";',
         'import { findScopedSettings, type Settings, settings } from "@oh-my-pi/pi-coding-agent/config/settings";',
-        'import { buildSkillPromptMessage, getActiveSkills } from "@oh-my-pi/pi-coding-agent/extensibility/skills";',
         'import { cfgPersonality, cfgPrewalkEnabled } from "@oh-my-pi/pi-coding-agent/session/settings";',
         'import { discoverAgents } from "@oh-my-pi/pi-coding-agent/task/discovery";',
         'import { resolveAgentPrewalkDefault } from "@oh-my-pi/pi-coding-agent/task/prewalk";',
@@ -1844,19 +1791,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  );',
         '}',
         '',
-        '// The skills the declaration loads at start, found among those omp discovered for the session',
-        '// (a name omp does not know is skipped, as dispatch skips it), each as omp renders it for a',
-        "// dispatched child: its full instructions in omp's autoload message.",
-        'async function skills({ autoloadSkills }: AgentDefinition): Promise<string[]> {',
-        '  const known = getActiveSkills();',
-        '  const loaded = (autoloadSkills ?? [])',
-        '    .map((name) => known.find((skill) => skill.name === name))',
-        '    .filter((skill) => skill !== undefined);',
-        '  return Promise.all(',
-        '    loaded.map(async (skill) => (await buildSkillPromptMessage(skill, { args: "" }, "autoload")).message),',
-        '  );',
-        '}',
-        '',
         "// What the session's runtime settings layer holds at `path`, so a launch puts back exactly that.",
         'function runtimeAt(scope: Settings, path: readonly string[]): unknown {',
         '  let at: unknown = scope.overlayLayers().overrides;',
@@ -2029,10 +1963,9 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '  });',
         '  pi.on("session_switch", (_event, ctx) => launch(ctx as unknown as Session, false));',
         `  // Every turn's prompt: a ${CLI_BIN} agent's session opens with its definition, then omp's own`,
-        "  // prompt with the judged passages removed, then the reached command's orientation, then (a",
-        '  // main session) the full instructions of the skills the declaration loads at start, so a',
-        "  // rebuilt base prompt drops none of them. Any other launch keeps omp's prompt whole, the",
-        '  // orientation, then its declaration and skills. Every session, launched or not, main or',
+        "  // prompt with the judged passages removed, then the reached command's orientation, then the",
+        "  // assignment forms. Any other launch keeps omp's prompt whole, the orientation, then its",
+        '  // declaration. Every session, launched or not, main or',
         "  // dispatched, carries the command's orientation and the assignment form of each agent that",
         '  // takes a typed one.',
         '  pi.on("before_agent_start", async (event, ctx) => {',
@@ -2064,7 +1997,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '          instructions(now.declaration),',
         '          ...removed(event.systemPrompt, false),',
         '          ...oriented,',
-        '          ...(await skills(now.declaration)),',
         '          ...formed,',
         '        ],',
         '      };',
@@ -2079,7 +2011,6 @@ export function ompCapabilityExtensions(): HarnessProjection[] {
         '        ...event.systemPrompt,',
         '        ...oriented,',
         '        instructions(now.declaration),',
-        '        ...(await skills(now.declaration)),',
         '        ...formed,',
         '      ],',
         '    };',
@@ -2191,8 +2122,6 @@ export const ompHarnessAdapter: HarnessAdapter = {
   agentExt: '.md',
   // OMP loads this generated session hook module.
   hooksFile: `extensions/${OMP_SESSION_MODULE}`,
-  // `autoloadSkills` names skills omp preloads into the agent it defines.
-  preloadsSkills: true,
   // omp's agent definition reader takes no field that isolates an agent: its task
   // isolation is a flag of each dispatch, so nothing here starts one agent in a
   // worktree of its own off a line. Projection warns; `dispatchIsolation` is what
@@ -2222,9 +2151,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
     filename: `${a.name}.md`,
     content: agentToOmpMd(a, ctx),
   }),
-  skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
   ruleDef: (r) => ({ filename: `${r.name}.md`, content: ruleToOmpMd(r) }),
-  skillRel: ompSkillRel,
   // The session module: the hooks no agent composes.
   scopeActivatedSurface: (hooks) => ompScopeActivatedExtensions(hooks),
   // The dispatch isolation and reach modules: what this harness composes from the

@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
   "version": "0.26.0",
-  "description": "The canon cratylus ships — its agents, skills, rules and the factors' values, each concept as its Cratylic name with its precising definition where it needs one, in its bounded context, as typed TS source. Markdown is a projection of these modules.",
+  "description": "The canon cratylus ships — its agents, rules and the factors' values, each concept as its Cratylic name with its precising definition where it needs one, in its bounded context, as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -23,7 +23,6 @@
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json"
   },
-  "//test": "`test` needs this package BUILT because `test/projection-stability.test.ts` holds the built skill roster in `dist/` to the source one. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so turbo.json names this package's own `build` for its `test`.",
   "dependencies": {
     "@cratylus/schema": "workspace:*"
   },
@@ -43,7 +42,6 @@
     "cratylus",
     "canon",
     "agent",
-    "skill",
     "prompt",
     "llm",
     "semantic-address"

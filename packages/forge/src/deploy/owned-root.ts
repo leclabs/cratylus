@@ -9,14 +9,12 @@
 // For omp the root is an extension package, laid out as omp reads one:
 //
 //   agents/<name>.md        the canon's agent declarations
-//   skills/<name>/…         the canon's skills
 //   rules/<name>.md         the rules chosen at install, each applied in every session
 //   extensions/<module>.ts  the harness's adapters (the capability tools, the session
 //                           hooks, the dispatch isolation, the reach guard)
 //   hooks/<id>/<worker>     the workers the session hooks run
 //   package.json            the package: its name, the VERSION of cratylus that
 //                           projected it, and the modules omp loads (`omp.extensions`)
-//   runtime.json            each capability's configuration, where the canon has any
 //   installation.json       what install did outside the root: its scope (user or
 //                           project; absent, user); the references it placed;
 //                           whether it created the project's harness directory; the
@@ -58,7 +56,6 @@ import {
   INSTALLATIONS_DIR,
   INSTALLATION_RECORD_FILE,
   type InstallScope,
-  RUNTIME_CONFIG_FILE,
 } from '@cratylus/runtime/runtime-config';
 import { CLI_BIN } from '../bin-name.js';
 import {
@@ -190,9 +187,9 @@ export function holdsRenderTree(dir: string): boolean {
 
 /**
  * The render tree's files as they land in the root, sorted by path: each agent where
- * the adapter puts it (`agentRel`), each skill's files under each of its destinations
- * (`skillRel`), each scoped artifact where the adapter puts its scope (`scopedRel`),
- * and every other file (hook workers, capability prose) at its own path.
+ * the adapter puts it (`agentRel`), each scoped artifact where the adapter puts its
+ * scope (`scopedRel`), and every other file (hook workers, capability prose) at its
+ * own path.
  */
 export function rootFiles(
   adapter: HarnessAdapter,
@@ -204,10 +201,6 @@ export function rootFiles(
     if (top === 'agents' && rest.length === 1) {
       const name = (rest[0] as string).slice(0, -adapter.agentExt.length);
       paths = [adapter.agentRel(name)];
-    } else if (top === 'skills' && rest.length >= 2) {
-      paths = adapter
-        .skillRel(rest[0] as string, [])
-        .map((dir) => join(dir, ...rest.slice(1)));
     } else if (top === ENFORCING_STAGE_DIR && rest.length >= 2) {
       if (adapter.scopedRel === undefined) {
         throw new Error(
@@ -237,7 +230,7 @@ export interface PlaceRootResult {
 /**
  * Place `files` (already in the root's layout) as the WHOLE of `root`, with the
  * package manifest (the `version` that projected it, and the extension modules the
- * harness loads), the capability configuration where there is any, and the record.
+ * harness loads), and the record.
  * Whatever the root held before is gone, edits and additions alike: the new root is
  * built beside it and moved into its place. Under `dry`, nothing is written.
  */
@@ -246,7 +239,6 @@ export function placeOwnedRoot(opts: {
   readonly root: string;
   readonly files: readonly RenderedFile[];
   readonly version?: string;
-  readonly configuration: Readonly<Record<string, unknown>>;
   readonly record: InstallationRecord;
   readonly dry: boolean;
 }): PlaceRootResult {
@@ -268,14 +260,6 @@ export function placeOwnedRoot(opts: {
       path: PACKAGE_MANIFEST,
       content: `${JSON.stringify(manifest, null, 2)}\n`,
     },
-    ...(Object.keys(opts.configuration).length > 0
-      ? [
-          {
-            path: RUNTIME_CONFIG_FILE,
-            content: `${JSON.stringify({ configuration: opts.configuration }, null, 2)}\n`,
-          },
-        ]
-      : []),
     {
       path: INSTALLATION_RECORD_FILE,
       // The record names the version that projected this root too, beside what it did.

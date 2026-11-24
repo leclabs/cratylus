@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.21.0",
-  "description": "The per-host runtime: the built-in capabilities (model, versionSkew) and the host runtime config.",
+  "description": "The per-host runtime: the built-in capabilities (model, versionSkew) and the installation they read.",
   "license": "MIT",
   "engines": {
     "node": ">=22"

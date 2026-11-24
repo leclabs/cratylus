@@ -4,8 +4,8 @@
 // The shape lives here; the names live in the canon — `@cratylus/canon`'s
 // `CANONICAL_EVENTS`, one declaration every other site derives or receives. A
 // package that needs a VOCABULARY takes it from the one home that declares it.
-// `CapabilityName` states that a capability HAS a name and stops; {@link EventName}
-// is its peer and stops in the same place.
+// An event name states that an event HAS a name and stops: {@link EventName}
+// leaves the members to the canon.
 //
 // `vcs.commit.post` is an ordinary canon member carrying `substrate: 'git'`: an
 // open `EventName` needs no union to admit a git-substrate event.
@@ -27,8 +27,7 @@
  *
  * The vendor-neutral PIVOT every harness adapter maps from
  * (`adapters/<harness>/events.ts`), stated here as a shape and enumerated by the
- * canon. Exactly the `CapabilityName` treatment, for exactly its reason: what
- * this package needs of an event is that it HAS a name;
+ * canon. What this package needs of an event is that it HAS a name;
  * WHICH names exist is a naming act, and naming is the canon's.
  *
  * The canon declares its own set `as const satisfies readonly EventName[]` and

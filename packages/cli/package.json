@@ -1,7 +1,7 @@
 {
   "name": "cratylus",
   "version": "0.26.0",
-  "description": "cratylus installs a team of AI agents in industry roles, with its rules, skills and capabilities, into the agent harness you already use. The team holds your meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.",
+  "description": "cratylus installs a team of AI agents in industry roles, with its rules and capabilities, into the agent harness you already use. The team holds your meaning in a living domain model written by Cratylic context design, and realizes it by behaviour-driven development.",
   "license": "MIT",
   "engines": {
     "node": ">=22"

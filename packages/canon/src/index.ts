@@ -9,7 +9,7 @@
 // The dir fields point at the live source dirs this canon already carries: the
 // factors' values under `src/factors/<factor>/*.ts`, the agent modules under
 // `src/agents/*.ts` (each role's generic holder and the personas, composed in
-// `compose.ts`), and the skill modules. The forge resolver scans these paths
+// `compose.ts`). The forge resolver scans these paths
 // exactly as the existing directory-scan does; no resolver logic lives here.
 //
 // SELF-LOCATION (why absolute, not `'./src/factors'`): a consumer `extends`
@@ -61,5 +61,4 @@ export default defineAgentPlugin({
   rulesets: RULESETS,
   factors: dir('./factors'),
   agents: dir('./agents'),
-  skills: dir('./skills'),
 });

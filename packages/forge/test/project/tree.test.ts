@@ -78,7 +78,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     );
     // Bytes, not paths-on-disk: every entry carries its own content.
     for (const f of t.files) expect(typeof f.content).toBe('string');
-    expect(t).toMatchObject({ agents: 1, skills: 0, shims: 0, hooks: 1 });
+    expect(t).toMatchObject({ agents: 1, hooks: 1 });
   });
 
   it('carries the adapter-rendered agent bytes', async () => {
@@ -156,9 +156,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
       writeCalls('writeFileSync(a, b);\nchmodSync(c, 0o755);\n').sort(),
     ).toEqual(['chmodSync', 'writeFileSync']);
     // EXONERATES: returning the bytes, and merely READING, are both clean.
-    expect(
-      writeCalls('return { files, agents, skills, shims, hooks };\n'),
-    ).toEqual([]);
+    expect(writeCalls('return { files, agents, hooks };\n')).toEqual([]);
     expect(writeCalls("const src = readFileSync(path, 'utf8');\n")).toEqual([]);
   });
 
