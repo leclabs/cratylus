@@ -66,7 +66,7 @@
 // it again, and upgrade and uninstall leave the setting as the host has it. Where it can
 // neither be told nor asked, it is named as a next step beside the unbound tiers.
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join, relative, resolve } from 'node:path';
 import { START } from '@cratylus/runtime';
@@ -240,10 +240,11 @@ function recordedSkills(
   );
 }
 
-/** The skills an owned root holds, one directory each under `skills/`. */
+/** The skills an owned root holds, one directory each under `skills/`; anything else
+ *  there, or a `skills` that is no directory, holds none. */
 function rootSkills(root: string): string[] {
   const dir = join(root, 'skills');
-  return existsSync(dir)
+  return existsSync(dir) && statSync(dir).isDirectory()
     ? readdirSync(dir, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name)
@@ -716,8 +717,14 @@ async function install(opts: InstallCmdOpts): Promise<number> {
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
       const taken = new Set(earlier.removed.map((r) => r.what));
+      const kept = new Set(earlier.left.map((l) => l.what));
+      // A skill is named as removed when it lost a file and kept none.
       for (const { name, files } of recorded)
-        if (files.some((file) => taken.has(file))) skills.add(name);
+        if (
+          files.some((file) => taken.has(file)) &&
+          !files.some((file) => kept.has(file))
+        )
+          skills.add(name);
     }
     found.skills = [...skills].sort();
     // Whether the status line shows the session's agent: the product owner's answer, written

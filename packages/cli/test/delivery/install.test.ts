@@ -231,6 +231,51 @@ it('reports each removed skill once across the owned root and earlier deploy rec
     .toEqual([`  skills: removed ${names.join(', ')}, no longer installed`]);
 });
 
+it('keeps an earlier skill whose file the host edited, and does not name it as removed', () => {
+  h = emptyHome();
+  earlier(h);
+  const edited = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(edited, 'Mira edited this skill');
+  const names = offeredSkills(h.home).filter((name) => name !== 'event-tap');
+  expect(names.length).toBeGreaterThan(0);
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+  expect(stripVTControlCharacters(said(installed))).toContain(edited);
+});
+
+it('replaces an owned root whose `skills` is a file, and names only the skill directories', () => {
+  h = emptyHome();
+  const skills = seedReleasedSkills(h.home);
+  rmSync(skills, { recursive: true });
+  put(skills, 'not a directory');
+  const first = h.command(['install', '--harness', 'omp']);
+  expect(first.code, said(first)).toBe(0);
+  expect(skillReports(first), said(first)).toEqual([]);
+  expect(existsSync(skills), 'the earlier file').toBe(false);
+
+  put(join(skills, 'README.md'), 'a file among the skills');
+  put(join(skills, 'tides/SKILL.md'), '---\nname: tides\n---\n');
+  const second = h.command(['install', '--harness', 'omp']);
+  expect(second.code, said(second)).toBe(0);
+  expect(skillReports(second), said(second)).toEqual([
+    '  skills: removed tides, no longer installed',
+  ]);
+  expect(existsSync(skills), 'the earlier skills directory').toBe(false);
+});
+
 it('delivery/install: offers a ruleset added since the recorded choice', async () => {
   const sets = canon.rulesets ?? [];
   const added = sets.find((set) => set.name === 'context-engineering');
