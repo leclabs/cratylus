@@ -192,7 +192,6 @@ describe('placing rules in the owned root', () => {
       adapter: ompHarnessAdapter,
       root,
       files: rootFiles(ompHarnessAdapter, tree.files),
-      configuration: {},
       record: { references: [] },
       dry: false,
     });

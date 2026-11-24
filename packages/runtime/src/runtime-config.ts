@@ -1,11 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The INSTALLATION and its RUNTIME CONFIG — what the projection told this host.
+// The INSTALLATION — the metadata the runtime reads of what install placed for this host.
 //
 // Everything cratylus places for a user on a harness lives under one root it owns,
-// `~/.cratylus/<harness>/` (the owned root): the canon's agents and skills, the
-// harness's adapters, the version of cratylus that projected them (`package.json`'s
-// `version`) and, where the canon declares any, each capability's configuration
-// (`runtime.json`). The runtime reads them from there.
+// `~/.cratylus/<harness>/` (the owned root). The runtime reads two things of it: the
+// version of cratylus that projected it (the root's `package.json`'s `version`) and its
+// scope (`installation.json`).
 //
 // WHICH INSTALLATION. A harness's adapter names the root it was placed in on every
 // call it makes (`$CRATYLUS_INSTALLATION`), so a capability reached from a harness
@@ -17,12 +16,9 @@
 // user's or a project's (`scope`); a record that says neither, or none at all, is the
 // user's, installed before there were scopes.
 //
-// WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
-// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd, so
-// there is no project to resolve from. The declaration still lives in
-// config-is-code at the consumer's site; INSTALL realizes it into the owned root,
-// and the runtime reads that. Same direction of authority as every other artifact
-// here: declare → project → consume.
+// WHY THE INSTALLATION, NOT THE WORKING DIRECTORY. This runtime is installed GLOBALLY
+// and invoked from arbitrary cwd, so there is no project configuration to resolve it
+// from: it reads the installation that install placed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type Dirent, existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -38,28 +34,13 @@ export const INSTALLATION_ENV = `${CLI_BIN.toUpperCase()}_INSTALLATION`;
  *  `.<bin>`, derived from the bin. */
 export const INSTALLATIONS_DIR = `.${CLI_BIN}`;
 
-/** The runtime config's file in an installation's root. */
-export const RUNTIME_CONFIG_FILE = 'runtime.json';
-
-/** Where the config is read from instead, when set. */
+/** The variable that named the EARLIER layout's host config, which install and
+ *  uninstall still take back. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
 
 // Derived, never a second literal. The EARLIER layout's host config, at the home
 // itself, named after the bin: nothing reads it now, and an upgrade removes it.
 export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
-
-/** The host's config: the canon's capability configuration. */
-export interface RuntimeConfig {
-  /**
-   * Each capability's configuration, keyed by capability, as the canon's skills
-   * declared it and install emitted it. Canon meaning a capability acts on (states,
-   * roles, names) arrives here and is spelled nowhere in this package. Opaque to
-   * this reader: the capability that consumes its entry validates it. A capability
-   * whose entry is absent must REFUSE and say so, never fall back to a set of its
-   * own — a bundled fallback is how a second copy of canon meaning gets in.
-   */
-  readonly configuration?: Readonly<Record<string, unknown>>;
-}
 
 /** Why no installation could be read: none is named and the home holds none, or
  *  holds several. */
@@ -126,56 +107,4 @@ export function installationRoot(cwd = process.cwd()): string {
       ? `no installation under ${parent}; run ${CLI_BIN} install`
       : `${found.length} installations under ${parent} (${found.join(', ')}); name one in $${INSTALLATION_ENV}`,
   );
-}
-
-/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ the installation's `runtime.json`, or
- *  `null` where there is no installation to read it from. */
-export function runtimeConfigPath(): string | null {
-  const override = process.env[RUNTIME_CONFIG_ENV];
-  if (override !== undefined && override !== '') return override;
-  try {
-    return join(installationRoot(), RUNTIME_CONFIG_FILE);
-  } catch (e) {
-    if (e instanceof NoInstallationError) return null;
-    throw e;
-  }
-}
-
-/**
- * Read the config, or `null` when absent/unreadable. Absence is NOT an error
- * here: a capability that needs a part of the config refuses on its own terms,
- * naming the command that writes it.
- *
- * A config carrying no capability configuration says nothing.
- */
-export function loadRuntimeConfig(
-  path = runtimeConfigPath(),
-): RuntimeConfig | null {
-  if (path === null || !existsSync(path)) return null;
-  try {
-    const raw = JSON.parse(
-      readFileSync(path, 'utf-8'),
-    ) as Partial<RuntimeConfig>;
-    const configuration = parseConfiguration(raw.configuration);
-    return configuration === undefined ? null : { configuration };
-  } catch {
-    // A malformed config must not wedge the runtime; it reads as none.
-    return null;
-  }
-}
-
-/**
- * Lift the `configuration` block, or `undefined` when it is absent, malformed or
- * empty: a block that is not a capability-keyed object says nothing, and "never
- * told" and "told nothing" must produce the same refusal in the capability that
- * needed it.
- */
-function parseConfiguration(
-  raw: unknown,
-): Readonly<Record<string, unknown>> | undefined {
-  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
-    return undefined;
-  return Object.keys(raw).length === 0
-    ? undefined
-    : (raw as Readonly<Record<string, unknown>>);
 }

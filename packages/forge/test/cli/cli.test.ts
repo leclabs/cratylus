@@ -53,7 +53,6 @@ describe('guided install confirmation', () => {
       name: 'fixture',
       manifest: FIXTURE_MANIFEST,
       agents: join(fixtures, 'agents'),
-      skills: join(fixtures, 'skills'),
     };
     const before = snapshot(home);
     let seenBefore: string[] | undefined;

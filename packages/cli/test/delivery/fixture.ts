@@ -191,7 +191,7 @@ export function assertOwned(h: Host, before: Tree = {}) {
       }
       for (const [projected, material] of Object.entries(tree(root))) {
         if (
-          !/^(?:agents|skills|extensions)\//.test(projected) ||
+          !/^(?:agents|extensions)\//.test(projected) ||
           !material.text?.trim()
         )
           continue;
@@ -403,7 +403,7 @@ export function normalizeProjection(h: Host) {
   const projection = Object.fromEntries(
     Object.entries(tree(owned(h))).map(([path, item]) => [
       path,
-      /^(?:agents|skills|extensions)\//.test(path) ? item : { metadata: true },
+      /^(?:agents|extensions)\//.test(path) ? item : { metadata: true },
     ]),
   );
   // Metadata filenames belong to the projection; incidental timestamps do not

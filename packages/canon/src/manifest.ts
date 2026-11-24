@@ -22,14 +22,11 @@
 
 import type {
   AgentOf,
-  CapabilityName,
   EventName,
   FactorMeta,
   HookDeclaration as HookDeclarationOf,
   RequiredFactorOf,
   SetFactorOf,
-  SkillExpression,
-  Skill as SkillOf,
   Value as ValueOfFactor,
 } from '@cratylus/schema';
 
@@ -297,38 +294,10 @@ export type Guardrails = Value<'guardrails'>;
 export type Enforcement = Value<'enforcement-level'>;
 export type Evaluation = Value<'evaluation'>;
 
-// ── The runtime-capability vocabulary ───────────────────────────────────────
-//
-// WHICH runtime capabilities exist is this canon's to say, exactly as WHICH
-// factors exist is. `@cratylus/schema` states only that a capability HAS a
-// name (`CapabilityName`); the members live here, and `Skill` below is narrowed
-// against them so a skill naming a capability this canon does not ship is a
-// COMPILE error rather than a shim that forwards to a bin verb nobody serves.
-//
-// `shape ⊥ vocabulary`: `CapabilityName` is schema's, the ports stay in the
-// runtime, and the names come from the canon.
-//
-// THE TERM IS `RuntimeCapability`, schema's own term for it.
-// The qualifier is load-bearing HERE and not in schema: in an agent catalog a
-// bare `Capability` reads as what an agent is able to do (the `expertise`
-// factor above), which is a different concept; one root would cover two.
-export const RUNTIME_CAPABILITIES = [
-  'model',
-  'versionSkew',
-] as const satisfies readonly CapabilityName[];
-
-/** A runtime capability this canon ships a face for. */
-export type RuntimeCapability = (typeof RUNTIME_CAPABILITIES)[number];
-
-/** This canon's `Skill`: schema's shape, narrowed to the capabilities above. */
-export type Skill = SkillOf<RuntimeCapability>;
-export type { SkillExpression };
-
 // ── The lifecycle-event vocabulary ──────────────────────────────────────────
 //
 // A NAME FOR A MOMENT IS A TERM, and terms are what this canon is made of.
-// That decides the home: here, beside `RUNTIME_CAPABILITIES`, which is the same
-// ruling one axis over.
+// That decides the home: here, in the canon that names the factors.
 //
 // EVERY OTHER SITE DERIVES OR RECEIVES:
 //   · schema  states only that an event HAS a name (`EventName`) and narrows
@@ -353,7 +322,7 @@ export type { SkillExpression };
 //     `principal.consult.pre` was the runner-up; `user.ask.pre` is rejected (`user`
 //     collides with deploy's install-scope `user`, and it is the VENDOR word while
 //     this pivot is vendor-neutral); `elicit.pre` is rejected (occupied by the
-//     concept-recovery skill); `decision.request.pre` is rejected (collides with
+//     concept-recovery method); `decision.request.pre` is rejected (collides with
 //     `permission.request` INSIDE this tuple).
 //   · `subagent.dispatch.pre`  — about to hand work to an agent. Covers spawn AND
 //     message, and pairs as the pre-phase of `subagent.start`/`subagent.end`.

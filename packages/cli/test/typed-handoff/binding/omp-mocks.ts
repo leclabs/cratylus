@@ -86,10 +86,6 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/spawn-policy', () => ({
     };
   },
 }));
-vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
-  getActiveSkills: () => [],
-  buildSkillPromptMessage: async () => ({ message: '' }),
-}));
 vi.mock('@oh-my-pi/pi-utils', () => ({
   parseFrontmatter: (text: string) => omp.parse!(text),
 }));

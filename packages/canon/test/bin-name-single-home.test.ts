@@ -8,15 +8,13 @@
 // not at build. This file is what makes the claim true instead of asserted.
 //
 // The one home is `@cratylus/runtime/bin-name` → `CLI_BIN`. Every consumer
-// interpolates it. This gate holds the three consumers to it, each by CAPTURE-AND-
+// interpolates it. This gate holds the two consumers to it, each by CAPTURE-AND-
 // COMPARE — read back the name the artifact actually carries and compare it to the
 // constant — so editing one without the other is red, in either direction:
 //
 //   (1) `cratylus`'s `bin` MANIFEST KEY — the one irreducible second copy
 //       (npm reads it with no TypeScript in the loop, so it cannot be computed).
 //   (2) the runtime's Commander BRANDING (`main.ts`) — read out of `--help`.
-//   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
-//       of a real `scripts/<cap>.mjs` in a real render tree.
 //
 // Plus a CENSUS: no file but `bin-name.ts` may spell the name as a quoted string
 // literal — the shape of the defect this retires (a second `const BIN = '…'`).
@@ -41,35 +39,20 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { adapterByName } from '@cratylus/forge/adapters/registry';
-import { projectPluginSet } from '@cratylus/forge/project';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
-import { beforeAll, describe, expect, it } from 'vitest';
-import canonPlugin from '../src/index.js';
+import { describe, expect, it } from 'vitest';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A skill that declares a `runtime` capability — a shim carrier, and the witness
- *  this gate reads. No canon skill declares one, so the shim-carrier fixture's. */
-const SKILL = 'carrier';
-const CAPABILITY = 'versionSkew';
-const carrierPlugin = {
-  name: 'shim-carrier',
-  skills: join(canonRoot, 'test', 'fixtures', 'shim-carrier', 'skills'),
-};
-
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
  *
- * `canon/src/hooks/memory-consolidation-nudge.ts` — the one canon hook declaration that ever
- * imported `CLI_BIN` — is deleted along with the memory skill triad it served
- * (property 1 forbids the edge; there is now nothing here to hold against it).
+ * Property 1 forbids canon from importing `CLI_BIN`, so no canon source is held here.
  */
 const CONSUMERS = [
   'packages/runtime/src/main.ts',
   'packages/cli/src/cratylus.ts',
-  'packages/forge/src/project/runtime-shim.ts',
   // `packages/cli/src/install.ts` WAS HERE and is DELETED with the module it named.
   // It was the one `.ts` that WROTE a `#!/bin/sh` shim onto a host, so it needed
   // watching from here rather than from the `.sh`/`.mjs` glob leg below.
@@ -97,21 +80,6 @@ const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
   name: string;
   bin: Record<string, string>;
 };
-
-// A REAL render tree, not a hand-rolled emitter call: the shim under test is the
-// one the projector puts in the tree install places.
-let projectedShim = '';
-
-beforeAll(async () => {
-  const report = await projectPluginSet({
-    plugins: [canonPlugin, carrierPlugin],
-    adapter: adapterByName('omp'),
-  });
-  projectedShim =
-    report.files.find(
-      (f) => f.path === `skills/${SKILL}/scripts/${CAPABILITY}.mjs`,
-    )?.content ?? '';
-}, 120_000);
 
 // Every hand-authored shell/`.mjs` source under each package's `src`: the ones a human
 // wrote and no compiler
@@ -211,17 +179,6 @@ describe('the bin name has exactly one home', () => {
     );
     expect(help.match(/^Usage: (\S+) /m)?.[1]).toBe(CLI_BIN);
   });
-
-  it('the PROJECTED thin shim spawns CLI_BIN — the operative site', () => {
-    // THE FALSIFIER for the site that broke on a host. Capture whatever argv[0] the
-    // emitted `scripts/<cap>.mjs` actually spawns and compare it to the constant, so
-    // hardcoding a literal back into the emitter — or flipping the constant without
-    // the emitter — is red here rather than at deploy time on someone's machine.
-    expect(projectedShim, 'projection produced no shim').not.toBe('');
-    const spawned = projectedShim.match(/spawnSync\('([^']+)',/)?.[1];
-    expect(spawned).toBe(CLI_BIN);
-    expect(projectedShim).toContain(`['${CAPABILITY}',`);
-  });
 });
 
 // ── THE CONVICTING FIXTURES ─────────────────────────────────────────────────────
@@ -232,10 +189,8 @@ describe('the bin name has exactly one home', () => {
 // assert it is rejected. Without them, "the bin name has one home" is a claim of the
 // same kind the retired shard above already made — asserted, unmeasured, and wrong.
 
-/** The two capture-and-compare predicates, isolated from their live inputs so a
+/** The capture-and-compare predicate, isolated from its live input so a
  *  synthetic BAD repository can be fed to the very same code the gate above runs. */
-const spawnedBin = (shim: string): string | undefined =>
-  shim.match(/spawnSync\('([^']+)',/)?.[1];
 const manifestBins = (json: string): string[] =>
   Object.keys((JSON.parse(json) as { bin: Record<string, string> }).bin);
 
@@ -391,16 +346,6 @@ describe('the forge bin has exactly one authored home', () => {
 describe('the single-home gate is non-vacuous', () => {
   const STALE = `${CLI_BIN}-stale`;
 
-  it('FAILS on a thin shim whose spawn target drifted from the constant', () => {
-    const drifted = projectedShim.replace(
-      `spawnSync('${CLI_BIN}'`,
-      `spawnSync('${STALE}'`,
-    );
-    expect(drifted).not.toBe(projectedShim); // the mutation actually landed
-    expect(spawnedBin(projectedShim)).toBe(CLI_BIN);
-    expect(spawnedBin(drifted)).not.toBe(CLI_BIN);
-  });
-
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {
     const good = read('packages/cli/package.json');
     const drifted = good.replace(`"${CLI_BIN}":`, `"${STALE}":`);
@@ -410,11 +355,8 @@ describe('the single-home gate is non-vacuous', () => {
   });
 
   it('FLAGS a consumer that spells the bin name instead of importing it', () => {
-    const clean = read('packages/forge/src/project/runtime-shim.ts');
-    const regressed = clean.replace(
-      "spawnSync('${CLI_BIN}'",
-      `spawnSync('${CLI_BIN}'`,
-    );
+    const clean = 'const bin = CLI_BIN;';
+    const regressed = clean.replace('CLI_BIN', `'${CLI_BIN}'`);
     expect(regressed).not.toBe(clean);
     expect(clean.includes(`'${CLI_BIN}'`)).toBe(false);
     expect(regressed.includes(`'${CLI_BIN}'`)).toBe(true);

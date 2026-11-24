@@ -23,15 +23,15 @@
 //
 // The canon declares its manifest, derives its own
 // `Factor`, `Agent` and per-factor aliases from it, and authors its
-// values / agents / skills against those. Composition is ESM `import`;
+// values / agents against those. Composition is ESM `import`;
 // an agent is a flat, explicit factor vector of ENTRIES (`[]` = explicitly
 // empty). A wrong factor→value is a **compile error** — the brand keys each
 // string to its factor so an `Actions` cannot be assigned where an
 // `Objective` is expected.
 //
 // Exported from `@cratylus/schema` — NOT from the projector. These are the
-// factor-selection shapes; the config-IR `Agent`/`Skill` translation shapes in
-// `@cratylus/forge` are a distinct concept with a distinct home.
+// factor-selection shapes; the config-IR `Agent` translation shape in
+// `@cratylus/forge` is a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { AgentContract } from './contract.js';
@@ -50,27 +50,6 @@ import type { Ruleset } from './rule.js';
  * - `fixed`    — holds without exception; only the design changes it.
  */
 export type EnforcementLevel = 'advisory' | 'firm' | 'fixed';
-
-/**
- * A runtime CAPABILITY name — the BOUND, not the members.
- *
- * What this package needs is a **vocabulary** (which names exist), not a
- * **shape** (how those things are implemented), so it borrows nothing from the
- * runtime's implementation interface. The rule `shape ⊥ vocabulary` holds for
- * `Event` the same way — shape here, names in the canon.
- *
- * So the members are the canon's, exactly as WHICH factors exist is the
- * canon's. This package states that a capability HAS a name and stops; the canon
- * declares its own set `as const satisfies readonly CapabilityName[]` and narrows
- * `Skill` against it, which is the `FactorManifest`/`MANIFEST` pattern reused
- * rather than a second one invented.
- *
- * NAMING NOTE. The `*Name` suffix is what carries the shape/vocabulary
- * distinction. The root is `capability`, this architecture's established term for
- * the concept (only the plural keyspace `capabilities` is occupied, not the root);
- * a second term such as `Faculty` would name one concept twice, the defect
- * `term(cᵢ) = term(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` forbids. */
-export type CapabilityName = string;
 
 /**
  * How a factor's value-catalog is sourced — WHO OWNS THE VALUE SET, and the
@@ -505,8 +484,7 @@ export interface Agent {
   /** The agent's name (its module / deploy identity). */
   readonly name: string;
   /** The human-read one-line selection bound → Target frontmatter
-   *  `description:` the subagent-router reads (not the model-read term). The one-level-up twin of
-   *  the skill `description`. */
+   *  `description:` the subagent-router reads (not the model-read term). */
   readonly description: string;
   /** The emoji·hue mark (drives color) — data, not a value. `null` ⇒ none. */
   readonly mark: Mark | null;
@@ -539,26 +517,6 @@ export interface Agent {
    */
   readonly contract?: AgentContract;
   /**
-   * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
-   * omitted, and an empty list means the same thing as absent. Carried on the
-   * identity face, projected by whichever adapter has somewhere to put it.
-   *
-   * NOT A FACTOR, and deliberately outside any manifest. STRUCTURALLY, a
-   * factor's value is a branded string that `agentBody` emits into the
-   * Target; a skill name is an ADDRESS a host resolves against its own skill tree.
-   * CONCEPTUALLY, a factor is a trait — who this agent is — and which skills it
-   * loads is APPARATUS, the equipment it reaches for.
-   *
-   * WHAT A HARNESS RECEIVES IS THE CLOSURE, not this list: projection hands each
-   * adapter these names followed by every skill they transitively compose, so
-   * an agent starts with the whole of what its skills rely on. A HARNESS whose
-   * agent definition can name skills it preloads carries that closure natively
-   * — omp as front-matter `autoloadSkills`, claude as the subagent `skills`
-   * field. A harness with no such field gets the closure as a
-   * required-reading declaration in its instructions, and projection warns.
-   */
-  readonly skills?: readonly string[];
-  /**
    * OPTIONAL — that this agent runs in a git worktree of its own. Absent ⇒ it runs
    * where its dispatcher does.
    *
@@ -570,8 +528,7 @@ export interface Agent {
    *
    * A HARNESS whose agent definition can start an agent in a worktree of its own
    * carries it natively — claude as the subagent `isolation` field. A harness with
-   * no such field emits nothing, and projection warns, as it does for skills a
-   * harness cannot preload.
+   * no such field emits nothing, and projection warns.
    */
   readonly isolation?: 'worktree';
   /**
@@ -605,81 +562,6 @@ export interface ProtectedPath {
 export const factorValueOf = (a: Agent, field: string): unknown =>
   (a as unknown as Record<string, unknown>)[field];
 
-// ── The Skill: a self-sufficient set-builder block ──────────────────────────
-
-/**
- * A skill's model-read payload string — the self-sufficient set-builder block. A nominal-
- * branded `string` with the SAME shape as `BareValue<O>` (optional phantom brand,
- * so a plain string literal still assigns): keys the notation to its role so `tsc`
- * rejects a raw string where a skill's formal block is expected.
- */
-export type SkillExpression = string & { readonly __skillExpr?: true };
-
-/**
- * Any JSON-serializable value, read-only all the way down so an `as const` literal
- * assigns. The shape of data that crosses a process boundary as bytes — here, the
- * configuration a skill hands its runtime capability through the host config.
- */
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | readonly JsonValue[]
-  | { readonly [key: string]: JsonValue };
-
-/** How a skill deploys, beyond the default agent-resident projection. */
-export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
-  /**
-   * The RUNTIME capability this skill is a face of. When set, the projection ALSO
-   * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
-   * `cratylus <capability>` CLI — NOT a bundle of the impl (the capability logic
-   * lives host-side behind the runtime port, installed once per host).
-   * Absent ⇒ SKILL.md only.
-   *
-   * `configuration` is what the capability receives from the canon: data, never
-   * code, and no opinion here about any capability's keys. `install` emits it into
-   * the host runtime config keyed by `capability`, beside the event vocabulary, so
-   * meaning the runtime needs reaches it as configuration rather than as a second
-   * copy spelled inside the runtime. */
-  readonly runtime?: {
-    readonly capability: C;
-    readonly configuration?: JsonValue;
-  };
-}
-
-/**
- * A skill: its formal block plus the live sibling skills it composes. The
- * name is the term (trigger `= /`+name; verb derivable), so neither is stored.
- * Per-FIELD reader binding: `formalBlock` is the sole model-read payload;
- * `description` is the human-read selection-line the router surfaces (not
- * model-read, not judged for its symmetric difference). NO `body` field — the SKILL.md is GENERATED by the adapter
- * as `f(name, formalBlock)`; storing it would be the parse-to-recover / DRY defect
- * this de-braid kills. `composition` is plain imported sibling `Skill`s.
- */
-export interface Skill<C extends CapabilityName = CapabilityName>
-  extends SkillDeploy<C> {
-  /** The skill name — the term; carries the trigger-weight at disclosure. */
-  readonly name: string;
-  /** The human-read one-line selection bound the router surfaces (not model-read). */
-  readonly description: string;
-  /** The sole model-read payload: the self-sufficient set-builder block
-   *  (declarations-above / laws-below). The SKILL.md projects FROM this. */
-  readonly formalBlock: SkillExpression;
-  /** The sibling skills this one composes — plain ESM imports, no `[[ ]]`.
-   *  A LAZY THUNK (`() => readonly Skill[]`), not an eager array: the real skill
-   *  graph is CYCLIC (conceptualize↔exemplify↔signify↔materialize, elicit↔probe),
-   *  so eager sibling `const` references would TDZ-crash at ESM load. The generator
-   *  CALLS it (`skill.composition()`) only when emitting "Composed from …". */
-  readonly composition: () => readonly Skill[];
-  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
-   *  first section (above the fenced formal block). The engine knows only "a
-   *  leading block"; a skill whose laws apply a principle fills it (canon sets its
-   *  prime principle on the skills that name concepts by term), so the
-   *  principle rides the projected bytes of exactly those skills. Absent ⇒ omitted. */
-  readonly preamble?: string;
-}
-
 // ── Projection helpers ──────────────────────────────────────────────────────
 
 /**
@@ -708,9 +590,8 @@ export {
 export type { Rule, Ruleset } from './rule.js';
 export type { AgentContract, JsonSchema } from './contract.js';
 
-// The event SHAPE — the peer of `CapabilityName` above, re-exported beside the hook
-// declaration shape it types. The MEMBERS are the canon's, so there is nothing else here to
-// export.
+// The event SHAPE, re-exported beside the hook declaration shape it types. The MEMBERS
+// are the canon's, so there is nothing else here to export.
 export type { EventName } from './hook/index.js';
 
 // ── The plugin authoring surface ────────────────────────────────────────────
@@ -722,7 +603,7 @@ export type { EventName } from './hook/index.js';
 // shapes the canon is written against", this package's charter, covers both.
 
 /**
- * WHERE a plugin's factors, agents, skills and hook declarations live on disk — the package-relative dirs a
+ * WHERE a plugin's factors, agents and hook declarations live on disk — the package-relative dirs a
  * projector scans to discover them.
  *
  * This is the half of a plugin declaration that is pure DISCOVERY MECHANICS: it
@@ -741,8 +622,6 @@ export interface Layout {
   readonly factors?: string;
   /** Preset AGENT dir, package-relative — scanned `<dir>/*.ts`. */
   readonly agents?: string;
-  /** Preset SKILL dir, package-relative — scanned `<dir>/*.ts`. */
-  readonly skills?: string;
   /** Dir of hook declaration modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
 }
@@ -754,10 +633,9 @@ export interface Layout {
  * single plugin can enforce, and a canon with the same doctrine under a
  * different label is the same canon. The label is not constitutive.
  *
- * The plugin carries no leading doctrine block. The prime principle rides only
- * the skills and agents whose laws apply it (`Skill.preamble`, and an agent's own held
- * stance), so a skill that does not use it never holds a host's
- * authored surfaces to this canon's naming axiom.
+ * The plugin carries no leading doctrine block: a doctrine rides the agents whose
+ * held stance applies it, so no host's authored surface is held to this canon's
+ * naming axiom.
  */
 export interface AgentPlugin extends Layout {
   /** The namespace segment — reporting + per-plugin term uniqueness. NOT an address. */

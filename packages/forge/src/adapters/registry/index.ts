@@ -10,7 +10,7 @@
 // Every import below names a DEFINING module, never a barrel. Historically this
 // mattered acutely: each `<harness>/index.ts` was a DUAL barrel exporting both an
 // IR `Adapter` (`detect`/`read`/`write`) and the projection `HarnessAdapter`
-// (`agentDef`/`skillDef`/`hooks`), so resolving the registry through it dragged
+// (`agentDef`/`hooks`), so resolving the registry through it dragged
 // the entire IR lineage (26 modules under `core/{ir,engine,serialize,adapter}/`)
 // into every projection consumer — a transitive reach invisible to a substring
 // grep. That whole lineage — its core, its CLI verbs, and fifteen unused harness
@@ -26,8 +26,6 @@ export type {
   HarnessHooksProjection,
   RoleRouting,
 } from '../../core/harness-adapter.js';
-// The harness-neutral resolved-skill shape a consumer builds to feed `skillDef`.
-export type { ResolvedSkill } from '../../core/body.js';
 
 /** The canonical harness names with a registered `HarnessAdapter`. */
 export type HarnessName = 'omp';

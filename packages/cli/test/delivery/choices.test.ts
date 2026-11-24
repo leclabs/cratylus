@@ -116,7 +116,6 @@ it('noninteractive install names precisely the missing tiers and display, and pl
   expect(next).toContain('--agent-status');
   expect(next).not.toMatch(/\bfast\b|\bfrontier\b(?!-other-family)/);
   expect(Object.keys(tree(join(owned(h), 'agents')))).toHaveLength(5);
-  expect(existsSync(join(owned(h), 'skills/choice/SKILL.md'))).toBe(true);
   expect(existsSync(join(owned(h), 'extensions/cratylus.ts'))).toBe(true);
   hostOwned(h);
 });

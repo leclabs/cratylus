@@ -1,16 +1,13 @@
-// Projection stability (.ts is the sole source): surviving factor values and skills
-// project through forge's omp adapter.
+// Projection stability (.ts is the sole source): surviving factor values project, and
+// the canon projects agents, rules and hooks and no skill, through forge's omp adapter.
 
-import { readdirSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet } from '@cratylus/forge/project';
-import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import canon from '../src/index.js';
-import { formalize } from '../src/skills/formalize/skill.js';
 import { valueToMarkdown } from '../tooling/project.js';
 import { firstExport } from './support/first-export.js';
 
@@ -21,13 +18,6 @@ async function collect(pattern: string): Promise<string[]> {
   const out: string[] = [];
   for await (const p of glob(pattern, { cwd: srcRoot })) out.push(p);
   return out.sort();
-}
-
-async function project() {
-  return projectPluginSet({
-    plugins: [canon],
-    adapter: adapterByName('omp'),
-  });
 }
 
 describe('projection stability (.ts is the sole source)', () => {
@@ -53,38 +43,22 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(valueToMarkdown('').length).toBeGreaterThan(0);
   });
 
-  it('every skill projects non-empty through omp', async () => {
-    const modules = await collect('skills/*/skill.ts');
-    expect(modules.length).toBeGreaterThan(0);
-    const tree = await project();
-    for (const rel of modules) {
-      const skill = await firstExport<Skill>(join(srcRoot, rel));
-      const path = `skills/${skill.name}/SKILL.md`;
-      const rendered = tree.files.find((f) => f.path === path)?.content;
-      expect(rendered, `${rel}: projected by omp`).toBeDefined();
-      expect(rendered?.length, `${rel}: non-empty`).toBeGreaterThan(0);
-      expect(rendered, `${rel}: carries the skill name`).toContain(skill.name);
+  it('projects every agent through omp and places no skill', async () => {
+    const tree = await projectPluginSet({
+      plugins: [canon],
+      adapter: adapterByName('omp'),
+    });
+    const agents = await collect('agents/*.ts');
+    expect(agents.length).toBeGreaterThan(0);
+    for (const rel of agents) {
+      const name = rel.replace(/^agents\//, '').replace(/\.ts$/, '');
+      expect(
+        tree.files.find((f) => f.path === `agents/${name}.md`),
+        `${rel}: projected by omp`,
+      ).toBeDefined();
     }
-  });
-
-  it('the formalize skill projects its formalBlock and composition through omp', async () => {
-    const tree = await project();
-    const rendered = tree.files.find(
-      (f) => f.path === 'skills/formalize/SKILL.md',
-    )?.content;
-    expect(rendered).toContain(formalize.formalBlock);
-    expect(rendered).toContain('Composed from /conceptualize · /signify.');
-  });
-
-  it('the built skill roster equals the source roster', async () => {
-    const src = (await collect('skills/*/skill.ts')).map(
-      (r) => r.split('/')[1],
-    );
-    const distSkills = join(canonRoot, 'dist', 'skills');
-    const built = readdirSync(distSkills, { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name)
-      .sort();
-    expect(built, 'stale skills in dist/ still project').toEqual(src);
+    expect(
+      tree.files.filter((f) => f.path.startsWith('skills/')).map((f) => f.path),
+    ).toEqual([]);
   });
 });

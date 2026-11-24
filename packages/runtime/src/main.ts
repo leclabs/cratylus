@@ -64,9 +64,8 @@ import {
  *
  * ONE WORD ROUTES EACH, and it is the capability's own member of `CAPABILITIES` —
  * `versionSkew`, never a kebab-case name nor an abbreviation. That is the word
- * the grammar `<capability> <verb>` speaks, and therefore the word a PROJECTED
- * THIN SHIM spawns (the emitter is `f(capability)`, so a `versionSkew` skill yields
- * `spawnSync(CLI_BIN, ['versionSkew', …])`).
+ * the grammar `<capability> <verb>` speaks, and therefore the word the harness's
+ * capability tool spawns (`spawn(CLI_BIN, ['versionSkew', …])`).
  */
 const SURFACES: {
   readonly [C in Capability]: {

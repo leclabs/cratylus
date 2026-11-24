@@ -77,7 +77,6 @@ export function declaration(f: Fixture, role: string) {
     systemPrompt: body,
     model: [frontmatter.model],
     thinkingLevel: frontmatter['thinking-level'],
-    autoloadSkills: frontmatter.autoloadSkills,
     frontmatter,
     text,
   };

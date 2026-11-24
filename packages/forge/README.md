@@ -1,7 +1,7 @@
 # @cratylus/forge
 
 The build core for [cratylus](../../README.md): it resolves a plugin set into one merged set of
-agents, skills, values and hooks, renders that set into the files a harness reads, and installs
+agents, values and hooks, renders that set into the files a harness reads, and installs
 them.
 
 This README is for whoever works on the library, or on an adapter for a harness. What the product owner
@@ -9,7 +9,7 @@ does with the `cratylus` command — install and its flags, starting a session a
 agent, the badge, uninstall — is [the `cratylus` README](../cli/README.md)'s, which documents each
 command to match its `--help`.
 
-Agents, skills, values and hooks are typed TypeScript declarations inside plugin packages. `forge`
+Agents, values and hooks are typed TypeScript declarations inside plugin packages. `forge`
 resolves a plugin set into one merged canon, projects it into harness artifacts, and `install`
 places them on the local machine.
 
@@ -24,38 +24,23 @@ resolve → project → install
 
 | Stage     | What it does                                                                                  |
 | --------- | --------------------------------------------------------------------------------------------- |
-| `resolve` | resolves the plugin set into one merged set of agents, skills, values and hooks               |
+| `resolve` | resolves the plugin set into one merged set of agents, values and hooks                       |
 | `project` | renders the resolved set into a render tree, in memory (`projectPluginSet`)                   |
 | `install` | places the render tree as the owned root and refers OMP's home into it, user or project scope |
 
-Projection goes from composed agents and skills to OMP artifacts directly, through forge's adapter
+Projection goes from composed agents to OMP artifacts directly, through forge's adapter
 port. The plugin set `install` projects is the canon the `cratylus` command is built with.
 
 ## Rendering a tree
 
-`projectPluginSet` materializes the resolved set into a render tree: `agents/`, `skills/`, and
-`hooks/`. OMP hook modules are emitted under `enforcing/<scope>/`; skills that need a runtime
-companion get their shim emitted alongside them. A shim forwards its arguments to
-`cratylus <capability>` with the caller's environment, and it needs no session from any harness.
+`projectPluginSet` materializes the resolved set into a render tree: `agents/` and `hooks/`. OMP
+hook modules are emitted under `enforcing/<scope>/`.
 
 ### A render is the whole plugin set
 
-`projectPluginSet` renders every agent, skill and hook the plugin set declares; an install places
+`projectPluginSet` renders every agent and hook the plugin set declares; an install places
 them all. The one choice a render takes is which rules to place (`ProjectOpts.rules`), and the tree
 reports the offered rulesets (`ProjectedTree.rulesets`) for an install to offer.
-
-### An agent is given its skills' closure
-
-An agent's `skills` are the names it declares; what projection gives it is their **closure** over
-`composition`: the declared names first, then every skill they transitively compose, breadth-first in
-each skill's declaration order, each name once. Each composed name is resolved against the set's
-resolved skills, so a later plugin's same-name skill changes the closure, a name no plugin ships is
-kept and not expanded, and a composition cycle terminates. The closure is computed once, before any
-agent is rendered; every adapter renders the list it is handed.
-
-OMP receives each agent's skill closure in `autoloadSkills`, which it preloads for a dispatched
-subagent; for a main session started by `omp --agent <name>` the cratylus extension carries the same
-skills' full instructions in every turn's system prompt.
 
 ### An agent's text, and the settings its reach and model bind to
 
@@ -80,9 +65,9 @@ its own role.
 
 A render tree is placed WHOLE as the owned root, `~/.cratylus/<harness>/` at user scope and
 `<project>/.cratylus/<harness>/` at project scope (`deploy/owned-root.ts`): agents under `agents/`,
-skills under `skills/`, extension modules under `extensions/`, hook workers under `hooks/`, a
+extension modules under `extensions/`, hook workers under `hooks/`, a
 `package.json` naming the modules (`omp.extensions`) and recording the version that projected it,
-`runtime.json` where the canon configures a capability, and `installation.json`, the record of
+and `installation.json`, the record of
 every reference placed outside the root and every host-file edit. The harness's own surfaces only
 refer into it (`linkOwnedRoot`: for omp, a link in `~/.omp/plugins/node_modules` and a dependency
 entry in `~/.omp/plugins/package.json`), so uninstall (`unlinkOwnedRoot`, then the root) removes
@@ -101,14 +86,13 @@ entries stay the same way.
 
 ### The destinations are the adapter's, not the render tree's
 
-A render tree is forge's staging layout — `agents/<name><ext>`, `skills/<name>/`, `hooks/<id>/` and
+A render tree is forge's staging layout — `agents/<name><ext>`, `hooks/<id>/` and
 scoped artifacts under `enforcing/<scope>/`. It is deliberately not the harness's layout. Install
 asks the adapter where each artifact belongs:
 
 | Artifact                        | Port op                  | OMP                            |
 | ------------------------------- | ------------------------ | ------------------------------ |
 | agent definition                | `agentRel(name)`         | `agent/agents/<name>.md`       |
-| skill directory                 | `skillRel(name, agents)` | `../.agents/skills/<name>`     |
 | hook module                     | `hooksFile`              | generated extension module     |
 | scoped mechanism module         | `scopedRel(file, scope)` | `agent/extensions/<file>`      |
 | capability and `--agent` module | `scopedRel(file, scope)` | `agent/extensions/cratylus.ts` |
@@ -122,7 +106,7 @@ it.
 **The definition is the single source of truth.** OMP reads `agent/agents/<name>.md` when it
 dispatches an agent as a subagent, and `omp --agent <name>` resolves the same declaration through
 omp's own discovery to start it as a main session, through the cratylus extension, holding the whole
-declaration as dispatch resolves it for a child: its text, model, effort, `autoload-skills`,
+declaration as dispatch resolves it for a child: its text, model, effort,
 `read-summarize`, `advisor` and `prewalk`, and no default personality. Where omp's own dispatch drops
 what the declaration says, launch holds what it says — a known omp limitation: `read-summarize: true`
 turns summarised reads on (omp's dispatch applies only `false`). One definition, no launcher, nothing
@@ -143,9 +127,8 @@ port, not on OMP's concrete rendering functions.
 | member                                              | what the harness says                                                                  |
 | --------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `name`, `substrate`, `home`, `agentExt`             | its canonical name, substrate, dot-directory and agent-definition extension            |
-| `agentRel`, `skillRel`, `hooksFile`                 | where an agent, skill and hook module land, relative to the harness home               |
-| `agentDef`, `skillDef`, `hooks`                     | how an agent, skill and hook registration are rendered                                 |
-| `preloadsSkills`, `mainSessionSkillHook`            | whether an agent definition preloads skills and how a main session gets them           |
+| `agentRel`, `hooksFile`                             | where an agent and a hook module land, relative to the harness home                    |
+| `agentDef`, `hooks`                                 | how an agent and a hook registration are rendered                                      |
 | `nativeEvents`, `realizes`, `scopes`, `hookCommand` | the event map, supported events, narrowing and worker invocation                       |
 | `enforcingSurface`, `scopeActivatedSurface`         | the emitted hook surface when OMP loads extension code rather than a settings fragment |
 | `scopedRel`                                         | where a scoped artifact lands for an agent or the session                              |

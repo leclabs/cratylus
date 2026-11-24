@@ -9,7 +9,7 @@
 // The dir fields point at the live source dirs this canon already carries: the
 // factors' values under `src/factors/<factor>/*.ts`, the agent modules under
 // `src/agents/*.ts` (each role's generic holder and the personas, composed in
-// `compose.ts`), and the skill modules. The forge resolver scans these paths
+// `compose.ts`). The forge resolver scans these paths
 // exactly as the existing directory-scan does; no resolver logic lives here.
 //
 // SELF-LOCATION (why absolute, not `'./src/factors'`): a consumer `extends`
@@ -53,13 +53,12 @@ export default defineAgentPlugin({
   // containing it.
   manifest: MANIFEST,
   // WHICH lifecycle events exist — carried the same way, and for the same reason.
-  // The projector needs the members to emit a host's runtime configuration and
-  // receives them here as DATA on the plugin, never as an import of this package.
+  // The members ride the plugin as DATA, so a consumer holds the vocabulary
+  // without importing this package.
   events: CANONICAL_EVENTS,
   // WHICH rulesets exist — carried the same way, so an install offers the rulesets
   // the canon declares (`rulesets.ts`).
   rulesets: RULESETS,
   factors: dir('./factors'),
   agents: dir('./agents'),
-  skills: dir('./skills'),
 });

@@ -47,7 +47,7 @@ import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** What the emitted CRATYLUS module reaches of omp itself, which only an omp
  *  process resolves: its agent discovery, front-matter parser, command-line parser,
- *  model, advisor and prewalk resolvers, skills and settings. Each stand-in answers
+ *  model, advisor and prewalk resolvers and settings. Each stand-in answers
  *  from `omp` below and records what it was asked. */
 const omp = vi.hoisted(() => {
   /** The session's runtime settings layer, as `overlayLayers().overrides` reads it. */
@@ -109,8 +109,6 @@ const omp = vi.hoisted(() => {
     agentAdvisor: {} as Record<string, string>,
     agentPrewalk: {} as Record<string, string>,
     selections: [] as Record<string, unknown>[],
-    /** The skills omp discovered for the session. */
-    skills: [] as { name: string; filePath: string }[],
     runtime,
     writes,
     handle,
@@ -227,14 +225,6 @@ vi.mock('@oh-my-pi/pi-coding-agent/task/settings', () => ({
 vi.mock('@oh-my-pi/pi-coding-agent/task/prewalk', () => ({
   resolveAgentPrewalkDefault: (agent: { prewalk?: boolean | string }) =>
     agent.prewalk,
-}));
-vi.mock('@oh-my-pi/pi-coding-agent/extensibility/skills', () => ({
-  getActiveSkills: () => omp.skills,
-  buildSkillPromptMessage: async (
-    skill: { name: string },
-    _input: unknown,
-    kind: string,
-  ) => ({ message: `<${kind} skill ${skill.name}: its instructions>` }),
 }));
 // Top-level `key: "json"` lines between the fences: all a fixture here writes.
 vi.mock('@oh-my-pi/pi-utils', () => ({
@@ -353,7 +343,6 @@ describe('omp agent definition', () => {
             assignment: { type: 'object', required: ['cut'] },
             deliverable: { type: 'object', required: ['done'] },
           },
-          skills: ['design'],
         }),
         CTX,
       ),
@@ -367,7 +356,6 @@ describe('omp agent definition', () => {
       'spawns',
       'output',
       'assignment',
-      'autoloadSkills',
     ]);
     expect(front.mark).toBe('✈️');
   });
@@ -399,33 +387,6 @@ describe('omp agent definition', () => {
     );
   });
 
-  it('emits `autoloadSkills` for an agent given skills, and only then', () => {
-    // The list is the closure projection hands the adapter, rendered in the order it
-    // arrives. omp honours it for a DISPATCHED subagent, so the list reaching these
-    // bytes is what a dispatch of this one definition preloads.
-    //
-    // Read off the RENDERED STRING rather than through `frontMatter`: the claim
-    // is about the bytes omp's own YAML reader will see, including the quoting
-    // and the position of the key inside the fence.
-    const declared = agentToOmpMd(
-      agent({ skills: ['design', 'deliver'] }),
-      CTX,
-    );
-    expect(declared).toContain(
-      '\nautoloadSkills: ["design", "deliver"]\n---\n',
-    );
-
-    // An EMPTY list is treated as absent: `autoloadSkills: []` is noise that reads
-    // like a declaration.
-    for (const bare of [AGENT, agent({ skills: [] })]) {
-      const fence = /^---\n([\s\S]*?)\n---\n/.exec(
-        agentToOmpMd(bare, CTX),
-      )?.[1] as string;
-      expect(fence.split('\n')).toHaveLength(5);
-      expect(fence).not.toContain('autoloadSkills');
-    }
-  });
-
   it('survives a description carrying the characters YAML reserves', () => {
     // A plain scalar may not contain `: `, and a real canon description does
     // ("…and canon: factor catalogs") — unquoted, the document is a scanner
@@ -446,25 +407,6 @@ describe('omp agent definition', () => {
       '- **delivery** — end-to-end integrated green (fixed)',
     );
     expect(body).not.toContain('You are `mav`');
-  });
-});
-
-describe('omp skill definition', () => {
-  it('survives a description carrying the characters YAML reserves', () => {
-    // A skill's description holds `: ` as an agent's description does, and its
-    // front matter is read by the same YAML parser.
-    const gnarly = 'a "quote", a \\ and a colon: here';
-    const { content } = ompHarnessAdapter.skillDef({
-      name: 'tides',
-      trigger: '/tides',
-      description: gnarly,
-      formalBlock: 'tide ≜ ⟨fixture⟩',
-      composedFrom: [],
-    });
-    expect(frontMatter(content)).toEqual({
-      name: 'tides',
-      description: gnarly,
-    });
   });
 });
 
@@ -1437,7 +1379,6 @@ describe('omp tool definitions', () => {
       omp.agentAdvisor = {};
       omp.agentPrewalk = {};
       omp.selections.length = 0;
-      omp.skills = [];
       for (const key of Object.keys(omp.runtime)) delete omp.runtime[key];
       omp.writes.length = 0;
       vi.restoreAllMocks();
@@ -2514,7 +2455,7 @@ describe('omp tool definitions', () => {
         expect(content).not.toContain(line);
     });
 
-    it('gives a launch no note beyond its declaration, its skills and the assignment forms, on any turn', async () => {
+    it('gives a launch no note beyond its declaration and the assignment forms, on any turn', async () => {
       omp.agents = [
         declare(
           { name: 'business-analyst', description: 'Holds the design.' },
@@ -2691,7 +2632,6 @@ describe('omp tool definitions', () => {
     /** The cartographer, declaring the rest of what a dispatched child holds. */
     const WHOLE = () => ({
       ...CARTOGRAPHER(),
-      autoloadSkills: ['tides', 'absent-skill', 'buoys'],
       readSummarize: false,
       advisor: 'fixture/adviser',
       prewalk: 'fixture/fast',
@@ -2776,25 +2716,6 @@ describe('omp tool definitions', () => {
       }
     });
 
-    it("carries the declared skills omp knows into every turn, in omp's autoload form", async () => {
-      omp.agents = [WHOLE()];
-      omp.skills = [
-        { name: 'buoys', filePath: '/skills/buoys/SKILL.md' },
-        { name: 'tides', filePath: '/skills/tides/SKILL.md' },
-      ];
-      const { fire } = await started('cartographer');
-      await fire('session_start');
-      for (const _turn of [1, 2]) {
-        const { systemPrompt } = (await fire('before_agent_start')) as {
-          systemPrompt: string[];
-        };
-        expect(systemPrompt.slice(2)).toEqual([
-          '<autoload skill tides: its instructions>',
-          '<autoload skill buoys: its instructions>',
-        ]);
-      }
-    });
-
     it('refuses no dispatch of a launched session, whatever whom its declaration names', async () => {
       omp.agents = [
         {
@@ -2840,7 +2761,6 @@ describe('omp tool definitions', () => {
     const BODY = 'Map the estuary before drawing its shipping routes.';
     const DEFINITION = `You are the agent ${NAME}: ${DESCRIPTION}\n\n${BODY}`;
     const ORIENTATION = 'What cratylus is for.\nHow to start.';
-    const SKILL = '<autoload skill tides: its instructions>';
     const FORMS = /^# Assignment forms\n[\s\S]*\n {2}\{"chart": …\}\n/;
 
     // Excerpts of omp 19.1.0's rendered system, project and subagent templates.
@@ -2951,7 +2871,6 @@ describe('omp tool definitions', () => {
       omp.discovered.length = 0;
       omp.parsed.length = 0;
       omp.selections.length = 0;
-      omp.skills = [];
       for (const key of Object.keys(omp.runtime)) delete omp.runtime[key];
       omp.writes.length = 0;
     });
@@ -2978,7 +2897,6 @@ describe('omp tool definitions', () => {
       const fields = {
         name: NAME,
         description: DESCRIPTION,
-        autoloadSkills: ['tides'],
         assignment: {
           type: 'object',
           properties: { chart: { type: 'string' } },
@@ -2996,12 +2914,10 @@ describe('omp tool definitions', () => {
           name: NAME,
           description: DESCRIPTION,
           systemPrompt: BODY,
-          autoloadSkills: fields.autoloadSkills,
           source: 'user',
           filePath,
         },
       ];
-      omp.skills = [{ name: 'tides', filePath: '/skills/tides/SKILL.md' }];
 
       let effective = systemPrompt;
       type Handler = (event: unknown, ctx: unknown) => unknown;
@@ -3055,7 +2971,7 @@ describe('omp tool definitions', () => {
       expect(definition).toBe(DEFINITION);
       expect(lines(template ?? '')).toEqual(lines(KEPT_TEMPLATE.join('\n')));
       expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
-      expect(added).toEqual([ORIENTATION, SKILL, expect.stringMatching(FORMS)]);
+      expect(added).toEqual([ORIENTATION, expect.stringMatching(FORMS)]);
     });
 
     it("delivery/system-prompt: a dispatched agent's system prompt", async () => {
@@ -3104,7 +3020,7 @@ describe('omp tool definitions', () => {
         lines([...KEPT_TEMPLATE, heading, banner].join('\n')),
       );
       expect(lines(footer ?? '')).toEqual(lines(KEPT_FOOTER));
-      expect(added).toEqual([ORIENTATION, SKILL, expect.stringMatching(FORMS)]);
+      expect(added).toEqual([ORIENTATION, expect.stringMatching(FORMS)]);
     });
 
     describe('dumped to a file', () => {

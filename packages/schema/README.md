@@ -76,8 +76,8 @@ whether the factor is rendered as `'text'` or compiled to harness settings (`'bi
 `defineAgentPlugin`, an identity factory: the `cratylus` command is built with that one plugin, and
 the projector reads it by the imported binding, never by a string id.
 
-`AgentPlugin` is a `Layout` (the four directories the projector scans: `factors`, `agents`,
-`skills` and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary
+`AgentPlugin` is a `Layout` (the three directories the projector scans: `factors`, `agents`
+and `hooks`) plus what the canon contributes: the `manifest`, the `events` vocabulary
 and the `rulesets` it offers. Canon gives its directories as absolute paths, located against its
 own module.
 
@@ -91,9 +91,7 @@ own module.
 | `KebabToCamel` · `kebabToCamel` · `FactorFieldName`                                              | a factor's name to the field it occupies, at the type level and at runtime                                                  |
 | `Value` · `Enforcing` · `Binding` · `enforcing` · `isFactorValue` · `bodyOf` · `termOf`          | a factor's value, bare or self-enforcing, and its term/precising-definition split                                           |
 | `Agent` · `factorValueOf` · `AgentContract` · `JsonSchema`                                       | the agent shape, a factor field read off it, and its typed handoff                                                          |
-| `Skill` · `SkillDeploy` · `SkillExpression` · `CapabilityName`                                   | the skill shape and the runtime capability it may be a face of                                                              |
 | `Mark` · `markToColor`                                                                           | an agent's emoji·hue mark, and its hue as a terminal color                                                                  |
-| `JsonValue`                                                                                      | the data a skill's runtime face may carry as `configuration`                                                                |
 | `HookDeclaration` · `HookSource` · `HookWorker` · `HookMessage` · `HookSubstrate` · `EventName`  | the doctrine-free hook declaration, its config-IR entry, its worker payload, the speech it carries, its substrate and event |
 | `hookIrOf` · `resolveWorker`                                                                     | a declaration's lift to the hook config-IR, and a worker's template resolution                                              |
 | `ProjectionFact` · `ProjectionFacts`                                                             | the names of the facts a projector binds into a hook worker's template                                                      |
@@ -102,29 +100,19 @@ own module.
 
 An `Agent`'s identity face is its `name`, `description`, `mark` and a reserved `key` (always
 `null`), and optionally the role it `holds`, its model `routing` (`{ tier, effort }`), its typed
-handoff `contract`, the `skills` it operates through and its `isolation`. The canon's own fold
+handoff `contract` and its `isolation`. The canon's own fold
 copies `holds`, `routing` and `contract` from its factors, because the projector is blind to which
-factor is which; a harness binds model routing per agent. `skills` and `isolation` are not factors:
-a canon states them on the agent itself, and cratylus's own canon sets neither.
+factor is which; a harness binds model routing per agent. `isolation` is not a factor:
+a canon states it on the agent itself, and cratylus's own canon sets none.
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic event name (`EventName`), the
 `Substrate` a constraint is realized on, the `Hook` wire shape, `NativeBinding`, and
 `HarnessMechanism` and `HarnessWorker` — the realization payload for one enforcing constraint on one
 harness. It imports nothing.
 
-## A skill's runtime face
-
-`SkillDeploy.runtime` names the runtime capability a skill is a face of and, optionally, the
-`configuration` that capability receives: a `JsonValue`, with no opinion here about any
-capability's keys. `install` gathers the `configuration`
-from every skill of the resolved plugin set and emits it into the host runtime config keyed by
-capability, beside the event vocabulary; the runtime's `loadRuntimeConfig` lifts it. Meaning a
-capability needs therefore lives in the canon and reaches the runtime as configuration, never as a
-second copy spelled inside the runtime.
-
 ## No edge out
 
-This package imports nothing. A capability's name is a plain `CapabilityName` string here; the closed
-set is declared where the canon declares its own vocabulary (`RUNTIME_CAPABILITIES` in
-`packages/canon/src/manifest.ts`), and `SkillDeploy.runtime` is parameterized over it. The shape
-belongs here, and the vocabulary belongs to the canon that declares the members.
+This package imports nothing. An event's name is a plain `EventName` string here; the closed
+set is declared where the canon declares its own vocabulary (`CANONICAL_EVENTS` in
+`packages/canon/src/manifest.ts`). The shape belongs here, and the vocabulary belongs to the canon
+that declares the members.

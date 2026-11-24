@@ -1,11 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The HOST RUNTIME CONFIG — what a capability is configured with, and the EARLIER
-// layout's host config.
+// The EARLIER layout's HOST RUNTIME CONFIG.
 //
-// The canon's capability configuration — what each skill's runtime face declares
-// under `runtime.configuration`, keyed by its capability — is data on the plugin set,
-// and install writes it into the owned root (`runtime.json`), where the runtime reads
-// it (`@cratylus/runtime/runtime-config`). Nothing else is written there.
+// Install writes no runtime config: the owned root holds the installation's record and
+// the harness's modules, and the runtime reads the installation from there
+// (`@cratylus/runtime/runtime-config`).
 //
 // The EARLIER layout wrote a host config beside the harness home, `<home>/.<bin>.json`
 // (or `$AGENT_RUNTIME_CONFIG`), with the event vocabulary, each harness's stanza and the
@@ -23,7 +21,6 @@ import {
   RUNTIME_CONFIG_ENV,
   RUNTIME_CONFIG_NAME,
 } from '@cratylus/runtime/runtime-config';
-import type { JsonValue, Skill } from '@cratylus/schema';
 import type { RuntimeConfigRecord } from './manifest.js';
 
 /** Where the earlier layout's host config is: `$AGENT_RUNTIME_CONFIG` ▸
@@ -36,32 +33,6 @@ export function runtimeConfigTarget(
   return override && override !== ''
     ? override
     : join(home, RUNTIME_CONFIG_NAME);
-}
-
-/**
- * Gather each capability's configuration off the skills' runtime faces.
- *
- * Two skills configuring ONE capability is refused rather than merged or
- * last-wins: either choice would be the projector deciding which half of the
- * canon's meaning the runtime receives.
- */
-export function capabilityConfiguration(
-  skills: readonly Pick<Skill, 'name' | 'runtime'>[],
-): Record<string, JsonValue> {
-  const configuration: Record<string, JsonValue> = {};
-  const owner = new Map<string, string>();
-  for (const { name, runtime } of skills) {
-    if (runtime?.configuration === undefined) continue;
-    const prior = owner.get(runtime.capability);
-    if (prior !== undefined) {
-      throw new Error(
-        `capability configuration: skills '${prior}' and '${name}' both configure capability '${runtime.capability}' — one capability receives one configuration, and choosing between them is not the projection's to do`,
-      );
-    }
-    owner.set(runtime.capability, name);
-    configuration[runtime.capability] = runtime.configuration;
-  }
-  return configuration;
 }
 
 /** Serialize a config exactly as it lands on disk (2-space, trailing newline). */

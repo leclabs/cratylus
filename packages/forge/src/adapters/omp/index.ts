@@ -11,7 +11,6 @@ export {
   OMP_PACKAGE_DIR,
   OMP_REACH_MODULE,
   OMP_SESSION_MODULE,
-  type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,
   ompCapabilityExtensions,
@@ -22,8 +21,6 @@ export {
   ompRoleRouting,
   ompReachExtensions,
   ompScopeActivatedExtensions,
-  ompSkillRel,
-  skillToOmpMd,
 } from './render.js';
 
 // The canonical→native event map and the ACT bindings beside it. Exported so a

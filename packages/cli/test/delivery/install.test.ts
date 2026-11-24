@@ -5,20 +5,23 @@ import {
   readdirSync,
   realpathSync,
   rmSync,
-  statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 import canon from '@cratylus/canon';
 import { afterEach, expect, it } from 'vitest';
 import {
   type CommandResult,
   type Host,
+  files,
   host,
 } from '../capability-port/fixture.js';
 import { onTerminal } from '../terminal.js';
 import { parseYaml } from '../yaml.js';
+import { earlier, put } from './fixture.js';
 
 const INDUSTRY_ROLES = [
   'business-analyst',
@@ -86,27 +89,74 @@ function offeredAgents(home: string): string[] {
     .sort();
 }
 
-// The skills omp offers the user: each `skills/<name>/SKILL.md` of an extension package.
+// The skills omp offers from its user directories and installed packages.
 function offeredSkills(home: string): string[] {
-  return pluginPackages(home)
-    .flatMap((p) =>
-      entries(join(p, 'skills')).filter((s) =>
-        existsSync(join(p, 'skills', s, 'SKILL.md')),
-      ),
+  return [
+    join(home, '.agents/skills'),
+    join(home, '.omp/agent/skills'),
+    ...pluginPackages(home).map((p) => join(p, 'skills')),
+  ]
+    .flatMap((dir) =>
+      entries(dir).filter((name) => existsSync(join(dir, name, 'SKILL.md'))),
     )
     .sort();
 }
 
-// Every skill the canon ships: one directory per skill under its skill dir.
-function canonSkills(): string[] {
-  const dir = canon.skills;
-  expect(dir, 'the canon declares a skill dir').toBeTypeOf('string');
-  return entries(dir!)
-    .filter((s) => statSync(join(dir!, s)).isDirectory())
-    .sort();
+const releasedSkills = [
+  'conceptualize',
+  'elicit',
+  'exemplify',
+  'formalize',
+  'materialize',
+  'probe',
+  'signify',
+];
+
+// Reconstruct the skill-bearing subset of a published cratylus 0.26.0
+// `install --harness omp --model-roles default` in an empty home.
+function seedReleasedSkills(home: string): string {
+  const version = '0.26.0';
+  const root = join(home, '.cratylus/omp');
+  const plugins = join(home, '.omp/plugins');
+  const name = 'cratylus-omp';
+  put(join(root, 'package.json'), JSON.stringify({ name, version }));
+  put(
+    join(root, 'installation.json'),
+    JSON.stringify({
+      version,
+      scope: 'user',
+      references: [
+        { kind: 'link', path: `plugins/node_modules/${name}` },
+        {
+          kind: 'dependency',
+          path: 'plugins/package.json',
+          name,
+          created: true,
+        },
+      ],
+    }),
+  );
+  put(
+    join(plugins, 'package.json'),
+    JSON.stringify({ dependencies: { [name]: pathToFileURL(root).href } }),
+  );
+  const modules = join(plugins, 'node_modules');
+  mkdirSync(modules);
+  symlinkSync(root, join(modules, name), 'dir');
+  const skills = join(root, 'skills');
+  for (const skill of releasedSkills)
+    put(
+      join(skills, skill, 'SKILL.md'),
+      `---\nname: ${skill}\ndescription: Earlier cratylus skill\n---\n`,
+    );
+  return skills;
 }
 
 const said = (r: CommandResult) => `${r.stdout}\n${r.stderr}`;
+const skillReports = (r: CommandResult) =>
+  stripVTControlCharacters(said(r))
+    .split('\n')
+    .filter((line) => /^\s*skills:/.test(line));
 
 it('delivery/install: installs the industry roles', async () => {
   h = emptyHome();
@@ -121,15 +171,194 @@ it('delivery/install: installs the industry roles', async () => {
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
 });
 
-it('delivery/install: installs every agent and skill unattended', () => {
+it('delivery/install: installs every agent unattended', () => {
   h = emptyHome();
   // No terminal: `run` hands the command an empty stdin pipe and pipes its output.
   const r = h.command(['install', '--harness', 'omp']);
   expect(r.code, said(r)).toBe(0);
   expect(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
-  const skills = canonSkills();
-  expect(skills.length, 'the canon ships skills').toBeGreaterThan(0);
-  expect(offeredSkills(h.home)).toEqual(skills);
+  expect(offeredSkills(h.home)).toEqual([]);
+  expect(skillReports(r), said(r)).toEqual([]);
+});
+
+it('delivery/install: removes a skill an earlier installation placed', () => {
+  h = emptyHome();
+  const skills = seedReleasedSkills(h.home);
+  expect(offeredSkills(h.home)).toEqual(releasedSkills);
+  const args = ['install', '--harness', 'omp'];
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect
+    .soft(skillReports(preview), said(preview))
+    .toEqual([
+      `  skills: would remove ${releasedSkills.join(', ')}, no longer installed`,
+    ]);
+  expect(offeredSkills(h.home)).toEqual(releasedSkills);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect
+    .soft(existsSync(skills), 'the earlier owned skills directory')
+    .toBe(false);
+  expect.soft(offeredSkills(h.home)).toEqual([]);
+  expect.soft(offeredAgents(h.home)).toEqual(INDUSTRY_ROLES);
+  expect
+    .soft(skillReports(installed), said(installed))
+    .toEqual([
+      `  skills: removed ${releasedSkills.join(', ')}, no longer installed`,
+    ]);
+});
+
+it('reports each removed skill once across the owned root and earlier deploy record', () => {
+  h = emptyHome();
+  earlier(h);
+  const legacy = join(h.home, '.agents/skills');
+  const legacyFiles = files(legacy);
+  const ownedSkills = seedReleasedSkills(h.home);
+  const offered = offeredSkills(h.home);
+  const names = [...new Set(offered)];
+  expect(names).toContain('event-tap');
+  expect(offered.length).toBeGreaterThan(names.length);
+
+  const installed = h.command(['install', '--harness', 'omp']);
+  expect(installed.code, said(installed)).toBe(0);
+  expect.soft(existsSync(ownedSkills), ownedSkills).toBe(false);
+  for (const file of legacyFiles)
+    expect.soft(existsSync(file), file).toBe(false);
+  expect.soft(offeredSkills(h.home)).toEqual([]);
+  expect
+    .soft(skillReports(installed), said(installed))
+    .toEqual([`  skills: removed ${names.join(', ')}, no longer installed`]);
+});
+
+it('keeps an earlier skill whose file the host edited, and does not name it as removed', () => {
+  h = emptyHome();
+  earlier(h);
+  const edited = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(edited, 'Mira edited this skill');
+  const names = offeredSkills(h.home).filter((name) => name !== 'event-tap');
+  expect(names.length).toBeGreaterThan(0);
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+  expect(stripVTControlCharacters(said(installed))).toContain(edited);
+});
+
+it('names an earlier skill whose SKILL.md is removed though the host edited its helper script', () => {
+  h = emptyHome();
+  earlier(h);
+  const helper = join(h.home, '.agents/skills/event-tap/scripts/eventTap.mjs');
+  const skill = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(helper, 'Mira edited this helper');
+  const names = [...new Set(offeredSkills(h.home))];
+  expect(names).toContain('event-tap');
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(skill)).toBe(true);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(skill), 'the skill file').toBe(false);
+  expect(readFileSync(helper, 'utf8')).toBe('Mira edited this helper');
+});
+
+it('does not name a skill of the owned root while an edited SKILL.md of its name stays', () => {
+  h = emptyHome();
+  earlier(h);
+  const edited = join(h.home, '.agents/skills/event-tap/SKILL.md');
+  put(edited, 'Mira edited this skill');
+  const ownedSkills = seedReleasedSkills(h.home);
+  put(join(ownedSkills, 'event-tap/SKILL.md'), '---\nname: event-tap\n---\n');
+  const names = [...new Set(offeredSkills(h.home))].filter(
+    (name) => name !== 'event-tap',
+  );
+  const args = ['install', '--harness', 'omp'];
+
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+  expect(existsSync(ownedSkills), 'the owned skills directory').toBe(false);
+  expect(readFileSync(edited, 'utf8')).toBe('Mira edited this skill');
+});
+
+it('does not name an earlier skill that is only in the record, its SKILL.md already absent', () => {
+  const args = ['install', '--harness', 'omp'];
+  // Every legacy skill file gone: nothing to remove, so no skills line.
+  h = emptyHome();
+  earlier(h);
+  rmSync(join(h.home, '.agents/skills'), { recursive: true, force: true });
+  for (const argv of [[...args, '--dry-run'], args]) {
+    const r = h.command(argv);
+    expect(r.code, said(r)).toBe(0);
+    expect(skillReports(r), said(r)).toEqual([]);
+  }
+  h.dispose();
+
+  // One of them gone: the others are named, it is not.
+  h = emptyHome();
+  earlier(h);
+  rmSync(join(h.home, '.agents/skills/probe'), { recursive: true });
+  const names = [...new Set(offeredSkills(h.home))];
+  expect(names).not.toContain('probe');
+  expect(names.length).toBeGreaterThan(0);
+  const preview = h.command([...args, '--dry-run']);
+  expect(preview.code, said(preview)).toBe(0);
+  expect(skillReports(preview), said(preview)).toEqual([
+    `  skills: would remove ${names.join(', ')}, no longer installed`,
+  ]);
+  const installed = h.command(args);
+  expect(installed.code, said(installed)).toBe(0);
+  expect(skillReports(installed), said(installed)).toEqual([
+    `  skills: removed ${names.join(', ')}, no longer installed`,
+  ]);
+});
+
+it('replaces an owned root whose `skills` is a file, and names only the skill directories', () => {
+  h = emptyHome();
+  const skills = seedReleasedSkills(h.home);
+  rmSync(skills, { recursive: true });
+  put(skills, 'not a directory');
+  const first = h.command(['install', '--harness', 'omp']);
+  expect(first.code, said(first)).toBe(0);
+  expect(skillReports(first), said(first)).toEqual([]);
+  expect(existsSync(skills), 'the earlier file').toBe(false);
+
+  put(join(skills, 'README.md'), 'a file among the skills');
+  put(join(skills, 'tides/SKILL.md'), '---\nname: tides\n---\n');
+  const second = h.command(['install', '--harness', 'omp']);
+  expect(second.code, said(second)).toBe(0);
+  expect(skillReports(second), said(second)).toEqual([
+    '  skills: removed tides, no longer installed',
+  ]);
+  expect(existsSync(skills), 'the earlier skills directory').toBe(false);
 });
 
 it('delivery/install: offers a ruleset added since the recorded choice', async () => {
