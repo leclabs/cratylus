@@ -8,8 +8,8 @@ It assumes you've done the four steps in the [README](../README.md#get-started-a
 
 ```mermaid
 flowchart TD
-  P["1 · concept in prose,<br/>candidate terms"] --> R["2 · business analyst:<br/>fresh reading of each candidate (probe)"]
-  R --> N["2 · Cratylic name and<br/>precising definition (signify)"]
+  P["1 · concept in prose,<br/>candidate terms"] --> R["2 · business analyst:<br/>fresh reading of each candidate"]
+  R --> N["2 · Cratylic name and<br/>precising definition"]
   N --> X["3 · fresh reading by<br/>a second model family"]
   X -- "the readings diverge:<br/>the definition states it" --> N
   X --> M["4 · record in design/model,<br/>cratylus model check"]
@@ -27,12 +27,9 @@ Then jot down the names you'd naturally reach for. Here they are `quality gate`,
 
 ## 2. Ask the business analyst to test the candidates
 
-The business analyst has two skills for this:
+The business analyst tests candidate names by fresh readings and settles the Cratylic name as its profile directs: it finds out what each term actually brings to a model's mind, then picks the winner and writes its precising definition.
 
-- `probe` finds out what a term actually brings to a model's mind.
-- `signify` picks the winner and writes its precising definition.
-
-You don't call them yourself. Just ask in plain words:
+You don't direct those steps yourself. Just ask in plain words:
 
 ```sh
 omp --agent business-analyst
@@ -40,7 +37,7 @@ omp --agent business-analyst
 
 > I want our agents to name one concept by its Cratylic name. Domain: software delivery. The concept: before a change merges, a single command builds, lints, typechecks and runs the deterministic tests; developers run that same command locally (a pre-push hook runs it) and CI runs exactly it, nothing more. Candidates I am considering: "quality gate", "required status check", "pre-merge check". Probe each candidate with a fresh reading, choose the Cratylic name, and give its precising definition. Report only; do not create or edit any files.
 
-In our run the agent read both skills, then made each fresh reading as a separate model call that carried no project context. It asked each question two ways: once openly, and once allowing the model to answer "no term fits", so the model wasn't pushed into producing an answer.
+In our run the agent made each fresh reading as a separate model call that carried no project context. It asked each question two ways: once openly, and once allowing the model to answer "no term fits", so the model wasn't pushed into producing an answer.
 
 For each candidate, here is what the reading added that you don't mean, and what it left out that you do:
 
