@@ -53,8 +53,8 @@ export default defineAgentPlugin({
   // containing it.
   manifest: MANIFEST,
   // WHICH lifecycle events exist — carried the same way, and for the same reason.
-  // The projector needs the members to emit a host's runtime configuration and
-  // receives them here as DATA on the plugin, never as an import of this package.
+  // The members ride the plugin as DATA, so a consumer holds the vocabulary
+  // without importing this package.
   events: CANONICAL_EVENTS,
   // WHICH rulesets exist — carried the same way, so an install offers the rulesets
   // the canon declares (`rulesets.ts`).

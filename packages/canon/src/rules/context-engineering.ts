@@ -1,4 +1,5 @@
 import type { Ruleset } from '@cratylus/schema';
+import { CRATYLIC_CONTEXT_DESIGN } from '../cratylic-context-design.js';
 
 /** Ten principles of context engineering, each adopted by its name. */
 export const contextEngineering: Ruleset = {
@@ -9,8 +10,7 @@ export const contextEngineering: Ruleset = {
     {
       name: 'context-engineering-cratylic-context-design',
       description: 'Context is authored by Cratylic context design.',
-      statement:
-        "Cratylic context design: context engineering that invokes each concept by its Cratylic name, with a precising definition for the symmetric difference that remains, in every text an agent reads: a project's context file, an agent's profile, a rule, a dispatch's context and a concept record among them.",
+      statement: `Cratylic context design: ${CRATYLIC_CONTEXT_DESIGN}.`,
       why: 'A term already carries most of its concept, so the context carries only what the term leaves out.',
     },
     {
