@@ -16,12 +16,9 @@
 // user's or a project's (`scope`); a record that says neither, or none at all, is the
 // user's, installed before there were scopes.
 //
-// WHY NOT vite's exact shape. Vite resolves `vite.config.ts` from the project it
-// runs in. This runtime is installed GLOBALLY and invoked from arbitrary cwd, so
-// there is no project to resolve from. The declaration still lives in
-// config-is-code at the consumer's site; INSTALL realizes it into the owned root,
-// and the runtime reads that. Same direction of authority as every other artifact
-// here: declare → project → consume.
+// WHY THE INSTALLATION, NOT THE WORKING DIRECTORY. This runtime is installed GLOBALLY
+// and invoked from arbitrary cwd, so there is no project configuration to resolve it
+// from: it reads the installation that install placed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type Dirent, existsSync, readFileSync, readdirSync } from 'node:fs';
