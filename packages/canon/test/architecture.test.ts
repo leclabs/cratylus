@@ -47,7 +47,7 @@ type Pkg = 'canon' | 'forge' | 'runtime' | 'cli' | 'schema' | 'tooling';
 
 /**
  * Canon's file ROLES, which each edge carries so a report names what reached across:
- * a UNIT (a value, skill, agent, hook declaration or rule) importing the projector is
+ * a UNIT (a value, agent, hook declaration or rule) importing the projector is
  * a canon DEFINED BY its projector, the defect property 2 exists to refuse.
  */
 type Role = 'unit' | 'build-script' | 'root';
@@ -124,15 +124,10 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // move would have traded a ratcheted edge for a
   // fused concern. The detection was right; the remedy was not.
   //
-  // What schema actually wanted was never `RuntimePlugin`. It wanted the capability
-  // KEY SET, and it was obtaining a VOCABULARY by reaching into a
-  // SHAPE. `shape ⊥ vocabulary`. Schema now states only that a
-  // capability has a name; `canon/manifest.ts` declares the members and narrows its
-  // own `Skill` against them, which is the `FactorManifest`/`MANIFEST` pattern
-  // reused rather than a second one invented. The edge is gone, the ports never
-  // moved, and the compile-time check on skills got STRONGER — it is now sourced
-  // from the canon that ships the capabilities instead of from an interface's
-  // shape.
+  // What schema actually wanted was never `RuntimePlugin`. It wanted a KEY SET, and it
+  // was obtaining a VOCABULARY by reaching into a SHAPE. `shape ⊥ vocabulary`: schema
+  // states shapes and the canon declares the names, as it declares the lifecycle events.
+  // The edge is gone and the ports never moved.
   // `canon/index.ts → forge` WAS HERE and is RETIRED BY REPAIR, 2026-08-05.
   // `AgentPlugin`/`defineAgentPlugin` moved to `@cratylus/schema`, so the canon's
   // root no longer reaches the projector for its own authoring surface. The move
@@ -288,7 +283,7 @@ function pkgOf(spec: string): Pkg | null {
 }
 
 function roleOf(rel: string): Role {
-  if (/^(factors|skills|agents|hooks|rules|genus)\//.test(rel)) return 'unit';
+  if (/^(factors|agents|hooks|rules)\//.test(rel)) return 'unit';
   // BUILD SCRIPTS ARE NAMED BY THEIR DIRECTORY: `tooling/`, a sibling of `src/`, which
   // the build excludes.
   if (rel.startsWith('tooling/')) return 'build-script';
@@ -390,11 +385,7 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
     // Known-live edges, so a collapsed scan cannot pass: the composition root's
     // import of the projector, which witnesses a live scan of an edge into forge.
     expect(ks).toContain('cli/cratylus.ts → forge');
-    // Was `canon/skills/wake/skill.ts → schema`. The capability-vocabulary repair
-    // moved every skill onto canon's OWN narrowed `Skill` (`manifest.ts`), so no
-    // skill imports the shapes package directly any more and that witness went stale.
-    // The canon→shapes edge itself is very much alive — it just has one witness now,
-    // which is the manifest module, and that is the right place for it.
+    // The canon→shapes edge has one witness, which is the manifest module.
     expect(ks).toContain('canon/manifest.ts → schema');
   });
 
@@ -464,7 +455,7 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
       .filter((e) => !ARCHITECTURE_RATCHET.has(key(e)))
       .map(
         (e) =>
-          `ARCH ${key(e)} — a skill names a capability, never an implementation`,
+          `ARCH ${key(e)} — canon names a capability, never an implementation`,
       );
     expect(bad, bad.join('\n')).toEqual([]);
   });
@@ -520,7 +511,7 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
 
     const forbidden: Edge = {
       from: 'canon',
-      file: 'skills/probe/skill.ts',
+      file: 'agents/mav.ts',
       role: 'unit',
       to: 'runtime',
     };
@@ -617,7 +608,7 @@ describe('package-boundary gate — the four load-bearing properties, enforced',
     ]);
     // exonerating: declared AND imported — must NOT convict
     expect(
-      phantomScan(real, "import type { Skill } from '@cratylus/schema';")
+      phantomScan(real, "import type { Agent } from '@cratylus/schema';")
         .phantoms,
     ).toEqual([]);
     // an external dep is npm's problem, not this gate's

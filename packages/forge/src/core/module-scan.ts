@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // MODULE SCANNING — the one home for "which declaration modules live in this directory"
-// (a plugin's agents, skills and hooks).
+// (a plugin's agents and hooks).
 //
 // A plugin package is scanned in TWO shapes: as SOURCE inside the workspace
 // (`.ts`, loaded through tsx) and as an INSTALLED, BUILT package (`.js`). A scan of
@@ -10,7 +10,7 @@
 //
 // Scanning both extensions is therefore a correctness requirement of shipping the
 // canon as a build-time plugin, not a convenience. Declaration files are excluded
-// (`.d.ts` declares no agent, skill or hook), and a name present in both shapes is yielded once.
+// (`.d.ts` declares no agent or hook), and a name present in both shapes is yielded once.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { glob } from 'node:fs/promises';
@@ -48,24 +48,6 @@ export async function scanModuleNames(
     if (!isModuleFile(p)) continue;
     const name = stripModuleExtension(p);
     if (!exclude.includes(name)) names.add(name);
-  }
-  return [...names].sort();
-}
-
-/**
- * The names of self-contained declaration DIRECTORIES under `dir` — a directory holding
- * `<base>.<ext>` (e.g. `wake/skill.ts` or, installed, `wake/skill.js`). The
- * directory name is the declared name.
- */
-export async function scanDeclarationDirNames(
-  dir: string,
-  base: string,
-): Promise<string[]> {
-  const names = new Set<string>();
-  for await (const p of glob(`*/${base}.{ts,js,mjs}`, { cwd: dir })) {
-    if (!isModuleFile(p)) continue;
-    const slash = p.indexOf('/');
-    if (slash > 0) names.add(p.slice(0, slash));
   }
   return [...names].sort();
 }

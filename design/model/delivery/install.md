@@ -1,6 +1,6 @@
 # install
 
-At user scope by default, or project scope; places every agent and skill, and offers the rulesets, each taken whole or rule by rule; a recorded rule no longer offered is dropped and named; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
+At user scope by default, or project scope; places every agent, and offers the rulesets, each taken whole or rule by rule; a recorded rule no longer offered is dropped and named, and a skill an earlier installation placed is removed and named; each tier's model stays the product owner's setting, a user installation naming each tier left unbound
 
 ## Examples
 
@@ -10,11 +10,17 @@ Given cratylus's agents
 When install runs at user scope
 Then the harness offers exactly business-analyst, tech-lead, software-engineer, test-engineer and code-reviewer, and the personas mav, nico and kino
 
-### installs every agent and skill unattended
+### installs every agent unattended
 
 Given no terminal
 When install runs at user scope naming only the harness
-Then it installs every agent and skill and completes
+Then it installs every agent and completes
+
+### removes a skill an earlier installation placed
+
+Given an installation whose earlier version placed cratylus's skills
+When install runs again
+Then it removes each of those skills and names it as no longer installed
 
 ### offers a ruleset added since the recorded choice
 

@@ -1,12 +1,12 @@
 // The ONE behavioral PORT for manifest→harness projection. A `HarnessAdapter`
 // captures the projection operations a consumer (canon's project CLIs)
-// needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
+// needs to render its typed `Agent`/`Hook` vectors to a harness's
 // on-disk ARTIFACTS — WITHOUT naming a concrete adapter module. A consumer selects
 // an implementation strictly BY NAME (`adapterByName('omp')`), so no
 // `adapters/<harness>` subpath import leaks into the consumer.
 //
 // Each projection op returns `{ filename, content }` — the harness owns its own
-// file naming (`<name>.md`; `SKILL.md`), the consumer owns only
+// file naming (`<name>.md`), the consumer owns only
 // the parent directory it writes under. Optional ops (`hooks`, `enforcingSurface`)
 // are present when that artifact exists; OMP realizes hooks as extension modules.
 //
@@ -24,7 +24,6 @@ import type {
   NativeBinding,
   Substrate,
 } from '@cratylus/schema/hook';
-import type { ResolvedSkill } from './body.js';
 
 /**
  * The scope token a scope-activated artifact carries when it belongs to no single
@@ -64,7 +63,7 @@ export const NEUTRAL_AGENT_ROOT = '.agents';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
-  /** The harness-owned filename (with extension), e.g. `mav.md` / `SKILL.md`. */
+  /** The harness-owned filename (with extension), e.g. `mav.md`. */
   readonly filename: string;
   readonly content: string;
   /**
@@ -114,15 +113,6 @@ export interface AgentDefContext {
    * declares globally ignores it and uses `enforcingSurface` instead.
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
-  /**
-   * The composed skills this adapter must NOT print into a main session, because
-   * what the hook would print exceeds `mainSessionSkillHook.cap`: projection
-   * measures each composed skill and hands the ones over the cap down by name. The
-   * adapter names each as required reading — in what reaches the MAIN session only,
-   * never the definition's body, which a dispatched holder reads too — so the
-   * harness's own skill tool loads it on demand. Absent or empty: every skill fits.
-   */
-  readonly oversizedSkills?: ReadonlySet<string>;
 }
 
 /** The projection port a harness adapter implements. */
@@ -190,44 +180,11 @@ export interface HarnessAdapter {
    */
   agentRel(name: string): string;
   /**
-   * Where skill `<name>` lands ON THE HOST — every destination, harness-home
-   * relative, given the agent set this canon projects.
-   *
-   * PLURAL because how many destinations a skill needs depends on how the
-   * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
-   * reads skills from one user-level dir, and omp reads them from a harness-neutral
-   * `~/.agents` root that every launch — personaed or bare — reads NATIVELY, so
-   * `agents` goes unused for both. The parameter is there for a harness that scopes
-   * a reader per agent, which would need a copy per agent scope.
-   *
-   * REQUIRED, like `agentRel`: install places a render tree by its paths with no
-   * vector to ask, so it must compute every destination from the name alone,
-   * and `skills/<name>` — forge's own staging layout — is not every harness's.
-   */
-  skillRel(name: string, agents: readonly string[]): readonly string[];
-  /**
    * The filename of this harness's hook-config artifact — `settings.json`.
    * Mirrors `HarnessHooksProjection.filename`; install needs it to
    * find the fragment in the render tree and to merge into the host's copy.
    */
   readonly hooksFile: string;
-  /**
-  /**
-   * Whether an agent definition on this harness can NAME skills the harness
-   * preloads into that agent — omp's `autoloadSkills`, claude's subagent
-   * `skills`. An answer about the harness, not about any agent.
-   *
-   * REQUIRED, because the answer decides what an agent's skills become here. Yes
-   * ⇒ `agentDef` emits the native field from `Agent.skills`. No ⇒ it emits none
-   * (a harness whose agent definition has no such field) and renders the skills
-   * as a required-reading declaration instead, and
-   * projection warns once per agent that has any: the fidelity ladder's floor is
-   * a steer, never silence.
-   *
-   * Either way the list `agentDef` receives is the CLOSURE projection computed
-   * (`skillClosure`), so an adapter renders it and computes nothing.
-   */
-  readonly preloadsSkills: boolean;
   /**
    * Whether an agent definition on this harness can START the agent in a git
    * worktree of its own — claude's subagent `isolation: worktree`. An answer about
@@ -242,28 +199,6 @@ export interface HarnessAdapter {
    * on it alone.
    */
   readonly startsInWorktree: boolean;
-  /**
-   * How this harness carries a persona's composed skills into a MAIN session, where
-   * its native preload (`preloadsSkills`) does not reach — by a hook that prints each
-   * skill. Absent for a harness whose main session already has them.
-   *
-   * `cap` is a fact of the harness: the most characters one such hook's output may
-   * hold before the harness replaces it with a preview the model does not have to
-   * read. `size` is what that hook prints for a skill, given the skill's projected
-   * `SKILL.md` text — the number projection weighs against `cap`, to decide which
-   * skills the adapter cannot hook and to warn once per skill that it cannot.
-   *
-   * `hostHome` is the home the definitions will be installed under, when the caller
-   * knows it, as `install` does. The hook prints each skill's
-   * directory, and that path is part of its output, so a longer directory is a longer
-   * output. The adapter weighs the directory the hook will print, resolved from that
-   * home as the hook resolves it. Absent, the size counts the path as the definition
-   * spells it, which is a LOWER BOUND: a host whose directory is longer prints more.
-   */
-  readonly mainSessionSkillHook?: {
-    readonly cap: number;
-    size(skillName: string, skillMd: string, hostHome?: string): number;
-  };
   /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.
    *
@@ -330,8 +265,6 @@ export interface HarnessAdapter {
   hookCommand(hookId: string, workerFilename: string): string;
   /** Project an agent vector → its subagent def file, under the set's context. */
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
-  /** Project a resolved skill → its `SKILL.md`. */
-  skillDef(skill: ResolvedSkill): HarnessProjection;
   /**
    * Project a rule → the file this harness loads in every session of every
    * project, under the `rules/` directory of the owned root: the rule and why it

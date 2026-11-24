@@ -61,12 +61,9 @@ it('one user installation is offered in existing and later projects, without cha
       .length,
     'installed canon agents',
   ).toBeGreaterThan(0);
-  expect(
-    Object.keys(tree(join(owned(h), 'skills'))).filter((p) =>
-      p.endsWith('/SKILL.md'),
-    ).length,
-    'installed canon skills',
-  ).toBeGreaterThan(0);
+  expect(existsSync(join(owned(h), 'skills')), 'no installed skill').toBe(
+    false,
+  );
   for (const cwd of projects)
     expect(tree(cwd)).not.toHaveProperty(
       '.cratylus/omp/extensions/cratylus.ts',
@@ -80,7 +77,7 @@ it('every projected leaf belongs to the owned root and outside surfaces are refe
   const before = tree(h.home);
   success(install(h));
   assertOwned(h, before);
-  for (const directory of ['agents', 'skills', 'extensions'])
+  for (const directory of ['agents', 'extensions'])
     expect(
       Object.keys(tree(join(owned(h), directory))).length,
       directory,
@@ -325,15 +322,15 @@ it('upgrade discards all inside-root edits and additions but preserves an outsid
   const bindings = earlier(h);
   success(install(h));
   preserved(h, bindings);
-  const skill = join(owned(h), 'skills/conceptualize/SKILL.md');
-  put(skill, 'Mira changed installed content');
+  const declaration = join(owned(h), 'agents/mav.md');
+  put(declaration, 'Mira changed installed content');
   put(join(owned(h), 'local/addition.txt'), 'Mira local addition');
   const outside = join(h.home, '.agents/skills/host-skill/SKILL.md');
   put(outside, 'Mira edited the outside skill');
   version(h, '2.5.0');
   success(install(h));
   preserved(h, bindings);
-  expect(readFileSync(skill, 'utf8')).not.toContain('Mira changed');
+  expect(readFileSync(declaration, 'utf8')).not.toContain('Mira changed');
   expect(existsSync(join(owned(h), 'local'))).toBe(false);
   expect(readFileSync(outside, 'utf8')).toBe('Mira edited the outside skill');
   const comparison = fresh();

@@ -2,24 +2,21 @@
 
 The **mechanism** concern of [cratylus](../../README.md) — the per-host runtime contract leaf.
 
-A skill has two faces: what it _means_, which is canon's, and the programmatic thing it routes to,
-which is this package's. `runtime` is the generic platform beneath that second face, plus the
-model check, which holds the domain model to its acceptance tests.
+`runtime` is the generic platform the capabilities run on, plus the model check, which holds the
+domain model to its acceptance tests.
 
 It **depends on nothing** in this system — zero `@cratylus/*` dependencies — and knows no agent harness and
-no canon. It ships with the agent and runs on the host; anything canon-specific reaches it as
-configuration the projection emitted.
+no canon. It ships with the agent and runs on the host.
 
 The commands a consumer
 types, with their flags, are [the `cratylus` README](../cli/README.md)'s; this README is for whoever
-works on the canon whose skills route here, and for a library user of the package.
+works on the runtime, and for a library user of the package.
 
 ## Capabilities
 
 The runtime ships exactly two capabilities, each a module of this package and each known when the
 runtime is built — nothing is discovered, registered or loaded. `CAPABILITIES` (`./capability`)
-names them: `model` and `versionSkew`. A canon's skill names one of them as
-`runtime: { capability: … }`.
+names them: `model` and `versionSkew`.
 
 | capability    | verbs    |
 | ------------- | -------- |
@@ -53,7 +50,7 @@ the command's own self-description (`EXPLANATION`, `ORIENTATION`, `PURPOSE`, `ST
 | `.`                | `MODEL_CHECK`, `VERSION_SKEW`, `explain`, and the command's self-description: `EXPLANATION`, `ORIENTATION`, `PURPOSE`, `START`, `THEORY`, `CommandExplanation` |
 | `./capability`     | `CAPABILITIES`, `Capability`, `CAPABILITY_SUMMARIES` — the two capabilities the runtime ships, and a line on each                                              |
 | `./main`           | `capabilityCommands` — one Commander command per capability, its verbs' help printed from the declarations, each routed to its verb surface                    |
-| `./runtime-config` | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                                                                                                      |
+| `./runtime-config` | `installationRoot`, `installationScope`, `InstallScope`, `NoInstallationError`, `INSTALLATION_ENV`                                                             |
 | `./bin-name`       | `CLI_BIN` — the one home for the executable's name on PATH                                                                                                     |
 | `./package.json`   | the manifest                                                                                                                                                   |
 
@@ -90,17 +87,14 @@ the same declarations the help prints, so the two cannot drift apart. The explan
 tool's: in omp the model check is `model_check`
 and version skew `version_skew`.
 
-## The host runtime config
+## The installation
 
-`loadRuntimeConfig` reads `$AGENT_RUNTIME_CONFIG`, else the installation's `runtime.json`, which
-install writes into the owned root: each capability's configuration (`configuration`), as the
-canon's skills declared it. The installation (`installationRoot`) is the one
+The installation (`installationRoot`) is the one
 `$CRATYLUS_INSTALLATION` names — an agent harness's adapter names its own on every call — else,
 walking up from the working directory, the nearest ancestor other than the home whose `.cratylus/`
 holds exactly one installation whose `installation.json` says `"scope": "project"`, else the one
 root under `~/.cratylus/`. A tree without `installation.json`, an earlier render tree, is no
-installation. A config without configuration says nothing. A capability that needs its
-configuration and finds none refuses and names the command that writes it.
+installation.
 
 `installationScope` reads an installation's scope, `user` or `project`, from its
 `installation.json`; a record that says none, or no record, is the user's.
@@ -115,7 +109,7 @@ installation's scope and root. It chooses between no builds.
 ## The bin name
 
 `CLI_BIN` (`cratylus`) lives here because four packages speak it and three of them speak it
-from inside an emitted artifact — a projected skill shim, a generated hook script — where no compiler
+from inside an emitted artifact — a generated hook script — where no compiler
 can see it. A rename that missed one produced a script that failed on a host rather than at build.
 
 Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus.json`) is

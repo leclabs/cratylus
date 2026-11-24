@@ -33,10 +33,9 @@
     },
     // `build` — the package's OWN — and not just `^build`.
     //
-    // A test tree may read its own package's build output rather than its source:
-    // `canon/test/projection-stability.test.ts` holds the skill roster in canon's
-    // `dist` to the source one. `^build` builds a package's DEPENDENCIES and never
-    // the package itself, so on a cold tree it would read a `dist` that did not
+    // A test tree may read its own package's build output rather than its source: the
+    // cli's suite spawns its own built bin. `^build` builds a package's DEPENDENCIES and
+    // never the package itself, so on a cold tree it would read a `dist` that did not
     // exist yet.
     //
     // This surfaced the moment `typecheck:test` became a dependency of `test`:
@@ -95,21 +94,6 @@
     // worse lie than the one it fixes.
     "@cratylus/canon#test": {
       "dependsOn": ["^build", "build", "typecheck:test", "cratylus#build"],
-      "cache": false
-    },
-    // forge's suite drives the SAME built bin, and has the same gap.
-    //
-    // `integrate-smoke.test.ts` materializes the `cratylus` package with `pnpm deploy`
-    // — which copies its `dist`, so the bin must already be built — then deploys a
-    // thin shim and RUNS it, and the shim forwards to `cratylus <capability>` off
-    // PATH. The whole point of the gate is that the bin is the real one. forge does
-    // not depend on the `cratylus` package, so without this edge nothing orders that
-    // build against this suite: it passes alone on a `dist` a prior build left
-    // behind, and fails in the pipeline when the bin is rebuilt underneath a test
-    // already spawning it. Green when run alone, red in the pipeline, on identical
-    // input: the shape this file already refuses one entry up.
-    "@cratylus/forge#test": {
-      "dependsOn": ["^build", "typecheck:test", "cratylus#build"],
       "cache": false
     },
     // the cli's suite spawns its OWN bin, so its test task names its own build.

@@ -4,12 +4,12 @@ The **meaning** concern of [cratylus](../../README.md) — the canon of discover
 names, each read in its concept's bounded context, authored as typed TypeScript.
 
 The discipline is cratylic context design: describing the vocabulary a foundation model
-already holds, rather than authoring prose and hoping it lands. An agent or skill in the canon is
+already holds, rather than authoring prose and hoping it lands. An agent in the canon is
 therefore not a prompt. It is a **vector of values** over the catalog's factors, and the
 markdown an agent harness reads is a projection of these modules.
 
-Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_ and what a skill
-_means_, never how either is carried. Installing the canon on a machine is
+Canon is harness-agnostic **and** runtime-agnostic: it says what an agent _is_,
+never how it is carried. Installing the canon on a machine is
 [the `cratylus` README](../cli/README.md)'s. This README is for whoever works on
 the canon.
 
@@ -24,14 +24,13 @@ resolved by a registry, and every part of a composite is traceable to its one ho
 
 ## What the plugin carries
 
-| field      | what it is                                                                                                                                                                           |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value                                                                                        |
-| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary                                                                                                     |
-| `rulesets` | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)                                                                                             |
-| `factors`  | the factors' values, filed one directory per factor                                                                                                                                  |
-| `agents`   | the composed agents: five generic holders of their roles, and three personas                                                                                                         |
-| `skills`   | the skills — each a self-sufficient formal block, citing related skills inside it at the borrowing term (`@ <skill>`); formalize alone composes siblings (conceptualize and signify) |
+| field      | what it is                                                                                    |
+| ---------- | --------------------------------------------------------------------------------------------- |
+| `manifest` | **which factors exist** — 18, in six groups; enforcement level is an attribute of every value |
+| `events`   | **which lifecycle events exist** — the canon's harness-agnostic event vocabulary              |
+| `rulesets` | **which rulesets exist** — the named sets of rules an install offers (`src/rulesets.ts`)      |
+| `factors`  | the factors' values, filed one directory per factor                                           |
+| `agents`   | the composed agents: five generic holders of their roles, and three personas                  |
 
 Canon owns the catalog because a factor is **constitutive**: declaring one makes it part of the
 canon's agent design. The manifest rides the plugin rather than living in the projector, so the
@@ -139,19 +138,11 @@ product owner in real use; no agent carries countermeasure text against it.
 
 ## The first principle
 
-The first principle, the dense `cratylism` axiom, has its one literal home in
-`genus/prime-principle.ts` and is not stamped on every unit of the canon. It rides only the units whose laws apply
-it: the skills that give a concept its term, judge a term by its symmetric difference from the concept or
-confirm it by a fresh reading set it as their `preamble`, and an agent carries it once, by its name, as the
-`cratylism` stance of the role it holds, where that role states it. A unit that does not use it never holds a
-host's own authored surfaces to the canon's naming axiom. The axiom states cratylism as cratylic
-context design holds it: names are natural to the model, whose semantic space already fixes each name's
-meaning, so each concept takes its Cratylic name, the term whose meaning, read in the concept's domain, has
-the smallest symmetric difference from it; intuition proposes and a fresh reading confirms; the name is found,
-never coined, a coined name only where no established term covers the concept; its precising definition is
-stated beside it, stating what holds where the name lacks or adds, each once; and a kept name short of
-it is recorded as such. It is intrinsic to those units' projected bytes, so it survives deployment into a
-foreign repository rather than depending on ambient context.
+The first principle is `cratylism`, a stance value (`factors/stance/cratylism.ts`): held true of a
+model's semantic space, which already fixes each name's meaning. An agent carries it once, by its
+name, as the stance of the role that states it, the business analyst's. Cratylic context design holds
+it: each concept takes its Cratylic name, the term whose meaning, read in the concept's domain, has the
+smallest symmetric difference from it, with a precising definition stated beside it.
 
 Because the plugin object loses its package-root provenance when a consumer imports it, the
 directory fields are resolved against `import.meta.url` at definition time and consumed verbatim.
@@ -162,8 +153,6 @@ directory fields are resolved against `import.meta.url` at definition time and c
 entry. Canon reaches the projector as **data** — the canon is passed to it as a plugin — and no
 unit imports it.
 
-No unit imports the runtime either. A skill names the capability it routes to — `model` or
-`versionSkew`, the two built into the runtime — as `runtime: { capability: … }`,
-never its implementation, and a hook declaration that emits shell invoking the binary carries it as a fact the
+No unit imports the runtime either. A hook declaration that emits shell invoking the binary carries it as a fact the
 projector substitutes at emission. That is the architecture's highest-ranked property — meaning
 and mechanism never referencing each other.

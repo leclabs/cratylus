@@ -20,7 +20,7 @@ import type { Factor, Value } from '../../src/manifest.js';
  * The first non-`default` export of a canon source module.
  *
  * A factor's value is returned as its BODY — bare values unchanged, enforcing
- * values reduced to their declaration. Any other export (a skill, a hook
+ * values reduced to their declaration. Any other export (a hook
  * declaration) is handed back untouched, because those are not factor values and
  * have their own shapes.
  */

@@ -25,10 +25,10 @@ the cratylus extension shows that `orientation` in every omp session, as the com
 `cratylus --explain` takes no other word. `cratylus --help` opens with what it is for.
 
 The sections that follow are for whoever installs: the guided install and its two scopes, starting a
-session as an agent, the badge on the status line, the host's model routing on omp, the host runtime
-config, version skew, taking it away again, and what a command's exit code and streams mean. After
+session as an agent, the badge on the status line, the host's model routing on omp, the installation a command reads,
+version skew, taking it away again, and what a command's exit code and streams mean. After
 them comes the reference, which is the help of every command once: install and uninstall, then the
-capabilities that agents and skills call.
+capabilities that agents call.
 
 ## The guided install
 
@@ -36,7 +36,7 @@ capabilities that agents and skills call.
 cratylus install
 ```
 
-`cratylus install` puts every agent and skill of the canon cratylus ships into omp, for you or for one project
+`cratylus install` puts every agent of the canon cratylus ships into omp, for you or for one project
 (the scope, below). It always installs the canon this command is built with, and needs no
 config. It looks for omp by its directory (`~/.omp`).
 
@@ -164,29 +164,29 @@ Everything install places for you lives under one root it owns: at user scope `~
 ```text
 ~/.cratylus/omp/
   agents/<name>.md          the canon's agent definitions
-  skills/<name>/…           the canon's skills
   rules/<name>.md           the rules you chose, each applied in every session
   extensions/cratylus.ts    the extension: the capability tools, `omp --agent`, `omp --dump-system-prompt`, version skew
   extensions/…              the session hooks the canon declares, the dispatch isolation where an agent needs it, and the guard that refuses a write to the domain model (`design/model/`) by any agent but the business analyst
   hooks/<id>/…              the workers those session hooks run
   package.json              the package: the version of cratylus that installed it, and its modules
-  runtime.json              each capability's configuration, where the canon declares any
   installation.json         its scope (user or project), what install did outside the root, and the rules installed
 ```
 
-omp's own surfaces only refer into it, the way `omp plugin link` does. At user scope `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents, skills and tools, and no file of omp's is copied over or overwritten. At project scope the references are in `<project>/.omp/plugins`, each relative so that a clone elsewhere resolves it: `node_modules/cratylus-omp` is a link to `../../../.cratylus/omp`, `package.json` names it as `"cratylus-omp": "file:../../.cratylus/omp"`, and `.gitignore` there holds a block that re-includes that one link where the project ignores `node_modules`: a `# cratylus: …` comment line, then `!/node_modules/`, `/node_modules/*` and `!/node_modules/cratylus-omp`. Install appends the block whole after your own lines, or creates the file where there is none, and never reads or changes a line of yours, even one identical to a line of the block. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
+omp's own surfaces only refer into it, the way `omp plugin link` does. At user scope `~/.omp/plugins/node_modules/cratylus-omp` is a link to the root, and `~/.omp/plugins/package.json` names it as a dependency (that file is created only when you had none; anything else in it is yours and stays). So every project you open in omp is offered the agents and tools, and no file of omp's is copied over or overwritten. At project scope the references are in `<project>/.omp/plugins`, each relative so that a clone elsewhere resolves it: `node_modules/cratylus-omp` is a link to `../../../.cratylus/omp`, `package.json` names it as `"cratylus-omp": "file:../../.cratylus/omp"`, and `.gitignore` there holds a block that re-includes that one link where the project ignores `node_modules`: a `# cratylus: …` comment line, then `!/node_modules/`, `/node_modules/*` and `!/node_modules/cratylus-omp`. Install appends the block whole after your own lines, or creates the file where there is none, and never reads or changes a line of yours, even one identical to a line of the block. A project's own `.omp/agents`, and your `~/.omp/agent/agents`, win over an agent definition of the same name.
 
 Where you have put something of your own at either of those places — `cratylus-omp` linked elsewhere or replaced by a directory, or the dependency entry naming something other than the root — it is yours: install and upgrade leave it as you have it, record no reference there, and say so, with what to do to have omp load the root (move it away, or take the entry out, and install again). Uninstall leaves it too.
 
 Install writes nothing else of yours, and only at user scope, in `~/.omp/agent/config.yml`: a project installation writes no product owner's own setting (above). The models you choose for tiers and roles go there as your own `modelRoles` entries (the section on which model each tier and persona runs on), recorded nowhere as cratylus's. And where those settings hide the row an extension's status shows in (`statusLine.showHookStatus: false`) and your layout does not list omp's `status` segment, whether a session started as an agent shows its name and mark there is your choice: install asks (or takes `--agent-status show|hide`), and on `show` lists `status` in your layout (or shows the row again). Your answer is your own setting, recorded nowhere as cratylus's: no later install asks for it or applies it again, and upgrade and uninstall leave the setting as you have it. Where install is neither told nor able to ask, it changes nothing there and names the choice as a next step.
 
-**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that the new one does not. A change you make inside the root is not kept; put your own agents and skills on omp's own surfaces instead. Installing again with the same version changes nothing.
+**Installing again at the same scope is upgrading.** The root is replaced whole: what the new version places, exactly, and nothing an earlier one placed that the new one does not. A change you make inside the root is not kept; put your own agents on omp's own surfaces instead. Installing again with the same version changes nothing.
 
 **Session hooks.** The canon names 31 canonical lifecycle events; omp realizes 9 of them by a native event of its own. The rest have no native peer there and are refused or skipped with a warning rather than faked.
 
 **An isolated agent's dispatch.** An agent may declare a worktree of its own; none of the bundled agents does. omp's agent definition has no field for isolation, so install does what omp offers: a dispatch of the agent is made an isolated task, which runs in an isolated copy of the dispatcher's checkout and never writes the main checkout. What it built is kept as the branch `omp/task/<id>` in your repository, not applied. The copy is made from the dispatcher's HEAD and its uncommitted work, and omp takes no ref to start it from; building off the bound plan's line is the agent's own work. Where the checkout has uncommitted work, omp also rewrites the agent's commits onto the dispatcher's HEAD. Projection warns once per such agent and install prints the same in its summary. For this install sets `task.isolation.enabled: true`, `apply: false` and `merge: branch` in `config.yml` (a value you held is replaced, and uninstall puts it back). They hold for the isolated tasks you dispatch yourself as well: their changes are kept as a branch, not applied, until you change the settings.
 
 **An earlier installation** — cratylus before the owned root placed its agents in `~/.omp/agent/agents`, its skills in `~/.agents/skills`, its extensions in `~/.omp/agent/extensions`, hook workers in `~/.omp/hooks`, `modelRoles` and a status line in `config.yml`, and `~/.cratylus.json` — is taken back by the next user install, by its own record (`~/.omp/.forge/deploy-manifest.json`): each file it placed while it is still the bytes it wrote, each line it added while it stands as written, and the record last. A file or a part of `~/.cratylus.json` it placed before it recorded what it wrote is cratylus's by that record, and goes too, as does a status line layout in `config.yml` that is byte for byte the one it wrote; so no earlier agent outside the root takes the place of the root's. The `modelRoles` entries it seeded are the one exception: which model a role runs on is your setting, so they stay in your config as your own from then on, and the run names them. A file you changed since it recorded the bytes it wrote is yours, and is left and named; one it never recorded placing is never touched.
+
+**A skill an earlier installation placed.** cratylus installs no skills. A skill an earlier installation placed is removed by the next install and named as no longer installed: each `skills/<name>/` directory of the root it replaces, and each skill its earlier record (`~/.omp/.forge/deploy-manifest.json`) took back, such as `~/.agents/skills/<name>`. The summary names them on one line, `skills: removed <name>, <name>, no longer installed` (`skills: would remove <name>, <name>, no longer installed` on a dry run), and has the line only when one was removed. Afterwards no file of such a skill remains and omp offers no cratylus skill.
 
 ### When it refuses
 
@@ -218,9 +218,7 @@ omp --agent business-analyst -p 'hi'    # every other word on the command line i
 
 Install places no launcher and links no command for it: `--agent` is cratylus's extension (see
 what install places), and it starts any agent definition omp discovers, not only the installed
-agents. An `omp --agent` session starts with the full instructions of the skills its agent
-definition's `autoload-skills` names, as a dispatched omp subagent does, and reaches the rest
-through omp's own skill discovery, as any omp session does. Nothing judges an agent's replies or,
+agents. Nothing judges an agent's replies or,
 but for a write to the domain model below, its acts: an agent's behaviour is evaluated in real use. Every turn shows the typed
 assignment of each agent that takes one.
 
@@ -299,9 +297,9 @@ so; set `showHookStatus` to true or list `status` yourself to see the badge.
 
 An agent's definition names its own model role first, then the tier and effort it holds: `business-analyst` declares `model: ["@business-analyst", "@frontier:high"]`. omp tries them in order, so a `modelRoles.business-analyst` you set in your omp settings (`~/.omp/agent/config.yml`, or a project's `.omp/config.yml`) wins; without one, the agent runs on `@frontier:high`, which is `modelRoles.frontier` at high effort (and with no `frontier` role either, on the session's own model). The definition is never rewritten with a model: a model a user install binds for you, asked or by `--model-roles`, is a `modelRoles` entry of yours in `~/.omp/agent/config.yml` (`design/decisions/install-keeps-each-tiers-model-as-the-hosts-setting.md`), which upgrade and uninstall keep; a project installation binds none. A role you already bind is never asked about, and a choice for it is said to be left as you set it. An agent's `spawns` is `*`: who dispatches whom is never limited. Every agent has omp's default tools.
 
-## The host runtime config
+## The installation a command reads
 
-Each capability's configuration, where the canon's skills declare any, is written into the installation as `runtime.json`. `cratylus` reads it from `$AGENT_RUNTIME_CONFIG`, else from the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else from the nearest project installation above the working directory, else from the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is not read, and the next user install or uninstall takes its parts out.
+`cratylus` reads the installation `$CRATYLUS_INSTALLATION` names (omp's extension names its own on every call), else the nearest project installation above the working directory, else the user installation under `~/.cratylus/`. The `~/.cratylus.json` an earlier installation wrote is not read, and the next user install or uninstall takes its parts out.
 
 ## Version skew
 
@@ -339,7 +337,7 @@ Every command and every capability verb answers `--help`; this reference is that
 
 ### `cratylus install`
 
-Install the bundled canon, every one of its agents and skills, and the rules you choose, into an agent harness on this machine, asking what you have not said.
+Install the bundled canon, every one of its agents, and the rules you choose, into an agent harness on this machine, asking what you have not said.
 
 ```sh
 cratylus install [options]

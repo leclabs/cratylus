@@ -16,7 +16,6 @@
 // enforcement level. Arity, slots and `required` are catalog DATA that
 // composition checks; they are not type-level here.
 
-import type { Skill } from '@cratylus/schema';
 import type {
   ActionScope,
   Agent,
@@ -158,29 +157,6 @@ const levelField: Agent = { ...baseFixture, enforcementLevel: [] };
 // @ts-expect-error — the key slot is reserved for ipseic agents and always empty.
 const keyHeld: Agent = { ...baseFixture, key: 'kino' };
 
-// ── NEGATIVE 6: Skill composition is a LAZY THUNK of sibling skills ─────────
-// The graph is cyclic (conceptualize↔exemplify↔…); composition is a thunk
-// `() => readonly Skill[]` so sibling refs resolve lazily (no ESM temporal-dead-
-// zone at load). The payload is `formalBlock`; there is no stored `body`.
-
-const leaf: Skill = {
-  name: 'leaf',
-  description: 'a leaf skill',
-  formalBlock: 'leaf ≜ …',
-  composition: () => [],
-};
-
-const composed: Skill = {
-  name: 'composed',
-  description: 'composes leaf',
-  formalBlock: 'composed ≜ …',
-  composition: () => [leaf], // lazy thunk of imported sibling Skills
-};
-void composed;
-
-// @ts-expect-error — composition is a thunk `() => Skill[]`, not an eager array.
-const eagerComposition: Skill = { ...leaf, composition: [leaf] };
-
 // ── The catalog's OWN guarantee: a misspelled factor does not exist ─────────
 //
 // This is the property forge gave up when `BareValue<O>` relaxed to
@@ -241,4 +217,3 @@ void nullField;
 void missingKey;
 void levelField;
 void keyHeld;
-void eagerComposition;

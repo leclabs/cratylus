@@ -71,7 +71,6 @@
     "projection",
     "codegen",
     "agent",
-    "skill",
     "harness",
     "cli"
   ],

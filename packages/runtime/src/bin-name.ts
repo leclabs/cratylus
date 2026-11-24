@@ -2,7 +2,7 @@
 // THE BIN NAME — the one home.
 //
 // The name under which the command is installed on a host's PATH. Several packages
-// speak it, some from INSIDE an emitted artifact (a projected shim, a generated hook
+// speak it, some from INSIDE an emitted artifact (a generated hook
 // worker, the host config name) where no compiler can see it, so a repeated literal
 // that a rename missed would fail at runtime on a host, not at build.
 //
@@ -19,7 +19,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** THE command's name on PATH. Every other site — the program's branding, error
- *  prefixes, the projected thin shim, the host config name — interpolates this
+ *  prefixes, the host config name — interpolates this
  *  rather than repeating the literal.
  *
  *  IT LIVES HERE because the runtime is the contract leaf: it depends on nothing, so

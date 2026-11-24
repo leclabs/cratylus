@@ -1,5 +1,5 @@
 // The HARNESS-NEUTRAL factor→markdown-body machinery: the shared helpers that map
-// a typed `Agent` vector / `ResolvedSkill` to its composed markdown BODY, before
+// a typed `Agent` vector to its composed markdown BODY, before
 // any harness-specific framing (a claude or omp front-matter) wraps it.
 //
 // This is core, not an adapter: the composed Target body is identical whichever
@@ -16,7 +16,6 @@ import type {
   Slot,
 } from '@cratylus/schema';
 import { bodyOf, factorValueOf, termOf } from '@cratylus/schema';
-import { renderSkillBody } from './exemplify/skill-body.js';
 
 // ── Factor → markdown helpers ────────────────────────────────────────────────────
 
@@ -155,54 +154,4 @@ function deliverableSection(schema: JsonSchema): string[] {
     '',
     ...fieldLines(schema, 0),
   ];
-}
-
-// ── Resolved skill shape + body ──────────────────────────────────────────────
-
-/** A resolved skill ready to project to its SKILL.md (harness-neutral). */
-export interface ResolvedSkill {
-  readonly name: string;
-  readonly trigger: string;
-  /** Front-matter `description` (the SKILL.md `description`). */
-  readonly description: string;
-  /** The formal set-builder block (declarations-above / laws-below), emitted verbatim
-   *  inside the fence. Sourced from the `Skill.formalBlock` IR field. */
-  readonly formalBlock: string;
-  /** The names of the skills it composes (its provenance), already harness-projected (or []). */
-  readonly composedFrom: readonly string[];
-  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
-   *  first section (above the fenced formal block). The engine knows only "a
-   *  leading block"; the skill that applies a principle fills it (`Skill.preamble`).
-   *  Absent ⇒ omitted. */
-  readonly preamble?: string;
-  /**
-   * The RUNTIME capability this skill is a face of (mirrors `Skill.runtime`). When
-   * set, the projection emits a thin shim beside the SKILL.md and the body BINDS it
-   * — without this the shim is unreachable: the skill would carry a script it cannot
-   * name, which is why every skill fell back to embedding the bin name in prose.
-   * Plain `string` (not `RuntimeCapability`) keeps core free of a canon `manifest`
-   * import.
-   */
-  readonly runtime?: { readonly capability: string };
-}
-
-/** The verb H1, derived from the skill name (the term carries the verb). */
-function deriveVerb(name: string): string {
-  const words = name.replace(/-/g, ' ');
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-/**
- * The SKILL.md body for a resolved skill, rendered through the ONE generator
- * `renderSkillBody` as `# <verb>` + fenced `formalBlock` + "Composed from …".
- * Shared by the claude and omp adapters. Returns `rstrip() + "\n"`.
- */
-export function skillBody(s: ResolvedSkill): string {
-  return renderSkillBody({
-    verb: deriveVerb(s.name),
-    block: s.formalBlock,
-    composedFrom: s.composedFrom,
-    preamble: s.preamble,
-    runtime: s.runtime,
-  });
 }

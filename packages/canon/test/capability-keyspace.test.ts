@@ -6,22 +6,19 @@
 // camelCase register (`versionSkew`), and a matching kebab-case port module
 // (`version-skew`). The conversion between those registers is already declared by
 // this repository and used for `communication-style` / `communicationStyle`; this gate
-// checks that runtime ports and skill declarations remain aligned with the
-// capability vocabulary rather than accumulating alternate names.
+// checks that runtime ports remain aligned with the capability keyspace
+// rather than accumulating alternate names.
 //
 // ── WHAT THIS GATE DOES *NOT* CHECK, AND WHY ────────────────────────────────────
-// Two equalities were proposed for this gate and both were FALSE OF THE REPOSITORY they
-// were proposed against. They are recorded here rather than deleted, because a
-// dropped axis with no record is an axis someone re-proposes next quarter.
+// An equality was proposed for this gate and was FALSE OF THE REPOSITORY it was
+// proposed against. It is recorded here rather than deleted, because a dropped axis
+// with no record is an axis someone re-proposes next quarter.
 //
 //   · `dir ≡ keyspace` — DROPPED, false in BOTH directions when proposed: a
 //     capability then shipped as a whole package, with no `capabilities/` dir, and
 //     a `capabilities/` dir existed with no keyspace member.
-//   · `≡ canon skill name` — DROPPED, the relation is 1→N in principle: one
-//     capability was once claimed by THREE skills, none of them named after it.
-//     Replaced by the SUBSET direction below, which is the true statement.
 //
-// ── THE AXES THIS GATE DOES CHECK, each with its positive-control count ──────────
+// ── THE AXIS THIS GATE DOES CHECK ───────────────────────────────────────────────
 //   1. PORT MODULE ⇒ KEYSPACE (1 exempt control; the in-keyspace direction is
 //      held by the convicting fixtures, since no member codes against a port). A
 //      `ports/*.ts` module is outside the keyspace IFF its basename carries the
@@ -32,12 +29,6 @@
 //      add it to. The prefix must also be EARNED — see leg 1c. A keyspace member
 //      needs no port module: no member codes against a port, so the converse
 //      (every member has a `ports/<kebab>.ts`) is false of the repository and DROPPED.
-//   2. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (every skill
-//      declaring a capability is a control; canon declares none today, so the
-//      reader is proven live on the shim-carrier fixture). One-directional on
-//      purpose: a capability with no skill is legal.
-//   3. SAME SET — canon's `RUNTIME_CAPABILITIES` and the runtime's `CAPABILITIES`
-//      name the same capabilities.
 //
 // HOW IT READS THE RUNTIME. By TEXT, over the source path. canon depends on
 // runtime, but a textual read needs no build output, so this gate is
@@ -47,22 +38,12 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { RUNTIME_CAPABILITIES } from '../src/manifest.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const packages = join(canonRoot, '..');
 
 const KEYSPACE_SRC = join(packages, 'runtime', 'src', 'capability.ts');
 const PORTS_DIR = join(packages, 'runtime', 'src', 'ports');
-const CANON_SKILLS_DIR = join(canonRoot, 'src', 'skills');
-/** A fixture plugin's skills: one skill declaring a capability, the reader's witness. */
-const CARRIER_SKILLS_DIR = join(
-  canonRoot,
-  'test',
-  'fixtures',
-  'shim-carrier',
-  'skills',
-);
 
 // ── The two registers of one term ───────────────────────────────────────────────
 // The map is NOT minted here. `forge/src/core/body.ts`'s `factorField`
@@ -110,31 +91,7 @@ function portBasenames(dir: string): string[] {
     .sort();
 }
 
-/** Every capability a canon skill declares, as `<skill> → <capability>`. A
- *  comment is not a declaration: comment lines are dropped before the match. */
-function skillCapabilities(
-  dir: string,
-): { skill: string; capability: string }[] {
-  const out: { skill: string; capability: string }[] = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    let src: string;
-    try {
-      src = readFileSync(join(dir, entry.name, 'skill.ts'), 'utf-8');
-    } catch {
-      continue; // not a skill dir
-    }
-    const code = src
-      .split('\n')
-      .filter((line) => !/^\s*\/\//.test(line))
-      .join('\n');
-    const m = code.match(/runtime:\s*\{\s*capability:\s*'([^']+)'/);
-    if (m?.[1] !== undefined) out.push({ skill: entry.name, capability: m[1] });
-  }
-  return out.sort((a, b) => a.skill.localeCompare(b.skill));
-}
-
-// ── The three invariants, as PURE functions over injected data ──────────────────
+// ── The invariant, as a PURE function over injected data ────────────────────────
 // Pure so the convicting fixtures below travel the SAME path as the live legs. A
 // control that reached its verdict by a different mechanism proves only that the
 // mechanism works.
@@ -163,25 +120,10 @@ function portKeyspaceViolations(
   return out.sort();
 }
 
-/** AXIS 2 — every skill-declared capability is a member of the runtime keyspace. */
-function subsetViolations(
-  capabilities: readonly string[],
-  declared: readonly { skill: string; capability: string }[],
-): string[] {
-  return declared
-    .filter((d) => !capabilities.includes(d.capability))
-    .map(
-      (d) =>
-        `skill '${d.skill}' declares capability '${d.capability}', which no runtime keyspace member binds — its shim would die \`unknown capability\``,
-    )
-    .sort();
-}
-
 // ── The live repository ─────────────────────────────────────────────────────────
 
 const CAPABILITIES = keyspace(readFileSync(KEYSPACE_SRC, 'utf-8'));
 const BASENAMES = portBasenames(PORTS_DIR);
-const SKILL_CAPS = skillCapabilities(CANON_SKILLS_DIR);
 
 describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothing else', () => {
   // Every leg below quantifies over a repository read. If a read comes back empty the
@@ -199,12 +141,6 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
       expect.arrayContaining(['model', 'versionSkew']),
     );
     expect(BASENAMES).toEqual(expect.arrayContaining(['provisional-mailbox']));
-    // No canon skill declares a capability today, so the subset axis's reader is
-    // pinned on the fixture skill that does: a dark reader fails here rather than
-    // passing the live leg empty.
-    expect(skillCapabilities(CARRIER_SKILLS_DIR)).toEqual([
-      { skill: 'carrier', capability: 'versionSkew' },
-    ]);
   });
 
   it('the two registers round-trip on the pairs the repository actually runs', () => {
@@ -238,20 +174,6 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
     expect(portKeyspaceViolations(CAPABILITIES, BASENAMES)).toEqual([]);
   });
 
-  // ── AXIS 2 — the subset direction, which is the true one ───────────────────────
-  it('every capability a skill declares is a member of the runtime keyspace', () => {
-    expect(subsetViolations(CAPABILITIES, SKILL_CAPS)).toEqual([]);
-  });
-
-  // ── AXIS 3 — one set, declared in two homes ────────────────────────────────────
-  it("the canon's vocabulary and the runtime keyspace name the same set", () => {
-    // canon narrows `Skill` against its OWN `RUNTIME_CAPABILITIES`, so the compile
-    // error a skill gets for an unknown capability is checked against this list, not
-    // against the runtime's. Two declared homes for one set is a drift the type
-    // system cannot see; this is the only thing that reads both.
-    expect([...RUNTIME_CAPABILITIES].sort()).toEqual(CAPABILITIES);
-  });
-
   // ── The convicting fixtures ────────────────────────────────────────────────────
   it('is non-vacuous — each axis REJECTS a synthetic input that violates it', () => {
     const caps = ['model', 'versionSkew'];
@@ -282,14 +204,6 @@ describe('CAPABILITY KEYSPACE — one term per capability, two registers, nothin
     // …and a clean input really is clean through the same function, so the two
     // convictions above are the predicate biting, not the predicate always firing.
     expect(portKeyspaceViolations(caps, ['version-skew'])).toEqual([]);
-
-    // AXIS 2: a skill forwarding to a capability no host binds.
-    expect(
-      subsetViolations(caps, [{ skill: 'ghost', capability: 'unknown' }]),
-    ).toHaveLength(1);
-    expect(
-      subsetViolations(caps, [{ skill: 'carrier', capability: 'versionSkew' }]),
-    ).toEqual([]);
 
     // And a runtime source carrying NO keyspace FAILS loudly rather than green-empty.
     expect(() => keyspace('export const SOMETHING = [] as const;')).toThrow(

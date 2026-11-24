@@ -55,16 +55,10 @@ export function choiceCanon(h: Host, four = false) {
       routing: { tier: 'frontier', effort: 'medium' },
     }),
   );
-  const skills = join(h.root, 'choice-skills');
-  put(
-    join(skills, 'choice/skill.ts'),
-    'export const choice = {name:"choice", description:"Choice fixture skill", formalBlock:"Read the host choices.", composition:()=>[]};',
-  );
   return {
     name: 'delivery-choices',
     manifest: FIXTURE_MANIFEST,
     agents,
-    skills,
   };
 }
 

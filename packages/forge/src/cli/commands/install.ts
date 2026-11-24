@@ -10,7 +10,7 @@
 //
 // WHERE IT PLACES: THE OWNED ROOT. Everything install places for the user on the
 // harness lives under one root it owns (`~/.cratylus/<harness>`, `deploy/owned-root.ts`):
-// the canon's agents and skills, the harness's adapters, and the version of cratylus
+// the canon's agents, the harness's adapters, and the version of cratylus
 // that projected them. The harness's own surfaces only refer into it — for omp, the
 // owned root linked into omp's plugin directory as an extension package, as `omp plugin
 // link` would — so every project of the user is offered it and no host file is
@@ -34,7 +34,7 @@
 // THE RUN IS GUIDED, and it is the product owner's decisions that it guides. There are three:
 // which harness, which of the rules the canon offers, and which model each tier the agents
 // fall back to, and each persona's own role, runs on. What is placed is no decision: every
-// agent and skill of the canon is installed. Each decision has a flag; a decision given by
+// agent of the canon is installed. Each decision has a flag; a decision given by
 // flag is never asked, and a run with no terminal (or `--yes`) takes the default. The
 // rules default to none, and the choice, once made, is recorded by name and kept by every
 // later install that is not told otherwise, which asks only about the rules offered since.
@@ -66,9 +66,9 @@
 // it again, and upgrade and uninstall leave the setting as the host has it. Where it can
 // neither be told nor asked, it is named as a next step beside the unbound tiers.
 
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { START } from '@cratylus/runtime';
 import {
   INSTALLATION_RECORD_FILE,
@@ -83,7 +83,6 @@ import {
 import { CLI_BIN } from '../../bin-name.js';
 import {
   addModelRoles,
-  capabilityConfiguration,
   ensureStatusSegment,
   hidesExtensionStatus,
   holdsRenderTree,
@@ -93,6 +92,7 @@ import {
   placementOf,
   projectOf,
   readInstallationRecord,
+  readManifest,
   rootFiles,
 } from '../../deploy/index.js';
 import {
@@ -106,7 +106,6 @@ import {
   discoverValues,
   projectPluginSet,
 } from '../../project/index.js';
-import { resolveSkills } from '../../project/resolve-skills.js';
 import { fail as failLine, say, warn as warnLine } from '../style.js';
 import {
   type InstallPrompts,
@@ -203,6 +202,8 @@ interface Findings {
   displayOpen: boolean;
   /** What the host had set and was left alone. */
   left: string[];
+  /** The skills an earlier installation placed, removed (or, under `dry`, to be removed). */
+  skills: string[];
 }
 
 function emptyFindings(): Findings {
@@ -216,12 +217,39 @@ function emptyFindings(): Findings {
     unbound: [],
     displayOpen: false,
     left: [],
+    skills: [],
   };
 }
 
 const list = (names: readonly string[]): string => names.join(', ');
 const plural = (n: number, noun: string): string =>
   `${n} ${noun}${n === 1 ? '' : 's'}`;
+
+/** The skills the deploy record of the layout before the owned root names, each with
+ *  the files it placed, as absolute paths. */
+function recordedSkills(
+  adapter: HarnessAdapter,
+  home: string | undefined,
+): { name: string; files: string[] }[] {
+  const harnessDir = harnessDirIn(adapter, home);
+  return Object.entries(readManifest(harnessDir).kinds.skill ?? {}).map(
+    ([name, rels]) => ({
+      name,
+      files: rels.map((rel) => resolve(harnessDir, rel)),
+    }),
+  );
+}
+
+/** The skills an owned root holds, one directory each under `skills/`; anything else
+ *  there, or a `skills` that is no directory, holds none. */
+function rootSkills(root: string): string[] {
+  const dir = join(root, 'skills');
+  return existsSync(dir) && statSync(dir).isDirectory()
+    ? readdirSync(dir, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+    : [];
+}
 
 function parseNames(raw: string): string[] {
   return raw
@@ -409,9 +437,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       adapter,
       log: () => {},
       warn: (line) => warnings.push(line),
-      // The hooks print each skill's directory, so what fits the harness's output cap
-      // depends on this path; the projection cannot know it, install does.
-      hostHome: base,
       rules,
     });
     return { report, warnings };
@@ -655,10 +680,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
   const displayOpen = hidden && !statusAnswered;
 
   const placedTree: ProjectedTree = rendered.report;
-  // Each capability's configuration, as the canon's skills declare it.
-  const configuration = capabilityConfiguration(
-    (await resolveSkills(plugins)).map((s) => s.skill),
-  );
 
   // Whether this project installation made the project's harness directory, which its
   // uninstall then removes where it is left empty
@@ -675,6 +696,12 @@ async function install(opts: InstallCmdOpts): Promise<number> {
     found.warnings.push(...rendered.warnings);
     found.left.push(...left);
     found.detail.push(`canon: ${source}`, `harness: ${harness} → ${root}`);
+    // The skills an earlier installation placed are removed, and each named: those the
+    // deploy record of the layout before the owned root names (taken back with it,
+    // below), and those in the owned root this one replaces whole.
+    const recorded = scope === 'user' ? recordedSkills(adapter, opts.home) : [];
+    const skills = new Set(rootSkills(root));
+    const remaining = new Set<string>();
     // An earlier installation first: what it placed on the harness's own surfaces is
     // taken back by its record, so what follows meets the host's own files. It was
     // only ever the user's, and a project install writes nothing under the home.
@@ -690,7 +717,20 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       for (const r of earlier.removed)
         found.detail.push(`  earlier: ${r.what}`);
       for (const l of earlier.left) found.left.push(`${l.what} — ${l.why}`);
+      // A legacy skill is named as removed when the run removes a SKILL.md of it; the
+      // owned root goes whole, so a name is out again only where the host kept a
+      // recorded SKILL.md of it.
+      const taken = new Set(earlier.removed.map((r) => r.what));
+      const kept = new Set(earlier.left.map((l) => l.what));
+      for (const { name, files } of recorded) {
+        const skillFiles = files.filter(
+          (file) => basename(file) === 'SKILL.md',
+        );
+        if (skillFiles.some((file) => taken.has(file))) skills.add(name);
+        if (skillFiles.some((file) => kept.has(file))) remaining.add(name);
+      }
     }
+    found.skills = [...skills].filter((name) => !remaining.has(name)).sort();
     // Whether the status line shows the session's agent: the product owner's answer, written
     // as the host's own setting and recorded nowhere as cratylus's.
     if (agentStatus === 'show' && statusFile !== undefined)
@@ -741,7 +781,6 @@ async function install(opts: InstallCmdOpts): Promise<number> {
       root,
       files: rootFiles(adapter, placedTree.files),
       ...(opts.version === undefined ? {} : { version: opts.version }),
-      configuration,
       record: {
         scope,
         ...(rulesDecided ? { rules, offeredRules: rulesOffered } : {}),
@@ -852,7 +891,7 @@ function describe(
     dry
       ? `${CLI_BIN} would install into ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`
       : `${CLI_BIN} is installed in ${adapter.name} at ${ctx.scope} scope, under ${ctx.root}:`,
-    `  ${plural(tree.agents, 'agent')}, ${plural(tree.skills, 'skill')}, ${plural(tree.hooks, 'hook')}`,
+    `  ${plural(tree.agents, 'agent')}, ${plural(tree.hooks, 'hook')}`,
   ];
   if (
     ctx.rules.chosen.length > 0 ||
@@ -870,6 +909,11 @@ function describe(
     const placed =
       ctx.rules.chosen.length > 0 ? list(ctx.rules.chosen) : 'none';
     lines.push(`  rules: ${placed}${dropped}${unasked}`);
+  }
+  if (found.skills.length > 0) {
+    lines.push(
+      `  skills: ${dry ? 'would remove' : 'removed'} ${list(found.skills)}, no longer installed`,
+    );
   }
   if (found.references.length > 0) {
     lines.push(
